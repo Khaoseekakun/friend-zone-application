@@ -19,26 +19,33 @@ export default function Login() {
             <StyledText className="text-base text-gray-400 mt-1">ยินดีต้อนรับกลับ</StyledText>
 
             {/* Email Input */}
-            <StyledView className="w-4/5 mt-8">
-                <StyledText className="text-gray-700">อีเมล</StyledText>
-                <StyledTextInput
-                    placeholder="ป้อนอีเมลของคุณ"
-                    className="border rounded-full px-4 py-3 mt-1 text-gray-700 bg-gray-100"
-                    value={email}
-                    onChangeText={(text) => setEmail(text)}
-                />
+            <StyledView className="w-4/5 mt-6">
+                <StyledView className="relative">
+                    <StyledTextInput
+                        placeholder="อีเมลของคุณ"
+                        className="px-4 py-3 text-lg outline-none border-2 border-gray-400 rounded-full hover:border-gray-600 duration-200 peer focus:border-indigo-600 bg-inherit"
+                        value={email}
+                        onChangeText={setEmail}
+                    />
+                    <StyledText className="absolute left-4 text-gray-400 -top-2 px-1 text-sm uppercase tracking-wide peer-focus:text-indigo-600 pointer-events-none duration-200 peer-focus:text-sm peer-focus:-translate-y-5 bg-white ml-2 peer-valid:text-sm peer-valid:-translate-y-5">
+                        อีเมล
+                    </StyledText>
+                </StyledView>
             </StyledView>
 
             {/* Password Input */}
-            <StyledView className="w-4/5 mt-4">
-                <StyledText className="text-gray-700">รหัสผ่าน</StyledText>
-                <StyledTextInput
-                    placeholder="ป้อนรหัสผ่านของคุณ"
-                    secureTextEntry={true}
-                    className="border rounded-full px-4 py-3 mt-1 text-gray-700 bg-gray-100"
-                    value={password}
-                    onChangeText={(text) => setPassword(text)}
-                />
+            <StyledView className="w-4/5 mt-6">
+                <StyledView className="relative">
+                    <StyledTextInput
+                        placeholder="รหัสผ่าน"
+                        className="px-4 py-3 text-lg outline-none border-2 border-gray-400 rounded-full hover:border-gray-600 duration-200 peer focus:border-indigo-600 bg-inherit"
+                        value={password}
+                        onChangeText={setPassword}
+                    />
+                    <StyledText className="absolute left-4 text-gray-400 -top-2 px-1 text-sm uppercase tracking-wide peer-focus:text-indigo-600 pointer-events-none duration-200 peer-focus:text-sm peer-focus:-translate-y-5 bg-white ml-2 peer-valid:text-sm peer-valid:-translate-y-5">
+                        รหัสผ่าน
+                    </StyledText>
+                </StyledView>
             </StyledView>
 
             {/* Forgot Password and Create Account */}

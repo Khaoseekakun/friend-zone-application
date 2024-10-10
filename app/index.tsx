@@ -24,11 +24,11 @@ export default function Index() {
     }
 
     return (
-        <NavigationContainer>
+        <NavigationContainer independent={true}>
           <Stack.Navigator initialRouteName="Login">
-            <Stack.Screen name="Login" component={Login} />
-            <Stack.Screen name="Register" component={Register} />
-            <Stack.Screen name="HomeScreen" component={HomeScreen} />
+            <Stack.Screen name="Login" component={Login} options={{headerShown:false}} />
+            <Stack.Screen name="Register" component={Register} options={{headerShown:false}} />
+            <Stack.Screen name="HomeScreen" component={HomeScreen} options={{headerShown:false}} />
           </Stack.Navigator>
         </NavigationContainer>
       );
