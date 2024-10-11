@@ -56,7 +56,7 @@ export default function RegisterScreen() {
                     <StyledTextInput
                         placeholder="เพศ"
                         className="px-4 py-3 text-lg outline-none border-2 border-gray-400 rounded-full hover:border-gray-600 duration-200 peer focus:border-indigo-600 bg-inherit"
-                        value={username}
+                        value={gender}
                         onChangeText={setGender}
                     />
                     <StyledText className="absolute left-4 text-gray-400 -top-2 px-1 text-sm uppercase tracking-wide peer-focus:text-indigo-600 pointer-events-none duration-200 peer-focus:text-sm peer-focus:-translate-y-5 bg-white ml-2 peer-valid:text-sm peer-valid:-translate-y-5">
@@ -72,7 +72,7 @@ export default function RegisterScreen() {
                     <StyledTextInput
                         placeholder="จังหวัด"
                         className="px-4 py-3 text-lg outline-none border-2 border-gray-400 rounded-full hover:border-gray-600 duration-200 peer focus:border-indigo-600 bg-inherit"
-                        value={username}
+                        value={province}
                         onChangeText={setProvince}
                     />
                     <StyledText className="absolute left-4 text-gray-400 -top-2 px-1 text-sm uppercase tracking-wide peer-focus:text-indigo-600 pointer-events-none duration-200 peer-focus:text-sm peer-focus:-translate-y-5 bg-white ml-2 peer-valid:text-sm peer-valid:-translate-y-5">
@@ -113,11 +113,8 @@ export default function RegisterScreen() {
             </StyledView>
 
             {/* Submit Button */}
-            <StyledTouchableOpacity
-                className="w-4/5 bg-gradient-to-r from-pink-500 to-orange-400 py-3 mt-8 rounded-full"
-                onPress={() => navigation.navigate('HomeScreen')}
-            >
-                <StyledText className="text-center text-white text-lg font-semibold">ถัดไป</StyledText>
+            <StyledTouchableOpacity className="bg-blue-600 rounded-full py-3 px-3 mt-6 w-4/5 shadow-sm">
+                <StyledText className="text-center text-white text-lg font-semibold">สร้างบัญชี</StyledText>
             </StyledTouchableOpacity>
         </StyledView>
     );
