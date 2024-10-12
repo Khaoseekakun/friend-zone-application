@@ -1,141 +1,132 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Platform, KeyboardAvoidingView, SafeAreaView } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, InputModeOptions } from 'react-native';
 import { styled } from 'nativewind';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { StatusBar } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
-const StyledTouchableOpacity = styled(TouchableOpacity);
+const StyledSafeAreaView = styled(SafeAreaView);
 
-export default function RegisterScreen() {
-    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+interface InputFieldProps {
+  label: string;
+  placeholder: string;
+  inputMode?: InputModeOptions
+  value: string;
+  onChangeText: (text: string) => void;
+  onPress?: () => void;
+  editable?: boolean;
+}
 
-    const [username, setUsername] = useState('');
-    const [gender, setGender] = useState('');
-    const [birthdate, setBirthdate] = useState(new Date());
-    const [province, setProvince] = useState('');
-    const [phoneNumber, setPhoneNumber] = useState('');
-    const [showDatePicker, setShowDatePicker] = useState(false);
+const InputField: React.FC<InputFieldProps> = ({ label, placeholder, value, inputMode, onChangeText, onPress, editable = true }) => (
+  <StyledView className="w-full mb-9">
+    <StyledText className="text-sm text-gray-600 mb-2 ml-4 absolute -mt-3 bg-white z-50 px-2">{label}</StyledText>
+    <StyledView className="relative">
+      <StyledTextInput
+        placeholder={placeholder}
+        className="border border-gray-300 rounded-full py-4 px-4 text-gray-700 w-full"
+        value={value}
+        onChangeText={onChangeText}
+        placeholderTextColor="#9CA3AF"
+        editable={editable}
+        onPressIn={onPress}
+        inputMode={inputMode}
+      />
+      {onPress && (
+        <TouchableOpacity onPress={onPress} className="absolute right-4 top-3">
+          <Ionicons name="calendar-outline" size={24} color="gray" />
+        </TouchableOpacity>
+      )}
+    </StyledView>
+  </StyledView>
+);
 
-    // Handle birthdate change from DateTimePicker
-    const onChangeBirthdate = (event: any, selectedDate: Date | undefined) => {
-        const currentDate = selectedDate || birthdate;
-        setShowDatePicker(false); // Hide picker after selection
-        setBirthdate(currentDate);
-    };
+export default function Register() {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [username, setUsername] = useState('');
+  const [gender, setGender] = useState('');
+  const [birthdate, setBirthdate] = useState('');
+  const [province, setProvince] = useState('');
+  const [phone, setPhone] = useState('');
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
-    return (
-        <>
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            >
-                <StyledView className="flex-1 justify-center items-center bg-white dark:bg-black">
-                    <StyledText className="text-xl font-bold text-gray-900 dark:text-white">สร้างบัญชี</StyledText>
-                    <StyledText className="text-base text-gray-400 dark:text-gray-300 mt-1">สร้างบัญชีของคุณเพื่อเริ่มต้นการใช้งาน</StyledText>
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
 
-                    {/* Username */}
-                    <StyledView className="w-4/5 mt-6">
-                        <StyledView className="relative">
-                            <StyledTextInput
-                                placeholder="ชื่อผู้ใช้ของคุณ"
-                                placeholderTextColor="#cccccc"
-                                className="px-4 py-3 text-lg outline-none border-2 border-gray-400 dark:border-gray-300 rounded-full hover:border-gray-600 dark:hover:border-gray-500 duration-200 peer focus:border-indigo-600 dark:focus:border-indigo-400 bg-inherit text-black dark:text-white"
-                                value={username}
-                                onChangeText={setUsername}
-                            />
-                            <StyledText className="absolute left-4 text-gray-400 dark:text-gray-300 -top-2 px-1 text-sm uppercase tracking-wide peer-focus:text-indigo-600 dark:peer-focus:text-indigo-400 pointer-events-none duration-200 peer-focus:text-sm peer-focus:-translate-y-5 bg-white dark:bg-black ml-2 peer-valid:text-sm peer-valid:-translate-y-5">
-                                ชื่อผู้ใช้
-                            </StyledText>
-                        </StyledView>
-                    </StyledView>
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
 
-                    {/* Gender */}
-                    <StyledView className="w-4/5 mt-6">
-                        <StyledView className="relative">
-                            <StyledTextInput
-                                placeholder="เพศ"
-                                placeholderTextColor="#cccccc"
-                                className="px-4 py-3 text-lg outline-none border-2 border-gray-400 dark:border-gray-300 rounded-full hover:border-gray-600 dark:hover:border-gray-500 duration-200 peer focus:border-indigo-600 dark:focus:border-indigo-400 bg-inherit text-black dark:text-white"
-                                value={gender}
-                                onChangeText={setGender}
-                            />
-                            <StyledText className="absolute left-4 text-gray-400 dark:text-gray-300 -top-2 px-1 text-sm uppercase tracking-wide peer-focus:text-indigo-600 dark:peer-focus:text-indigo-400 pointer-events-none duration-200 peer-focus:text-sm peer-focus:-translate-y-5 bg-white dark:bg-black ml-2 peer-valid:text-sm peer-valid:-translate-y-5">
-                                เพศ
-                            </StyledText>
-                        </StyledView>
-                    </StyledView>
+  const handleConfirm = (date: Date) => {
+    const formattedDate = date.toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    setBirthdate(formattedDate);
+    hideDatePicker();
+  };
 
-                    {/* Province */}
-                    <StyledView className="w-4/5 mt-6">
-                        <StyledView className="relative">
-                            <StyledTextInput
-                                placeholder="จังหวัด"
-                                placeholderTextColor="#cccccc"
-                                className="px-4 py-3 text-lg outline-none border-2 border-gray-400 dark:border-gray-300 rounded-full hover:border-gray-600 dark:hover:border-gray-500 duration-200 peer focus:border-indigo-600 dark:focus:border-indigo-400 bg-inherit text-black dark:text-white"
-                                value={province}
-                                onChangeText={setProvince}
-                            />
-                            <StyledText className="absolute left-4 text-gray-400 dark:text-gray-300 -top-2 px-1 text-sm uppercase tracking-wide peer-focus:text-indigo-600 dark:peer-focus:text-indigo-400 pointer-events-none duration-200 peer-focus:text-sm peer-focus:-translate-y-5 bg-white dark:bg-black ml-2 peer-valid:text-sm peer-valid:-translate-y-5">
-                                จังหวัด
-                            </StyledText>
-                        </StyledView>
-                    </StyledView>
+  return (
 
-                    {/* Birthdate */}
-                    <StyledView className="w-4/5 mt-4">
-                        <StyledView className="relative">
-                            <TouchableOpacity
-                                onPress={() => setShowDatePicker(true)}
-                                className="px-4 py-3 text-lg outline-none border-2 border-gray-400 dark:border-gray-300 rounded-full hover:border-gray-600 dark:hover:border-gray-500 duration-200 peer focus:border-indigo-600 dark:focus:border-indigo-400 bg-inherit"
-                            >
-                                <StyledText className="text-black dark:text-white">
-                                    {`วันเกิด: ${birthdate.toLocaleDateString()}`}
-                                </StyledText>
-                            </TouchableOpacity>
-                            <StyledText className="absolute left-4 text-gray-400 dark:text-gray-300 -top-2 px-1 text-sm uppercase tracking-wide peer-focus:text-indigo-600 dark:peer-focus:text-indigo-400 pointer-events-none duration-200 peer-focus:text-sm peer-focus:-translate-y-5 bg-white dark:bg-black ml-2 peer-valid:text-sm peer-valid:-translate-y-5">
-                                วันเกิด
-                            </StyledText>
-                        </StyledView>
-                    </StyledView>
+    <>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <StyledSafeAreaView className="flex-1 bg-white">
+          <StyledView className="flex-1 px-6">
+            <TouchableOpacity onPress={() => navigation.goBack()} className="mt-6">
+              <Ionicons name="arrow-back" size={24} color="#1e3a8a" />
+            </TouchableOpacity>
 
-                    {/* Phone Number */}
-                    <StyledView className="w-4/5 mt-4">
-                        <StyledView className="relative">
-                            <StyledTextInput
-                                placeholder="+66"
-                                placeholderTextColor="#cccccc"
-                                className="px-4 py-3 text-lg outline-none border-2 border-gray-400 dark:border-gray-300 rounded-full hover:border-gray-600 dark:hover:border-gray-500 duration-200 peer focus:border-indigo-600 dark:focus:border-indigo-400 bg-inherit text-black dark:text-white"
-                                value={phoneNumber}
-                                onChangeText={setPhoneNumber}
-                                keyboardType="phone-pad"
-                            />
-                            <StyledText className="absolute left-4 text-gray-400 dark:text-gray-300 -top-2 px-1 text-sm uppercase tracking-wide peer-focus:text-indigo-600 dark:peer-focus:text-indigo-400 pointer-events-none duration-200 peer-focus:text-sm peer-focus:-translate-y-5 bg-white dark:bg-black ml-2 peer-valid:text-sm peer-valid:-translate-y-5">
-                                เบอร์โทรศัพท์
-                            </StyledText>
-                        </StyledView>
-                    </StyledView>
+            <StyledView className="flex items-center mb-10">
+              <StyledText className="text-3xl font-bold text-[#1e3a8a] mt-6 mb-2">สร้างบัญชี</StyledText>
+              <StyledText className="text-base text-gray-400 mb-8">สร้างบัญชีของคุณเพื่อเริ่มต้นการใช้งาน</StyledText>
+            </StyledView>
 
-                    <StyledTouchableOpacity className="bg-gradient-to-r from-teal-400 to-blue-500 rounded-full py-3 px-3 mt-6 w-4/5 shadow-sm">
-                        <StyledText className="text-center text-white text-lg font-semibold">สร้างบัญชี</StyledText>
-                    </StyledTouchableOpacity>
+            <StyledView className="space-y-6">
+              <InputField label="ชื่อผู้ใช้" placeholder="ชื่อผู้ใช้ของคุณ" inputMode="text" value={username} onChangeText={setUsername} />
+              <InputField label="เพศ" placeholder="เพศของคุณ" inputMode="text" value={gender} onChangeText={setGender} />
+              <InputField
+                label="วันเกิด"
+                placeholder="เลือกวันเกิดของคุณ"
+                value={birthdate}
+                onChangeText={setBirthdate}
+                onPress={showDatePicker}
+                editable={false}
+              />
+              <InputField label="จังหวัด" placeholder="เลือกจังหวัดของคุณ" inputMode="text" value={province} onChangeText={setProvince} />
+              <InputField label="หมายเลขมือถือ" placeholder="+66" inputMode="tel" value={phone} onChangeText={setPhone} />
+            </StyledView>
 
-                    {showDatePicker && (
-                        <DateTimePicker
-                            value={birthdate}
-                            mode="date"
-                            display="calendar"
-                            onChange={onChangeBirthdate}
-                        />
-                    )}
+            <TouchableOpacity className="w-full mt-8">
+              <LinearGradient
+                colors={['#ec4899', '#f97316']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                className="rounded-full py-3 shadow-sm"
+              >
+                <StyledText className="text-center text-white text-lg font-semibold">ถัดไป</StyledText>
+              </LinearGradient>
+            </TouchableOpacity>
 
+            <DateTimePickerModal
+              isVisible={isDatePickerVisible}
+              mode="date"
+              onConfirm={handleConfirm}
+              onCancel={hideDatePicker}
+              maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
+            />
+          </StyledView>
+        </StyledSafeAreaView>
+      </KeyboardAvoidingView>
 
-                </StyledView>
-            </KeyboardAvoidingView>
-        </>
-    );
+    </>
+  );
 }
