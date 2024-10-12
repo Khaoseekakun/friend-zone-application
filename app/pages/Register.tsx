@@ -121,6 +121,7 @@ export default function Register() {
               mode="date"
               onConfirm={handleConfirm}
               onCancel={hideDatePicker}
+              locale='th-TH'
               maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
             />
           </StyledView>
