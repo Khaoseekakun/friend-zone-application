@@ -10,6 +10,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage'; // AsyncSt
 
 const Stack = createStackNavigator();
 
+
+
 export default function Index() {
     const [isShowingSplash, setIsShowingSplash] = React.useState(true);
     const [isLoggedIn, setIsLoggedIn] = React.useState(false);
