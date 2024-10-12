@@ -30,7 +30,7 @@ export default function AgreementScreen() {
 
     if (loading) {
         return (
-            <StyledView className="flex-1 justify-center items-center bg-white">
+            <StyledView className="flex-1 justify-center items-center bg-white dark:bg-black h-full duration-500">
                 <ActivityIndicator size="large" color="#0000ff" />
             </StyledView>
         );
@@ -38,42 +38,46 @@ export default function AgreementScreen() {
 
     if (error) {
         return (
-            <StyledView className="flex-1 justify-center items-center bg-white">
+            <StyledView className="flex-1 justify-center items-center bg-white dark:bg-black h-full duration-500">
                 <StyledText className="text-red-500">{error}</StyledText>
             </StyledView>
         );
     }
 
     return (
-        <StyledView className="flex-1 bg-white">
-            {/* Scrollable Policy Content */}
+        <StyledView className="flex-auto justify-center items-center duration-500 bg-white dark:bg-black h-full">
             <ScrollView className="flex-1 w-4/5 mt-6 self-center">
-                <StyledText className="text-xl font-bold text-gray-900 text-center">ยินดีต้อนรับสู่</StyledText>
-                <StyledText className="text-xl font-bold text-gray-900 text-center">Friend Zone</StyledText>
-                <StyledText className="text-base text-gray-400 text-center mt-1">โปรดอ่านเงื่อนไขและข้อตกลง</StyledText>
-    
-                {/* Display the policy content fetched from the API */}
+                {/* Title Section */}
+                <StyledText className="text-2xl font-bold text-gray-900 dark:text-white text-center duration-500">
+                    ยินดีต้อนรับสู่
+                </StyledText>
+                <StyledText className="text-2xl font-bold text-gray-900 dark:text-white text-center duration-500">
+                    Friend Zone
+                </StyledText>
+                <StyledText className="text-base text-gray-800 dark:text-white text-center mt-1 mb-5 duration-500">
+                    โปรดอ่านเงื่อนไขและข้อตกลง
+                </StyledText>
+
+                {/* Policy Content */}
                 {policyContent.map((item, index) => (
-                    <StyledText key={index} className="text-base text-gray-700 mt-4">
+                    <StyledText key={index} className="text-base text-gray-800 dark:text-white mt-4 duration-500">
                         {`${index + 1}. ${item}`}
                     </StyledText>
                 ))}
 
-                
-    
-            {/* Agree Button */}
-            <StyledTouchableOpacity
-                className="w-4/5 bg-gradient-to-r from-pink-500 to-orange-400 py-3 my-4 rounded-full self-center"
-                onPress={() => {
-                    // Handle the agree action here, such as navigating to the next screen
-                    console.log("User agreed to the terms");
-                }}
-                
-            >
-                <StyledText className="text-center text-white text-lg font-semibold">I AGREE</StyledText>
-            </StyledTouchableOpacity>
+                {/* Agree Button */}
+                <StyledTouchableOpacity
+                    className="w-4/5 bg-gradient-to-r from-pink-500 to-orange-400 py-3 my-4 rounded-full self-center duration-500 shadow-lg"
+                    onPress={() => {
+                        // Handle the agree action here
+                        console.log("User agreed to the terms");
+                    }}
+                >
+                    <StyledText className="text-center text-white text-lg font-semibold">
+                        I AGREE
+                    </StyledText>
+                </StyledTouchableOpacity>
             </ScrollView>
         </StyledView>
     );
-    
 }

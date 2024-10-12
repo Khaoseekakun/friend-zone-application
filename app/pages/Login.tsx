@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
-import { Ionicons } from '@expo/vector-icons'; // Import an icon for show/hide password
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import TopWaveLogin from '@/components/svg/wave/TopWaveLogin';
+
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -12,76 +15,123 @@ const StyledTouchableOpacity = styled(TouchableOpacity);
 
 export default function Login() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
-    const [isPasswordVisible, setIsPasswordVisible] = useState(false); // To toggle password visibility
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-    // Toggle password visibility
     const togglePasswordVisibility = () => {
         setIsPasswordVisible(!isPasswordVisible);
     };
 
-    return (
-        <StyledView className="flex-auto justify-center items-center bg-white">
-            <StyledText className="text-2xl font-bold text-gray-900">Friend Zone</StyledText>
-            <StyledText className="text-base text-gray-400 mt-1">ยินดีต้อนรับกลับ</StyledText>
+    const focuscolor = ['#235eff', '#8023ff', '#ff2323'];
+    const [phoneFocus, setPhoneFocus] = useState(false);
+    const [passwordFocus, setPasswordFocus] = useState(false);
 
-            {/* Email Input */}
-            <StyledView className="w-4/5 mt-6">
-                <StyledView className="relative">
-                    <StyledTextInput
-                        placeholder="อีเมลของคุณ"
-                        className="px-4 py-3 text-lg outline-none border-2 border-gray-400 rounded-full hover:border-gray-600 duration-200 peer focus:border-indigo-600 bg-inherit"
-                        value={email}
-                        onChangeText={setEmail}
-                    />
-                    <StyledText className="absolute left-4 text-gray-400 -top-2 px-1 text-sm uppercase tracking-wide peer-focus:text-indigo-600 pointer-events-none duration-200 peer-focus:text-sm peer-focus:-translate-y-5 bg-white ml-2 peer-valid:text-sm peer-valid:-translate-y-5">
-                        อีเมล
-                    </StyledText>
-                </StyledView>
+    return (
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+            <StyledView className="absolute left-0 w-full z-10">
+                <TopWaveLogin />
             </StyledView>
 
-            {/* Password Input with Show/Hide */}
-            <StyledView className="w-4/5 mt-6">
-                <StyledView className="relative">
-                    <StyledTextInput
-                        placeholder="รหัสผ่าน"
-                        className="px-4 py-3 text-lg outline-none border-2 border-gray-400 rounded-full hover:border-gray-600 duration-200 peer focus:border-indigo-600 bg-inherit"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry={!isPasswordVisible} // Toggle secureTextEntry based on state
-                    />
-                    <StyledText className="absolute left-4 text-gray-400 -top-2 px-1 text-sm uppercase tracking-wide peer-focus:text-indigo-600 pointer-events-none duration-200 peer-focus:text-sm peer-focus:-translate-y-5 bg-white ml-2 peer-valid:text-sm peer-valid:-translate-y-5">
+            <StyledView className="flex-auto justify-center items-center duration-500 bg-white dark:bg-black h-full">
+                <StyledText className="text-2xl font-bold text-gray-900 dark:text-white duration-500">Friend Zone</StyledText>
+                <StyledText className="text-base text-gray-800 dark:text-white mt-1 mb-5 duration-500">ยินดีต้อนรับกลับ</StyledText>
+
+                <StyledView className="relative w-4/5 mt-6">
+                    <LinearGradient
+                        colors={phoneFocus ? focuscolor : ['#ff2323', '#8023ff', '#235eff']}
+                        start={[0, 0]}
+                        end={[1, 0]}
+                        style={{ padding: 2, borderRadius: 50 }}
+                    >
+                        <StyledView className="bg-white dark:bg-black rounded-full">
+                            <StyledTextInput
+                                placeholder="0987654321"
+                                className="px-6 py-3 text-lg outline-none rounded-full bg-inherit text-black dark:text-white items-center duration-500"
+                                value={phone}
+                                onChangeText={setPhone}
+                                textContentType='telephoneNumber'
+                                inputMode='tel'
+                                onFocus={() => setPhoneFocus(true)}
+                                onBlur={() => setPhoneFocus(false)}
+                            />
+                        </StyledView>
+
+                    </LinearGradient>
+                    <StyledText className="absolute left-4 text-gray-800 dark:text-white -top-2 px-1 text-sm uppercase tracking-wide duration-200 bg-white dark:bg-black ml-2 peer-valid:text-sm peer-valid:-translate-y-5">
+                        เบอร์โทรศัพท์
+                    </StyledText>
+                </StyledView>
+
+                <StyledView className="w-4/5 mt-6">
+                    {/* LinearGradient component for the border */}
+                    <LinearGradient
+                        colors={passwordFocus ? focuscolor : ['#ff2323', '#8023ff', '#235eff']}
+                        start={[0, 0]}
+                        end={[1, 0]}
+                        style={{ padding: 2, borderRadius: 50 }}   // Border radius and padding for the input
+                    >
+                        {/* Inner View with background and input field */}
+                        <StyledView className="relative bg-white dark:bg-black rounded-full">
+                            <StyledTextInput
+                                placeholder="รหัสผ่าน"
+                                className="px-6 py-3 text-lg outline-none rounded-full bg-inherit text-black dark:text-white items-center"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry={!isPasswordVisible} // Toggle visibility based on state
+                                onFocus={() => setPasswordFocus(true)}
+                                onBlur={() => setPasswordFocus(false)}
+                            />
+                            <TouchableOpacity
+                                onPress={togglePasswordVisibility}
+                                className='absolute right-4 top-3'
+                            >
+                                <Ionicons
+                                    name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+                                    size={24}
+                                    color="gray"
+                                />
+                            </TouchableOpacity>
+                        </StyledView>
+                    </LinearGradient>
+
+                    <StyledText className="absolute left-4 text-gray-800 dark:text-white -top-2 px-1 text-sm uppercase tracking-wide duration-200 bg-white dark:bg-black ml-2 peer-valid:text-sm peer-valid:-translate-y-5">
                         รหัสผ่าน
                     </StyledText>
-
-                    {/* Button to show/hide password */}
-                    <TouchableOpacity
-                        onPress={togglePasswordVisibility}
-                        className='absolute right-4 top-4'
-                    >
-                        <Ionicons
-                            name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
-                            size={24}
-                            color="gray"
-                        />
-                    </TouchableOpacity>
                 </StyledView>
-            </StyledView>
 
-            {/* Forgot Password and Create Account */}
-            <StyledView className="flex-row justify-between w-4/5 mt-2">
-                <StyledTouchableOpacity>
-                    <StyledText className="text-blue-500 text-sm">ลืมรหัสผ่าน ?</StyledText>
-                </StyledTouchableOpacity>
-                <StyledTouchableOpacity onPress={() => navigation.navigate('Register')}>
-                    <StyledText className="text-gray-500 text-sm">ยังไม่มีบัญชี? สร้างบัญชี</StyledText>
-                </StyledTouchableOpacity>
-            </StyledView>
+                <StyledView className="flex-row justify-between w-4/6 mt-2">
+                    <StyledTouchableOpacity className='flex-row'>
+                        <StyledText className="text-black text-sm underline">ลืมรหัสผ่าน</StyledText><StyledText className="text-black text-sm"> ?</StyledText>
+                    </StyledTouchableOpacity>
+                    <StyledTouchableOpacity onPress={() => navigation.navigate('Register')}>
+                        <StyledText className="text-gray-500 text-sm">ยังไม่มีบัญชี? <StyledText className='text-black'>สร้างบัญชี</StyledText></StyledText>
+                    </StyledTouchableOpacity>
+                </StyledView>
 
-            <StyledTouchableOpacity className="bg-blue-600 rounded-full py-3 px-3 mt-6 w-4/5 shadow-sm">
-                <StyledText className="text-center text-white text-lg font-semibold">เข้าสู่ระบบ</StyledText>
-            </StyledTouchableOpacity>
-        </StyledView>
+
+
+                <StyledTouchableOpacity className="w-4/5 mt-20">
+                    <StyledView className="relative">
+                        <LinearGradient
+                            colors={['#ff2323', '#8023ff', '#235eff']}
+                            start={[0, 0]}
+                            end={[1, 0]}
+
+
+                            className='py-3 my-4 px-5 rounded-full self-center duration-500 shadow-lg w-full'
+                        >
+                            <StyledText className="text-center text-white text-lg font-semibold">
+                                เข้าสู่ระบบ
+                            </StyledText>
+                        </LinearGradient>
+                    </StyledView>
+                </StyledTouchableOpacity>
+
+            </StyledView>
+        </KeyboardAvoidingView>
     );
 }
