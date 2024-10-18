@@ -69,12 +69,15 @@ export default function Login() {
                     <StyledTouchableOpacity>
                         <StyledText className="text-blue-600">ลืมรหัสผ่าน?</StyledText>
                     </StyledTouchableOpacity>
-                    <StyledTouchableOpacity onPress={() => navigation.navigate('Register')}>
-                        <StyledText className="text-gray-500">ยังไม่มีบัญชี? <StyledText className="text-blue-600">สร้างบัญชี</StyledText></StyledText>
-                    </StyledTouchableOpacity>
+                    <StyledView className="flex-row items-center">
+                        <StyledText className='text-gray-500'>ยังไม่มีบัญชี</StyledText>
+                        <StyledTouchableOpacity onPress={() => navigation.navigate('Agreement', { nextScreen: 'Register' })}>
+                            <StyledText className='text-blue-600'>สร้างบัญชี</StyledText>
+                        </StyledTouchableOpacity>
+                    </StyledView>
                 </StyledView>
 
-                <TouchableOpacity className="w-full">
+                <TouchableOpacity className="w-full" onPress={() => navigation.navigate('HomeScreen')}>
                     <LinearGradient
                         colors={['#ec4899', '#f97316']}
                         start={{x: 0, y: 0}}

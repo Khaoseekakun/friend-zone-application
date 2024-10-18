@@ -19,7 +19,7 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ],
+, "components/Navigation.js"  ],
   "exclude": [
     "node_modules",
     "babel.config.js",

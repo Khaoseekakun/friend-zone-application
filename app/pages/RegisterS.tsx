@@ -106,31 +106,30 @@ export default function Register() {
       >
         <StyledSafeAreaView className="flex-1 bg-white">
           <StyledView className="flex-1 px-6">
-            <TouchableOpacity onPress={() => navigation.navigate('Login')} className="mt-6">
+            <TouchableOpacity onPress={() => navigation.goBack()} className="mt-6">
               <Ionicons name="arrow-back" size={24} color="#1e3a8a" />
             </TouchableOpacity>
 
             <StyledView className="flex items-center mb-10">
               <StyledText className="text-3xl font-bold text-[#1e3a8a] mt-6 mb-2">สร้างบัญชี</StyledText>
-              <StyledText className="text-base text-gray-400 mb-8">สร้างบัญชีของคุณเพื่อเริ่มต้นการใช้งาน</StyledText>
+              <StyledText className="text-base text-gray-400 mb-8">กรอกเบอร์มือถือและยืนยันเบอร์มือถือของคุณ</StyledText>
             </StyledView>
 
             <StyledView className="space-y-6">
-              <InputField label="ชื่อผู้ใช้" placeholder="ชื่อผู้ใช้ของคุณ" inputMode="text" value={username} onChangeText={setUsername} />
-              <InputField label="เพศ" placeholder="เพศของคุณ" inputMode="text" value={gender} onChangeText={setGender} />
-              <InputField
-                label="วันเกิด"
-                placeholder="เลือกวันเกิดของคุณ"
-                value={birthdate}
-                onChangeText={setBirthdate}
-                onPress={showDatePicker}
-                editable={false}
+              <InputField 
+                label="หมายเลขมือถือ" 
+                placeholder="+66" 
+                inputMode="tel" 
+                value={phone} 
+                onChangeText={setPhone}
+                buttonText="ยืนยัน"
+                onButtonPress={handlePhoneVerification}
               />
-              <InputField label="จังหวัด" placeholder="เลือกจังหวัดของคุณ" inputMode="text" value={province} onChangeText={setProvince} />
+              <InputField label="OTP" placeholder="รหัสยืนยัน" inputMode="tel" value={phone} onChangeText={setPhone} />
               
             </StyledView>
 
-            <TouchableOpacity className="w-full mt-8" onPress={() => navigation.navigate('RegisterS')}
+            <TouchableOpacity className="w-full mt-8" onPress={() => navigation.navigate('HomeScreen')}
             >
               <LinearGradient
                 colors={['#ec4899', '#f97316']}
