@@ -24,20 +24,10 @@ interface InputFieldProps {
   onButtonPress?: () => void;
 }
 
-const InputField: React.FC<InputFieldProps> = ({ 
-  label, 
-  placeholder, 
-  value, 
-  inputMode, 
-  onChangeText, 
-  onPress, 
-  editable = true, 
-  buttonText, 
-  onButtonPress 
-}) => (
-  <StyledView className="w-full mb-7">
+const InputField: React.FC<InputFieldProps> = ({ label, placeholder, value, inputMode, onChangeText, onPress, editable = true }) => (
+  <StyledView className="w-full mb-9">
     <StyledText className="text-sm text-gray-600 mb-2 ml-4 absolute -mt-3 bg-white z-50 px-2">{label}</StyledText>
-    <StyledView className="flex-row items-center">
+    <StyledView className="relative">
       <StyledTextInput
         placeholder={placeholder}
         className={`border border-gray-300 rounded-full py-4 px-4 text-gray-700 ${buttonText ? 'flex-1 mr-2' : 'w-full'}`}

@@ -23,13 +23,13 @@ export default function Login() {
     };
 
     return (
-        <StyledSafeAreaView className="flex-1 bg-white">
+        <StyledSafeAreaView className="flex-1 bg-white dark:bg-black">
             <StyledView className="flex-1 px-6 justify-center items-center">
-                <StyledText className="text-3xl font-bold text-[#1e3a8a] mb-2">Friend Zone</StyledText>
+                <StyledText className="text-3xl font-bold text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">Friend Zone</StyledText>
                 <StyledText className="text-lg text-gray-400 mb-20">ยินดีต้อนรับกลับ</StyledText>
 
                 <StyledView className="w-full mb-7">
-                    <StyledText className="text-sm text-gray-600 mb-2 ml-4 absolute -mt-3 bg-white z-50">อีเมล</StyledText>
+                    <StyledText className="text-sm text-gray-600 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black dark:text-white z-50 left-2">อีเมล</StyledText>
                     <StyledView className="relative">
                         <StyledTextInput
                             placeholder="ป้อนอีเมลของคุณ"
@@ -42,7 +42,7 @@ export default function Login() {
                 </StyledView>
 
                 <StyledView className="w-full mb-9">
-                    <StyledText className="text-sm text-gray-600 mb-2 ml-4 absolute -mt-3 bg-white z-50">รหัสผ่าน</StyledText>
+                    <StyledText className="text-sm text-gray-600 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black dark:text-white z-50 left-2">รหัสผ่าน</StyledText>
                     <StyledView className="relative">
                         <StyledTextInput
                             placeholder="ป้อนรหัสผ่านของคุณ"
