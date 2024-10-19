@@ -52,17 +52,17 @@ const InputField: React.FC<InputFieldProps> = ({
         <StyledView className="flex-row items-center">
             {isPicker && pickerItems && (
                 <StyledView className="w-full">
-                <RNPickerSelect
-                    
-                    onValueChange={onChangeText}
-                    items={pickerItems}
-                    value={value}
-                    placeholder={{ label: placeholder, value: null }}
-                    style={{
-                        inputIOS: { padding: 16, borderWidth: 1, borderRadius: 25, borderColor: '#ccc', color: '#333', width: '100%' },
-                        inputAndroid: { padding: 16, borderWidth: 1, borderRadius: 25, borderColor: '#ccc', color: '#333', width: '100%' }
-                    }}
-                />
+                    <RNPickerSelect
+
+                        onValueChange={onChangeText}
+                        items={pickerItems}
+                        value={value}
+                        placeholder={{ label: placeholder, value: null }}
+                        style={{
+                            inputIOS: { padding: 16, borderWidth: 1, borderRadius: 25, borderColor: '#ccc', color: '#333', width: '100%' },
+                            inputAndroid: { padding: 16, borderWidth: 1, borderRadius: 25, borderColor: '#ccc', color: '#333', width: '100%' }
+                        }}
+                    />
                 </StyledView>
             )}
 
@@ -89,7 +89,7 @@ const InputField: React.FC<InputFieldProps> = ({
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 0 }}
                                 className="rounded-full py-3 px-4">
-                                
+
                                 <StyledText className="text-white text-center">{buttonText}</StyledText>
                             </LinearGradient>
                         </TouchableOpacity>
@@ -159,7 +159,7 @@ export default function RegisterStepTwo() {
         try {
             // Adjusted GET request to send phone as query parameter
             const response = await axios.post(
-                'http://49.231.43.37:3000/api/otp',
+                'https://friendszone.app/api/otp',
                 { phone: phone },
                 {
                     headers: {
@@ -178,7 +178,7 @@ export default function RegisterStepTwo() {
             const cooldown = setInterval(() => {
                 setOtpButtonDisabled(false);
                 setCooldownMessage(`${cooldownTime}s`) // 120s 
-                if(cooldownTime <= 0){
+                if (cooldownTime <= 0) {
                     clearInterval(cooldown);
                     setCooldownMessage('')
                 }
@@ -196,77 +196,77 @@ export default function RegisterStepTwo() {
 
     const handleVerifyOTP = async () => {
         if (verifyPhone) {
-          const validationError = validateOTP(otp);
-          if (validationError) return alert(validationError);
-      
-          try {
-            const verificationResponse = await verifyOTP(phone, otp);
-            if (verificationResponse.status !== 200) return alert('ไม่สามารถตรวจสอบได้');
-            if (verificationResponse.data.status !== 'approved' || !verificationResponse.data.valid) {
-              return alert('รหัสยืนยันไม่ถูกต้อง');
+            const validationError = validateOTP(otp);
+            if (validationError) return alert(validationError);
+
+            try {
+                const verificationResponse = await verifyOTP(phone, otp);
+                if (verificationResponse.status !== 200) return alert('ไม่สามารถตรวจสอบได้');
+                if (verificationResponse.data.status !== 'approved' || !verificationResponse.data.valid) {
+                    return alert('รหัสยืนยันไม่ถูกต้อง');
+                }
+                setVerifyPhone(true);
+                await createCustomerAccount();
+                alert('สร้างบัญชีสำเร็จ');
+                navigation.navigate('Login');
+            } catch (error) {
+                handleError(error, 'ไม่สามารถตรวจสอบได้');
             }
-            setVerifyPhone(true);
-            await createCustomerAccount();
-            alert('สร้างบัญชีสำเร็จ');
-            navigation.navigate('Login');
-          } catch (error) {
-            handleError(error, 'ไม่สามารถตรวจสอบได้');
-          }
         } else {
-          try {
-            await createCustomerAccount();
-            alert('สร้างบัญชีสำเร็จ');
-            navigation.navigate('Login');
-          } catch (error) {
-            handleError(error, 'เกิดข้อผิดพลาดไม่สามารถเชื่อมต่อกับระบบได้');
-          }
+            try {
+                await createCustomerAccount();
+                alert('สร้างบัญชีสำเร็จ');
+                navigation.navigate('Login');
+            } catch (error) {
+                handleError(error, 'เกิดข้อผิดพลาดไม่สามารถเชื่อมต่อกับระบบได้');
+            }
         }
-      };
-      
-      const validateOTP = (otp : string) => {
+    };
+
+    const validateOTP = (otp: string) => {
         if (!otp) return 'กรุณากรอกรหัสยืนยัน';
         if (otp.length !== 6) return 'รหัสยืนยันต้องมี 6 หลัก';
         return null;
-      };
-      
-      // Verify the OTP with the backend
-      const verifyOTP = async (phone : string, otp : string) => {
-        return await axios.put('http://49.231.43.37:3000/api/otp', {
-          phone,
-          code: otp,
+    };
+
+    // Verify the OTP with the backend
+    const verifyOTP = async (phone: string, otp: string) => {
+        return await axios.put('https://friendszone.app/api/otp', {
+            phone,
+            code: otp,
         }, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `System ${API_SYSTEM_KEY}`,
-          },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `System ${API_SYSTEM_KEY}`,
+            },
         });
-      };
-      
-      // Create the customer account
-      const createCustomerAccount = async () => {
-        const response = await axios.post('http://49.231.43.37:3000/api/customer', {
-          username,
-          password,
-          phone,
-          gender,
-          province,
-          birthdate,
+    };
+
+    // Create the customer account
+    const createCustomerAccount = async () => {
+        const response = await axios.post('https://friendszone.app/api/customer', {
+            username,
+            password,
+            phone,
+            gender,
+            province,
+            birthdate,
         }, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `System ${API_SYSTEM_KEY}`,
             }
         });
-        
+
         console.log(response.data);
         if (response.data.status !== 200) throw new Error('ไม่สามารถสร้างบัญชีได้');
-      };
-      
-      // Handle errors and provide an alert
-      const handleError = (error : any, fallbackMessage : string) => {
+    };
+
+    // Handle errors and provide an alert
+    const handleError = (error: any, fallbackMessage: string) => {
         console.error(error);
         alert(fallbackMessage);
-      };
+    };
 
     return (
         <>
@@ -320,7 +320,7 @@ export default function RegisterStepTwo() {
                                 buttonText={`${cooldownTime > 0 ? cooldownMessage : 'รับ OTP'}`}
                                 maxLength={10}
                                 onButtonPress={handlePhoneVerification}
-                                disable={phone.length != 10 || otpButtonDisabled == true} 
+                                disable={phone.length != 10 || otpButtonDisabled == true}
                             />
 
                             {showOTP && (
@@ -342,7 +342,7 @@ export default function RegisterStepTwo() {
                                 end={{ x: 1, y: 0 }}
                                 className="rounded-full py-3 shadow-sm"
                             >
-                            <StyledText className="text-center text-white text-lg font-semibold">ถัดไป</StyledText>
+                                <StyledText className="text-center text-white text-lg font-semibold">ถัดไป</StyledText>
                             </LinearGradient>
                         </TouchableOpacity>
 
