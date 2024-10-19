@@ -4,7 +4,8 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   HomeScreen: undefined;
-  Agreement: undefined;
+  Agreement: { nextScreen: string }
+  RegisterStepTwo: { username: string, password: string}
 };
 
 export type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;

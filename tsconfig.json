@@ -1,6 +1,7 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "skipLibCheck": true,
     "strict": true,
     "paths": {
       "@/*": [
@@ -10,7 +11,6 @@
     "moduleResolution": "node",
     "jsx": "react",
     "esModuleInterop": true,
-    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true
   },
@@ -18,8 +18,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-, "components/Navigation.js"  ],
+    "expo-env.d.ts",
+    "components/Navigation.js",
+    "./env.d.ts"
+  ],
   "exclude": [
     "node_modules",
     "babel.config.js",
