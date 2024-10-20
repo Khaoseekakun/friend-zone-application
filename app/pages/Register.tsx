@@ -91,43 +91,46 @@ export default function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isUsernameValid, setIsUsernameValid] = useState(false);
+  const [isUsernameValid, setIsUsernameValid] = useState(false as boolean | null);
   const [isPasswordMatch, setIsPasswordMatch] = useState(true);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [error, setError] = useState('');
 
-  const handleCheckPassword = () => {
-    if (password !== confirmPassword) {
-      setIsPasswordMatch(false);
-    } else {
-      setIsPasswordMatch(true);
-    }
-  };
-  const togglePasswordVisibility = () => {
-    setIsPasswordVisible(!isPasswordVisible);
+  const handleCheckPassword = (value: string) => {
+    setConfirmPassword(value);
+    setIsPasswordMatch(password === value); // Simplified condition
   };
 
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible((prev) => !prev);
+  };
+
+  const onCheckUsername = (value : string) => {
+    const englishRegex = /^[A-Za-z0-9]*$/;
+    setIsUsernameValid(null)
+    if (!englishRegex.test(value)) {
+      //delete 1 letter from username
+      setUsername(value.slice(0, -1));
+      return;
+    }else{
+      setUsername(value);
+    }
+  }
 
   const handleCheckUsername = async () => {
+    
+
     try {
-      const userChecker = await axios.get(
-        `https://friendszone.app/api/customer?username=${username}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization:
-              `System ${API_SYSTEM_KEY}`,
-          },
-        }
-      );
-      if (userChecker.data.status === 200) {
-        setIsUsernameValid(true);
-      } else {
-        setIsUsernameValid(false);
-      }
+      const userChecker = await axios.get(`https://friendszone.app/api/customer?username=${username}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `System ${API_SYSTEM_KEY}`,
+        },
+      });
+      setIsUsernameValid(userChecker.data.status == 200);
     } catch (error: any) {
       console.log(error);
-      setError(error);
+      setError(error.message);
     }
   };
 
@@ -137,8 +140,13 @@ export default function Register() {
       return;
     }
 
-    if (!/^[a-zA-Z0-9]*$/.test(username)) {
+    if (!/^[A-Za-z0-9]*$/.test(username)) {
       alert('ชื่อผู้ใช้ต้องเป็นภาษาอังกฤษเท่านั้น');
+      return;
+    }
+
+    if (password.length < 6) {
+      alert('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
       return;
     }
 
@@ -147,14 +155,17 @@ export default function Register() {
       return;
     }
 
-    navigation.navigate('RegisterStepTwo', { username: username, password: password });
+    if (!isPasswordMatch) {
+      alert('รหัสผ่านไม่ตรงกัน');
+      return;
+    }
+
+    // Navigate to the next step
+    navigation.navigate('RegisterStepTwo', { username, password });
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <StyledSafeAreaView className="flex-1 bg-white h-full">
         <StyledView className="flex-1 px-6">
           <TouchableOpacity onPress={() => navigation.navigate('Login')} className="mt-6">
@@ -168,20 +179,19 @@ export default function Register() {
 
           <StyledView className="space-y-6">
             <InputField
-              label={isUsernameValid ? 'ชื่อผู้ใช้นี้ถูกใช้งานแล้ว' : 'ชื่อผู้ใช้'}
+              label={(username.length <= 2 && username.length !== 0) ? 'ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร' : isUsernameValid ? 'ชื่อผู้ใช้นี้ถูกใช้งานแล้ว' : 'ชื่อผู้ใช้'}
               placeholder="ชื่อผู้ใช้ของคุณ"
               value={username}
-              onChangeText={setUsername}
+              onChangeText={onCheckUsername}
               onBlur={handleCheckUsername}
-              wrong={isUsernameValid}
+              wrong={isUsernameValid !== null && isUsernameValid}
             />
 
             <InputField
-              label='รหัสผ่าน'
+              label={(password.length <= 5 && password.length !== 0) ? 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' : 'รหัสผ่าน'}
               placeholder="รหัสผ่าน"
               value={password}
               onChangeText={setPassword}
-              onBlur={handleCheckPassword}
               secureTextEntry={!isPasswordVisible}
               togglePasswordVisibility={togglePasswordVisibility}
             />
@@ -190,17 +200,16 @@ export default function Register() {
               label={isPasswordMatch ? 'ยืนยันรหัสผ่าน' : 'รหัสผ่านไม่ตรงกัน'}
               placeholder="ยืนยันรหัสผ่าน"
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              onBlur={handleCheckPassword}
+              onChangeText={handleCheckPassword}
               secureTextEntry={!isPasswordVisible}
               togglePasswordVisibility={togglePasswordVisibility}
               wrong={!isPasswordMatch}
             />
           </StyledView>
 
-          <TouchableOpacity className="w-full mt-8" onPress={handleRegister} disabled={(!isPasswordMatch || isUsernameValid)}>
+          <TouchableOpacity className="w-full mt-8" onPress={handleRegister} disabled={!isPasswordMatch || isUsernameValid || isUsernameValid == null}>
             <LinearGradient
-              colors={(!isPasswordMatch || isUsernameValid) ? ['#ccc', '#ccc'] : ['#ec4899', '#f97316']}
+              colors={!isPasswordMatch || isUsernameValid || isUsernameValid == null ? ['#ccc', '#ccc'] : ['#ec4899', '#f97316']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               className="rounded-full py-3 shadow-sm"
@@ -208,7 +217,6 @@ export default function Register() {
               <StyledText className="text-center text-white text-lg font-semibold">ถัดไป</StyledText>
             </LinearGradient>
           </TouchableOpacity>
-
         </StyledView>
       </StyledSafeAreaView>
     </KeyboardAvoidingView>

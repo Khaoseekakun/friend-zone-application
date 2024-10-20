@@ -1,25 +1,86 @@
-import React, { useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Animated, ActivityIndicator, Alert } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Updates from 'expo-updates'
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledSafeAreaView = styled(SafeAreaView);
+const API_SYSTEM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiTG9naW4iLCJzeXN0ZW0iOmZhbHNlLCJwZXJtaXNzaW9ucyI6eyJMb2dpbiI6dHJ1ZX19.K2u_ZzJF_uekLqbmAiuMWZgmisGepYjATVrF-Ks8OX0';
 
 export default function Login() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const scaleValue = useRef(new Animated.Value(1)).current; 
 
     const togglePasswordVisibility = () => {
         setIsPasswordVisible(!isPasswordVisible);
+    };
+
+    const loginHandler = async () => {
+        setLoading(true);
+        try {
+            const loginData = await axios.post('https://friendszone.app/api/oauth/login', {
+                phoneNumber: phone,
+                password: password
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Login ${API_SYSTEM_KEY}`
+                }
+            });
+    
+            if (loginData.data.data.code !== "LOGIN_SUCCESS") {
+                return Alert.alert("ไม่สำเร็จ", "เบอร์โทรศัพท์หรือรหัสผ่านไม่ถูกต้อง", [{ text: "ลองอีกครั้ง" }]);
+            }
+    
+            const token = loginData?.data?.data.data.token;
+    
+            if (token) {
+                try {
+                    await AsyncStorage.setItem('userToken', token);
+                    await Updates.reloadAsync(); 
+                } catch (error) {
+                    console.error('Failed to store the token:', error);
+                    return Alert.alert("ไม่สำเร็จ", "เกิดข้อผิดพลาดไม่สามารถบันทึกข้อมูลเพื่อนเข้าสู่ระบบได้", [{ text: "ลองอีกครั้ง" }]);
+                }
+            } else {
+                return Alert.alert("ไม่สำเร็จ", "เบอร์โทรศัพท์หรือรหัสผ่านไม่ถูกต้อง", [{ text: "ลองอีกครั้ง" }]);
+            }
+        } catch (error) {
+            console.log(error);
+            return Alert.alert("ไม่สำเร็จ", "เบอร์โทรศัพท์หรือรหัสผ่านไม่ถูกต้อง", [{ text: "ลองอีกครั้ง" }]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handlePressIn = () => {
+        Animated.spring(scaleValue, {
+            toValue: 0.95,
+            friction: 3,
+            tension: 40,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const handlePressOut = () => {
+        Animated.spring(scaleValue, {
+            toValue: 1,
+            friction: 3,
+            tension: 40,
+            useNativeDriver: true,
+        }).start();
     };
 
     return (
@@ -27,44 +88,41 @@ export default function Login() {
             <StyledView className="flex-1 px-6 justify-center items-center">
                 <StyledText className="text-3xl font-bold text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">Friend Zone</StyledText>
                 <StyledText className="text-lg text-gray-400 mb-20">ยินดีต้อนรับกลับ</StyledText>
-
                 <StyledView className="w-full mb-7">
-                    <StyledText className="text-sm text-gray-600 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black dark:text-white z-50 left-2">อีเมล</StyledText>
-                    <StyledView className="relative">
-                        <StyledTextInput
-                            placeholder="ป้อนอีเมลของคุณ"
-                            className="border border-gray-300 rounded-full py-4 px-4 text-gray-700 w-full"
-                            value={email}
-                            onChangeText={setEmail}
-                            placeholderTextColor="#9CA3AF"
-                        />
-                    </StyledView>
+                    <StyledText className="text-sm text-gray-600 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black dark:text-white z-50 left-2">เบอร์โทรศัพท์</StyledText>
+                    <StyledTextInput
+                        placeholder="ป้อนเบอร์โทรศัพท์"
+                        className="border border-gray-300 rounded-full py-4 px-4 text-gray-700 w-full"
+                        value={phone}
+                        onChangeText={setPhone}
+                        placeholderTextColor="#9CA3AF"
+                        textContentType='telephoneNumber'
+                        inputMode='tel'
+                    />
                 </StyledView>
-
-                <StyledView className="w-full mb-9">
+                <StyledView className="w-full mb-3">
                     <StyledText className="text-sm text-gray-600 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black dark:text-white z-50 left-2">รหัสผ่าน</StyledText>
-                    <StyledView className="relative">
-                        <StyledTextInput
-                            placeholder="ป้อนรหัสผ่านของคุณ"
-                            className="border border-gray-300 rounded-full py-4 px-4 text-gray-700 w-full pr-12"
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry={!isPasswordVisible}
-                            placeholderTextColor="#9CA3AF"
+                    <StyledTextInput
+                        placeholder="ป้อนรหัสผ่านของคุณ"
+                        className="border border-gray-300 rounded-full py-4 px-4 text-gray-700 w-full pr-12"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!isPasswordVisible}
+                        placeholderTextColor="#9CA3AF"
+                    />
+                    <TouchableOpacity
+                        onPress={togglePasswordVisibility}
+                        className="absolute right-4 top-3"
+                    >
+                        <Ionicons
+                            name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+                            size={24}
+                            color="gray"
                         />
-                        <TouchableOpacity
-                            onPress={togglePasswordVisibility}
-                            className="absolute right-4 top-3"
-                        >
-                            <Ionicons
-                                name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
-                                size={24}
-                                color="gray"
-                            />
-                        </TouchableOpacity>
-                    </StyledView>
+                    </TouchableOpacity>
                 </StyledView>
 
+                {/* Create Account */}
                 <StyledView className="flex-row justify-between w-full mb-20">
                     <StyledTouchableOpacity>
                         <StyledText className="text-blue-600">ลืมรหัสผ่าน?</StyledText>
@@ -77,15 +135,27 @@ export default function Login() {
                     </StyledView>
                 </StyledView>
 
-                <TouchableOpacity className="w-full" onPress={() => navigation.navigate('HomeScreen')}>
-                    <LinearGradient
-                        colors={['#ec4899', '#f97316']}
-                        start={{x: 0, y: 0}}
-                        end={{x: 1, y: 0}}
-                        className="rounded-full py-3 shadow-sm"
-                    >
-                        <StyledText className="text-center text-white text-lg font-semibold">เข้าสู่ระบบ</StyledText>
-                    </LinearGradient>
+                <TouchableOpacity
+                    className="w-full"
+                    onPressIn={handlePressIn}
+                    onPressOut={handlePressOut}
+                    onPress={loginHandler}
+                    disabled={loading} 
+                >
+                    <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+                        <LinearGradient
+                            colors={['#ec4899', '#f97316']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            className="rounded-full py-3 shadow-sm"
+                        >
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <StyledText className="text-center text-white text-lg font-semibold">เข้าสู่ระบบ</StyledText>
+                            )}
+                        </LinearGradient>
+                    </Animated.View>
                 </TouchableOpacity>
             </StyledView>
         </StyledSafeAreaView>

@@ -1,21 +1,36 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import Navigation from "@/components/Navigation";
+import React from "react";
+import { View, Text } from "react-native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { styled } from "nativewind";
+import Profile from "../screen/Profile";
+
+import { Navigation } from "@/components/Menu"; 
+import { HeaderApp } from "@/components/Header";
+import Message from "../screen/Message";
+import Setting from "../screen/Setting";
+
+const StyledView = styled(View);
+const StyledText = styled(Text);
+
+const Tab = createBottomTabNavigator();
 
 export default function HomeScreen() {
-    return (
-        <View style={styles.container}>
-            <Text>Welcome to Friend Zone</Text>
-            <Navigation/>
-        </View>
-    );
-}
+  return (
+    <StyledView className="flex-1 bg-gray-200">
+      <HeaderApp />
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#FFF",
-    },
-});
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false, 
+        }}
+        tabBar={() => null} 
+      >
+        <Tab.Screen name="ProfileTab" component={Profile} />
+        <Tab.Screen name="MessageTab" component={Message} />
+        <Tab.Screen name="SettingTab" component={Setting} />
+      </Tab.Navigator>
+
+      <Navigation />
+    </StyledView>
+  );
+}

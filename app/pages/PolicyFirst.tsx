@@ -2,15 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { styled } from 'nativewind';
 import axios from 'axios';
-import { useNavigation, NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
+import { useNavigation, NavigationProp} from '@react-navigation/native';
 import { RootStackParamList } from '../../types'; // Adjust the import path as needed
 import { LinearGradient } from 'expo-linear-gradient';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-
-type AgreementScreenRouteProp = RouteProp<RootStackParamList, 'Agreement'>;
 
 export default function AgreementScreen() {
     const [policyContent, setPolicyContent] = useState<string[]>([]);
@@ -61,12 +58,6 @@ export default function AgreementScreen() {
             <StyledText className="text-base text-gray-400 text-center mt-1">โปรดอ่านเงื่อนไขและข้อตกลง</StyledText>
 
             <ScrollView className="flex-1 w-4/5 mt-6 self-center">
-                {policyContent.map((item, index) => (
-                    <StyledText key={index} className="text-base text-gray-700 mt-4">
-                        {`${index + 1}. ${item}`}
-                    </StyledText>
-                ))}
-
                 {policyContent.map((item, index) => (
                     <StyledText key={index} className="text-base text-gray-700 mt-4">
                         {`${index + 1}. ${item}`}

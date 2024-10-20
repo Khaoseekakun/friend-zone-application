@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, InputModeOptions } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, InputModeOptions, Alert, Animated, ActivityIndicator } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
@@ -30,6 +30,8 @@ interface InputFieldProps {
     inputMode?: InputModeOptions;
     maxLength?: number;
     disable?: boolean;
+    onBlur?: () => void;
+    wrong?: boolean;
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -45,10 +47,12 @@ const InputField: React.FC<InputFieldProps> = ({
     isPicker,
     pickerItems,
     maxLength,
-    disable
+    disable,
+    onBlur,
+    wrong
 }) => (
     <StyledView className="w-full mb-7">
-        <StyledText className="text-sm text-gray-600 mb-2 ml-4 absolute -mt-3 bg-white z-50 px-2">{label}</StyledText>
+        <StyledText className={`text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600'} mb-2 ml-4 absolute -mt-3 bg-white z-50 px-2`}>{label}</StyledText>
         <StyledView className="flex-row items-center">
             {isPicker && pickerItems && (
                 <StyledView className="w-full">
@@ -59,9 +63,27 @@ const InputField: React.FC<InputFieldProps> = ({
                         value={value}
                         placeholder={{ label: placeholder, value: null }}
                         style={{
-                            inputIOS: { padding: 16, borderWidth: 1, borderRadius: 25, borderColor: '#ccc', color: '#333', width: '100%' },
-                            inputAndroid: { padding: 16, borderWidth: 1, borderRadius: 25, borderColor: '#ccc', color: '#333', width: '100%' }
+                            inputIOS: {
+                                padding: 16,
+                                borderWidth: 1,
+                                borderRadius: 25,
+                                borderColor: '#ccc',
+                                color: '#333',
+                                width: '100%',
+                                backgroundColor: '#fff'
+                            },
+                            inputAndroid: {
+                                padding: 16,
+                                borderWidth: 1,
+                                borderRadius: 25,
+                                borderColor: '#ccc',
+                                color: '#333',
+                                width: '100%',
+                                backgroundColor: '#fff',  
+                            },
+
                         }}
+
                     />
                 </StyledView>
             )}
@@ -70,7 +92,7 @@ const InputField: React.FC<InputFieldProps> = ({
                 <>
                     <StyledTextInput
                         placeholder={placeholder}
-                        className={`border border-gray-300 rounded-full py-4 px-4 text-gray-700 ${buttonText ? 'flex-1 mr-2' : 'w-full'}`}
+                        className={`border ${wrong == true ? 'border-red-500' : 'border-gray-300'} rounded-full py-4 px-4 ${wrong == true ? 'text-red-500' : 'text-gray-700'} ${buttonText ? 'flex-1 mr-2' : 'w-full'}`}
                         value={value}
                         onChangeText={onChangeText}
                         placeholderTextColor="#9CA3AF"
@@ -78,6 +100,8 @@ const InputField: React.FC<InputFieldProps> = ({
                         onPressIn={onPress}
                         inputMode={inputMode}
                         maxLength={maxLength}
+                        onBlur={onBlur}
+                        enterKeyHint='done'
                     />
                     {buttonText && (
                         <TouchableOpacity
@@ -113,10 +137,12 @@ export default function RegisterStepTwo() {
     const [province, setProvince] = useState('');
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [otpButtonDisabled, setOtpButtonDisabled] = useState(false);
-    const [isOtpButtonLoading, setOtpButtonLoading] = useState(false);
     const [cooldownMessage, setCooldownMessage] = useState('');
     const [cooldownTime, setCooldown] = useState(0);
     const [verifyPhone, setVerifyPhone] = useState(false);
+    const [isPhoneValid, setIsPhoneValid] = useState(null as boolean | null);
+    const [loading, setLoading] = useState(false);
+    const scaleValue = useRef(new Animated.Value(1)).current;
 
     const route = useRoute<RegisterStepTwoRouteProp>();
 
@@ -142,6 +168,34 @@ export default function RegisterStepTwo() {
         hideDatePicker();
     };
 
+
+    const handlePhoneChange = (text: string) => {
+        setPhone(text);
+        setIsPhoneValid(null);
+    }
+
+    const handleCheckPhone = async () => {
+        try {
+            const userChecker = await axios.get(
+                `https://friendszone.app/api/customer?phone=${phone}`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization:
+                            `System ${API_SYSTEM_KEY}`,
+                    },
+                }
+            );
+            if (userChecker.data.status === 200) {
+                setIsPhoneValid(true);
+            } else {
+                setIsPhoneValid(false);
+            }
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+
     const genderOptions = [
         { label: 'ชาย', value: 'ชาย' },
         { label: 'หญิง', value: 'หญิง' },
@@ -151,10 +205,10 @@ export default function RegisterStepTwo() {
         { label: 'นครราชสีมา', value: 'นครราชสีมา' }
     ];
     const handlePhoneVerification = async () => {
-        if (!phone) return alert('กรุณากรอกหมายเลขมือถือ');
-        if (!phone.match(/^0[0-9]{9}$/)) return alert('กรุณากรอกหมายเลขมือถือให้ถูกต้อง');
-        if (!phone.startsWith('0')) return alert('หมายเลขมือถือต้องขึ้นต้นด้วย 0');
-        if (phone.length !== 10) return alert('หมายเลขมือถือต้องมี 10 หลัก');
+        if (!phone) return Alert.alert("เตือน", "กรุณากรอกหมายเลขมือถือ", [{ text: "ตกลง" }]);
+        if (!phone.match(/^0[0-9]{9}$/)) return Alert.alert("เตือน", "หมายเลขมือถือต้องขึ้นต้นด้วย 0 และมี 10 หลัก", [{ text: "ตกลง" }]);
+        if (!phone.startsWith('0')) return Alert.alert("เตือน", "หมายเลขมือถือต้องขึ้นต้นด้วย 0", [{ text: "ตกลง" }]);
+        if (phone.length !== 10) return Alert.alert("เตือน", "หมายเลขมือถือต้องมี 10 หลัก", [{ text: "ตกลง" }]);
 
         try {
             // Adjusted GET request to send phone as query parameter
@@ -168,9 +222,8 @@ export default function RegisterStepTwo() {
                     }
                 }
             );
-            if (response.data.status !== 200) return alert('เกิดข้อผิดพลาดในการส่ง OTP');
+            if (response.data.status !== 200) return Alert.alert("เตือน", "ไม่สามารถส่ง OTP ได้", [{ text: "ตกลง" }]);
 
-            //make otp cooldown 2 minutes
             setOtpButtonDisabled(true);
             //message otp cooldown
             setCooldown(120)
@@ -188,38 +241,44 @@ export default function RegisterStepTwo() {
 
             setShowOTP(true);
         } catch (error) {
-            alert('เกิดข้อผิดพลาดในการส่ง OTP');
+            Alert.alert("เตือน", "ไม่สามารถส่ง OTP ได้", [{ text: "ตกลง" }]);
             console.error(error);
         }
     };
 
 
     const handleVerifyOTP = async () => {
-        if (verifyPhone) {
-            const validationError = validateOTP(otp);
-            if (validationError) return alert(validationError);
+        setLoading(true);
+        try {
+            if (otp == '') return Alert.alert("เตือน", "กรุณากรอกรหัสยืนยัน", [{ text: "ตกลง" }]);
+            if (verifyPhone == false) {
+                const validationError = validateOTP(otp);
+                if (validationError) return Alert.alert("เตือน", validationError, [{ text: "ตกลง" }]);
 
-            try {
-                const verificationResponse = await verifyOTP(phone, otp);
-                if (verificationResponse.status !== 200) return alert('ไม่สามารถตรวจสอบได้');
-                if (verificationResponse.data.status !== 'approved' || !verificationResponse.data.valid) {
-                    return alert('รหัสยืนยันไม่ถูกต้อง');
+                try {
+                    const verificationResponse = await verifyOTP(phone, otp);
+                    if (verificationResponse.status !== 200) return Alert.alert("เตือน", "รหัสยืนยันไม่ถูกต้อง", [{ text: "ตกลง" }]);
+                    if (verificationResponse.data.status !== 'approved' || !verificationResponse.data.valid) {
+                        return Alert.alert("เตือน", "รหัสยืนยันไม่ถูกต้อง", [{ text: "ตกลง" }]);
+                    } else {
+
+                        setVerifyPhone(true);
+                        await createCustomerAccount();
+                        Alert.alert("สำเร็จ", "สร้างบัญชีสำเร็จ", [{ text: "ตกลง", onPress: () => navigation.navigate('Login') }]);
+                    }
+                } catch (error) {
+                    handleError(error, 'ไม่สามารถตรวจสอบได้');
                 }
-                setVerifyPhone(true);
-                await createCustomerAccount();
-                alert('สร้างบัญชีสำเร็จ');
-                navigation.navigate('Login');
-            } catch (error) {
-                handleError(error, 'ไม่สามารถตรวจสอบได้');
+            } else {
+                try {
+                    await createCustomerAccount();
+                    Alert.alert("สำเร็จ", "สร้างบัญชีสำเร็จ", [{ text: "ตกลง", onPress: () => navigation.navigate('Login') }]);
+                } catch (error) {
+                    handleError(error, 'เกิดข้อผิดพลาดไม่สามารถเชื่อมต่อกับระบบได้');
+                }
             }
-        } else {
-            try {
-                await createCustomerAccount();
-                alert('สร้างบัญชีสำเร็จ');
-                navigation.navigate('Login');
-            } catch (error) {
-                handleError(error, 'เกิดข้อผิดพลาดไม่สามารถเชื่อมต่อกับระบบได้');
-            }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -264,7 +323,6 @@ export default function RegisterStepTwo() {
 
     // Handle errors and provide an alert
     const handleError = (error: any, fallbackMessage: string) => {
-        console.error(error);
         alert(fallbackMessage);
     };
 
@@ -312,15 +370,18 @@ export default function RegisterStepTwo() {
 
                         <StyledView className="space-y-6">
                             <InputField
-                                label="หมายเลขมือถือ"
+                                label={`${isPhoneValid ? 'เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว' : 'เบอร์โทรศัพท์'}`}
                                 placeholder="+66"
                                 inputMode="tel"
                                 value={phone}
-                                onChangeText={setPhone}
+                                onBlur={handleCheckPhone}
+                                onChangeText={handlePhoneChange}
                                 buttonText={`${cooldownTime > 0 ? cooldownMessage : 'รับ OTP'}`}
                                 maxLength={10}
                                 onButtonPress={handlePhoneVerification}
-                                disable={phone.length != 10 || otpButtonDisabled == true}
+                                disable={isPhoneValid != false || phone.length != 10 || otpButtonDisabled == true}
+                                wrong={(isPhoneValid != null) && (isPhoneValid && phone.length == 10)}
+
                             />
 
                             {showOTP && (
@@ -336,14 +397,20 @@ export default function RegisterStepTwo() {
                         </StyledView>
 
                         <TouchableOpacity className="w-full mt-8" onPress={() => handleVerifyOTP()}>
-                            <LinearGradient
-                                colors={['#ec4899', '#f97316']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 0 }}
-                                className="rounded-full py-3 shadow-sm"
-                            >
-                                <StyledText className="text-center text-white text-lg font-semibold">ถัดไป</StyledText>
-                            </LinearGradient>
+                            <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+                                <LinearGradient
+                                    colors={['#ec4899', '#f97316']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    className="rounded-full py-3 shadow-sm"
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator size="small" color="#fff" />
+                                    ) : (
+                                        <StyledText className="text-center text-white text-lg font-semibold">ถัดไป</StyledText>
+                                    )}
+                                </LinearGradient>
+                            </Animated.View>
                         </TouchableOpacity>
 
                         <DateTimePickerModal
