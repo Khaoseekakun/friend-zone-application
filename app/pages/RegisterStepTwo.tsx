@@ -233,6 +233,8 @@ export default function RegisterStepTwo() {
                 if (cooldownTime <= 0) {
                     clearInterval(cooldown);
                     setCooldownMessage('')
+                }else{
+                    setCooldown(cooldownTime - 1)
                 }
             }, 1000);
 
@@ -256,8 +258,9 @@ export default function RegisterStepTwo() {
 
                 try {
                     const verificationResponse = await verifyOTP(phone, otp);
+                    console.log(verificationResponse.data)
                     if (verificationResponse.status !== 200) return Alert.alert("เตือน", "รหัสยืนยันไม่ถูกต้อง", [{ text: "ตกลง" }]);
-                    if (verificationResponse.data.status !== 'approved' || !verificationResponse.data.valid) {
+                    if (verificationResponse.data.data.status !== 'approved' || !verificationResponse.data.data.valid) {
                         return Alert.alert("เตือน", "รหัสยืนยันไม่ถูกต้อง", [{ text: "ตกลง" }]);
                     } else {
 
@@ -375,7 +378,7 @@ export default function RegisterStepTwo() {
                             value={phone}
                             onBlur={handleCheckPhone}
                             onChangeText={handlePhoneChange}
-                            buttonText={`${cooldownTime > 0 ? cooldownMessage : 'รับ OTP'}`}
+                            buttonText={`${cooldownTime > 0 ? `${cooldownMessage}` : 'รับ OTP'}`}
                             maxLength={10}
                             onButtonPress={handlePhoneVerification}
                             disable={isPhoneValid != false || phone.length != 10 || otpButtonDisabled == true}
