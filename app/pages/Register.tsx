@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
@@ -105,20 +105,20 @@ export default function Register() {
     setIsPasswordVisible((prev) => !prev);
   };
 
-  const onCheckUsername = (value : string) => {
+  const onCheckUsername = (value: string) => {
     const englishRegex = /^[A-Za-z0-9]*$/;
     setIsUsernameValid(null)
     if (!englishRegex.test(value)) {
       //delete 1 letter from username
       setUsername(value.slice(0, -1));
       return;
-    }else{
+    } else {
       setUsername(value);
     }
   }
 
   const handleCheckUsername = async () => {
-    
+
 
     try {
       const userChecker = await axios.get(`https://friendszone.app/api/customer?username=${username}`, {
@@ -165,19 +165,22 @@ export default function Register() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+
       <StyledSafeAreaView className="flex-1 bg-white h-full">
-        <StyledView className="flex-1 px-6">
-          <TouchableOpacity onPress={() => navigation.navigate('Login')} className="mt-6">
-            <Ionicons name="arrow-back" size={24} color="#1e3a8a" />
-          </TouchableOpacity>
 
-          <StyledView className="flex items-center mb-10">
-            <StyledText className="text-3xl font-bold text-[#1e3a8a] mt-6 mb-2">สร้างบัญชี</StyledText>
-            <StyledText className="text-base text-gray-400 mb-8">สร้างบัญชีของคุณเพื่อเริ่มต้นการใช้งาน</StyledText>
-          </StyledView>
+      <StyledView className="flex-1 px-6">
+        <TouchableOpacity onPress={() => navigation.navigate('Login')} className="mt-6">
+          <Ionicons name="arrow-back" size={24} color="#1e3a8a" />
+        </TouchableOpacity>
 
-          <StyledView className="space-y-6">
+        <StyledView className="flex items-center">
+          <StyledText className="text-3xl font-bold text-[#1e3a8a] mt-6 mb-2">สร้างบัญชี</StyledText>
+          <StyledText className="text-base text-gray-400">สร้างบัญชีของคุณเพื่อเริ่มต้นการใช้งาน</StyledText>
+        </StyledView>
+
+        <StyledView className="flex-1 top-8">
+
+          <StyledView className="space-y-6 ">
             <InputField
               label={(username.length <= 2 && username.length !== 0) ? 'ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร' : isUsernameValid ? 'ชื่อผู้ใช้นี้ถูกใช้งานแล้ว' : 'ชื่อผู้ใช้'}
               placeholder="ชื่อผู้ใช้ของคุณ"
@@ -207,7 +210,7 @@ export default function Register() {
             />
           </StyledView>
 
-          <TouchableOpacity className="w-full mt-8" onPress={handleRegister} disabled={!isPasswordMatch || isUsernameValid || isUsernameValid == null}>
+          <TouchableOpacity className="w-full " onPress={handleRegister} disabled={!isPasswordMatch || isUsernameValid || isUsernameValid == null}>
             <LinearGradient
               colors={!isPasswordMatch || isUsernameValid || isUsernameValid == null ? ['#ccc', '#ccc'] : ['#ec4899', '#f97316']}
               start={{ x: 0, y: 0 }}
@@ -218,7 +221,7 @@ export default function Register() {
             </LinearGradient>
           </TouchableOpacity>
         </StyledView>
+      </StyledView>
       </StyledSafeAreaView>
-    </KeyboardAvoidingView>
   );
 }

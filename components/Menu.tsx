@@ -52,7 +52,7 @@ export const Menu = ({ current }: { current: string }) => {
 };
 
 export const Navigation = () => {
-    const navigation = useNavigation<NavigationProp<any>>(); // Get navigation object from React Navigation
+    const navigation = useNavigation<NavigationProp<any>>(); 
     const Menus = [
         { name: "Home", icon: "home-outline", active: "home", screen: "HomeTab", iconType: "Ionicons" },
         { name: "Search", icon: "search-outline", active: "search-sharp", screen: "SearchTab", iconType: "Ionicons" },

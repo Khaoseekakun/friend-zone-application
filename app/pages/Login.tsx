@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Animated, ActivityIndicator, Alert } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Animated, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
@@ -84,10 +84,15 @@ export default function Login() {
     };
 
     return (
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
         <StyledSafeAreaView className="flex-1 bg-white dark:bg-black">
-            <StyledView className="flex-1 px-6 justify-center items-center">
+            <StyledView className="flex-1 px-6 justify-center items-center -top-10">
                 <StyledText className="text-3xl font-bold text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">Friend Zone</StyledText>
-                <StyledText className="text-lg text-gray-400 mb-20">ยินดีต้อนรับกลับ</StyledText>
+                <StyledText className="text-lg text-gray-400 mb-8">ยินดีต้อนรับกลับ</StyledText>
+
                 <StyledView className="w-full mb-7">
                     <StyledText className="text-sm text-gray-600 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black dark:text-white z-50 left-2">เบอร์โทรศัพท์</StyledText>
                     <StyledTextInput
@@ -98,6 +103,7 @@ export default function Login() {
                         placeholderTextColor="#9CA3AF"
                         textContentType='telephoneNumber'
                         inputMode='tel'
+                        enterKeyHint='done'
                     />
                 </StyledView>
                 <StyledView className="w-full mb-3">
@@ -123,7 +129,7 @@ export default function Login() {
                 </StyledView>
 
                 {/* Create Account */}
-                <StyledView className="flex-row justify-between w-full mb-20">
+                <StyledView className="flex-row justify-between w-full mb-10">
                     <StyledTouchableOpacity>
                         <StyledText className="text-blue-600">ลืมรหัสผ่าน?</StyledText>
                     </StyledTouchableOpacity>
@@ -136,7 +142,7 @@ export default function Login() {
                 </StyledView>
 
                 <TouchableOpacity
-                    className="w-full"
+                    className="w-full duration-200"
                     onPressIn={handlePressIn}
                     onPressOut={handlePressOut}
                     onPress={loginHandler}
@@ -159,5 +165,6 @@ export default function Login() {
                 </TouchableOpacity>
             </StyledView>
         </StyledSafeAreaView>
+        </KeyboardAvoidingView>
     );
 }
