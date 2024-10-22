@@ -8,6 +8,7 @@ import { Navigation } from "@/components/Menu";
 import { HeaderApp } from "@/components/Header";
 import Message from "../screen/Message";
 import Setting from "../screen/Setting";
+import Feeds from "../screen/Feeds";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -25,6 +26,7 @@ export default function HomeScreen() {
         }}
         tabBar={() => null} 
       >
+        <Tab.Screen name="FeedsTab" component={Feeds} />
         <Tab.Screen name="ProfileTab" component={Profile} />
         <Tab.Screen name="MessageTab" component={Message} />
         <Tab.Screen name="SettingTab" component={Setting} />

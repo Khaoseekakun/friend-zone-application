@@ -54,7 +54,7 @@ export const Menu = ({ current }: { current: string }) => {
 export const Navigation = () => {
     const navigation = useNavigation<NavigationProp<any>>(); 
     const Menus = [
-        { name: "Home", icon: "home-outline", active: "home", screen: "HomeTab", iconType: "Ionicons" },
+        { name: "Home", icon: "home-outline", active: "home", screen: "FeedsTab", iconType: "Ionicons" },
         { name: "Search", icon: "search-outline", active: "search-sharp", screen: "SearchTab", iconType: "Ionicons" },
         { name: "Now", icon: "bolt-lightning", active: "bolt-lightning", screen: "NowTab", iconType: "FontAwesome6" },
         { name: "Schedule", icon: "calendar-outline", active: "calendar-sharp", screen: "ScheduleTab", iconType: "Ionicons" },
