@@ -12,6 +12,8 @@ export default function Setting() {
         <StyledView className="flex-1 bg-blue-200">
             <HeaderApp/>
             <StyledText>TEST</StyledText>
+            
+            <Navigation />
         </StyledView>
     );
 }

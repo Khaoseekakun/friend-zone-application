@@ -12,6 +12,7 @@ export default function Message() {
         <StyledView className="flex-1 bg-gray-200">
             <HeaderApp/>
             
+            <Navigation />
         </StyledView>
     );
 }

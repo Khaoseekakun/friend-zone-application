@@ -12,6 +12,7 @@ export default function HomeScreen() {
         <StyledView className="flex-1 bg-red-200">
             <HeaderApp/>
             
+            <Navigation />
         </StyledView>
     );
 }

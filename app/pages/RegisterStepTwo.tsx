@@ -13,7 +13,6 @@ const API_SYSTEM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzeXN0ZW0iOnRydWU
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
-const StyledSafeAreaView = styled(SafeAreaView);
 
 
 interface InputFieldProps {
