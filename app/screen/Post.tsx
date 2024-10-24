@@ -48,7 +48,7 @@ export default function Post() {
     useEffect(() => {
         const fetchUserData = async () => {
             const userData = await AsyncStorage.getItem('userData');
-            setuserData(JSON.parse(JSON.parse(userData as string) || {}));
+            setuserData(JSON.parse(userData as string) || {});
         };
 
         fetchUserData();
