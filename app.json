@@ -14,7 +14,8 @@
         "adaptiveIcon": {
           "foregroundImage": "./assets/images/adaptive-icon.png",
           "backgroundColor": "#ffffff"
-        }
+        },
+        "package" : "com.myfirendzone.app"
       },
       "web": {
         "bundler": "metro",

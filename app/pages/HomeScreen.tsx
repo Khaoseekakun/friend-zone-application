@@ -26,7 +26,7 @@ export default function HomeScreen() {
         }}
         tabBar={() => null} 
       >
-        <Tab.Screen name="FeedsTab" component={Feeds} />
+        <Tab.Screen name="FeedsTab" component={Feeds}/>
         <Tab.Screen name="ProfileTab" component={Profile} />
         <Tab.Screen name="MessageTab" component={Message} />
         <Tab.Screen name="SettingTab" component={Setting} />

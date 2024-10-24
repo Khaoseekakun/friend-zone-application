@@ -48,6 +48,7 @@ export default function Login() {
     
             if (token) {
                 try {
+                    await AsyncStorage.setItem('userData', JSON.stringify(loginData.data.data.data));
                     await AsyncStorage.setItem('userToken', token);
                     await Updates.reloadAsync(); 
                 } catch (error) {

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, StatusBar } from "react-native";
 import { styled } from "nativewind";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from "expo-router";
@@ -12,7 +12,7 @@ export const HeaderApp = () => {
     const navigation = useNavigation<NavigationProp<any>>();
 
     return (
-        <StyledView className="absolute w-full top-0 bg-white py-2">
+        <StyledView className="absolute w-full top-0 bg-white dark:bg-gray-900 py-2">
             <StyledView className="w-full flex-row items-center justify-between">
 
                 <TouchableOpacity className="flex-1 flex-row left-0" onPress={() => navigation.navigate('ProfileTab')}>
