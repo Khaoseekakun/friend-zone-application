@@ -102,20 +102,21 @@ export default function FeedsTab() {
     return (
         <>
             <StyledView className="flex-1 bg-white">
-                <StyledView className="w-full flex-row items-center justify-between mt-16 mb-2">
-                    <StyledView className="ml-3 bg-gray-400 rounded-full w-[40px] h-[40px]" />
-                    <TouchableOpacity className="flex-row items-center ml-3 rounded-md w-full h-[40px]" onPress={() => navigation.navigate('PostTab')}>
-                        <StyledText>โพสต์อะไรสักอย่าง</StyledText>
+                <StyledView className="w-full flex-row items-center justify-between mt-16 mb-2 px-3">
+                    <TouchableOpacity className="flex-row bg-gray-100 items-center mr-3 pl-4 rounded-full w-full h-[40px]" onPress={() => navigation.navigate('PostTab')}>
+                        <StyledText className="text-gray-500">โพสต์อะไรสักอย่าง</StyledText>
                     </TouchableOpacity>
                 </StyledView>
+                
+                <StyledView className="bg-gray-200 w-full h-[1px]" />
                 <FlatList
                     data={posts}
                     keyExtractor={(item, index) => `${item.id}_${index}`}
                     renderItem={({ item }) => (
                         <StyledView className="">
                             <StyledView className="w-full flex-row items-center justify-between">
-                                <TouchableOpacity className="flex-1 flex-row left-0" onPress={() => navigation.navigate('ProfileTab')}>
-                                    <Image className="ml-3 bg-gray-400 rounded-full w-[40px] h-[40px]" source={userData?.avatar ? { uri: userData?.avatar } : GuestIcon}/>
+                                <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab')}>
+                                    <Image className="ml-3 rounded-full w-[40px] h-[40px]" source={item.member?.profileUrl ? { uri: item.member?.profileUrl } : GuestIcon}/>
                                     <StyledView className="pl-3 mt-2 flex-row">
                                         <StyledText className="font-bold text-md">{item.member.username}</StyledText>
                                         <StyledText className="text-md ml-1 text-gray-400">{formatTimeDifference(item.createdAt)}</StyledText>
@@ -127,7 +128,7 @@ export default function FeedsTab() {
                             </StyledView>
 
                             <StyledView className="pl-[65px] pr-9">
-                                <StyledText className="-mt-2">{item.content}</StyledText>
+                                <StyledText className="-mt-3">{item.content}</StyledText>
                                 {
                                     item.images.length > 0 ? (
                                         <TouchableOpacity onPress={() => openImageModal(item.images)}>

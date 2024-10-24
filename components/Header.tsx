@@ -24,7 +24,7 @@ export const HeaderApp = () => {
         <StyledView className="absolute w-full top-0 bg-white dark:bg-gray-900 py-2">
             <StyledView className="w-full flex-row items-center justify-between">
 
-                <TouchableOpacity className="flex-1 flex-row left-0" onPress={() => navigation.navigate('ProfileTab')}>
+                <TouchableOpacity className="flex-1 flex-row left-0 shadow-md" onPress={() => navigation.navigate('ProfileTab')}>
                     <Image className="ml-3 bg-gray-400 rounded-full w-[42px] h-[42px]" source={
                         userData?.avatar ? { uri: userData?.avatar } : GuestIcon
                     }>
