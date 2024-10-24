@@ -25,7 +25,7 @@ export default function FeedsTab() {
     const [selectedImage, setSelectedImage] = useState([] as string[]);
     const [isOpen, setIsOpen] = useState(true);
     interface Post {
-        id: number;
+        id: string;
         content: string;
         images: string[];
         createdAt: string;
@@ -36,12 +36,14 @@ export default function FeedsTab() {
     }
 
     const [posts, setPosts] = useState<Post[]>([]);
-    const [page, setPage] = useState(1);  // Track current page
+    const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
-    const [hasMore, setHasMore] = useState(true);  // Control when to stop loading
+    const [hasMore, setHasMore] = useState(true); 
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ["35%"], []);
     const [userData, setuserData] = useState<any>();
+    const [postAction, setPostAction] = useState('');
+    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -53,23 +55,22 @@ export default function FeedsTab() {
 
     // Fetch posts with pagination
     const fetchPosts = async (pageNumber = 1) => {
-        if (loading || !hasMore) return; // Prevent multiple requests
-        setLoading(true);
+        if(refreshing != false){
+            if (loading || !hasMore) return 
+        }
 
         try {
-            const response = await axios.get(`http://49.231.43.37:3000/api/post?loadLimit=10&page=${pageNumber}`, {
+            const response = await axios.get(`http://49.231.43.37:3000/api/post?loadLimit=10&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}`, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
-
             const newPosts = response.data.data.posts;
-            console.log(newPosts)
             if (newPosts.length > 0) {
-                setPosts(prevPosts => [...prevPosts, ...newPosts]); // Append new posts
-                setPage(pageNumber); // Update the page number
+                setPosts(prevPosts => [...prevPosts, ...newPosts]);
+                setPage(pageNumber); 
             } else {
-                setHasMore(false); // No more posts to load
+                setHasMore(false);
             }
         } catch (error) {
             console.error("Error fetching posts", error);
@@ -82,12 +83,16 @@ export default function FeedsTab() {
         fetchPosts();
     }, []);
 
-    // Load more posts when reaching the end of the list
     const loadMorePosts = () => {
         if (!loading && hasMore) {
-            fetchPosts(page + 1); // Load the next page of posts
+            fetchPosts(page + 1);
         }
     };
+
+    const BottomSheetShow = useCallback((index: number) => {
+        bottomSheetRef.current?.snapToIndex(index);
+        setIsOpen(true);
+    }, []);
 
     const openImageModal = (imageUrl: string[]) => {
         setSelectedImage(imageUrl);
@@ -99,6 +104,13 @@ export default function FeedsTab() {
         return <ActivityIndicator size="large" />;
     };
 
+    const handleRefresh = async() => {
+        setRefreshing(true);
+        setPosts([]);
+        await fetchPosts();
+        setRefreshing(false);
+    };
+
     return (
         <>
             <StyledView className="flex-1 bg-white">
@@ -107,23 +119,29 @@ export default function FeedsTab() {
                         <StyledText className="text-gray-500">โพสต์อะไรสักอย่าง</StyledText>
                     </TouchableOpacity>
                 </StyledView>
-                
+
                 <StyledView className="bg-gray-200 w-full h-[1px]" />
                 <FlatList
                     data={posts}
                     keyExtractor={(item, index) => `${item.id}_${index}`}
                     renderItem={({ item }) => (
-                        <StyledView className="">
+                        <StyledView className="mt-2">
                             <StyledView className="w-full flex-row items-center justify-between">
                                 <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab')}>
-                                    <Image className="ml-3 rounded-full w-[40px] h-[40px]" source={item.member?.profileUrl ? { uri: item.member?.profileUrl } : GuestIcon}/>
+                                    <Image className="ml-3 rounded-full w-[40px] h-[40px]" source={item.member?.profileUrl ? { uri: item.member?.profileUrl } : GuestIcon} />
                                     <StyledView className="pl-3 mt-2 flex-row">
                                         <StyledText className="font-bold text-md">{item.member.username}</StyledText>
                                         <StyledText className="text-md ml-1 text-gray-400">{formatTimeDifference(item.createdAt)}</StyledText>
                                     </StyledView>
                                 </TouchableOpacity>
                                 <StyledView className="mr-3 flex-row items-center mb-2">
-                                    <Ionicons name="ellipsis-horizontal" size={15} color="gray" />
+                                    <Ionicons
+                                        name="ellipsis-horizontal"
+                                        size={15}
+                                        color="gray"
+                                        accessibilityLabel="Settings"
+                                        onPress={() => {BottomSheetShow(0), setPostAction(item.id)}}
+                                    />
                                 </StyledView>
                             </StyledView>
 
@@ -177,15 +195,15 @@ export default function FeedsTab() {
                                     </StyledView>
                                 </StyledView>
                             </StyledView>
-                            
+
                             <StyledView className="bg-gray-200 w-full h-[1px] my-2" />
                         </StyledView>
-                        
+
                     )}
-                    onStartReached={() => fetchPosts}
-                    onEndReached={loadMorePosts}
-                    onEndReachedThreshold={0.5}
-                    ListFooterComponent={renderFooter}
+                    onEndReached={() => loadMorePosts()}
+                    ListFooterComponent={() => renderFooter()}
+                    refreshing={refreshing}
+                    onRefresh={() => handleRefresh()}
                 />
 
                 <Modal animationType="fade" visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
