@@ -29,7 +29,7 @@ export default function Setting() {
             <StyledView className="flex-1 bg-white">
                 <StyledView className="bg-gray-50 px-3 text-center">
                     <TouchableOpacity onPress={() => navigation.goBack()} className="pt-5 ml-4">
-                        <Ionicons name="arrow-back" size={24} color="#1e3a8a" />
+                        <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
                     </TouchableOpacity>
                     <StyledText className="text-center self-center text-lg font-bold py-3">การตั้งค่า</StyledText>
                 </StyledView>

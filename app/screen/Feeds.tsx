@@ -53,8 +53,6 @@ export default function FeedsTab() {
         };
         fetchUserData();
     }, []);
-
-    // Fetch posts with pagination
     const fetchPosts = async (pageNumber = 1) => {
         if (refreshing != false) {
             if (loading || !hasMore) return
@@ -102,8 +100,12 @@ export default function FeedsTab() {
     };
 
     const renderFooter = () => {
-        if (!loading) return null;
-        return <ActivityIndicator size="large" />;
+
+        loadMorePosts();
+
+        return <ActivityIndicator size="large" style={{
+            marginTop: 60
+        }}/>;
     };
 
     const handleRefresh = async () => {
@@ -159,7 +161,9 @@ export default function FeedsTab() {
                 data={posts}
                 keyExtractor={(item, index) => `${item.id}_${index}`}
                 renderItem={({ item }) => (
+                    
                     <StyledView className="mt-2">
+                        <StyledView className="bg-gray-200 w-full h-[1px] my-2" />
                         <StyledView className="w-full flex-row items-center justify-between">
                             <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab')}>
                                 <Image className="ml-3 rounded-full w-[40px] h-[40px]" source={item.member?.profileUrl ? { uri: item.member?.profileUrl } : GuestIcon} />
@@ -186,31 +190,88 @@ export default function FeedsTab() {
                                 item.images.length === 1 ? (
                                     <>
                                         <TouchableOpacity onPress={() => openImageModal(item.images)}>
-                                            <StyledImage source={{ uri: item.images[0] }} className="rounded-md bg-gray-500 mt-2 h-96 w-full" />
+                                            <StyledImage source={{ uri: item.images[0] }} className="rounded-md mt-2 h-96 w-full" />
                                         </TouchableOpacity>
                                     </>
                                 ) : item.images.length === 2 ? (
                                     <>
                                         <StyledView className="max-h-[350px] mb-2">
                                             <TouchableOpacity onPress={() => openImageModal(item.images, 0)}>
-                                                <StyledImage source={{ uri: item.images[0] }} className="rounded-t-md bg-gray-500 mt-2 h-[175px] w-full" />
+                                                <StyledImage source={{ uri: item.images[0] }} className="rounded-t-md mt-2 h-[175px] w-full" />
                                             </TouchableOpacity>
                                             <TouchableOpacity onPress={() => openImageModal(item.images, 1)}>
-                                                <StyledImage source={{ uri: item.images[1] }} className="rounded-b-md bg-gray-500 h-[175px] w-full" />
+                                                <StyledImage source={{ uri: item.images[1] }} className="rounded-b-md h-[175px] w-full" />
                                             </TouchableOpacity>
                                         </StyledView>
                                     </>
                                 ) : item.images.length === 3 ? (
                                     <>
-                                        {/* Case: 3 images */}
+                                        <StyledView className="max-h-[350px] mb-2">
+                                            <TouchableOpacity onPress={() => openImageModal(item.images, 0)}>
+                                                <StyledImage source={{ uri: item.images[0] }} className="rounded-t-md mt-2 h-[175px] w-full" />
+                                            </TouchableOpacity>
+                                            <StyledView className="flex-row">
+                                                <TouchableOpacity onPress={() => openImageModal(item.images, 1)} className="w-1/2">
+                                                    <StyledImage source={{ uri: item.images[1] }} className="rounded-bl-md h-[175px] w-full" />
+                                                </TouchableOpacity>
+                                                <TouchableOpacity onPress={() => openImageModal(item.images, 2)} className="w-1/2">
+                                                    <StyledImage source={{ uri: item.images[2] }} className="rounded-br-md h-[175px] w-full" />
+                                                </TouchableOpacity>
+                                            </StyledView>
+                                        </StyledView>
                                     </>
                                 ) : item.images.length === 4 ? (
                                     <>
-                                        {/* Case: 4 images */}
+                                        <StyledView className="max-h-[350px] mb-2">
+                                            <StyledView className="flex-row">
+                                                <TouchableOpacity onPress={() => openImageModal(item.images, 0)} className="w-1/2">
+                                                    <StyledImage source={{ uri: item.images[0] }} className="rounded-tl-md h-[175px] w-full" />
+                                                </TouchableOpacity>
+                                                <TouchableOpacity onPress={() => openImageModal(item.images, 1)} className="w-1/2">
+                                                    <StyledImage source={{ uri: item.images[1] }} className="rounded-tr-md h-[175px] w-full" />
+                                                </TouchableOpacity>
+                                            </StyledView>
+
+                                            <StyledView className="flex-row">
+                                                <TouchableOpacity onPress={() => openImageModal(item.images, 2)} className="w-1/2">
+                                                    <StyledImage source={{ uri: item.images[2] }} className="rounded-bl-md h-[175px] w-full" />
+                                                </TouchableOpacity>
+                                                <TouchableOpacity onPress={() => openImageModal(item.images, 3)} className="w-1/2">
+                                                    <StyledImage source={{ uri: item.images[3] }} className="rounded-br-md h-[175px] w-full" />
+                                                </TouchableOpacity>
+                                            </StyledView>
+                                        </StyledView>
                                     </>
                                 ) : item.images.length > 4 ? (
                                     <>
+                                        <StyledView className="max-h-[350px] mb-2 shadow-sm">
+                                            <StyledView className="flex-row">
+                                                <TouchableOpacity onPress={() => openImageModal(item.images, 0)} className="w-1/2">
+                                                    <StyledImage source={{ uri: item.images[0] }} className="rounded-tl-md h-[175px] w-full" />
+                                                </TouchableOpacity>
+                                                <TouchableOpacity onPress={() => openImageModal(item.images, 1)} className="w-1/2">
+                                                    <StyledImage source={{ uri: item.images[1] }} className="rounded-tr-md h-[175px] w-full" />
+                                                </TouchableOpacity>
+                                            </StyledView>
 
+                                            <StyledView className="flex-row">
+                                                <TouchableOpacity onPress={() => openImageModal(item.images, 2)} className="w-1/2">
+                                                    <StyledImage source={{ uri: item.images[2] }} className="rounded-bl-md h-[175px] w-full" />
+                                                </TouchableOpacity>
+                                                <TouchableOpacity onPress={() => openImageModal(item.images, 3)} className="w-1/2">
+                                                    <StyledImage source={{ uri: item.images[3] }} className="rounded-br-md h-[175px] w-full" />
+                                                    <StyledView className="absolute top-0 right-0 bg-black rounded-br-md opacity-50 w-full h-full flex-row justify-center items-center">
+
+                                                    </StyledView>
+                                                    <StyledView className="absolute top-0 right-0 w-full h-full flex-row justify-center items-center">
+                                                        <StyledText className="text-white absolute text-center text-2xl" style={{ alignSelf: 'center' }}>
+                                                            +{item.images.length - 4}
+                                                        </StyledText>
+                                                    </StyledView>
+
+                                                </TouchableOpacity>
+                                            </StyledView>
+                                        </StyledView>
                                     </>
                                 ) : null
                             }
@@ -255,8 +316,6 @@ export default function FeedsTab() {
                                 </StyledView>
                             </StyledView>
                         </StyledView>
-
-                        <StyledView className="bg-gray-200 w-full h-[1px] my-2" />
                     </StyledView>
 
                 )}

@@ -170,7 +170,7 @@ export default function Register() {
 
       <StyledView className="flex-1 px-6">
         <TouchableOpacity onPress={() => navigation.navigate('Login')} className="mt-6">
-          <Ionicons name="arrow-back" size={24} color="#1e3a8a" />
+          <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
         </TouchableOpacity>
 
         <StyledView className="flex items-center">

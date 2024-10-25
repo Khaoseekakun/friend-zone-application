@@ -35,7 +35,6 @@ const db = getFirestore(app);
 export default function Post() {
     const navigation = useNavigation<NavigationProp<any>>();
     const [message, setMessage] = useState('');
-    const [isOpen, setIsOpen] = useState(true);
     const [images, setImages] = useState<string[]>([]);
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ["20%"], []);
@@ -44,7 +43,7 @@ export default function Post() {
     const [userData, setuserData] = useState<any>();
     const [uploading, setUploading] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [statusMessage, setStatusMessage] = useState('');
+    const messageLimit = 512;
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -212,8 +211,6 @@ export default function Post() {
                 }
             });
 
-            console.log(postCreate.data)
-
             if (postCreate.data.status !== 200) {
                 if (postCreate.data.data.code == "MEMBER_NOT_FOUND") {
                     return Alert.alert('Error', 'Session หมดอายุ โปรดเข้าสู่ระบบใหม่อีกครั้ง', [{ text: 'OK' }], {
@@ -251,14 +248,14 @@ export default function Post() {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <StyledView className="flex-1 bg-white">
-                <StyledView className="bg-gray-50 px-3 text-center pt-[60px] pb-3">
+                <StyledView className="bg-[#69140F] px-3 text-center pt-[60px] pb-3">
                     <TouchableOpacity onPress={() => navigation.goBack()} className="absolute pt-[60] ml-4">
-                        <Ionicons name="arrow-back" size={24} color="#1e3a8a" />
+                        <Ionicons name="chevron-back" size={24} color="#fff" />
                     </TouchableOpacity>
-                    <StyledText className="text-center self-center text-lg font-bold">สร้างโพสต์</StyledText>
+                    <StyledText className="text-center self-center text-lg font-bold text-white">สร้างโพสต์</StyledText>
 
                     <TouchableOpacity onPress={handlePost} className="absolute right-3 pt-[60] flex-row" disabled={(images.length === 0 && message.length === 0)}>
-                        <StyledText className={`text-center self-center text-lg font-bold ${images.length > 0 || message.length > 0 ? "text-blue-700" : "text-gray-500"}`}>โพสต์</StyledText>
+                        <StyledText className={`text-center self-center text-lg font-bold ${images.length > 0 || message.length > 0 ? "text-white" : "text-gray-500"}`}>โพสต์</StyledText>
                     </TouchableOpacity>
                 </StyledView>
 
@@ -277,9 +274,23 @@ export default function Post() {
                         value={message}
                         onChangeText={setMessage}
                         inputMode='text'
+                        multiline={true}
+                        numberOfLines={5}
+                        maxLength={messageLimit}
                     />
                 </StyledView>
 
+                <StyledView className="bg-gray-200 w-full h-[1px]" />
+
+                {
+                    message.length > 0 && (
+                        <>
+                            <StyledText className="text-sm text-gray-500 self-end mr-2 mt-2">
+                                {messageLimit - message.length}
+                            </StyledText>
+                        </>
+                    )
+                }
                 <StyledView className="flex-row flex-wrap">
                     {images.map((imageUri, index) => (
                         <StyledView key={index} style={{ position: 'relative' }} className="shadow-md justify-start mx-1 mt-2">
@@ -317,7 +328,7 @@ export default function Post() {
                     <StyledView className="flex-1 bg-white">
                         <StyledView className="mt-5 rounded-lg mx-4">
                             <StyledView className="my-2 py-1">
-                                <TouchableOpacity onPress={() => { pickImages(); setIsOpen(false); }} className="flex-row items-center" disabled={images.length >= 6}>
+                                <TouchableOpacity onPress={() => { pickImages(); }} className="flex-row items-center" disabled={images.length >= 6}>
                                     <Ionicons name="images" size={24} color={`${images.length >= 6 ? "#99d390" : "#3fd826"}`} />
                                     <StyledText className={`pl-4 text-lg ${images.length >= 6 ? "text-gray-500" : ""}`}>รูปภาพ/วิดีโอ ({images.length}/{selectcount})</StyledText>
                                 </TouchableOpacity>
@@ -333,7 +344,7 @@ export default function Post() {
                 </StyledBottomSheetView>
             </BottomSheet>
 
-            <Modal visible={loading} transparent={true} animationType="slide">
+            <Modal visible={loading} transparent={true} animationType="fade">
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <ActivityIndicator size="large" color="#0000ff" />

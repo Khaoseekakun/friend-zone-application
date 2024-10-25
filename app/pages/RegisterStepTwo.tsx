@@ -334,7 +334,7 @@ export default function RegisterStepTwo() {
         >
             <StyledView className="flex-1 bg-white px-6">
                 <TouchableOpacity onPress={() => navigation.goBack()} className="mt-6">
-                    <Ionicons name="arrow-back" size={24} color="#1e3a8a" />
+                    <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
                 </TouchableOpacity>
 
                 <StyledView className='flex-1 justify-center'>
