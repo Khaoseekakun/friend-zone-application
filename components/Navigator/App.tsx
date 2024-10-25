@@ -12,32 +12,28 @@ import React from 'react';
 const Stack = createStackNavigator();
 
 export function AppNavigator() {
-    const { userToken, isLoading } = useAuth(); 
+    const { userToken, isLoading } = useAuth();
 
     if (isLoading) {
         return (
-            <NavigationContainer independent={true}>
-                <Stack.Navigator screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="SplashScreen" component={SplashScreen} />
-                </Stack.Navigator>
-            </NavigationContainer>
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="SplashScreen" component={SplashScreen} />
+            </Stack.Navigator>
         );
     }
 
     return (
-        <NavigationContainer independent={true}>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-                {userToken ? (
-                    <Stack.Screen name="HomeScreen" component={HomeScreen} />
-                ) : (
-                    <>
-                        <Stack.Screen name="Login" component={Login} />
-                        <Stack.Screen name="Register" component={Register} />
-                        <Stack.Screen name="RegisterStepTwo" component={RegisterStepTwo} />
-                        <Stack.Screen name="Agreement" component={PolicyFirst} />
-                    </>
-                )}
-            </Stack.Navigator>
-        </NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {userToken ? (
+                <Stack.Screen name="HomeScreen" component={HomeScreen} />
+            ) : (
+                <>
+                    <Stack.Screen name="Login" component={Login} />
+                    <Stack.Screen name="Register" component={Register} />
+                    <Stack.Screen name="RegisterStepTwo" component={RegisterStepTwo} />
+                    <Stack.Screen name="Agreement" component={PolicyFirst} />
+                </>
+            )}
+        </Stack.Navigator>
     );
 }

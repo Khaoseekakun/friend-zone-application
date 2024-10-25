@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, KeyboardAvoidingView, Platform, TextInput, Image, TouchableOpacity, ActivityIndicator, Alert, Modal } from "react-native";
+import { View, Text, KeyboardAvoidingView, Platform, TextInput, Image, TouchableOpacity, ActivityIndicator, Alert, Modal, StyleSheet } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
@@ -44,7 +44,7 @@ export default function Post() {
     const [userData, setuserData] = useState<any>();
     const [uploading, setUploading] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [statusMessage, setStatusMessage] = useState(''); 
+    const [statusMessage, setStatusMessage] = useState('');
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -69,25 +69,25 @@ export default function Post() {
                 uri,
                 [{ resize: { width: 800 } }],
                 {
-                    compress: 0.7, 
+                    compress: 0.7,
                     format: ImageManipulator.SaveFormat.JPEG,
                 }
             );
-            return manipResult.uri; 
+            return manipResult.uri;
         } catch (error) {
             console.error("Error optimizing image: ", error);
-            return uri; 
+            return uri;
         }
     };
 
     const pickImages = async () => {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+
         if (permissionResult.granted === false) {
             alert("Permission to access camera roll is required!");
             return;
         }
-    
+
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             aspect: [4, 3],
@@ -95,16 +95,16 @@ export default function Post() {
             selectionLimit: images.length < selectcount ? selectcount - images.length : 0,
             allowsMultipleSelection: true,
         });
-    
+
         if (!result.canceled && result.assets) {
             const newImages = result.assets.map(async (asset) => {
                 // Compress and resize the image
                 const optimizedUri = await optimizeImage(asset.uri);
                 return optimizedUri;
             });
-    
+
             const optimizedImageUris = await Promise.all(newImages);
-    
+
             setImages(prevImages => {
                 const allImages = new Set([...prevImages, ...optimizedImageUris]);
                 return Array.from(allImages);
@@ -117,7 +117,7 @@ export default function Post() {
     };
 
     const uploadImages = async (postId: string) => {
-        if(!postId) return Alert.alert('Error', 'Failed to upload images. Please try again.', [{ text: 'OK' }]);
+        if (!postId) return Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตโพสต์ได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
         const imageUrls: string[] = [];
         for (const uri of images) {
             const response = await fetch(uri);
@@ -137,7 +137,7 @@ export default function Post() {
     };
 
     const PostUpdate = async (postId: string, imageUrls: string[]) => {
-        if(!postId) return Alert.alert('Error', 'Failed to update the post. Please try again.', [{ text: 'OK' }]);
+        if (!postId) return Alert.alert('Error', 'Failed to update the post. Please try again.', [{ text: 'OK' }]);
         try {
             const putData = await axios.put(`http://49.231.43.37:3000/api/post`, {
                 postId: postId,
@@ -152,35 +152,34 @@ export default function Post() {
 
 
             if (putData.data.status != 200) {
-                setStatusMessage("Failed to update post. Deleting the post.");
+                Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตโพสต์ได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
                 deletePost(postId);
             } else {
-                setStatusMessage("Post updated successfully.");
+                refreshHandler();
                 navigation.goBack();
             }
         } catch (error) {
             console.log(error)
-            setStatusMessage("Failed to update post. Deleting the post.");
+            Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตโพสต์ได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
             deletePost(postId);
         }
     }
 
     const deletePost = async (postId: string) => {
-        if(!postId) return Alert.alert('Error', 'Failed to delete the post. Please try again.', [{ text: 'OK' }]);
+        if (!postId) return Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตโพสต์ได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
         try {
             const postDelete = await axios.delete(`http://49.231.43.37:3000/api/post/${postId}`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Member ${userData.token}`,
+                    'Authorization': `All ${userData.token}`,
                 }
             });
 
             if (postDelete.status === 200) {
                 await deleteImagesFromFirebase(images);
-                setStatusMessage("Post deleted successfully.");
-                navigation.goBack();
+                Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตโพสต์ได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
             } else {
-                Alert.alert('Error', 'Failed to delete the post. Please try again.', [{ text: 'OK' }]);
+                Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตโพสต์ได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
             }
         } catch (error) {
             console.error("Error deleting post: ", error);
@@ -201,8 +200,7 @@ export default function Post() {
     };
 
     const handlePost = async () => {
-        setLoading(true); // Show loading screen
-        setStatusMessage("Creating post..."); // Show status message
+        setLoading(true);
         try {
             const postCreate = await axios.post('http://49.231.43.37:3000/api/post', {
                 content: message,
@@ -217,30 +215,35 @@ export default function Post() {
             console.log(postCreate.data)
 
             if (postCreate.data.status !== 200) {
-                if(postCreate.data.data.code == "MEMBER_NOT_FOUND"){
+                if (postCreate.data.data.code == "MEMBER_NOT_FOUND") {
                     return Alert.alert('Error', 'Session หมดอายุ โปรดเข้าสู่ระบบใหม่อีกครั้ง', [{ text: 'OK' }], {
-                        onDismiss: async() => {
+                        onDismiss: async () => {
                             await Logout()
                         }
                     });
                 }
-                return Alert.alert('Error', 'Failed to create post. Please try again.', [{ text: 'OK' }]);
+                return Alert.alert('ผิดพลาด', 'ไม่สามารถสร้างโพสต์ได้', [{ text: 'ลองอีกครั้ง' }]);
             } else {
                 if (images.length > 0) {
                     await uploadImages(postCreate.data.data.id);
                 } else {
+                    refreshHandler();
                     navigation.goBack();
                 }
             }
 
 
         } catch (error) {
-            setStatusMessage("Failed to create post.");
             Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถสร้างโพสต์ได้', [{ text: 'ลองอีกครั้ง' }]);
         } finally {
-            setLoading(false); // Hide loading screen
+            setLoading(false);
         }
     };
+
+    const refreshHandler = () => {
+        setImages([]);
+        setMessage('');
+    }
 
     return (
         <KeyboardAvoidingView
@@ -248,18 +251,19 @@ export default function Post() {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <StyledView className="flex-1 bg-white">
-                <StyledView className="bg-gray-50 px-3 text-center py-4">
-                    <TouchableOpacity onPress={() => navigation.goBack()} className="absolute mt-4 ml-4">
+                <StyledView className="bg-gray-50 px-3 text-center pt-[60px] pb-3">
+                    <TouchableOpacity onPress={() => navigation.goBack()} className="absolute pt-[60] ml-4">
                         <Ionicons name="arrow-back" size={24} color="#1e3a8a" />
                     </TouchableOpacity>
                     <StyledText className="text-center self-center text-lg font-bold">สร้างโพสต์</StyledText>
 
-                    <TouchableOpacity onPress={handlePost} className="absolute right-3 top-4 flex-row" disabled={(images.length === 0 && message.length === 0)}>
+                    <TouchableOpacity onPress={handlePost} className="absolute right-3 pt-[60] flex-row" disabled={(images.length === 0 && message.length === 0)}>
                         <StyledText className={`text-center self-center text-lg font-bold ${images.length > 0 || message.length > 0 ? "text-blue-700" : "text-gray-500"}`}>โพสต์</StyledText>
                     </TouchableOpacity>
                 </StyledView>
 
                 <StyledView className="bg-gray-200 w-full h-[1px]" />
+
                 <StyledView className="w-full flex-row items-center justify-between">
                     <StyledView className="ml-3 bg-gray-400 rounded-full w-[40px] h-[40px] mt-2" />
                     <StyledView className="flex-row items-center ml-2 rounded-md w-full h-[40px]">
@@ -330,11 +334,34 @@ export default function Post() {
             </BottomSheet>
 
             <Modal visible={loading} transparent={true} animationType="slide">
-                <StyledView className="flex-1 items-center justify-center bg-black bg-opacity-50">
-                    <ActivityIndicator size="large" color="#ffffff" />
-                    <StyledText className="mt-4 text-white text-lg">{statusMessage}</StyledText>
-                </StyledView>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <ActivityIndicator size="large" color="#0000ff" />
+                        <Text style={styles.modalText}>กำลังสร้างโพสต์...</Text>
+                    </View>
+                </View>
             </Modal>
         </KeyboardAvoidingView>
     );
 }
+
+const styles = StyleSheet.create({
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        width: 200,
+        padding: 20,
+        backgroundColor: 'white',
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    modalText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#333',
+    }
+});

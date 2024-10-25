@@ -3,7 +3,7 @@ import { View, Text, Animated, Pressable } from "react-native";
 import { styled } from "nativewind";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { useNavigation } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import { NavigationProp } from "@react-navigation/native";
 
 const StyledView = styled(View);
@@ -65,11 +65,11 @@ export const Navigation = () => {
 
     const handlePress = (index: number, screen: string) => {
         setActive(index);
-        navigation.navigate(screen); // Navigate to the correct tab screen
+        navigation.navigate(screen);
     };
 
     return (
-        <StyledView className="bg-white w-full absolute bottom-0 shadow-sm">
+        <StyledView className="bg-white w-full absolute bottom-0 shadow-sm h-[80px]">
             <StyledView className="flex-row relative justify-between">
                 {Menus.map((menu, i) => (
                     <Pressable key={i} onPress={() => handlePress(i, menu.screen)} className="w-2/12">

@@ -3,10 +3,11 @@ import { AuthProvider, useAuth } from '../utils/context/AuthContext'; // Import 
 import { AppNavigator } from '@/components/Navigator/App';
 
 import 'react-native-gesture-handler';
+import { Text, View } from 'react-native';
 export default function App() {
     return (
-        <AuthProvider>
-            <AppNavigator />
-        </AuthProvider>
+            <AuthProvider>
+                <AppNavigator />
+            </AuthProvider>
     );
 }

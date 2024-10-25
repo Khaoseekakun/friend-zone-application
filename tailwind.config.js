@@ -7,7 +7,11 @@ module.exports = {
     "./hooks/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        custom: ['Kanut', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 };

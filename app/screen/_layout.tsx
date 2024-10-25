@@ -1,11 +1,14 @@
+import {Stack} from "expo-router";
 import { Tabs } from "expo-router"
 import React from "react"
 
 export default () => {
     return (
-        <Tabs>
-            <Tabs.Screen name="Home"  />
-            <Tabs.Screen name="Profile" />
-        </Tabs>
+        <Stack>
+            <Stack.Screen name="Home"
+            options={{headerShown:false}}
+
+            />
+        </Stack>
     )
 }

@@ -21,7 +21,7 @@
     "expo-env.d.ts",
     "components/Navigation.js",
     "./env.d.ts"
-  ],
+, "react-native.config.js"  ],
   "exclude": [
     "node_modules",
     "babel.config.js",
