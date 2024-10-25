@@ -11,6 +11,7 @@ import { initializeApp } from "firebase/app";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Logout } from "@/utils/Auth/Logout";
+import * as ImageManipulator from 'expo-image-manipulator';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -57,19 +58,36 @@ export default function Post() {
     const handleImageLoad = (index: number) => {
         setLoadingImages((prev) => {
             const newLoading = [...prev];
-            newLoading[index] = false; // Mark this image as loaded
+            newLoading[index] = false;
             return newLoading;
         });
     };
 
+    const optimizeImage = async (uri: string) => {
+        try {
+            const manipResult = await ImageManipulator.manipulateAsync(
+                uri,
+                [{ resize: { width: 800 } }],
+                {
+                    compress: 0.7, 
+                    format: ImageManipulator.SaveFormat.JPEG,
+                }
+            );
+            return manipResult.uri; 
+        } catch (error) {
+            console.error("Error optimizing image: ", error);
+            return uri; 
+        }
+    };
+
     const pickImages = async () => {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
+    
         if (permissionResult.granted === false) {
             alert("Permission to access camera roll is required!");
             return;
         }
-
+    
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             aspect: [4, 3],
@@ -77,12 +95,18 @@ export default function Post() {
             selectionLimit: images.length < selectcount ? selectcount - images.length : 0,
             allowsMultipleSelection: true,
         });
-
+    
         if (!result.canceled && result.assets) {
-            const newImages = result.assets.map(asset => asset.uri);
-
+            const newImages = result.assets.map(async (asset) => {
+                // Compress and resize the image
+                const optimizedUri = await optimizeImage(asset.uri);
+                return optimizedUri;
+            });
+    
+            const optimizedImageUris = await Promise.all(newImages);
+    
             setImages(prevImages => {
-                const allImages = new Set([...prevImages, ...newImages]);
+                const allImages = new Set([...prevImages, ...optimizedImageUris]);
                 return Array.from(allImages);
             });
         }
@@ -255,14 +279,13 @@ export default function Post() {
                 <StyledView className="flex-row flex-wrap">
                     {images.map((imageUri, index) => (
                         <StyledView key={index} style={{ position: 'relative' }} className="shadow-md justify-start mx-1 mt-2">
-                            {/* Show loading indicator while the image loads */}
                             {loadingImages[index] && (
                                 <ActivityIndicator size="small" color="#000" style={{ position: 'absolute', top: 40, left: 40 }} />
                             )}
                             <Image
                                 source={{ uri: imageUri }}
                                 style={{ width: 110, height: 110, borderRadius: 5 }}
-                                onLoad={() => handleImageLoad(index)} // Mark the image as loaded
+                                onLoad={() => handleImageLoad(index)}
                             />
                             {!uploading && (
                                 <TouchableOpacity
@@ -306,7 +329,6 @@ export default function Post() {
                 </StyledBottomSheetView>
             </BottomSheet>
 
-            {/* Loading Modal */}
             <Modal visible={loading} transparent={true} animationType="slide">
                 <StyledView className="flex-1 items-center justify-center bg-black bg-opacity-50">
                     <ActivityIndicator size="large" color="#ffffff" />

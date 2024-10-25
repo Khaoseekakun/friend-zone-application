@@ -30,6 +30,7 @@ export default function FeedsTab() {
         images: string[];
         createdAt: string;
         member: {
+            id: string;
             username: string;
             profileUrl: string;
         }
@@ -38,7 +39,7 @@ export default function FeedsTab() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
-    const [hasMore, setHasMore] = useState(true); 
+    const [hasMore, setHasMore] = useState(true);
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ["35%"], []);
     const [userData, setuserData] = useState<any>();
@@ -55,8 +56,8 @@ export default function FeedsTab() {
 
     // Fetch posts with pagination
     const fetchPosts = async (pageNumber = 1) => {
-        if(refreshing != false){
-            if (loading || !hasMore) return 
+        if (refreshing != false) {
+            if (loading || !hasMore) return
         }
 
         try {
@@ -68,7 +69,7 @@ export default function FeedsTab() {
             const newPosts = response.data.data.posts;
             if (newPosts.length > 0) {
                 setPosts(prevPosts => [...prevPosts, ...newPosts]);
-                setPage(pageNumber); 
+                setPage(pageNumber);
             } else {
                 setHasMore(false);
             }
@@ -104,7 +105,7 @@ export default function FeedsTab() {
         return <ActivityIndicator size="large" />;
     };
 
-    const handleRefresh = async() => {
+    const handleRefresh = async () => {
         setRefreshing(true);
         setPosts([]);
         await fetchPosts();
@@ -140,7 +141,7 @@ export default function FeedsTab() {
                                         size={15}
                                         color="gray"
                                         accessibilityLabel="Settings"
-                                        onPress={() => {BottomSheetShow(0), setPostAction(item.id)}}
+                                        onPress={() => { BottomSheetShow(0), setPostAction(item.id) }}
                                     />
                                 </StyledView>
                             </StyledView>
@@ -260,29 +261,70 @@ export default function FeedsTab() {
                                         <StyledText className="pl-2 text-lg">ความเป็นส่วนตัว</StyledText>
                                     </TouchableOpacity>
                                 </StyledView>
-                                <StyledView className="bg-gray-200 w-full h-[1px]" />
-                                <StyledView className="my-2 px-3 py-1">
-                                    <TouchableOpacity onPress={() => setIsOpen(false)} className="flex-row items-center">
-                                        <Ionicons
-                                            name="alert-circle-outline"
-                                            size={24}
-                                            color="black"
-                                        />
-                                        <StyledText className="pl-2 text-lg">ทำไมคุณจึงเห็นโพสต์นี้</StyledText>
-                                    </TouchableOpacity>
-                                </StyledView>
-                                <StyledView className="bg-gray-200 w-full h-[1px]" />
-                                <StyledView className="my-2 px-3 py-1">
-                                    <TouchableOpacity onPress={() => setIsOpen(false)} className="flex-row items-center">
-                                        <Ionicons
-                                            name="warning-outline"
-                                            size={24}
-                                            color="#ff2525"
-                                        />
-                                        <StyledText className="text-[#ff2525] pl-2 text-lg">รายงานปัญหา</StyledText>
-                                    </TouchableOpacity>
-                                </StyledView>
+
+                                {
+                                    posts.some((p) => p.id === postAction && p.member.id === userData?.id) ? null :
+                                        (
+                                            <>
+
+                                                <StyledView className="bg-gray-200 w-full h-[1px]" />
+                                                <StyledView className="my-2 px-3 py-1">
+                                                    <TouchableOpacity onPress={() => setIsOpen(false)} className="flex-row items-center">
+                                                        <Ionicons
+                                                            name="alert-circle-outline"
+                                                            size={24}
+                                                            color="black"
+                                                        />
+                                                        <StyledText className="pl-2 text-lg">ทำไมคุณจึงเห็นโพสต์นี้</StyledText>
+                                                    </TouchableOpacity>
+                                                </StyledView>
+                                                <StyledView className="bg-gray-200 w-full h-[1px]" />
+                                                <StyledView className="my-2 px-3 py-1">
+                                                    <TouchableOpacity onPress={() => setIsOpen(false)} className="flex-row items-center">
+                                                        <Ionicons
+                                                            name="warning-outline"
+                                                            size={24}
+                                                            color="#ff2525"
+                                                        />
+                                                        <StyledText className="text-[#ff2525] pl-2 text-lg">รายงานปัญหา</StyledText>
+                                                    </TouchableOpacity>
+                                                </StyledView></>
+                                        )
+
+                                }
                             </StyledView>
+
+                            {
+                                posts.some((p) => p.id === postAction && p.member.id === userData?.id) ? (
+                                    <>
+                                        <StyledView className="mt-4 bg-gray-100 rounded-lg mx-5">
+                                            <StyledView className="my-2 px-3 py-1">
+                                                <TouchableOpacity onPress={() => setIsOpen(false)} className="flex-row items-center">
+                                                    <Ionicons
+                                                        name="pencil-outline"
+                                                        size={24}
+                                                        color="black"
+                                                    />
+                                                    <StyledText className="pl-2 text-lg">แก้ไข</StyledText>
+                                                </TouchableOpacity>
+                                            </StyledView>
+                                            <StyledView className="bg-gray-200 w-full h-[1px]" />
+                                            <StyledView className="my-2 px-3 py-1">
+                                                <TouchableOpacity onPress={() => setIsOpen(false)} className="flex-row items-center">
+                                                    <Ionicons
+                                                        name="trash-outline"
+                                                        size={24}
+                                                        color="#ff2525"
+                                                    />
+                                                    <StyledText className="text-[#ff2525] pl-2 text-lg">ลบโพสต์</StyledText>
+                                                </TouchableOpacity>
+                                            </StyledView>
+                                        </StyledView>
+                                    </>
+                                ) : null
+
+                            }
+
                         </StyledView>
                     </BottomSheetView>
                 </BottomSheet>
