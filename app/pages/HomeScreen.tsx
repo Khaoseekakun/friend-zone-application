@@ -8,9 +8,8 @@ import Message from "../screen/Message";
 import Setting from "../screen/Setting";
 import Feeds from "../screen/Feeds";
 import Post from "../screen/Post";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
+import PostUpdate from "../screen/PostUpdate";
+import SearchCategory from "../screen/SearchCategory";
 
 const Tab = createBottomTabNavigator();
 
@@ -23,6 +22,8 @@ export default function HomeScreen() {
         <Tab.Screen name="SettingTab" component={Setting} options={{ headerShown: false }} />
         <Tab.Screen name="ProfileTab" component={Profile} options={{ headerShown: false }} />
         <Tab.Screen name="PostTab" component={Post} options={{ headerShown: false }} />
+        <Tab.Screen name="PostUpdate" component={PostUpdate} options={{ headerShown: false }} />
+        <Tab.Screen name="SearchCategory" component={SearchCategory} options={{ headerShown: false }} />
       </Tab.Navigator>
     </>
   );

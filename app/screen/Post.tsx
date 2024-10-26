@@ -4,7 +4,7 @@ import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 import * as ImagePicker from 'expo-image-picker';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { initializeApp } from "firebase/app";
@@ -52,7 +52,11 @@ export default function Post() {
         };
 
         fetchUserData();
+
     }, []);
+
+
+
 
     const handleImageLoad = (index: number) => {
         setLoadingImages((prev) => {
@@ -136,7 +140,7 @@ export default function Post() {
     };
 
     const PostUpdate = async (postId: string, imageUrls: string[]) => {
-        if (!postId) return Alert.alert('Error', 'Failed to update the post. Please try again.', [{ text: 'OK' }]);
+        if (!postId) return Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตโพสต์ได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
         try {
             const putData = await axios.put(`http://49.231.43.37:3000/api/post`, {
                 postId: postId,
@@ -300,7 +304,9 @@ export default function Post() {
                             <Image
                                 source={{ uri: imageUri }}
                                 style={{ width: 110, height: 110, borderRadius: 5 }}
-                                onLoad={() => handleImageLoad(index)}
+                                onLoad={() => (
+                                    <ActivityIndicator size="small" color="#000" style={{ position: 'absolute', top: 40, left: 40 }} />
+                                )}
                             />
                             {!uploading && (
                                 <TouchableOpacity

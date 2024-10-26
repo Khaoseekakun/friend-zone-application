@@ -8,6 +8,7 @@ import { NavigationProp } from "@react-navigation/native";
 
 import * as Updates from 'expo-updates'
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 
@@ -18,7 +19,7 @@ export default function Setting() {
     const Logout = async () => {
         await AsyncStorage.removeItem('userData');
         await AsyncStorage.removeItem('userToken');
-        await Updates.reloadAsync(); 
+        await Updates.reloadAsync();
     }
 
     return (
@@ -26,14 +27,19 @@ export default function Setting() {
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <StyledView className="flex-1 bg-white">
-                <StyledView className="bg-gray-50 px-3 text-center">
-                    <TouchableOpacity onPress={() => navigation.goBack()} className="pt-5 ml-4">
-                        <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
+            <StyledView className="w-full flex-1">
+                <LinearGradient
+                    colors={['#EB3834', '#69140F']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    className="px-3 text-center top-0 h-[106px]"
+                >
+                    <TouchableOpacity onPress={() => navigation.goBack()} className="absolute pt-[53px] ml-4">
+                        <Ionicons name="chevron-back" size={24} color="#fff" />
                     </TouchableOpacity>
-                    <StyledText className="text-center self-center text-lg font-bold py-3">การตั้งค่า</StyledText>
-                </StyledView>
-                
+                    <StyledText className="absolute self-center text-lg font-bold text-white ">การตั้งค่า</StyledText>
+                </LinearGradient>
+
                 <StyledView className="flex-1 justify-center items-center">
                     {loading ? (
                         <ActivityIndicator size="large" color="#0000ff" />
@@ -46,6 +52,6 @@ export default function Setting() {
 
                 <Navigation />
             </StyledView>
-        </KeyboardAvoidingView>
+        </KeyboardAvoidingView >
     );
 }

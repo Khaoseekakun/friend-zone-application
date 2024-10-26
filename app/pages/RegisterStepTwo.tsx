@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, InputModeOptions, Alert, Animated, ActivityIndicator } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, InputModeOptions, Alert, Animated, ActivityIndicator, Appearance } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
@@ -10,10 +10,14 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import RNPickerSelect from 'react-native-picker-select';
 const API_SYSTEM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzeXN0ZW0iOnRydWUsInBlcm1pc3Npb25zIjp7Ik1hbmFnZU90cCI6dHJ1ZSwiTm90aWZpY2F0aW9ucyI6dHJ1ZSwiTWFuYWdlQWRtaW5zIjp0cnVlLCJNYW5hZ2VQYXltZW50cyI6dHJ1ZSwiTWFuYWdlQ3VzdG9tZXIiOnRydWUsIk1hbmFnZU1lbWJlcnMiOnRydWUsIk1hbmFnZVBvc3RzIjp0cnVlLCJNYW5hZ2VTY2hlZHVsZSI6dHJ1ZSwiTWFuYWdlU2V0dGluZ3MiOnRydWV9LCJpYXQiOjE3MjY5NTIxODN9.LZqnLm_8qvrL191MV7OIpUSczeFgGupOb5Pp2UOvyTE';
 
+
+
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
-
+const StyledSafeAreaView = styled(SafeAreaView);
+const StyledIcon = styled(Ionicons);
+const StyledRNPickerSelect = styled(RNPickerSelect);
 
 interface InputFieldProps {
     label: string;
@@ -33,96 +37,6 @@ interface InputFieldProps {
     wrong?: boolean;
 }
 
-const InputField: React.FC<InputFieldProps> = ({
-    label,
-    placeholder,
-    value,
-    inputMode,
-    onChangeText,
-    onPress,
-    editable = true,
-    buttonText,
-    onButtonPress,
-    isPicker,
-    pickerItems,
-    maxLength,
-    disable,
-    onBlur,
-    wrong
-}) => (
-    <StyledView className="w-full mb-7">
-        <StyledText className={`text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600'} mb-2 ml-4 absolute -mt-3 bg-white z-50 px-2`}>{label}</StyledText>
-        <StyledView className="flex-row items-center">
-            {isPicker && pickerItems && (
-                <StyledView className="w-full">
-                    <RNPickerSelect
-
-                        onValueChange={onChangeText}
-                        items={pickerItems}
-                        value={value}
-                        placeholder={{ label: placeholder, value: null }}
-                        style={{
-                            inputIOS: {
-                                padding: 16,
-                                borderWidth: 1,
-                                borderRadius: 25,
-                                borderColor: '#ccc',
-                                color: '#333',
-                                width: '100%',
-                                backgroundColor: '#fff'
-                            },
-                            inputAndroid: {
-                                padding: 16,
-                                borderWidth: 1,
-                                borderRadius: 25,
-                                borderColor: '#ccc',
-                                color: '#333',
-                                width: '100%',
-                                backgroundColor: '#fff',
-                            },
-
-                        }}
-
-                    />
-                </StyledView>
-            )}
-
-            {!isPicker && (
-                <>
-                    <StyledTextInput
-                        placeholder={placeholder}
-                        className={`border ${wrong == true ? 'border-red-500' : 'border-gray-300'} rounded-full py-4 px-4 ${wrong == true ? 'text-red-500' : 'text-gray-700'} ${buttonText ? 'flex-1 mr-2' : 'w-full'}`}
-                        value={value}
-                        onChangeText={onChangeText}
-                        placeholderTextColor="#9CA3AF"
-                        editable={editable}
-                        onPressIn={onPress}
-                        inputMode={inputMode}
-                        maxLength={maxLength}
-                        onBlur={onBlur}
-                        enterKeyHint='done'
-                    />
-                    {buttonText && (
-                        <TouchableOpacity
-                            onPress={onButtonPress}
-                            disabled={disable}
-                        >
-                            <LinearGradient
-                                colors={disable ? ['#ccc', '#ccc'] : ['#ec4899', '#f97316']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 0 }}
-                                className="rounded-full py-3 px-4">
-
-                                <StyledText className="text-white text-center">{buttonText}</StyledText>
-                            </LinearGradient>
-                        </TouchableOpacity>
-                    )}
-                </>
-            )}
-
-        </StyledView>
-    </StyledView>
-);
 type RegisterStepTwoRouteProp = RouteProp<RootStackParamList, 'RegisterStepTwo'>;
 
 export default function RegisterStepTwo() {
@@ -143,6 +57,16 @@ export default function RegisterStepTwo() {
     const [loading, setLoading] = useState(false);
     const scaleValue = useRef(new Animated.Value(1)).current;
 
+    const [theme, setTheme] = useState(Appearance.getColorScheme());
+
+    useEffect(() => {
+        const listener = Appearance.addChangeListener(({ colorScheme }) => {
+            setTheme(colorScheme);
+        });
+
+        return () => listener.remove();
+    }, []);
+
     const route = useRoute<RegisterStepTwoRouteProp>();
 
     const { username, password } = route.params
@@ -154,6 +78,98 @@ export default function RegisterStepTwo() {
     const hideDatePicker = () => {
         setDatePickerVisibility(false);
     };
+
+    const InputField: React.FC<InputFieldProps> = ({
+        label,
+        placeholder,
+        value,
+        inputMode,
+        onChangeText,
+        onPress,
+        editable = true,
+        buttonText,
+        onButtonPress,
+        isPicker,
+        pickerItems,
+        maxLength,
+        disable,
+        onBlur,
+        wrong
+    }) => (
+        <StyledView className="w-full mb-7">
+            <StyledText className={`text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-200'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-black z-50 px-2`}>{label}</StyledText>
+            <StyledView className="flex-row items-center">
+                {isPicker && pickerItems && (
+                    <StyledView className="w-full">
+                        <RNPickerSelect
+
+                            onValueChange={onChangeText}
+                            items={pickerItems}
+                            value={value}
+                            placeholder={{ label: placeholder, value: null }}
+                            darkTheme={theme == "dark" ? true : false}
+                            style={{
+                                inputIOS: {
+                                    padding: 16,
+                                    borderWidth: 1,
+                                    borderRadius: 25,
+                                    borderColor: theme == "dark" ? '#d1d5db' : '#d1d5db',
+                                    width: '100%',
+                                    backgroundColor: theme == "dark" ? '#000' : '#fff',
+                                    color: theme == "dark" ? '#fff' : '#000',
+                                },
+                                inputAndroid: {
+                                    padding: 16,
+                                    borderWidth: 1,
+                                    borderRadius: 25,
+                                    borderColor: theme == "dark" ? '#d1d5db' : '#d1d5db',
+                                    width: '100%',
+                                    backgroundColor: theme == "dark" ? '#000' : '#fff',
+                                },
+
+                            }
+                            }
+
+                        />
+                    </StyledView>
+                )}
+
+                {!isPicker && (
+                    <>
+                        <StyledTextInput
+                            placeholder={placeholder}
+                            className={`border ${wrong == true ? 'border-red-500' : 'border-gray-300'} rounded-full py-4 px-4 ${wrong == true ? 'text-red-500' : 'text-gray-700 dark:text-gray-200'} ${buttonText ? 'flex-1 mr-2' : 'w-full'}`}
+                            value={value}
+                            onChangeText={onChangeText}
+                            placeholderTextColor="#d1d5db"
+                            editable={editable}
+                            onPressIn={onPress}
+                            inputMode={inputMode}
+                            maxLength={maxLength}
+                            onBlur={onBlur}
+                            enterKeyHint='done'
+                        />
+                        {buttonText && (
+                            <TouchableOpacity
+                                onPress={onButtonPress}
+                                disabled={disable}
+                            >
+                                <LinearGradient
+                                    colors={disable ? ['#ccc', '#ccc'] : ['#EB3834', '#69140F']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    className="rounded-full py-3 px-4">
+
+                                    <StyledText className="text-white text-center">{buttonText}</StyledText>
+                                </LinearGradient>
+                            </TouchableOpacity>
+                        )}
+                    </>
+                )}
+
+            </StyledView>
+        </StyledView>
+    );
 
     const handleConfirm = (date: Date) => {
         const formattedDate = date.toLocaleDateString('th-TH', {
@@ -232,7 +248,7 @@ export default function RegisterStepTwo() {
                 if (cooldownTime <= 0) {
                     clearInterval(cooldown);
                     setCooldownMessage('')
-                }else{
+                } else {
                     setCooldown(cooldownTime - 1)
                 }
             }, 1000);
@@ -292,7 +308,7 @@ export default function RegisterStepTwo() {
     // Verify the OTP with the backend
     const verifyOTP = async (phone: string, otp: string) => {
         return await axios.put('https://friendszone.app/api/otp', {
-            phone : phone,
+            phone: phone,
             code: otp,
         }, {
             headers: {
@@ -332,98 +348,96 @@ export default function RegisterStepTwo() {
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <StyledView className="flex-1 bg-white px-6">
-                <TouchableOpacity onPress={() => navigation.goBack()} className="mt-6">
-                    <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
-                </TouchableOpacity>
-
-                <StyledView className='flex-1 justify-center'>
-
-
-                    <StyledView className="flex items-center mb-5">
-                        <StyledText className="text-3xl font-bold text-[#1e3a8a] mt-6 mb-2">ข้อมูลส่วนตัว</StyledText>
-                        <StyledText className="text-base text-gray-400">กรอกเบอร์มือถือและยืนยันเบอร์มือถือของคุณ</StyledText>
-                    </StyledView>
-                    <InputField
-                        label="เพศ"
-                        placeholder="เลือกเพศของคุณ"
-                        value={gender}
-                        onChangeText={setGender}
-                        isPicker={true}
-                        pickerItems={genderOptions}
-                    />
-                    <InputField
-                        label="วันเกิด"
-                        placeholder="เลือกวันเกิดของคุณ"
-                        value={birthdate}
-                        onChangeText={setBirthdate}
-                        onPress={showDatePicker}
-                        editable={false}
-                    />
-                    <InputField
-                        label="จังหวัด"
-                        placeholder="เลือกจังหวัดของคุณ"
-                        value={province}
-                        onChangeText={setProvince}
-                        isPicker={true}
-                        pickerItems={provinceOptions}
-                    />
-
-                    <StyledView className="space-y-6">
+            <StyledSafeAreaView className="flex-1 bg-white dark:bg-black h-full">
+                <StyledView className="flex-1 pt-6 px-6">
+                    <TouchableOpacity onPress={() => navigation.goBack()} className="mt-6">
+                        <StyledIcon name="chevron-back" size={24} className='text-[#1e3a8a] dark:text-white' />
+                    </TouchableOpacity>
+                    <StyledView className='flex-1 justify-center'>
+                        <StyledView className="self-center flex items-center mb-5">
+                            <StyledText className="text-3xl font-bold text-[#1e3a8a] dark:text-white mt-6 mb-2">ข้อมูลส่วนตัว</StyledText>
+                            <StyledText className="text-base text-gray-400">กรอกเบอร์มือถือและยืนยันเบอร์มือถือของคุณ</StyledText>
+                        </StyledView>
                         <InputField
-                            label={`${isPhoneValid ? 'เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว' : 'เบอร์โทรศัพท์'}`}
-                            placeholder="+66"
-                            inputMode="tel"
-                            value={phone}
-                            onBlur={handleCheckPhone}
-                            onChangeText={handlePhoneChange}
-                            buttonText={`${cooldownTime > 0 ? `${cooldownMessage}` : 'รับ OTP'}`}
-                            maxLength={10}
-                            onButtonPress={handlePhoneVerification}
-                            disable={isPhoneValid != false || phone.length != 10 || otpButtonDisabled == true}
-                            wrong={(isPhoneValid != null) && (isPhoneValid && phone.length == 10)}
-
+                            label="เพศ"
+                            placeholder="เลือกเพศของคุณ"
+                            value={gender}
+                            onChangeText={setGender}
+                            isPicker={true}
+                            pickerItems={genderOptions}
                         />
-
-                        {showOTP && (
+                        <InputField
+                            label="วันเกิด"
+                            placeholder="เลือกวันเกิดของคุณ"
+                            value={birthdate}
+                            onChangeText={setBirthdate}
+                            onPress={showDatePicker}
+                            editable={false}
+                        />
+                        <InputField
+                            label="จังหวัด"
+                            placeholder="เลือกจังหวัดของคุณ"
+                            value={province}
+                            onChangeText={setProvince}
+                            isPicker={true}
+                            pickerItems={provinceOptions}
+                        />
+                        <StyledView className="space-y-6">
                             <InputField
-                                label="OTP"
-                                placeholder="รหัสยืนยัน"
+                                label={`${isPhoneValid ? 'เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว' : 'เบอร์โทรศัพท์'}`}
+                                placeholder="+66"
                                 inputMode="tel"
-                                value={otp} // Use separate state for OTP
-                                onChangeText={setOtp}
+                                value={phone}
+                                onBlur={handleCheckPhone}
+                                onChangeText={handlePhoneChange}
+                                buttonText={`${cooldownTime > 0 ? `${cooldownMessage}` : 'รับ OTP'}`}
+                                maxLength={10}
+                                onButtonPress={handlePhoneVerification}
+                                disable={isPhoneValid != false || phone.length != 10 || otpButtonDisabled == true}
+                                wrong={(isPhoneValid != null) && (isPhoneValid && phone.length == 10)}
 
                             />
-                        )}
+
+                            {showOTP && (
+                                <InputField
+                                    label="OTP"
+                                    placeholder="รหัสยืนยัน"
+                                    inputMode="tel"
+                                    value={otp} // Use separate state for OTP
+                                    onChangeText={setOtp}
+
+                                />
+                            )}
+                        </StyledView>
+
+                        <TouchableOpacity className="w-full mt-8" onPress={() => handleVerifyOTP()}>
+                            <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+                                <LinearGradient
+                                    colors={['#EB3834', '#69140F']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    className="rounded-full py-3 shadow-sm"
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator size="small" color="#fff" />
+                                    ) : (
+                                        <StyledText className="text-center text-white text-lg font-semibold">ถัดไป</StyledText>
+                                    )}
+                                </LinearGradient>
+                            </Animated.View>
+                        </TouchableOpacity>
                     </StyledView>
 
-                    <TouchableOpacity className="w-full mt-8" onPress={() => handleVerifyOTP()}>
-                        <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
-                            <LinearGradient
-                                colors={['#ec4899', '#f97316']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 0 }}
-                                className="rounded-full py-3 shadow-sm"
-                            >
-                                {loading ? (
-                                    <ActivityIndicator size="small" color="#fff" />
-                                ) : (
-                                    <StyledText className="text-center text-white text-lg font-semibold">ถัดไป</StyledText>
-                                )}
-                            </LinearGradient>
-                        </Animated.View>
-                    </TouchableOpacity>
+                    <DateTimePickerModal
+                        isVisible={isDatePickerVisible}
+                        mode="date"
+                        onConfirm={handleConfirm}
+                        onCancel={hideDatePicker}
+                        locale="th-TH"
+                        maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
+                    />
                 </StyledView>
-
-                <DateTimePickerModal
-                    isVisible={isDatePickerVisible}
-                    mode="date"
-                    onConfirm={handleConfirm}
-                    onCancel={hideDatePicker}
-                    locale="th-TH"
-                    maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
-                />
-            </StyledView>
+            </StyledSafeAreaView>
         </KeyboardAvoidingView>
     );
 }

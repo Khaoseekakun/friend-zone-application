@@ -6,7 +6,7 @@ import { HeaderApp } from "@/components/Header";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 
-export default function HomeScreen() {
+export default function ProfileTab() {
 
     return (
         <StyledView className="flex-1 bg-red-200">

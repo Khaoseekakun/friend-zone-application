@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Modal, Image, ActivityIndicator, FlatList
 import { styled } from "nativewind";
 import { HeaderApp } from "@/components/Header";
 import { useNavigation } from "expo-router";
-import { NavigationProp } from "@react-navigation/native";
+import { NavigationProp, useIsFocused } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import ImageViewer from 'react-native-image-zoom-viewer';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
@@ -11,12 +11,27 @@ import { Navigation } from "@/components/Menu";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { formatTimeDifference } from "@/utils/Date";
+import { deleteObject, getStorage, ref } from "firebase/storage";
+import { initializeApp } from "firebase/app";
+import { BottomTabNavigator } from "@/components/MenuBar";
 const GuestIcon = require("../../assets/images/guesticon.jpg")
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledImage = styled(Image);
 const StyleImageViewer = styled(ImageViewer);
+const firebaseConfig = {
+    apiKey: "AIzaSyB6-tcwtkosfRGDQq4_6Nvpz47Lnt33_UM",
+    authDomain: "friendszone-d1e20.firebaseapp.com",
+    projectId: "friendszone-d1e20",
+    storageBucket: "friendszone-d1e20.appspot.com",
+    messagingSenderId: "820285031495",
+    appId: "1:820285031495:web:154296ce35bf7171bcdd62",
+    measurementId: "G-RN2B2NF5DM"
+};
+
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
 
 export default function FeedsTab() {
     const navigation = useNavigation<NavigationProp<any>>();
@@ -46,6 +61,14 @@ export default function FeedsTab() {
     const [postAction, setPostAction] = useState('');
     const [refreshing, setRefreshing] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const isFocused = useIsFocused();
+
+    useEffect(() => {
+        if (isFocused) {
+            handleRefresh()
+        }
+    }, [isFocused]);
+
     useEffect(() => {
         const fetchUserData = async () => {
             const userData = await AsyncStorage.getItem('userData');
@@ -53,13 +76,14 @@ export default function FeedsTab() {
         };
         fetchUserData();
     }, []);
+
     const fetchPosts = async (pageNumber = 1) => {
         if (refreshing != false) {
             if (loading || !hasMore) return
         }
 
         try {
-            const response = await axios.get(`http://49.231.43.37:3000/api/post?loadLimit=10&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}`, {
+            const response = await axios.get(`http://49.231.43.37:3000/api/post?loadLimit=${pageNumber != 1 ? "1" : "10"}&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}`, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -67,7 +91,7 @@ export default function FeedsTab() {
             const newPosts = response.data.data.posts;
             if (newPosts.length > 0) {
                 setPosts(prevPosts => [...prevPosts, ...newPosts]);
-                setPage(pageNumber);
+                setPage(pageNumber++);
             } else {
                 setHasMore(false);
             }
@@ -78,9 +102,17 @@ export default function FeedsTab() {
         setLoading(false);
     };
 
-    useEffect(() => {
-        fetchPosts();
-    }, []);
+    const deleteImagesFromFirebase = async (imageUrls: string[]) => {
+        for (const url of imageUrls) {
+            const imageRef = ref(storage, url);
+
+            try {
+                await deleteObject(imageRef);
+            } catch (error) {
+                console.error(`Error deleting image ${url}: `, error);
+            }
+        }
+    };
 
     const loadMorePosts = () => {
         if (!loading && hasMore) {
@@ -102,10 +134,10 @@ export default function FeedsTab() {
     const renderFooter = () => {
 
         loadMorePosts();
-
+        if (!loading) return null;
         return <ActivityIndicator size="large" style={{
             marginTop: 60
-        }}/>;
+        }} />;
     };
 
     const handleRefresh = async () => {
@@ -141,6 +173,9 @@ export default function FeedsTab() {
                 Alert.alert('ผิดพลาด', 'ไม่สามารถลบโพสต์ได้', [{ text: 'ลองอีกครั้ง', onPress: () => deletePost(postId), style: 'cancel' }, { text: 'ตกลง' }]);
             } else {
                 setRefreshing(true);
+                if ((posts.find((p) => p.id === postId)?.images?.length ?? 0) > 0) {
+                    await deleteImagesFromFirebase(posts.find(p => p.id === postId)?.images || []);
+                }
                 setPosts([]);
                 await fetchPosts();
                 setRefreshing(false);
@@ -153,6 +188,12 @@ export default function FeedsTab() {
         }
     }
 
+    const handleGotoEditPost = () => {
+        if(!posts.find((p) => p.id === postAction)) return Alert.alert('ผิดพลาด', 'ไม่พบข้อมูลของโพสต์นี้', [{ text: 'ตกลง' }]);
+        navigation.navigate("PostUpdate", {post : posts.find((p) => p.id === postAction)})
+        bottomSheetRef.current?.close();
+    }
+
     return (
 
         <StyledView className="flex-1">
@@ -161,7 +202,7 @@ export default function FeedsTab() {
                 data={posts}
                 keyExtractor={(item, index) => `${item.id}_${index}`}
                 renderItem={({ item }) => (
-                    
+
                     <StyledView className="mt-2">
                         <StyledView className="bg-gray-200 w-full h-[1px] my-2" />
                         <StyledView className="w-full flex-row items-center justify-between">
@@ -275,45 +316,30 @@ export default function FeedsTab() {
                                     </>
                                 ) : null
                             }
-                            <StyledView id="post-action" className="flex-row relative justify-between mt-2">
-                                <StyledView className="flex-row justify-center items-center">
-                                    <Ionicons
-                                        name="chatbubble-outline"
-                                        size={18}
-                                        color="black"
-                                        onPress={() => { }}
-                                    />
-                                    <StyledText>100</StyledText>
-                                </StyledView>
+                            <StyledView id="post-action" className="flex-row relative justify-start mt-2">
 
-                                <StyledView className="flex-row justify-center items-center">
-                                    <Ionicons
-                                        name="repeat-outline"
-                                        size={18}
-                                        color="green"
-                                        onPress={() => { }}
-                                    />
-                                    <StyledText>100</StyledText>
-                                </StyledView>
 
-                                <StyledView className="flex-row justify-center items-center">
+                                <StyledView className="flex-row justify-center mr-5 items-center">
                                     <Ionicons
                                         name="heart"
                                         size={18}
                                         color="red"
                                         onPress={() => { }}
                                     />
-                                    <StyledText>100</StyledText>
+                                    <StyledText>0</StyledText>
                                 </StyledView>
 
-                                <StyledView className="flex-row justify-center items-center">
+                                <StyledView className="flex-row justify-center mr-5 items-center">
                                     <Ionicons
-                                        name="share-outline"
+                                        name="chatbubble-outline"
                                         size={18}
                                         color="black"
                                         onPress={() => { }}
                                     />
+                                    <StyledText>0</StyledText>
                                 </StyledView>
+
+
                             </StyledView>
                         </StyledView>
                     </StyledView>
@@ -366,7 +392,7 @@ export default function FeedsTab() {
                 </View>
             </Modal>
 
-            <Navigation />
+            <BottomTabNavigator />
 
             {isOpen && (
                 <TouchableOpacity className="absolute flex-1 bg-black opacity-25 w-full h-screen justify-center"
@@ -444,7 +470,7 @@ export default function FeedsTab() {
                                 <>
                                     <StyledView className="mt-4 bg-gray-100 rounded-lg mx-5">
                                         <StyledView className="my-2 px-3 py-1">
-                                            <TouchableOpacity onPress={() => setIsOpen(false)} className="flex-row items-center">
+                                            <TouchableOpacity onPress={() => {handleGotoEditPost()}} className="flex-row items-center">
                                                 <Ionicons
                                                     name="pencil-outline"
                                                     size={24}

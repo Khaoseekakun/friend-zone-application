@@ -45,7 +45,7 @@ const InputField: React.FC<InputFieldProps> = ({
   isPasswordVisible
 }) => (
   <StyledView className="w-full mb-7">
-    <StyledText className={`text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600'} mb-2 ml-4 absolute -mt-3 bg-white z-50 px-2`}>{label}</StyledText>
+    <StyledText className={`text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-300'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-black z-50 px-2`}>{label}</StyledText>
     <StyledView className="w-full relative">
       {isPicker && pickerItems ? (
         <RNPickerSelect
@@ -62,7 +62,7 @@ const InputField: React.FC<InputFieldProps> = ({
         <>
           <StyledTextInput
             placeholder={placeholder}
-            className={`border ${wrong == true ? 'border-red-500' : 'border-gray-300'} rounded-full py-4 px-4 ${wrong == true ? 'text-red-500' : 'text-gray-600'} w-full pr-12`}
+            className={`border ${wrong == true ? 'border-red-500' : 'border-gray-300'} rounded-full py-4 px-4 ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-300'} w-full pr-12`}
             value={value}
             onChangeText={onChangeText}
             onBlur={onBlur}
@@ -166,7 +166,7 @@ export default function Register() {
 
   return (
 
-      <StyledSafeAreaView className="flex-1 bg-white h-full">
+      <StyledSafeAreaView className="flex-1 bg-white dark:bg-black h-full">
 
       <StyledView className="flex-1 px-6">
         <TouchableOpacity onPress={() => navigation.navigate('Login')} className="mt-6">

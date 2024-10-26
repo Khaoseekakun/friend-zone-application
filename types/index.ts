@@ -5,7 +5,21 @@ export type RootStackParamList = {
   Register: undefined;
   HomeScreen: undefined;
   Agreement: { nextScreen: string }
-  RegisterStepTwo: { username: string, password: string}
+  RegisterStepTwo: { username: string, password: string }
+  PostUpdate: {
+    post: {
+      id: string;
+      content: string;
+      images: string[];
+      createdAt: string;
+      member: {
+        id: string;
+        username: string;
+        profileUrl: string;
+        verified: boolean;
+      }
+    }
+  }
 };
 
 export type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
