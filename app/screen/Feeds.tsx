@@ -7,13 +7,12 @@ import { NavigationProp, useIsFocused } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import ImageViewer from 'react-native-image-zoom-viewer';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import { Navigation } from "@/components/Menu";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { formatTimeDifference } from "@/utils/Date";
 import { deleteObject, getStorage, ref } from "firebase/storage";
 import { initializeApp } from "firebase/app";
-import { BottomTabNavigator } from "@/components/MenuBar";
+import {Navigation} from "@/components/Navigation";
 const GuestIcon = require("../../assets/images/guesticon.jpg")
 
 const StyledView = styled(View);
@@ -132,9 +131,12 @@ export default function FeedsTab() {
     };
 
     const renderFooter = () => {
-
+        
         loadMorePosts();
-        if (!loading) return null;
+
+        if (!loading) return <>
+        <StyledView className="mb-[120px]"/>
+        </>
         return <ActivityIndicator size="large" style={{
             marginTop: 60
         }} />;
@@ -189,8 +191,8 @@ export default function FeedsTab() {
     }
 
     const handleGotoEditPost = () => {
-        if(!posts.find((p) => p.id === postAction)) return Alert.alert('ผิดพลาด', 'ไม่พบข้อมูลของโพสต์นี้', [{ text: 'ตกลง' }]);
-        navigation.navigate("PostUpdate", {post : posts.find((p) => p.id === postAction)})
+        if (!posts.find((p) => p.id === postAction)) return Alert.alert('ผิดพลาด', 'ไม่พบข้อมูลของโพสต์นี้', [{ text: 'ตกลง' }]);
+        navigation.navigate("PostUpdate", { post: posts.find((p) => p.id === postAction) })
         bottomSheetRef.current?.close();
     }
 
@@ -198,6 +200,7 @@ export default function FeedsTab() {
 
         <StyledView className="flex-1">
             <HeaderApp />
+
             <FlatList
                 data={posts}
                 keyExtractor={(item, index) => `${item.id}_${index}`}
@@ -209,9 +212,9 @@ export default function FeedsTab() {
                             <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab')}>
                                 <Image className="ml-3 rounded-full w-[40px] h-[40px]" source={item.member?.profileUrl ? { uri: item.member?.profileUrl } : GuestIcon} />
                                 <StyledView className="pl-3 mt-2 flex-row">
-                                    <StyledText className="font-bold text-md">{item.member.username} </StyledText>
+                                    <StyledText className="font-custom font-bold text-md">{item.member.username} </StyledText>
                                     {item.member.verified == true ? (<StyledView className="-mt-1"><Ionicons name={'checkmark-done'} size={18} color={'#dd164f'} /></StyledView>) : <></>}
-                                    <StyledText className="text-md ml-1 text-gray-400">{formatTimeDifference(item.createdAt)}</StyledText>
+                                    <StyledText className="font-custom text-md ml-1 text-gray-400">{formatTimeDifference(item.createdAt)}</StyledText>
                                 </StyledView>
                             </TouchableOpacity>
                             <StyledView className="mr-3 flex-row items-center mb-2">
@@ -226,7 +229,7 @@ export default function FeedsTab() {
                         </StyledView>
 
                         <StyledView className="pl-[65px] pr-9">
-                            <StyledText className="-mt-3">{item.content}</StyledText>
+                            <StyledText className="font-custom -mt-3">{item.content}</StyledText>
                             {
                                 item.images.length === 1 ? (
                                     <>
@@ -305,7 +308,7 @@ export default function FeedsTab() {
 
                                                     </StyledView>
                                                     <StyledView className="absolute top-0 right-0 w-full h-full flex-row justify-center items-center">
-                                                        <StyledText className="text-white absolute text-center text-2xl" style={{ alignSelf: 'center' }}>
+                                                        <StyledText className="font-custom text-white absolute text-center text-2xl" style={{ alignSelf: 'center' }}>
                                                             +{item.images.length - 4}
                                                         </StyledText>
                                                     </StyledView>
@@ -326,7 +329,7 @@ export default function FeedsTab() {
                                         color="red"
                                         onPress={() => { }}
                                     />
-                                    <StyledText>0</StyledText>
+                                    <StyledText className="font-custom">0</StyledText>
                                 </StyledView>
 
                                 <StyledView className="flex-row justify-center mr-5 items-center">
@@ -336,7 +339,7 @@ export default function FeedsTab() {
                                         color="black"
                                         onPress={() => { }}
                                     />
-                                    <StyledText>0</StyledText>
+                                    <StyledText className="font-custom">0</StyledText>
                                 </StyledView>
 
 
@@ -357,12 +360,12 @@ export default function FeedsTab() {
                             className="flex-row bg-gray-300 items-center mr-3 pl-4 rounded-full w-full h-[40px]"
                             onPress={() => navigation.navigate('PostTab')}
                         >
-                            <StyledText className="text-black">โพสต์อะไรสักอย่าง</StyledText>
+                            <StyledText className="text-black font-custom">โพสต์อะไรสักอย่าง</StyledText>
                         </TouchableOpacity>
                     </StyledView>
                 )}
             />
-
+            <Navigation current="FeedsTab" />
             <Modal animationType="fade" visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
                 <StyledView className="flex-1 justify-center h-screen bg-black">
                     <StyleImageViewer
@@ -387,12 +390,12 @@ export default function FeedsTab() {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <ActivityIndicator size="large" color="#0000ff" />
-                        <Text style={styles.modalText}>กำลังลบโพสต์...</Text>
+                        <StyledText className="font-custom" style={styles.modalText} >กำลังลบโพสต์...</StyledText>
                     </View>
                 </View>
             </Modal>
 
-            <BottomTabNavigator />
+
 
             {isOpen && (
                 <TouchableOpacity className="absolute flex-1 bg-black opacity-25 w-full h-screen justify-center"
@@ -418,7 +421,7 @@ export default function FeedsTab() {
                                         size={24}
                                         color="black"
                                     />
-                                    <StyledText className="pl-2 text-lg">เกี่ยวกับบัญชีนี้</StyledText>
+                                    <StyledText className="pl-2 text-lg font-custom">เกี่ยวกับบัญชีนี้</StyledText>
                                 </TouchableOpacity>
                             </StyledView>
                             <StyledView className="bg-gray-200 w-full h-[1px]" />
@@ -429,7 +432,7 @@ export default function FeedsTab() {
                                         size={24}
                                         color="black"
                                     />
-                                    <StyledText className="pl-2 text-lg">ความเป็นส่วนตัว</StyledText>
+                                    <StyledText className="pl-2 text-lg font-custom">ความเป็นส่วนตัว</StyledText>
                                 </TouchableOpacity>
                             </StyledView>
 
@@ -446,7 +449,7 @@ export default function FeedsTab() {
                                                         size={24}
                                                         color="black"
                                                     />
-                                                    <StyledText className="pl-2 text-lg">ทำไมคุณจึงเห็นโพสต์นี้</StyledText>
+                                                    <StyledText className="pl-2 text-lg font-custom">ทำไมคุณจึงเห็นโพสต์นี้</StyledText>
                                                 </TouchableOpacity>
                                             </StyledView>
                                             <StyledView className="bg-gray-200 w-full h-[1px]" />
@@ -457,7 +460,7 @@ export default function FeedsTab() {
                                                         size={24}
                                                         color="#ff2525"
                                                     />
-                                                    <StyledText className="text-[#ff2525] pl-2 text-lg">รายงานปัญหา</StyledText>
+                                                    <StyledText className="text-[#ff2525] pl-2 text-lg font-custom">รายงานปัญหา</StyledText>
                                                 </TouchableOpacity>
                                             </StyledView></>
                                     )
@@ -470,13 +473,13 @@ export default function FeedsTab() {
                                 <>
                                     <StyledView className="mt-4 bg-gray-100 rounded-lg mx-5">
                                         <StyledView className="my-2 px-3 py-1">
-                                            <TouchableOpacity onPress={() => {handleGotoEditPost()}} className="flex-row items-center">
+                                            <TouchableOpacity onPress={() => { handleGotoEditPost() }} className="flex-row items-center">
                                                 <Ionicons
                                                     name="pencil-outline"
                                                     size={24}
                                                     color="black"
                                                 />
-                                                <StyledText className="pl-2 text-lg">แก้ไข</StyledText>
+                                                <StyledText className="pl-2 text-lg font-custom">แก้ไข</StyledText>
                                             </TouchableOpacity>
                                         </StyledView>
                                         <StyledView className="bg-gray-200 w-full h-[1px]" />
@@ -487,7 +490,7 @@ export default function FeedsTab() {
                                                     size={24}
                                                     color="#ff2525"
                                                 />
-                                                <StyledText className="text-[#ff2525] pl-2 text-lg">ลบโพสต์</StyledText>
+                                                <StyledText className="text-[#ff2525] pl-2 text-lg font-custom">ลบโพสต์</StyledText>
                                             </TouchableOpacity>
                                         </StyledView>
                                     </StyledView>

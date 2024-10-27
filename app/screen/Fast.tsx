@@ -14,7 +14,7 @@ const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledIonIcon = styled(Ionicons)
 
-export default function Message() {
+export default function Fast() {
     const navigation = useNavigation<NavigationProp<any>>();
     const [search, setSearch] = useState('');
     const [searchloading, setSearchLoading] = useState(false);
@@ -41,7 +41,7 @@ export default function Message() {
                 <StyledView className="flex-1 bg-white dark:bg-black">
                 </StyledView>
             </KeyboardAvoidingView>
-            <Navigation current="SearchCategory"/>
+            <Navigation current="FastTab"/>
         </StyledView>
     );
 }
