@@ -50,7 +50,7 @@ export default function PostUpdate() {
 
         if (!postId) return Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตโพสต์ได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
         try {
-            const putData = await axios.put(`http://49.231.43.37:3000/api/post`, {
+            const putData = await axios.put(`https://friendszone.app/api/post`, {
                 postId: postId,
                 content: message,
                 images: images

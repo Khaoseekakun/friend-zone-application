@@ -17,6 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { useFocusEffect } from "expo-router";
+import Chat from "../screen/Chat";
 
 const Tab = createBottomTabNavigator();
 
@@ -43,6 +44,7 @@ export default function HomeScreen() {
         <Tab.Screen name="SearchCategory" component={SearchCategory} options={{ headerShown: false }} />
         <Tab.Screen name="SchedulePage" component={SchedulePage} options={{ headerShown: false }} />
         <Tab.Screen name="Search" component={Search} options={{ headerShown: false }} />
+        <Tab.Screen name="Chat" component={Chat} options={{ headerShown: false }} />
       </Tab.Navigator>
     </>
   );

@@ -4,7 +4,7 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import io, { Socket } from "socket.io-client";
 
 // Adjust the URL to your server’s address
-const SERVER_URL = "http://49.231.43.37:3000/api/socketio";
+const SERVER_URL = "https://friendszone.app/api/socketio";
 
 
 
@@ -28,7 +28,7 @@ export default function SchedulePage() {
     const handlerMessageSearch = async() => {
         setSearchLoading(true);
         try {
-            const searchMessage = await axios.get(`http://49.231.43.37:3000/api/message`)
+            const searchMessage = await axios.get(`https://friendszone.app/api/message`)
         } catch (error) {
 
         } finally {

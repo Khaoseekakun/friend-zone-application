@@ -12,7 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { formatTimeDifference } from "@/utils/Date";
 import { deleteObject, getStorage, ref } from "firebase/storage";
 import { initializeApp } from "firebase/app";
-import {Navigation} from "@/components/Navigation";
+import { Navigation } from "@/components/Navigation";
 const GuestIcon = require("../../assets/images/guesticon.jpg")
 
 const StyledView = styled(View);
@@ -82,7 +82,7 @@ export default function FeedsTab() {
         }
 
         try {
-            const response = await axios.get(`http://49.231.43.37:3000/api/post?loadLimit=${pageNumber != 1 ? "1" : "10"}&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}`, {
+            const response = await axios.get(`https://friendszone.app/api/post?loadLimit=${pageNumber != 1 ? "1" : "10"}&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}`, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -131,11 +131,11 @@ export default function FeedsTab() {
     };
 
     const renderFooter = () => {
-        
+
         loadMorePosts();
 
         if (!loading) return <>
-        <StyledView className="mb-[120px]"/>
+            <StyledView className="mb-[120px]" />
         </>
         return <ActivityIndicator size="large" style={{
             marginTop: 60
@@ -164,7 +164,7 @@ export default function FeedsTab() {
         setIsDeleting(true);
 
         try {
-            const deleteData = await axios.delete('http://49.231.43.37:3000/api/post/' + postId, {
+            const deleteData = await axios.delete('https://friendszone.app/api/post/' + postId, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `All ${userData?.token}`
@@ -354,16 +354,21 @@ export default function FeedsTab() {
                 onStartReachedThreshold={5}
                 onEndReachedThreshold={0.8}
                 onRefresh={() => handleRefresh()}
-                ListHeaderComponent={() => (
-                    <StyledView className="w-full flex-row items-center justify-between mt-3 mb-3 px-3">
-                        <TouchableOpacity
-                            className="flex-row bg-gray-300 items-center mr-3 pl-4 rounded-full w-full h-[40px]"
-                            onPress={() => navigation.navigate('PostTab')}
-                        >
-                            <StyledText className="text-black font-custom">โพสต์อะไรสักอย่าง</StyledText>
-                        </TouchableOpacity>
-                    </StyledView>
-                )}
+                ListHeaderComponent={() => {
+                    if (userData?.role != 'customer') {
+                        return (
+                            <StyledView className="w-full flex-row items-center justify-between mt-3 mb-3 px-3">
+                                <TouchableOpacity
+                                    className="flex-row bg-gray-300 items-center mr-3 pl-4 rounded-full w-full h-[40px]"
+                                    onPress={() => navigation.navigate('PostTab')}
+                                >
+                                    <StyledText className="text-black font-custom">โพสต์อะไรสักอย่าง</StyledText>
+                                </TouchableOpacity>
+                            </StyledView>
+                        );
+                    }
+                    return null;
+                }}
             />
             <Navigation current="FeedsTab" />
             <Modal animationType="fade" visible={modalVisible} onRequestClose={() => setModalVisible(false)}>

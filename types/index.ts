@@ -22,7 +22,13 @@ export type RootStackParamList = {
   },
   Search : {
     searchType : "Friend" | "Music" | "Dj"
-  }
+  },
+  Chat : {
+    helper? : boolean
+    chatId : string,
+    chatName : string,
+  },
+  MessageTab : undefined
 };
 
 export type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;

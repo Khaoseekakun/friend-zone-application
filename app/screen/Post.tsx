@@ -130,7 +130,7 @@ export default function Post() {
     const PostUpdate = async (postId: string, imageUrls: string[]) => {
         if (!postId) return Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตโพสต์ได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
         try {
-            const putData = await axios.put(`http://49.231.43.37:3000/api/post`, {
+            const putData = await axios.put(`https://friendszone.app/api/post`, {
                 postId: postId,
                 images: imageUrls,
                 content: message
@@ -159,7 +159,7 @@ export default function Post() {
     const deletePost = async (postId: string) => {
         if (!postId) return Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตโพสต์ได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
         try {
-            const postDelete = await axios.delete(`http://49.231.43.37:3000/api/post/${postId}`, {
+            const postDelete = await axios.delete(`https://friendszone.app/api/post/${postId}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `All ${userData.token}`,
@@ -193,7 +193,7 @@ export default function Post() {
     const handlePost = async () => {
         setLoading(true);
         try {
-            const postCreate = await axios.post('http://49.231.43.37:3000/api/post', {
+            const postCreate = await axios.post('https://friendszone.app/api/post', {
                 content: message,
                 memberId: userData.id
             }, {

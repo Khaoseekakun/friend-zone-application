@@ -4,7 +4,7 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import io, { Socket } from "socket.io-client";
 
 // Adjust the URL to your server’s address
-const SERVER_URL = "http://49.231.43.37:3000/api/socketio";
+const SERVER_URL = "https://friendszone.app/api/socketio";
 
 
 
@@ -13,29 +13,16 @@ import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { FlatList, TextInput } from "react-native-gesture-handler";
 import axios from "axios";
+import { RootStackParamList } from "@/types";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledIonIcon = styled(Ionicons)
 
 export default function Message() {
-    const navigation = useNavigation<NavigationProp<any>>();
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [search, setSearch] = useState('');
     const [searchloading, setSearchLoading] = useState(false);
-
-    const handlerMessageSearch = async() => {
-        setSearchLoading(true);
-        try {
-            const searchMessage = await axios.get(`http://49.231.43.37:3000/api/message`)
-        } catch (error) {
-
-        } finally {
-            setSearchLoading(false);
-        }
-    }
-
-
-
 
     return (
         <StyledView className="flex-1 bg-white">
@@ -58,7 +45,7 @@ export default function Message() {
                             keyExtractor={(item, index) => `${item.id}_${index}`}
                             renderItem={({ item, index }) => (
                                 <>
-                                    <TouchableOpacity onPress={() => navigation.navigate('Chat', { helper: true })} className="flex-row items-center justify-between p-3 rounded-lg">
+                                    <TouchableOpacity onPress={() => navigation.navigate('Chat', { helper: true, chatId: `chantId_${item.id}`, chatName: `Chat ${item.id}` })} className="flex-row items-center justify-between p-3 rounded-lg">
                                         <StyledView className="flex-row items-center">
                                             <StyledView className="bg-gray-400 rounded-full w-[40px] h-[40px]" />
                                             <StyledView className="ml-2">
@@ -92,7 +79,7 @@ export default function Message() {
                                     )}
                                 </StyledView>
 
-                                <TouchableOpacity onPress={() => navigation.navigate('Chat', { helper: true })} className="flex-row items-center justify-between p-3 rounded-lg">
+                                <TouchableOpacity onPress={() => navigation.navigate('Chat', { helper: true, chatId: "helper", chatName : "FirendZone Helper"})} className="flex-row items-center justify-between p-3 rounded-lg">
                                     <StyledView className="flex-row items-center">
                                         <StyledView className="bg-gray-400 rounded-full w-[40px] h-[40px]" />
                                         <StyledView className="ml-2">

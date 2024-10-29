@@ -22,7 +22,7 @@ export default function Fast() {
     const handlerMessageSearch = async() => {
         setSearchLoading(true);
         try {
-            const searchMessage = await axios.get(`http://49.231.43.37:3000/api/message`)
+            const searchMessage = await axios.get(`https://friendszone.app/api/message`)
         } catch (error) {
 
         } finally {
