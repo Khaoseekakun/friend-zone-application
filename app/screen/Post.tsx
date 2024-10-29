@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, KeyboardAvoidingView, Platform, TextInput, Image, TouchableOpacity, ActivityIndicator, Alert, Modal, StyleSheet } from "react-native";
+import { View, Text, KeyboardAvoidingView, Platform, TextInput, Image, TouchableOpacity, ActivityIndicator, Alert, Modal, StyleSheet, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { getFirestore } from "firebase/firestore";
 import * as ImagePicker from 'expo-image-picker';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { initializeApp } from "firebase/app";
@@ -18,7 +17,7 @@ const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledBottomSheetView = styled(BottomSheetView);
-
+const StyledTouchableWithoutFeedback = styled(TouchableWithoutFeedback);
 const firebaseConfig = {
     apiKey: "AIzaSyB6-tcwtkosfRGDQq4_6Nvpz47Lnt33_UM",
     authDomain: "friendszone-d1e20.firebaseapp.com",
@@ -31,20 +30,19 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
-const db = getFirestore(app);
 
 export default function Post() {
     const navigation = useNavigation<NavigationProp<any>>();
     const [message, setMessage] = useState('');
     const [images, setImages] = useState<string[]>([]);
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const snapPoints = useMemo(() => ["20%"], []);
     const selectcount = 6;
-    const [loadingImages, setLoadingImages] = useState(new Array(images.length).fill(true));
     const [userData, setuserData] = useState<any>();
-    const [uploading, setUploading] = useState(false);
     const [loading, setLoading] = useState(false);
     const messageLimit = 512;
+    const [textFocus, setTextFocus] = useState(false);
+
+    const snapPoints = useMemo(() => ["25%"], ["50%"]);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -55,17 +53,6 @@ export default function Post() {
         fetchUserData();
 
     }, []);
-
-
-
-
-    const handleImageLoad = (index: number) => {
-        setLoadingImages((prev) => {
-            const newLoading = [...prev];
-            newLoading[index] = false;
-            return newLoading;
-        });
-    };
 
     const optimizeImage = async (uri: string) => {
         try {
@@ -248,125 +235,135 @@ export default function Post() {
     }
 
     return (
-        <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-            <StyledView className="flex-1 bg-white">
-                <LinearGradient
-                    colors={['#EB3834', '#69140F']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    className="w-full top-0 h-[106px]"
-                >
-                    <StyledView className="px-3 text-center pt-[60px] pb-3">
-                        <TouchableOpacity onPress={() => navigation.goBack()} className="absolute pt-[60] ml-4">
-                            <Ionicons name="chevron-back" size={24} color="#fff" />
-                        </TouchableOpacity>
-                        <StyledText className="font-custom text-center self-center text-lg font-bold text-white">สร้างโพสต์</StyledText>
+        <>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
+                <StyledTouchableWithoutFeedback onPress={Keyboard.dismiss} className="flex-1 bg-white">
+                    <StyledView className="flex-1">
+                        <LinearGradient
+                            colors={['#EB3834', '#69140F']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            className="w-full top-0 h-[106px]"
+                        >
+                            <StyledView className="px-3 text-center pt-[60px] pb-3">
+                                <TouchableOpacity onPress={() => navigation.goBack()} className="absolute pt-[60] ml-4">
+                                    <Ionicons name="chevron-back" size={24} color="#fff" />
+                                </TouchableOpacity>
+                                <StyledText className="font-custom text-center self-center text-lg font-bold text-white">สร้างโพสต์</StyledText>
 
-                        <TouchableOpacity onPress={handlePost} className="absolute right-3 pt-[60] flex-row" disabled={(images.length === 0 && message.length === 0)}>
-                            <StyledText className={`font-custom text-center self-center text-lg font-bold ${images.length > 0 || message.length > 0 ? "text-white" : "text-gray-500"}`}>โพสต์</StyledText>
-                        </TouchableOpacity>
-                    </StyledView>
-                </LinearGradient>
+                                <TouchableOpacity onPress={handlePost} className="absolute right-3 pt-[60] flex-row" disabled={(images.length === 0 && message.length === 0)}>
+                                    <StyledText className={`font-custom text-center self-center text-lg font-bold ${images.length > 0 || message.length > 0 ? "text-white" : "text-gray-500"}`}>โพสต์</StyledText>
+                                </TouchableOpacity>
+                            </StyledView>
+                        </LinearGradient>
 
-                    <StyledView className="bg-gray-200 w-full h-[1px]" />
+                        <StyledView className="bg-gray-200 w-full h-[1px]" />
 
-                    <StyledView className="w-full flex-row items-center justify-between">
-                        <StyledView className="ml-3 bg-gray-400 rounded-full w-[40px] h-[40px] mt-2" />
-                        <StyledView className="flex-row items-center ml-2 rounded-md w-full h-[40px]">
-                            <StyledText className="font-custom font-bold">{userData?.username}</StyledText>
+                        <StyledView className="w-full flex-row items-center justify-between">
+                            <StyledView className="ml-3 bg-gray-400 rounded-full w-[40px] h-[40px] mt-2" />
+                            <StyledView className="flex-row items-center ml-2 rounded-md w-full h-[40px]">
+                                <StyledText className="font-custom font-bold">{userData?.username}</StyledText>
+                            </StyledView>
                         </StyledView>
-                    </StyledView>
-                    <StyledView className="w-full px-3">
-                        <StyledTextInput
-                            placeholder="คุณกำลังคิดอะไรอยู่?"
-                            className="py-4 w-full font-custom"
-                            value={message}
-                            onChangeText={setMessage}
-                            inputMode='text'
-                            multiline={true}
-                            numberOfLines={5}
-                            maxLength={messageLimit}
-                        />
-                    </StyledView>
+                        <StyledView className="w-full px-3">
+                            <StyledTextInput
+                                placeholder="คุณกำลังคิดอะไรอยู่?"
+                                className="py-4 w-full font-custom"
+                                value={message}
+                                onChangeText={setMessage}
+                                inputMode='text'
+                                multiline={true}
+                                numberOfLines={5}
+                                maxLength={messageLimit}
+                                onFocus={() => setTextFocus(true)}
+                                onBlur={() => setTextFocus(false)}
+                                autoCorrect={false}
 
-                    <StyledView className="bg-gray-200 w-full h-[1px]" />
 
-                    {
-                        message.length > 0 && (
-                            <>
-                                <StyledText className="text-sm text-gray-500 self-end mr-2 mt-2 font-custom">
-                                    {messageLimit - message.length}
-                                </StyledText>
-                            </>
-                        )
-                    }
-                    <StyledView className="flex-row flex-wrap">
-                        {images.map((imageUri, index) => (
-                            <StyledView key={index} style={{ position: 'relative' }} className="shadow-md justify-start mx-1 mt-2">
-                                {loadingImages[index] && (
-                                    <ActivityIndicator size="small" color="#000" style={{ position: 'absolute', top: 40, left: 40 }} />
-                                )}
-                                <Image
-                                    source={{ uri: imageUri }}
-                                    style={{ width: 110, height: 110, borderRadius: 5 }}
-                                    onLoad={() => (
-                                        <ActivityIndicator size="small" color="#000" style={{ position: 'absolute', top: 40, left: 40 }} />
-                                    )}
-                                />
-                                {!uploading && (
+                            />
+                        </StyledView>
+
+
+
+                        <StyledView className="bg-gray-200 w-full h-[1px]" />
+
+
+
+                        {
+                            message.length > 0 && (
+                                <>
+                                    <StyledText className="text-sm text-gray-500 self-end mr-2 mt-2 font-custom">
+                                        {messageLimit - message.length}
+                                    </StyledText>
+                                </>
+                            )
+                        }
+                        <StyledView className="flex-row flex-wrap">
+                            {images.map((imageUri, index) => (
+                                <StyledView key={index} style={{ position: 'relative' }} className="shadow-md justify-start mx-1 mt-2">
+                                    <Image
+                                        source={{ uri: imageUri }}
+                                        style={{ width: 110, height: 110, borderRadius: 5 }}
+                                        onLoad={() => (
+                                            <ActivityIndicator size="small" color="#000" style={{ position: 'absolute', top: 40, left: 40 }} />
+                                        )}
+                                    />
                                     <TouchableOpacity
                                         onPress={() => deleteImage(imageUri)}
                                         style={{ position: 'absolute', top: -5, right: -5, backgroundColor: 'red', borderRadius: 50 }}
                                     >
                                         <Ionicons name="close" size={20} color="white" />
                                     </TouchableOpacity>
-                                )}
-                            </StyledView>
-                        ))}
-                    </StyledView>
-            </StyledView>
-
-            <BottomSheet
-                ref={bottomSheetRef}
-                snapPoints={snapPoints}
-                style={{
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 0 },
-                    shadowOpacity: 0.25,
-                }}
-            >
-                <StyledBottomSheetView className="h-full">
-                    <StyledView className="flex-1 bg-white">
-                        <StyledView className="mt-5 rounded-lg mx-4">
-                            <StyledView className="my-2 py-1">
-                                <TouchableOpacity onPress={() => { pickImages(); }} className="flex-row items-center" disabled={images.length >= 6}>
-                                    <Ionicons name="images" size={24} color={`${images.length >= 6 ? "#99d390" : "#3fd826"}`} />
-                                    <StyledText className={`pl-4 text-lg font-custom ${images.length >= 6 ? "text-gray-500" : ""}`}>รูปภาพ/วิดีโอ ({images.length}/{selectcount})</StyledText>
-                                </TouchableOpacity>
-                            </StyledView>
-                            <StyledView className="my-2 py-1">
-                                <TouchableOpacity onPress={() => { /* Call takePicture() if you want to keep camera option */ }} className="flex-row items-center">
-                                    <Ionicons name="camera" size={24} color="#2b98e8" />
-                                    <StyledText className="pl-4 text-lg font-custom">กล้อง</StyledText>
-                                </TouchableOpacity>
-                            </StyledView>
+                                </StyledView>
+                            ))}
                         </StyledView>
-                    </StyledView>
-                </StyledBottomSheetView>
-            </BottomSheet>
 
-            <Modal visible={loading} transparent={true} animationType="fade">
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <ActivityIndicator size="large" color="#0000ff" />
-                        <StyledText className="font-custom" style={styles.modalText}>กำลังสร้างโพสต์...</StyledText>
+                        <BottomSheet
+                            ref={bottomSheetRef}
+                            snapPoints={snapPoints}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: { width: 0, height: 0 },
+                                shadowOpacity: 0.25,
+                            }}
+                        >
+                            <StyledBottomSheetView className="relative h-[100%]">
+                                <StyledView className="flex-1 bg-white">
+                                    <StyledView className="mt-2 rounded-lg mx-4">
+                                        <StyledView className="my-2 py-1">
+                                            <TouchableOpacity onPress={() => { pickImages(); }} className="flex-row items-center" disabled={images.length >= 6}>
+                                                <Ionicons name="images" size={24} color={`${images.length >= 6 ? "#99d390" : "#3fd826"}`} />
+                                                <StyledText className={`pl-4 text-lg font-custom ${images.length >= 6 ? "text-gray-500" : ""}`}>รูปภาพ/วิดีโอ ({images.length}/{selectcount})</StyledText>
+                                            </TouchableOpacity>
+                                        </StyledView>
+                                        <StyledView className="my-2 py-1">
+                                            <TouchableOpacity onPress={() => { /* Call takePicture() if you want to keep camera option */ }} className="flex-row items-center">
+                                                <Ionicons name="camera" size={24} color="#2b98e8" />
+                                                <StyledText className="pl-4 text-lg font-custom">กล้อง</StyledText>
+                                            </TouchableOpacity>
+                                        </StyledView>
+                                    </StyledView>
+                                </StyledView>
+                            </StyledBottomSheetView>
+                        </BottomSheet>
+                    </StyledView>
+                </StyledTouchableWithoutFeedback>
+                <Modal visible={loading} transparent={true} animationType="fade">
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <ActivityIndicator size="large" color="#0000ff" />
+                            <StyledText className="font-custom" style={styles.modalText}>กำลังสร้างโพสต์...</StyledText>
+                        </View>
                     </View>
-                </View>
-            </Modal>
-        </KeyboardAvoidingView>
+                </Modal>
+
+
+            </KeyboardAvoidingView>
+
+        </>
     );
 }
 

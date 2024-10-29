@@ -1,4 +1,3 @@
-import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import SplashScreen from '../../app/pages/SplashScreen';
 import Login from '../../app/pages/Login';
@@ -10,7 +9,6 @@ import { useAuth } from '@/utils/context/AuthContext';
 import React from 'react';
 
 const Stack = createStackNavigator();
-
 export function AppNavigator() {
     const { userToken, isLoading } = useAuth();
 
@@ -23,17 +21,14 @@ export function AppNavigator() {
     }
 
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {userToken ? (
+        <Stack.Navigator  screenOptions={{ headerShown: false }} initialRouteName='Login'>
+            <>
+                <Stack.Screen name="Login" component={Login} />
                 <Stack.Screen name="HomeScreen" component={HomeScreen} />
-            ) : (
-                <>
-                    <Stack.Screen name="Login" component={Login} />
-                    <Stack.Screen name="Register" component={Register} />
-                    <Stack.Screen name="RegisterStepTwo" component={RegisterStepTwo} />
-                    <Stack.Screen name="Agreement" component={PolicyFirst} />
-                </>
-            )}
+                <Stack.Screen name="Register" component={Register} />
+                <Stack.Screen name="RegisterStepTwo" component={RegisterStepTwo} />
+                <Stack.Screen name="Agreement" component={PolicyFirst} />
+            </>
         </Stack.Navigator>
     );
 }

@@ -19,6 +19,9 @@ export type RootStackParamList = {
         verified: boolean;
       }
     }
+  },
+  Search : {
+    searchType : "Friend" | "Music" | "Dj"
   }
 };
 

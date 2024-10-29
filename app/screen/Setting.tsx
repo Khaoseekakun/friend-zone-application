@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { View, Text, KeyboardAvoidingView, Platform, ActivityIndicator, TouchableOpacity } from "react-native";
 import { styled } from "nativewind";
-import { Navigation } from "@/components/Menu";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "expo-router";
-import { NavigationProp } from "@react-navigation/native";
+import { NavigationProp, StackActions } from "@react-navigation/native";
 
 import * as Updates from 'expo-updates'
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -16,10 +15,12 @@ export default function Setting() {
     const navigation = useNavigation<NavigationProp<any>>();
     const [loading, setLoading] = useState(false);
 
+    const resetAction = StackActions.replace("Login", {})
+
     const Logout = async () => {
         await AsyncStorage.removeItem('userData');
         await AsyncStorage.removeItem('userToken');
-        await Updates.reloadAsync();
+        navigation.dispatch(resetAction);
     }
 
     return (
@@ -49,8 +50,6 @@ export default function Setting() {
                         </TouchableOpacity>
                     )}
                 </StyledView>
-
-                <Navigation />
             </StyledView>
         </KeyboardAvoidingView >
     );

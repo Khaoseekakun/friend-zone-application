@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import RNPickerSelect from 'react-native-picker-select';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const API_SYSTEM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzeXN0ZW0iOnRydWUsInBlcm1pc3Npb25zIjp7Ik1hbmFnZU90cCI6dHJ1ZSwiTm90aWZpY2F0aW9ucyI6dHJ1ZSwiTWFuYWdlQWRtaW5zIjp0cnVlLCJNYW5hZ2VQYXltZW50cyI6dHJ1ZSwiTWFuYWdlQ3VzdG9tZXIiOnRydWUsIk1hbmFnZU1lbWJlcnMiOnRydWUsIk1hbmFnZVBvc3RzIjp0cnVlLCJNYW5hZ2VTY2hlZHVsZSI6dHJ1ZSwiTWFuYWdlU2V0dGluZ3MiOnRydWV9LCJpYXQiOjE3MjY5NTIxODN9.LZqnLm_8qvrL191MV7OIpUSczeFgGupOb5Pp2UOvyTE';
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -96,6 +97,14 @@ export default function Register() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    AsyncStorage.getItem('userToken').then(token => {
+      if (token) {
+        navigation.navigate('HomeScreen');
+      }
+    });
+  })
+
   const handleCheckPassword = (value: string) => {
     setConfirmPassword(value);
     setIsPasswordMatch(password === value); // Simplified condition
@@ -166,7 +175,7 @@ export default function Register() {
 
   return (
 
-      <StyledSafeAreaView className="flex-1 bg-white dark:bg-black h-full">
+    <StyledSafeAreaView className="flex-1 bg-white dark:bg-black h-full">
 
       <StyledView className="flex-1 px-6">
         <TouchableOpacity onPress={() => navigation.navigate('Login')} className="mt-6">
@@ -222,6 +231,6 @@ export default function Register() {
           </TouchableOpacity>
         </StyledView>
       </StyledView>
-      </StyledSafeAreaView>
+    </StyledSafeAreaView>
   );
 }

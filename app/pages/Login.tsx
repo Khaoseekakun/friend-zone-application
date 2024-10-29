@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Animated, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { styled } from 'nativewind';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp, StackActions } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -50,7 +50,9 @@ export default function Login() {
                 try {
                     await AsyncStorage.setItem('userData', JSON.stringify(loginData.data.data.data));
                     await AsyncStorage.setItem('userToken', token);
-                    await Updates.reloadAsync();
+                    const resetAction = StackActions.replace("HomeScreen", {})
+
+                    navigation.dispatch(resetAction);
                 } catch (error) {
                     console.error('Failed to store the token:', error);
                     return Alert.alert("ไม่สำเร็จ", "เกิดข้อผิดพลาดไม่สามารถบันทึกข้อมูลเพื่อนเข้าสู่ระบบได้", [{ text: "ลองอีกครั้ง" }]);
@@ -83,6 +85,15 @@ export default function Login() {
             useNativeDriver: true,
         }).start();
     };
+
+    useEffect(() => {
+        // Check if the user is already logged in
+        AsyncStorage.getItem('userToken').then(token => {
+            if (token) {
+                navigation.navigate('HomeScreen');
+            }
+        });
+    })
 
     return (
         <KeyboardAvoidingView

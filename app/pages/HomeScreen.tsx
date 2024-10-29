@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { styled } from "nativewind";
@@ -12,10 +12,24 @@ import PostUpdate from "../screen/PostUpdate";
 import SearchCategory from "../screen/SearchCategory";
 import Fast from "../screen/Fast";
 import SchedulePage from "../screen/SchedulePage";
+import Search from "../screen/Search";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "@/types";
+import { useFocusEffect } from "expo-router";
 
 const Tab = createBottomTabNavigator();
 
 export default function HomeScreen() {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  useFocusEffect(() => {
+    // Check if the user is already logged in
+    AsyncStorage.getItem('userToken').then(token => {
+        if (!token) {
+          navigation.navigate('Login');
+        }
+    });
+})
   return (
     <>
       <Tab.Navigator tabBar={() => null} >
@@ -28,6 +42,7 @@ export default function HomeScreen() {
         <Tab.Screen name="FastTab" component={Fast} options={{ headerShown: false }} />
         <Tab.Screen name="SearchCategory" component={SearchCategory} options={{ headerShown: false }} />
         <Tab.Screen name="SchedulePage" component={SchedulePage} options={{ headerShown: false }} />
+        <Tab.Screen name="Search" component={Search} options={{ headerShown: false }} />
       </Tab.Navigator>
     </>
   );

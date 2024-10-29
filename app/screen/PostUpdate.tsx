@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, KeyboardAvoidingView, Platform, TextInput, Image, TouchableOpacity, ActivityIndicator, Alert, Modal, StyleSheet } from "react-native";
+import { View, Text, KeyboardAvoidingView, Platform, TextInput, Image, TouchableOpacity, ActivityIndicator, Alert, Modal, StyleSheet, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
@@ -12,15 +12,15 @@ const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 
-type RegisterStepTwoRouteProp = RouteProp<RootStackParamList, 'PostUpdate'>;
+const StyledTouchableWithoutFeedback = styled(TouchableWithoutFeedback);
+type PostUpdateParam = RouteProp<RootStackParamList, 'PostUpdate'>;
 export default function PostUpdate() {
-    const route = useRoute<RegisterStepTwoRouteProp>();
+    const route = useRoute<PostUpdateParam>();
 
     const { id, content, member, images } = route.params.post;
     const navigation = useNavigation<NavigationProp<any>>();
     const [message, setMessage] = useState('');
     const [userData, setuserData] = useState<any>();
-    const [uploading, setUploading] = useState(false);
     const [loading, setLoading] = useState(false);
     const [loadingImages, setLoadingImages] = useState(new Array(images.length).fill(true));
 
@@ -65,17 +65,12 @@ export default function PostUpdate() {
             if (putData.data.status != 200) {
                 Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตโพสต์ได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
             } else {
-                refreshHandler();
                 navigation.goBack();
             }
         } catch (error) {
             console.log(error)
             Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตโพสต์ได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
         }
-    }
-
-    const refreshHandler = () => {
-        setMessage('');
     }
 
     const handleImageLoad = (index: number) => {
@@ -90,25 +85,27 @@ export default function PostUpdate() {
         <KeyboardAvoidingView
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+
         >
-            <StyledView className="flex-1 bg-white">
+            <StyledTouchableWithoutFeedback onPress={Keyboard.dismiss} className="flex-1 bg-white">
+                <StyledView className="flex-1">
 
-                <LinearGradient
-                    colors={['#EB3834', '#69140F']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    className="w-full top-0 h-[106px]"
-                >
-                    <StyledView className="px-3 text-center pt-[60px] pb-3">
-                        <TouchableOpacity onPress={() => navigation.goBack()} className="absolute pt-[60] ml-4">
-                            <Ionicons name="chevron-back" size={24} color="#fff" />
-                        </TouchableOpacity>
-                        <StyledText className="text-center self-center text-lg font-bold text-white">แก้ไขโพสต์</StyledText>
+                    <LinearGradient
+                        colors={['#EB3834', '#69140F']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        className="w-full top-0 h-[106px]"
+                    >
+                        <StyledView className="px-3 text-center pt-[60px] pb-3">
+                            <TouchableOpacity onPress={() => navigation.goBack()} className="absolute pt-[60] ml-4">
+                                <Ionicons name="chevron-back" size={24} color="#fff" />
+                            </TouchableOpacity>
+                            <StyledText className="text-center self-center text-lg font-bold text-white">แก้ไขโพสต์</StyledText>
 
-                        <TouchableOpacity onPress={() => upDateTwoStep(id)} className="absolute right-3 pt-[60] flex-row" disabled={(message.length == 0 || (message == content))}>
-                            <StyledText className={`text-center self-center text-lg font-bold ${message.length > 0 ? "text-white" : "text-gray-500"}`}>แก้ไข</StyledText>
-                        </TouchableOpacity>
-                    </StyledView>
+                            <TouchableOpacity onPress={() => upDateTwoStep(id)} className="absolute right-3 pt-[60] flex-row" disabled={(message.length == 0 || (message == content))}>
+                                <StyledText className={`text-center self-center text-lg font-bold ${message.length > 0 ? "text-white" : "text-gray-500"}`}>แก้ไข</StyledText>
+                            </TouchableOpacity>
+                        </StyledView>
                     </LinearGradient>
 
                     <StyledView className="bg-gray-200 w-full h-[1px]" />
@@ -159,7 +156,8 @@ export default function PostUpdate() {
                             </StyledView>
                         ))}
                     </StyledView>
-            </StyledView>
+                </StyledView>
+            </StyledTouchableWithoutFeedback>
 
             <Modal visible={loading} transparent={true} animationType="fade">
                 <View style={styles.modalOverlay}>
