@@ -15,11 +15,11 @@ export default function Setting() {
     const navigation = useNavigation<NavigationProp<any>>();
     const [loading, setLoading] = useState(false);
 
-    const resetAction = StackActions.replace("Login", {})
 
     const Logout = async () => {
         await AsyncStorage.removeItem('userData');
         await AsyncStorage.removeItem('userToken');
+        const resetAction = StackActions.replace("Login")
         navigation.dispatch(resetAction);
     }
 

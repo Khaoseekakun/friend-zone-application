@@ -97,7 +97,7 @@ export default function RegisterStepTwo() {
         wrong
     }) => (
         <StyledView className="w-full mb-7">
-            <StyledText className={`text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-200'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-black z-50 px-2`}>{label}</StyledText>
+            <StyledText className={`font-custom text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-200'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-black z-50 px-2`}>{label}</StyledText>
             <StyledView className="flex-row items-center">
                 {isPicker && pickerItems && (
                     <StyledView className="w-full">
@@ -110,6 +110,7 @@ export default function RegisterStepTwo() {
                             darkTheme={theme == "dark" ? true : false}
                             style={{
                                 inputIOS: {
+                                    fontFamily: 'Kanit',
                                     padding: 16,
                                     borderWidth: 1,
                                     borderRadius: 25,
@@ -119,6 +120,7 @@ export default function RegisterStepTwo() {
                                     color: theme == "dark" ? '#fff' : '#000',
                                 },
                                 inputAndroid: {
+                                    fontFamily: 'Kanit',
                                     padding: 16,
                                     borderWidth: 1,
                                     borderRadius: 25,
@@ -138,7 +140,7 @@ export default function RegisterStepTwo() {
                     <>
                         <StyledTextInput
                             placeholder={placeholder}
-                            className={`border ${wrong == true ? 'border-red-500' : 'border-gray-300'} rounded-full py-4 px-4 ${wrong == true ? 'text-red-500' : 'text-gray-700 dark:text-gray-200'} ${buttonText ? 'flex-1 mr-2' : 'w-full'}`}
+                            className={`font-custom border ${wrong == true ? 'border-red-500' : 'border-gray-300'} rounded-full py-4 px-4 ${wrong == true ? 'text-red-500' : 'text-gray-700 dark:text-gray-200'} ${buttonText ? 'flex-1 mr-2' : 'w-full'}`}
                             value={value}
                             onChangeText={onChangeText}
                             placeholderTextColor="#d1d5db"
@@ -160,7 +162,7 @@ export default function RegisterStepTwo() {
                                     end={{ x: 1, y: 0 }}
                                     className="rounded-full py-3 px-4">
 
-                                    <StyledText className="text-white text-center">{buttonText}</StyledText>
+                                    <StyledText className="text-white text-center font-custom">{buttonText}</StyledText>
                                 </LinearGradient>
                             </TouchableOpacity>
                         )}
@@ -355,8 +357,8 @@ export default function RegisterStepTwo() {
                     </TouchableOpacity>
                     <StyledView className='flex-1 justify-center'>
                         <StyledView className="self-center flex items-center mb-5">
-                            <StyledText className="text-3xl font-bold text-[#1e3a8a] dark:text-white mt-6 mb-2">ข้อมูลส่วนตัว</StyledText>
-                            <StyledText className="text-base text-gray-400">กรอกเบอร์มือถือและยืนยันเบอร์มือถือของคุณ</StyledText>
+                            <StyledText className="font-custom text-3xl font-bold text-[#1e3a8a] dark:text-white mt-6 mb-2">ข้อมูลส่วนตัว</StyledText>
+                            <StyledText className="font-custom text-base text-gray-400">กรอกเบอร์มือถือและยืนยันเบอร์มือถือของคุณ</StyledText>
                         </StyledView>
                         <InputField
                             label="เพศ"
@@ -421,7 +423,7 @@ export default function RegisterStepTwo() {
                                     {loading ? (
                                         <ActivityIndicator size="small" color="#fff" />
                                     ) : (
-                                        <StyledText className="text-center text-white text-lg font-semibold">ถัดไป</StyledText>
+                                        <StyledText className="font-custom text-center text-white text-lg font-semibold">ถัดไป</StyledText>
                                     )}
                                 </LinearGradient>
                             </Animated.View>

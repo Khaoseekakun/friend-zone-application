@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
 import { styled } from 'nativewind';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp, useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -46,8 +46,8 @@ const InputField: React.FC<InputFieldProps> = ({
   isPasswordVisible
 }) => (
   <StyledView className="w-full mb-7">
-    <StyledText className={`text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-300'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-black z-50 px-2`}>{label}</StyledText>
-    <StyledView className="w-full relative">
+    <StyledText className={`font-custom text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-300'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-black z-50 px-2`}>{label}</StyledText>
+    <StyledView className="font-custom w-full relative">
       {isPicker && pickerItems ? (
         <RNPickerSelect
           onValueChange={onChangeText}
@@ -63,7 +63,7 @@ const InputField: React.FC<InputFieldProps> = ({
         <>
           <StyledTextInput
             placeholder={placeholder}
-            className={`border ${wrong == true ? 'border-red-500' : 'border-gray-300'} rounded-full py-4 px-4 ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-300'} w-full pr-12`}
+            className={`font-custom border ${wrong == true ? 'border-red-500' : 'border-gray-300'} rounded-full py-4 px-4 ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-300'} w-full pr-12`}
             value={value}
             onChangeText={onChangeText}
             onBlur={onBlur}
@@ -97,13 +97,25 @@ export default function Register() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    AsyncStorage.getItem('userToken').then(token => {
-      if (token) {
-        navigation.navigate('HomeScreen');
-      }
-    });
-  })
+  const [pageLoading, setPageLoading] = useState(true);
+
+    useFocusEffect(() => {
+        AsyncStorage.getItem('userToken').then(token => {
+            if (token) {
+                navigation.navigate('HomeScreen');
+            } else {
+                setPageLoading(false);
+            }
+        });
+    })
+
+    if(pageLoading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+        );
+    }
 
   const handleCheckPassword = (value: string) => {
     setConfirmPassword(value);
@@ -183,8 +195,8 @@ export default function Register() {
         </TouchableOpacity>
 
         <StyledView className="flex items-center">
-          <StyledText className="text-3xl font-bold text-[#1e3a8a] mt-6 mb-2">สร้างบัญชี</StyledText>
-          <StyledText className="text-base text-gray-400">สร้างบัญชีของคุณเพื่อเริ่มต้นการใช้งาน</StyledText>
+          <StyledText className="font-custom text-3xl font-bold text-[#1e3a8a] mt-6 mb-2">สร้างบัญชี</StyledText>
+          <StyledText className="font-custom text-base text-gray-400">สร้างบัญชีของคุณเพื่อเริ่มต้นการใช้งาน</StyledText>
         </StyledView>
 
         <StyledView className="flex-1 top-8">
@@ -226,7 +238,7 @@ export default function Register() {
               end={{ x: 1, y: 0 }}
               className="rounded-full py-3 shadow-sm"
             >
-              <StyledText className="text-center text-white text-lg font-semibold">ถัดไป</StyledText>
+              <StyledText className="font-custom text-center text-white text-lg font-semibold">ถัดไป</StyledText>
             </LinearGradient>
           </TouchableOpacity>
         </StyledView>

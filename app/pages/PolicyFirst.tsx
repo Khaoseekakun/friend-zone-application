@@ -53,13 +53,13 @@ export default function AgreementScreen() {
     return (
         <StyledView className="bg-white dark:bg-black flex-1">
 
-            <StyledText className="text-xl font-bold text-gray-900 dark:text-white text-center mt-16">ยินดีต้อนรับสู่</StyledText>
-            <StyledText className="text-xl font-bold text-gray-900 dark:text-white text-center">Friend Zone</StyledText>
-            <StyledText className="text-base text-gray-400 text-center mt-1">โปรดอ่านเงื่อนไขและข้อตกลง</StyledText>
+            <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center mt-16">ยินดีต้อนรับสู่</StyledText>
+            <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center">Friend Zone</StyledText>
+            <StyledText className="font-custom text-base text-gray-400 text-center mt-1">โปรดอ่านเงื่อนไขและข้อตกลง</StyledText>
 
             <ScrollView className="flex-1 w-4/5 mt-6 self-center">
                 {policyContent.map((item, index) => (
-                    <StyledText key={index} className="text-base text-gray-700 dark:text-gray-200 mt-4">
+                    <StyledText key={index} className="font-custom text-base text-gray-700 dark:text-gray-200 mt-4">
                         {`${index + 1}. ${item}`}
                     </StyledText>
                 ))}
@@ -74,7 +74,7 @@ export default function AgreementScreen() {
                     end={{ x: 1, y: 0 }}
                     className="rounded-full py-3 shadow-sm"
                 >
-                    <StyledText className="text-center text-white text-lg font-semibold">I AGREE</StyledText>
+                    <StyledText className="font-custom text-center text-white text-lg font-semibold">I AGREE</StyledText>
                 </LinearGradient>
             </TouchableOpacity>
         </StyledView>

@@ -27,7 +27,6 @@ function SplashScreen({ navigation }: Props) {
       duration: 1000,
       useNativeDriver: true,
     }).start(() => {
-      navigation.navigate('Login');
     });
   }, [fadeAnim, navigation]);
 
@@ -56,7 +55,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white', // Consider making this dynamic based on the theme
+    backgroundColor: 'white',
   },
   container: {
     justifyContent: 'center',

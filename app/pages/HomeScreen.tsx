@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
-import { View, Text } from "react-native";
+import React, { useState } from "react";
+import { View, Text, ActivityIndicator } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { styled } from "nativewind";
 import Profile from "../screen/Profile";
 
 import Message from "../screen/Message";
@@ -13,24 +12,16 @@ import SearchCategory from "../screen/SearchCategory";
 import Fast from "../screen/Fast";
 import SchedulePage from "../screen/SchedulePage";
 import Search from "../screen/Search";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
-import { useFocusEffect } from "expo-router";
 import Chat from "../screen/Chat";
 
 const Tab = createBottomTabNavigator();
 
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  useFocusEffect(() => {
-    // Check if the user is already logged in
-    AsyncStorage.getItem('userToken').then(token => {
-        if (!token) {
-          navigation.navigate('Login');
-        }
-    });
-})
+  const [pageLoading, setPageLoading] = useState(true);
+
   return (
     <>
       <Tab.Navigator tabBar={() => null} >

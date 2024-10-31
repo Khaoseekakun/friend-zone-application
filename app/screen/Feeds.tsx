@@ -220,7 +220,7 @@ export default function FeedsTab() {
                             <StyledView className="mr-3 flex-row items-center mb-2">
                                 <Ionicons
                                     name="ellipsis-horizontal"
-                                    size={15}
+                                    size={22}
                                     color="gray"
                                     accessibilityLabel="Settings"
                                     onPress={() => { BottomSheetShow(0), setPostAction(item.id) }}

@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from 'expo-router';
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
@@ -21,6 +22,26 @@ export default function Login() {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [loading, setLoading] = useState(false);
     const scaleValue = useRef(new Animated.Value(1)).current;
+    const [pageLoading, setPageLoading] = useState(true);
+
+    useFocusEffect(() => {
+        AsyncStorage.getItem('userToken').then(token => {
+            if (token) {
+                navigation.navigate('HomeScreen');
+            } else {
+                setPageLoading(false);
+            }
+        });
+    })
+
+    if(pageLoading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+        );
+    }
+
 
     const togglePasswordVisibility = () => {
         setIsPasswordVisible(!isPasswordVisible);
@@ -49,7 +70,7 @@ export default function Login() {
                 try {
                     await AsyncStorage.setItem('userData', JSON.stringify(loginData.data.data.data));
                     await AsyncStorage.setItem('userToken', token);
-                    const resetAction = StackActions.replace("HomeScreen", {})
+                    const resetAction = StackActions.replace("HomeScreen")
 
                     navigation.dispatch(resetAction);
                 } catch (error) {
@@ -85,15 +106,6 @@ export default function Login() {
         }).start();
     };
 
-    useEffect(() => {
-        // Check if the user is already logged in
-        AsyncStorage.getItem('userToken').then(token => {
-            if (token) {
-                navigation.navigate('HomeScreen');
-            }
-        });
-    })
-
     return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}
@@ -101,14 +113,14 @@ export default function Login() {
         >
             <StyledSafeAreaView className="flex-1 bg-white dark:bg-black">
                 <StyledView className="flex-1 px-6 justify-center items-center -top-10">
-                    <StyledText className="text-3xl font-bold text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">Friend Zone</StyledText>
+                    <StyledText className="text-3xl font-bold font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">Friend Zone</StyledText>
                     <StyledText className="text-lg text-gray-400 mb-8">ยินดีต้อนรับกลับ</StyledText>
 
                     <StyledView className="w-full mb-7">
-                        <StyledText className="text-sm text-gray-600 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black dark:text-white z-50 left-2">เบอร์โทรศัพท์</StyledText>
+                        <StyledText className="font-custom text-sm text-gray-600 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black dark:text-white z-50 left-2">เบอร์โทรศัพท์</StyledText>
                         <StyledTextInput
                             placeholder="ป้อนเบอร์โทรศัพท์"
-                            className="border border-gray-300 rounded-full py-4 px-4 text-gray-700 w-full"
+                            className="font-custom border border-gray-300 rounded-full py-4 px-4 text-gray-700 w-full"
                             value={phone}
                             onChangeText={setPhone}
                             placeholderTextColor="#9CA3AF"
@@ -118,10 +130,10 @@ export default function Login() {
                         />
                     </StyledView>
                     <StyledView className="w-full mb-3">
-                        <StyledText className="text-sm text-gray-600 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black dark:text-white z-50 left-2">รหัสผ่าน</StyledText>
+                        <StyledText className="font-custom text-sm text-gray-600 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black dark:text-white z-50 left-2">รหัสผ่าน</StyledText>
                         <StyledTextInput
                             placeholder="ป้อนรหัสผ่านของคุณ"
-                            className="border border-gray-300 rounded-full py-4 px-4 text-gray-700 w-full pr-12"
+                            className="font-custom border border-gray-300 rounded-full py-4 px-4 text-gray-700 w-full pr-12"
                             value={password}
                             onChangeText={setPassword}
                             secureTextEntry={!isPasswordVisible}
@@ -129,7 +141,7 @@ export default function Login() {
                         />
                         <TouchableOpacity
                             onPress={togglePasswordVisibility}
-                            className="absolute right-4 top-3"
+                            className="absolute right-4 flex-1 mt-4"
                         >
                             <Ionicons
                                 name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
@@ -142,12 +154,12 @@ export default function Login() {
                     {/* Create Account */}
                     <StyledView className="flex-row justify-between w-full mb-10">
                         <StyledTouchableOpacity>
-                            <StyledText className="text-blue-600">ลืมรหัสผ่าน?</StyledText>
+                            <StyledText className="font-custom text-blue-600">ลืมรหัสผ่าน?</StyledText>
                         </StyledTouchableOpacity>
                         <StyledView className="flex-row items-center">
-                            <StyledText className='text-gray-500'>ยังไม่มีบัญชี</StyledText>
+                            <StyledText className='font-custom text-gray-500'>ยังไม่มีบัญชี</StyledText>
                             <StyledTouchableOpacity onPress={() => navigation.navigate('Agreement', { nextScreen: 'Register' })}>
-                                <StyledText className='text-blue-600'>สร้างบัญชี</StyledText>
+                                <StyledText className='font-custom text-blue-600'>สร้างบัญชี</StyledText>
                             </StyledTouchableOpacity>
                         </StyledView>
                     </StyledView>
@@ -169,7 +181,7 @@ export default function Login() {
                                 {loading ? (
                                     <ActivityIndicator size="small" color="#fff" />
                                 ) : (
-                                    <StyledText className="text-center text-white text-lg font-semibold">เข้าสู่ระบบ</StyledText>
+                                    <StyledText className="font-custom text-center text-white text-lg font-semibold">เข้าสู่ระบบ</StyledText>
                                 )}
                             </LinearGradient>
                         </Animated.View>
