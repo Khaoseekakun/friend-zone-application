@@ -44,7 +44,7 @@ export const HeaderApp = () => {
         >
             <StatusBar barStyle={'light-content'}></StatusBar>
             <StyledView className="w-full flex-row items-center justify-between mt-12">
-                <TouchableOpacity className="flex-1 flex-row left-0 shadow-md" onPress={() => navigation.navigate('ProfileTab')}>
+                <TouchableOpacity className="flex-1 flex-row left-0 shadow-md" onPress={() => navigation.navigate('ProfileTab', {profileId : userData?.id})}>
                     <Image className="ml-3 rounded-full w-[42px] h-[42px]" source={
                         WhiteLogo
                     }>

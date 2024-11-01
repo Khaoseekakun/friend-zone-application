@@ -1,24 +1,27 @@
 import React, { useState, useEffect, useRef } from "react";
-import { 
+import {
     View, Text, TouchableOpacity, Platform, KeyboardAvoidingView,
-    ActivityIndicator, Alert
+    ActivityIndicator, Alert,
+    Image
 } from "react-native";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import io, { Socket } from "socket.io-client";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { FlatList, TextInput } from "react-native-gesture-handler";
 import axios from "axios";
 import { RootStackParamList } from "@/types";
+import * as Notifications from 'expo-notifications';
 
+const WhiteLogo = require("../../assets/images/logo-white.png")
 // แก้ไข URL ให้ตรงกับ backend
 const API_URL = "https://friendszone.app/api";
-const SOCKET_URL = "https://friendszone.app/api/socketio";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledIonIcon = styled(Ionicons);
+const StyledTouchableOpacity = styled(TouchableOpacity);
+
 
 // สร้าง axios instance
 const api = axios.create({
@@ -45,46 +48,25 @@ export default function Chat() {
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isSending, setIsSending] = useState(false);
-    const socketRef = useRef<Socket | null>(null);
     const flatListRef = useRef<FlatList | null>(null);
-    
+    const [typing, setTyping] = useState(false);
     const router = useRoute<PostUpdateParam>();
     const { chatId, chatName, helper } = router.params;
 
     useEffect(() => {
-        initializeSocket();
-        fetchChatHistory();
-        return () => {
-            socketRef.current?.disconnect();
+        const checkNotificationPermissions = async () => {
+            const { status: existingStatus } = await Notifications.getPermissionsAsync();
+            let finalStatus = existingStatus;
+
+            if (existingStatus !== 'granted') {
+                const { status } = await Notifications.requestPermissionsAsync();
+                finalStatus = status;
+            }
         };
-    }, [chatId]);
 
-    const initializeSocket = () => {
-        try {
-            socketRef.current = io(SOCKET_URL, {
-                transports: ['websocket'],
-                query: {
-                    chatId,
-                    userId: 'currentUserId' // แทนที่ด้วย user ID จริง
-                }
-            });
-
-            socketRef.current.on('connect', () => {
-                console.log('Socket connected');
-            });
-
-            socketRef.current.on('connect_error', (error) => {
-                console.error('Socket connection error:', error);
-            });
-            
-            socketRef.current.on('message', (newMsg: Message) => {
-                setMessages(prev => [...prev, newMsg]);
-                scrollToBottom();
-            });
-        } catch (error) {
-            console.error('Socket initialization error:', error);
-        }
-    };
+        checkNotificationPermissions();
+        fetchChatHistory();
+    }, []);
 
     const fetchChatHistory = async () => {
         setIsLoading(true);
@@ -107,21 +89,15 @@ export default function Chat() {
                 }
             ];
             setMessages(dummyMessages);
-
-            // เมื่อ API พร้อม ให้ใช้โค้ดนี้แทน
-            /*
-            const response = await api.get(`/chats/${chatId}/messages`);
-            setMessages(response.data);
-            */
         } catch (error) {
             console.error('Error fetching chat history:', error);
             Alert.alert(
                 'Error',
                 'ไม่สามารถโหลดประวัติการสนทนาได้ กรุณาลองใหม่อีกครั้ง',
                 [
-                    { 
-                        text: 'ลองใหม่', 
-                        onPress: fetchChatHistory 
+                    {
+                        text: 'ลองใหม่',
+                        onPress: fetchChatHistory
                     },
                     {
                         text: 'ยกเลิก',
@@ -145,7 +121,6 @@ export default function Chat() {
 
         setIsSending(true);
         try {
-            // ทดลองเพิ่มข้อความโดยตรง
             const newMsg: Message = {
                 id: Date.now().toString(),
                 text: messageData.text,
@@ -156,12 +131,6 @@ export default function Chat() {
             setMessages(prev => [...prev, newMsg]);
             setNewMessage('');
             scrollToBottom();
-
-            // เมื่อ API พร้อม ให้ใช้โค้ดนี้แทน
-            /*
-            const response = await api.post('/messages', messageData);
-            socketRef.current?.emit('sendMessage', response.data);
-            */
         } catch (error) {
             console.error('Error sending message:', error);
             Alert.alert('Error', 'ไม่สามารถส่งข้อความได้ กรุณาลองใหม่');
@@ -180,36 +149,35 @@ export default function Chat() {
         const isMyMessage = item.senderId === 'currentUserId';
 
         return (
-            <StyledView className={`flex-row ${isMyMessage ? 'justify-end' : 'justify-start'} mb-2`}>
-                {!isMyMessage && (
-                    <StyledView className="bg-gray-400 rounded-full w-[30px] h-[30px] mr-2" />
-                )}
-                <StyledView 
-                    className={`${isMyMessage ? 'bg-blue-500' : 'bg-gray-200'} 
-                              rounded-2xl px-3 py-2 max-w-[80%]`}
-                >
-                    <StyledText className={`${isMyMessage ? 'text-white' : 'text-black'} text-base`}>
-                        {item.text}
+            <>
+
+
+                <StyledView className="items-center justify-center">
+                    <StyledText
+                        className={`text-gray-500 text-xs font-custom pb-1`}
+                    >
+                        {new Date(item.timestamp).toLocaleTimeString('th-TH', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}
                     </StyledText>
-                    <StyledView className="flex-row items-center justify-end mt-1">
-                        <StyledText 
-                            className={`${isMyMessage ? 'text-blue-100' : 'text-gray-500'} text-xs mr-1`}
-                        >
-                            {new Date(item.timestamp).toLocaleTimeString('th-TH', { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                            })}
+                </StyledView>
+
+                <StyledView className={`flex-row ${isMyMessage ? 'justify-end' : 'justify-start'}`}>
+                    {!isMyMessage && (
+                        <Image className="bg-[#EB3834] rounded-full w-[32px] h-[32px] mr-2 max-w-[80%]" source={WhiteLogo} />
+                    )}
+                    <StyledView
+                        className={`${isMyMessage ? 'bg-[#EB3834]' : 'bg-gray-200'} rounded-2xl px-3 py-2 max-w-[80%] mb-3`}
+                    >
+                        <StyledText className={`${isMyMessage ? 'text-white' : 'text-black'} font-custom text-base `}>
+                            {item.text}
                         </StyledText>
-                        {isMyMessage && (
-                            <StyledIonIcon 
-                                name={item.status === 'read' ? 'checkmark-done' : 'checkmark'} 
-                                size={16} 
-                                color={item.status === 'read' ? '#fff' : '#e0e0e0'}
-                            />
-                        )}
                     </StyledView>
                 </StyledView>
-            </StyledView>
+
+
+            </>
         );
     };
 
@@ -218,11 +186,13 @@ export default function Chat() {
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+
             >
+
                 <StyledView className="bg-white px-3 pt-[60px] pb-3 border-b border-gray-200">
-                    <TouchableOpacity 
-                        onPress={() => navigation.navigate("MessageTab")} 
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate("MessageTab")}
                         className="absolute pt-[60] ml-4"
                     >
                         <Ionicons name="chevron-back" size={24} color="black" />
@@ -231,10 +201,9 @@ export default function Chat() {
                         <StyledText className="text-center font-bold text-lg">{chatName}</StyledText>
                     </StyledView>
                 </StyledView>
-
                 {isLoading ? (
                     <StyledView className="flex-1 items-center justify-center">
-                        <ActivityIndicator size="large" color="#0000ff" />
+                        <ActivityIndicator size="large" color="#EB3834" />
                     </StyledView>
                 ) : (
                     <FlatList
@@ -242,40 +211,53 @@ export default function Chat() {
                         data={messages}
                         renderItem={renderMessage}
                         keyExtractor={item => item.id}
-                        className="flex-1 px-4"
+                        className="flex-1 px-4 pt-2 mb-7"
                         onContentSizeChange={scrollToBottom}
                         onLayout={scrollToBottom}
                     />
                 )}
 
-                <StyledView className="px-4 py-2 border-t border-gray-200">
-                    <StyledView className="flex-row items-center bg-gray-100 rounded-full px-4">
+                <StyledView className="flex-row px-2 z-10 items-center gap-2 relative py-2 bottom-5 bg-white w-full border-t max-h-[30%] border-gray-200">
+
+                    <StyledView className="bg-blue-500 rounded-xl h-[36px] w-[36px] justify-center items-center">
+                        <TouchableOpacity
+                            onPress={() => { }}
+                        >
+                            <Ionicons
+                                name="add"
+                                size={24}
+                                color={"white"}
+                            />
+                        </TouchableOpacity>
+                    </StyledView>
+                    <StyledView className="flex-row w-[85%] items-center min-h-[36px] bg-gray-100 rounded-lg px-4">
                         <StyledTextInput
                             placeholder="พิมพ์ข้อความ..."
                             className="flex-1 py-2 text-base"
                             value={newMessage}
                             onChangeText={setNewMessage}
                             multiline
-                            maxHeight={100}
                         />
                         {isSending ? (
-                            <ActivityIndicator size="small" color="#0000ff" />
+                            <ActivityIndicator size="small" color="#EB3834" />
                         ) : (
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={sendMessage}
                                 disabled={!newMessage.trim()}
-                                className="ml-2"
+                                className="-right-2"
                             >
-                                <Ionicons 
-                                    name="send" 
-                                    size={24} 
-                                    color={newMessage.trim() ? "#0000ff" : "gray"} 
+                                <Ionicons
+                                    name="send"
+                                    size={24}
+                                    color={newMessage.trim() ? "#EB3834" : "gray"}
                                 />
                             </TouchableOpacity>
                         )}
                     </StyledView>
                 </StyledView>
+
             </KeyboardAvoidingView>
+
         </StyledView>
     );
 }

@@ -37,13 +37,13 @@ export default function Post() {
     const [images, setImages] = useState<string[]>([]);
     const bottomSheetRef = useRef<BottomSheet>(null);
     const selectcount = 6;
-    const [userData, setuserData] = useState<any>();
     const [loading, setLoading] = useState(false);
     const messageLimit = 512;
     const [textFocus, setTextFocus] = useState(false);
 
     const snapPoints = useMemo(() => ["25%"], ["50%"]);
 
+    const [userData, setuserData] = useState<any>();
     useEffect(() => {
         const fetchUserData = async () => {
             const userData = await AsyncStorage.getItem('userData');

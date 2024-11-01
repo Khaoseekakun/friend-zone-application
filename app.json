@@ -8,7 +8,8 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.myfirendzone.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -49,6 +50,11 @@
         "gif",
         "md"
       ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e09ad89e-a2bc-4289-a918-5a5652f57c4f"
+      }
     }
   }
 }

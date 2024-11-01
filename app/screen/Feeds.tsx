@@ -11,29 +11,20 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { formatTimeDifference } from "@/utils/Date";
 import { deleteObject, getStorage, ref } from "firebase/storage";
-import { initializeApp } from "firebase/app";
 import { Navigation } from "@/components/Navigation";
+import FireBaseApp from "@/utils/firebaseConfig";
+import { RootStackParamList } from "@/types";
 const GuestIcon = require("../../assets/images/guesticon.jpg")
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledImage = styled(Image);
 const StyleImageViewer = styled(ImageViewer);
-const firebaseConfig = {
-    apiKey: "AIzaSyB6-tcwtkosfRGDQq4_6Nvpz47Lnt33_UM",
-    authDomain: "friendszone-d1e20.firebaseapp.com",
-    projectId: "friendszone-d1e20",
-    storageBucket: "friendszone-d1e20.appspot.com",
-    messagingSenderId: "820285031495",
-    appId: "1:820285031495:web:154296ce35bf7171bcdd62",
-    measurementId: "G-RN2B2NF5DM"
-};
 
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
+const storage = getStorage(FireBaseApp);
 
 export default function FeedsTab() {
-    const navigation = useNavigation<NavigationProp<any>>();
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState([] as string[]);
     const [isOpen, setIsOpen] = useState(false);
@@ -192,7 +183,7 @@ export default function FeedsTab() {
 
     const handleGotoEditPost = () => {
         if (!posts.find((p) => p.id === postAction)) return Alert.alert('ผิดพลาด', 'ไม่พบข้อมูลของโพสต์นี้', [{ text: 'ตกลง' }]);
-        navigation.navigate("PostUpdate", { post: posts.find((p) => p.id === postAction) })
+        navigation.navigate("PostUpdate", { post: posts.find((p) => p.id === postAction) as any })
         bottomSheetRef.current?.close();
     }
 
@@ -209,7 +200,7 @@ export default function FeedsTab() {
                     <StyledView className="mt-2">
                         <StyledView className="bg-gray-200 w-full h-[1px] my-2" />
                         <StyledView className="w-full flex-row items-center justify-between">
-                            <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab')}>
+                            <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab', {profileId : item.member.id})}>
                                 <Image className="ml-3 rounded-full w-[40px] h-[40px]" source={item.member?.profileUrl ? { uri: item.member?.profileUrl } : GuestIcon} />
                                 <StyledView className="pl-3 mt-2 flex-row">
                                     <StyledText className="font-custom font-bold text-md">{item.member.username} </StyledText>
@@ -420,7 +411,7 @@ export default function FeedsTab() {
                     <StyledView className="flex-1 bg-white">
                         <StyledView className="mt-5 bg-gray-100 rounded-lg mx-5">
                             <StyledView className="my-2 px-3 py-1">
-                                <TouchableOpacity onPress={() => setIsOpen(false)} className="flex-row items-center">
+                                <TouchableOpacity onPress={() => navigation.navigate("ProfileTab", {profileId : posts.find((p) => p.id == postAction)?.member.id ?? ""})} className="flex-row items-center">
                                     <Ionicons
                                         name="information-circle-outline"
                                         size={24}

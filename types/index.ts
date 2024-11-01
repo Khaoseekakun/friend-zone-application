@@ -28,7 +28,12 @@ export type RootStackParamList = {
     chatId : string,
     chatName : string,
   },
-  MessageTab : undefined
+  MessageTab : undefined,
+  ProfileTab : {
+    profileId : string
+  },
+  FeedsTab : undefined,
+  PostTab : undefined,
 };
 
 export type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
