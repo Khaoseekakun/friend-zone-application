@@ -10,7 +10,11 @@ const WhiteLogo = require("../assets/images/logo-white.png")
 const StyledView = styled(View);
 const StyledText = styled(Text);
 
-export const HeaderApp = () => {
+interface HeaderAppProps {
+    back?: string;
+}
+
+export const HeaderApp: React.FC<HeaderAppProps> = ({ back }) => {
     const navigation = useNavigation<NavigationProp<any>>();
     const [userData, setuserData] = useState<any>();
     const [province, setProvince] = useState<string>('');
@@ -19,7 +23,7 @@ export const HeaderApp = () => {
         const fetchUserData = async () => {
             const userData = await AsyncStorage.getItem('userData');
             const province = await AsyncStorage.getItem('province');
-            if(province){
+            if (province) {
                 setProvince(province);
             }
             setuserData(JSON.parse(userData || '{}'));
@@ -27,7 +31,7 @@ export const HeaderApp = () => {
         fetchUserData();
     }, []);
 
-    const HandleChangeProvince = async(province : string) => {
+    const HandleChangeProvince = async (province: string) => {
         try {
             await AsyncStorage.setItem('province', province);
         } catch (e) {
@@ -44,8 +48,20 @@ export const HeaderApp = () => {
         >
             <StatusBar barStyle={'light-content'}></StatusBar>
             <StyledView className="w-full flex-row items-center justify-between mt-12">
-                <TouchableOpacity className="flex-1 flex-row left-0 shadow-md" onPress={() => navigation.navigate('ProfileTab', {profileId : userData?.id})}>
-                    <Image className="ml-3 rounded-full w-[42px] h-[42px]" source={
+                {
+                    back && (
+                        <StyledView className="">
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate(back)}
+                                className="ml-1"
+                            >
+                                <Ionicons name="chevron-back" size={30} color="white" />
+                            </TouchableOpacity>
+                        </StyledView>
+                    )
+                }
+                <TouchableOpacity className="flex-1 flex-row left-0 shadow-md" onPress={() => navigation.navigate('ProfileTab', { profileId: userData?.id })}>
+                    <Image className=" rounded-full w-[42px] h-[42px]" source={
                         WhiteLogo
                     }>
 
@@ -63,8 +79,8 @@ export const HeaderApp = () => {
 
                 <StyledView className="mr-3 flex-row items-center">
                     <StyledText className="mr-2 text-lg text-right text-white font-custom wrapper w-[100px] leading-5">
-                    {/* {Nakhon Ratchasima} */}
-                    {province ? province : userData?.province ?? "ไม่ระบุ"}
+                        {/* {Nakhon Ratchasima} */}
+                        {province ? province : userData?.province ?? "ไม่ระบุ"}
                     </StyledText>
                     <Ionicons
                         name="settings"

@@ -1,23 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, TouchableOpacity, Platform, KeyboardAvoidingView } from "react-native";
+import { View, Text, Button, TouchableOpacity, Platform, KeyboardAvoidingView, Image } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import io, { Socket } from "socket.io-client";
-
-// Adjust the URL to your server’s address
-const SERVER_URL = "https://friendszone.app/api/socketio";
-
-
-
-
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { FlatList, TextInput } from "react-native-gesture-handler";
-import axios from "axios";
 import { RootStackParamList } from "@/types";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledIonIcon = styled(Ionicons)
+const AppLogo = require("../../assets/images/logo.png")
+const GuestIcon = require("../../assets/images/guesticon.jpg")
 
 export default function Message() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -45,11 +38,11 @@ export default function Message() {
                             keyExtractor={(item, index) => `${item.id}_${index}`}
                             renderItem={({ item, index }) => (
                                 <>
-                                    <TouchableOpacity onPress={() => navigation.navigate('Chat', { helper: true, chatId: `chantId_${item.id}`, chatName: `Chat ${item.id}` })} className="flex-row items-center justify-between p-3 rounded-lg">
+                                    <TouchableOpacity onPress={() => navigation.navigate('Chat', { helper: false, chatId: `chantId_${item.id}`, chatName: `Chat ${item.id}` })} className="flex-row items-center justify-between p-3 rounded-lg">
                                         <StyledView className="flex-row items-center">
-                                            <StyledView className="bg-gray-400 rounded-full w-[40px] h-[40px]" />
+                                            <Image source={GuestIcon} className="bg-gray-400 rounded-full w-[40px] h-[40px] border-[1px] border-gray-200" />
                                             <StyledView className="ml-2">
-                                                <StyledText className="font-bold">Friend Zone {index}</StyledText>
+                                                <StyledText className="font-bold">Members {index}</StyledText>
                                                 <StyledText className="text-gray-500">สวัสดีครับ</StyledText>
                                             </StyledView>
                                         </StyledView>
@@ -81,10 +74,10 @@ export default function Message() {
 
                                 <TouchableOpacity onPress={() => navigation.navigate('Chat', { helper: true, chatId: "helper", chatName : "FirendZone Helper"})} className="flex-row items-center justify-between p-3 rounded-lg">
                                     <StyledView className="flex-row items-center">
-                                        <StyledView className="bg-gray-400 rounded-full w-[40px] h-[40px]" />
+                                        <Image source={AppLogo} className="bg-gray-400 rounded-full w-[40px] h-[40px]" />
                                         <StyledView className="ml-2">
                                             <StyledText className="font-bold">Friend Zone Helper</StyledText>
-                                            <StyledText className="text-gray-500">สวัสดีครับ</StyledText>
+                                            <StyledText className="text-gray-500">คุณ : สวัสดีครับ</StyledText>
                                         </StyledView>
                                     </StyledView>
                                     <StyledText className="text-gray-500">12:00</StyledText>

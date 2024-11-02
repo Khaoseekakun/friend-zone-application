@@ -12,7 +12,9 @@ import axios from "axios";
 import { RootStackParamList } from "@/types";
 import * as Notifications from 'expo-notifications';
 
-const WhiteLogo = require("../../assets/images/logo-white.png")
+const Logo = require("../../assets/images/logo.png")
+
+const GuestIcon = require("../../assets/images/guesticon.jpg")
 // แก้ไข URL ให้ตรงกับ backend
 const API_URL = "https://friendszone.app/api";
 
@@ -52,6 +54,7 @@ export default function Chat() {
     const [typing, setTyping] = useState(false);
     const router = useRoute<PostUpdateParam>();
     const { chatId, chatName, helper } = router.params;
+    const [messageStatus, setMessageStatus] = useState('not_allow_typing');
 
     useEffect(() => {
         const checkNotificationPermissions = async () => {
@@ -164,8 +167,10 @@ export default function Chat() {
                 </StyledView>
 
                 <StyledView className={`flex-row ${isMyMessage ? 'justify-end' : 'justify-start'}`}>
-                    {!isMyMessage && (
-                        <Image className="bg-[#EB3834] rounded-full w-[32px] h-[32px] mr-2 max-w-[80%]" source={WhiteLogo} />
+                    {!isMyMessage && helper == true ? (
+                        <Image className="rounded-full w-[32px] h-[32px] mr-2 max-w-[80%]" source={Logo} />
+                    ) : !isMyMessage && (
+                        <Image className="rounded-full w-[32px] h-[32px] mr-2 max-w-[80%] border-[1px] border-gray-200" source={GuestIcon} />
                     )}
                     <StyledView
                         className={`${isMyMessage ? 'bg-[#EB3834]' : 'bg-gray-200'} rounded-2xl px-3 py-2 max-w-[80%] mb-3`}
@@ -183,6 +188,12 @@ export default function Chat() {
 
     return (
         <StyledView className="flex-1 bg-white">
+            <StyledView className="bg-white px-3 text-center pt-[60px] pb-3">
+                <TouchableOpacity onPress={() => navigation.navigate("MessageTab")} className="absolute pt-[60] ml-4">
+                    <Ionicons name="chevron-back" size={24} color="" />
+                </TouchableOpacity>
+                <StyledText className="text-center self-center text-lg font-bold text-black">{chatName}</StyledText>
+            </StyledView>
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -190,17 +201,6 @@ export default function Chat() {
 
             >
 
-                <StyledView className="bg-white px-3 pt-[60px] pb-3 border-b border-gray-200">
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate("MessageTab")}
-                        className="absolute pt-[60] ml-4"
-                    >
-                        <Ionicons name="chevron-back" size={24} color="black" />
-                    </TouchableOpacity>
-                    <StyledView className="flex-row items-center justify-center">
-                        <StyledText className="text-center font-bold text-lg">{chatName}</StyledText>
-                    </StyledView>
-                </StyledView>
                 {isLoading ? (
                     <StyledView className="flex-1 items-center justify-center">
                         <ActivityIndicator size="large" color="#EB3834" />
@@ -218,42 +218,57 @@ export default function Chat() {
                 )}
 
                 <StyledView className="flex-row px-2 z-10 items-center gap-2 relative py-2 bottom-5 bg-white w-full border-t max-h-[30%] border-gray-200">
+                    {
+                        messageStatus === 'not_allow_typing' ? (
+                            <>
+                                <StyledView className="flex-row w-[100%] items-center min-h-[36px] bg-gray-100 rounded-full px-4">
+                                    <StyledText
+                                        className="flex-1 py-2 text-base w-full text-gray-400 text-center"
 
-                    <StyledView className="bg-blue-500 rounded-xl h-[36px] w-[36px] justify-center items-center">
-                        <TouchableOpacity
-                            onPress={() => { }}
-                        >
-                            <Ionicons
-                                name="add"
-                                size={24}
-                                color={"white"}
-                            />
-                        </TouchableOpacity>
-                    </StyledView>
-                    <StyledView className="flex-row w-[85%] items-center min-h-[36px] bg-gray-100 rounded-lg px-4">
-                        <StyledTextInput
-                            placeholder="พิมพ์ข้อความ..."
-                            className="flex-1 py-2 text-base"
-                            value={newMessage}
-                            onChangeText={setNewMessage}
-                            multiline
-                        />
-                        {isSending ? (
-                            <ActivityIndicator size="small" color="#EB3834" />
+                                    >ทำการนัดหมายเพื่อส่งข้อความ</StyledText>
+                                </StyledView>
+                            </>
                         ) : (
-                            <TouchableOpacity
-                                onPress={sendMessage}
-                                disabled={!newMessage.trim()}
-                                className="-right-2"
-                            >
-                                <Ionicons
-                                    name="send"
-                                    size={24}
-                                    color={newMessage.trim() ? "#EB3834" : "gray"}
-                                />
-                            </TouchableOpacity>
-                        )}
-                    </StyledView>
+                            <>
+                                <StyledView className="bg-blue-500 rounded-xl h-[36px] w-[36px] justify-center items-center">
+                                    <TouchableOpacity
+                                        onPress={() => { }}
+                                    >
+                                        <Ionicons
+                                            name="add"
+                                            size={24}
+                                            color={"white"}
+                                        />
+                                    </TouchableOpacity>
+                                </StyledView>
+                                <StyledView className="flex-row w-[85%] items-center min-h-[36px] bg-gray-100 rounded-lg px-4">
+                                    <StyledTextInput
+                                        placeholder="พิมพ์ข้อความ..."
+                                        className="flex-1 py-2 text-base"
+                                        value={newMessage}
+                                        onChangeText={setNewMessage}
+                                        multiline
+                                    />
+                                    {isSending ? (
+                                        <ActivityIndicator size="small" color="#EB3834" />
+                                    ) : (
+                                        <TouchableOpacity
+                                            onPress={sendMessage}
+                                            disabled={!newMessage.trim()}
+                                            className="-right-2"
+                                        >
+                                            <Ionicons
+                                                name="send"
+                                                size={24}
+                                                color={newMessage.trim() ? "#EB3834" : "gray"}
+                                            />
+                                        </TouchableOpacity>
+                                    )}
+                                </StyledView>
+                            </>
+                        )
+                    }
+
                 </StyledView>
 
             </KeyboardAvoidingView>

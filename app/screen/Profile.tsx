@@ -101,7 +101,7 @@ export default function ProfileTab() {
 
     return (
         <StyledView className="flex-1 bg-white">
-            <HeaderApp />
+            <HeaderApp back="FeedsTab" />
             <StyledScrollView>
                 <StyledView className="flex-1 h-screen">
                     <StyledView>
