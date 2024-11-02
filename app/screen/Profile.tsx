@@ -13,6 +13,7 @@ import { PanGestureHandler, TouchableOpacity } from "react-native-gesture-handle
 import { LinearGradient } from "expo-linear-gradient";
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated";
+import { getAge } from "@/utils/Date";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -89,23 +90,6 @@ export default function ProfileTab() {
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ translateX: withSpring(-isActive * SCREEN_WIDTH) }],
     }));
-
-    const getAge = (birthday: string) => {
-        const birthDate = new Date(birthday);
-        const today = new Date();
-        
-        let age = today.getFullYear() - birthDate.getFullYear();
-        
-        const hasNotHadBirthdayThisYear = 
-            today.getMonth() < birthDate.getMonth() || 
-            (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate());
-
-        if (hasNotHadBirthdayThisYear) {
-            age--;
-        }
-        
-        return age;
-    };
 
     if (loading) {
         return (

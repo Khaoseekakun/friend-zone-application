@@ -24,3 +24,20 @@ export function formatTimeDifference(timestamp: string): string {
         return createdAt.add(543, 'year').format('DD-MM-YYYY');
     }
 }
+
+export function getAge(birthday: string){
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    
+    let age = today.getFullYear() - birthDate.getFullYear();
+    
+    const hasNotHadBirthdayThisYear = 
+        today.getMonth() < birthDate.getMonth() || 
+        (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate());
+
+    if (hasNotHadBirthdayThisYear) {
+        age--;
+    }
+    
+    return age;
+};
