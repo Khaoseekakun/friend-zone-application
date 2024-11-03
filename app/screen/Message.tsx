@@ -5,6 +5,7 @@ import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { FlatList, TextInput } from "react-native-gesture-handler";
 import { RootStackParamList } from "@/types";
+import { Navigation } from "@/components/Navigation";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
@@ -28,7 +29,7 @@ export default function Message() {
                         <TouchableOpacity onPress={() => navigation.goBack()} className="absolute pt-[60] ml-4">
                             <Ionicons name="chevron-back" size={24} color="" />
                         </TouchableOpacity>
-                        <StyledText className="text-center self-center text-lg font-bold text-black">Chats</StyledText>
+                        <StyledText className="text-center self-center text-lg font-bold text-black">Messages</StyledText>
                     </StyledView>
                     <StyledView className="w-full px-5 mt-2 h-full">
                         <FlatList
@@ -72,7 +73,7 @@ export default function Message() {
                                     )}
                                 </StyledView>
 
-                                <TouchableOpacity onPress={() => navigation.navigate('Chat', { helper: true, chatId: "helper", chatName : "FirendZone Helper"})} className="flex-row items-center justify-between p-3 rounded-lg">
+                                <TouchableOpacity onPress={() => navigation.navigate('Chat', { helper: true, chatId: "helper", chatName: "FirendZone Helper" })} className="flex-row items-center justify-between p-3 rounded-lg">
                                     <StyledView className="flex-row items-center">
                                         <Image source={AppLogo} className="bg-gray-400 rounded-full w-[40px] h-[40px]" />
                                         <StyledView className="ml-2">
@@ -88,6 +89,9 @@ export default function Message() {
                     </StyledView>
                 </StyledView>
             </KeyboardAvoidingView>
+            <StyledView className="shadow-md">
+                <Navigation current="MessageTab" />
+            </StyledView>
         </StyledView>
     );
 }

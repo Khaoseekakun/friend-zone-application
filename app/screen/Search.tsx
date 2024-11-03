@@ -73,7 +73,7 @@ export default function Search() {
 
     return (
         <>
-            <StyledView className="flex-1 h-screen bg-gray-100">
+            <StyledView className="flex-1 h-screen bg-gray-200">
                 <HeaderApp />
                 <FlatList
                     refreshing={searchloading}
@@ -119,16 +119,16 @@ export default function Search() {
                         ) : (
                             <StyledView className="">
                                 {item.map((data) => (
-                                    <StyledView key={data.id} className={` bg-gray-200 w-full`}>
+                                    <StyledView key={data.id} className={` bg-gray-200 w-full mb-3`}>
                                         <Image source={{ uri: data.image }} style={{ height: HEIGHT / 2.4, width: '100%' }} />
 
                                         <LinearGradient
                                             colors={['#4f4f4f', 'transparent']}
                                             start={{ x: 0, y: 1 }}
                                             end={{ x: 0, y: 0 }}
-                                            className="absolute bottom-0 opacity-50 w-full h-[30%]"
+                                            className="absolute bottom-0 opacity-50 w-full h-[20%]"
                                         />
-                                        <StyledView className="absolute bottom-2 left-2">
+                                        <StyledView className="absolute flex-row bottom-2 px-2 w-full">
                                             <StyledView className="flex-row">
                                                 <StyledText className="font-custom text-white text-2xl">{data.name}</StyledText>
                                                 <StyledText className="font-custom text-white text-2xl mx-1">{data.age}</StyledText>
@@ -140,7 +140,7 @@ export default function Search() {
                                                 )}
                                             </StyledView>
 
-                                            <StyledView className="flex-row items-center">
+                                            <StyledView className="flex-row items-center absolute right-2">
                                                 <HeartIcon />
                                                 <StyledText className="font-custom text-white text-xl ml-1">4.1</StyledText>
                                                 <StyledText className="font-custom text-gray-100 ml-1">(1,502)</StyledText>

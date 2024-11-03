@@ -55,6 +55,7 @@ export default function FeedsTab() {
 
     useEffect(() => {
         if (isFocused) {
+            setLoading(true);
             handleRefresh()
         }
     }, [isFocused]);
@@ -191,7 +192,6 @@ export default function FeedsTab() {
 
         <StyledView className="flex-1">
             <HeaderApp />
-
             <FlatList
                 data={posts}
                 keyExtractor={(item, index) => `${item.id}_${index}`}
@@ -200,7 +200,7 @@ export default function FeedsTab() {
                     <StyledView className="mt-2">
                         <StyledView className="bg-gray-200 w-full h-[1px] my-2" />
                         <StyledView className="w-full flex-row items-center justify-between">
-                            <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab', {profileId : item.member.id})}>
+                            <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab', { profileId: item.member.id })}>
                                 <Image className="ml-3 rounded-full w-[40px] h-[40px]" source={item.member?.profileUrl ? { uri: item.member?.profileUrl } : GuestIcon} />
                                 <StyledView className="pl-3 mt-2 flex-row">
                                     <StyledText className="font-custom font-bold text-md">{item.member.username} </StyledText>
@@ -361,6 +361,7 @@ export default function FeedsTab() {
                     return null;
                 }}
             />
+
             <Navigation current="FeedsTab" />
             <Modal animationType="fade" visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
                 <StyledView className="flex-1 justify-center h-screen bg-black">
@@ -411,7 +412,7 @@ export default function FeedsTab() {
                     <StyledView className="flex-1 bg-white">
                         <StyledView className="mt-5 bg-gray-100 rounded-lg mx-5">
                             <StyledView className="my-2 px-3 py-1">
-                                <TouchableOpacity onPress={() => navigation.navigate("ProfileTab", {profileId : posts.find((p) => p.id == postAction)?.member.id ?? ""})} className="flex-row items-center">
+                                <TouchableOpacity onPress={() => navigation.navigate("ProfileTab", { profileId: posts.find((p) => p.id == postAction)?.member.id ?? "" })} className="flex-row items-center">
                                     <Ionicons
                                         name="information-circle-outline"
                                         size={24}
