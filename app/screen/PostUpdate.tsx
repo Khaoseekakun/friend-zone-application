@@ -162,7 +162,7 @@ export default function PostUpdate() {
             <Modal visible={loading} transparent={true} animationType="fade">
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        <ActivityIndicator size="large" color="#0000ff" />
+                        <ActivityIndicator size="large" color="#EB3834" />
                         <Text style={styles.modalText}>กำลังสร้างโพสต์...</Text>
                     </View>
                 </View>

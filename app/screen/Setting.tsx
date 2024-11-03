@@ -59,17 +59,19 @@ export default function Setting() {
                         <StyledText className=" text-gray-500 font-custom">FriendZone</StyledText>
                     </StyledView>
 
-                    <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
-                        <StyledView className="flex-row">
-                            <StyledIonicons name="person-circle-outline" size={24} color="black" className="mt-1" />
-                            <StyledView className="ml-2">
-                                <StyledText className=" text-gray-700 font-custom text-lg">ตั้งค่าบัญชี</StyledText>
-                                <StyledText className=" text-gray-500 font-custom text-sm ">รหัสผ่าน, รายละเอียดความเป็นส่วนตัว</StyledText>
-                            </StyledView>
-                        </StyledView>
+                    <TouchableOpacity onPress={() => navigation.navigate("AccountSetting")}>
+                        <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
+                            <StyledView className="flex-row">
 
-                        <StyledIonicons name="chevron-forward" size={24} color="gray" />
-                    </StyledView>
+                                <StyledIonicons name="person-circle-outline" size={24} color="black" className="mt-1" />
+                                <StyledView className="ml-2">
+                                    <StyledText className=" text-gray-700 font-custom text-lg">ตั้งค่าบัญชี</StyledText>
+                                    <StyledText className=" text-gray-500 font-custom text-sm ">รหัสผ่าน, รายละเอียดความเป็นส่วนตัว</StyledText>
+                                </StyledView>
+                            </StyledView>
+                            <StyledIonicons name="chevron-forward" size={24} color="gray" />
+                        </StyledView>
+                    </TouchableOpacity>
                     <StyledView className="w-full h-1.5 bg-gray-100"></StyledView>
 
                     <StyledView className="flex-row items-center justify-between w-full px-3 py-2">

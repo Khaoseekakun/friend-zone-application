@@ -354,7 +354,7 @@ export default function Post() {
                 <Modal visible={loading} transparent={true} animationType="fade">
                     <View style={styles.modalOverlay}>
                         <View style={styles.modalContent}>
-                            <ActivityIndicator size="large" color="#0000ff" />
+                            <ActivityIndicator size="large" color="#EB3834" />
                             <StyledText className="font-custom" style={styles.modalText}>กำลังสร้างโพสต์...</StyledText>
                         </View>
                     </View>

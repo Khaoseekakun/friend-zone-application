@@ -94,7 +94,7 @@ export default function ProfileTab() {
     if (loading) {
         return (
             <StyledView className="flex-1 justify-center items-center bg-white dark:bg-black">
-                <ActivityIndicator size="large" color="#0000ff" />
+                <ActivityIndicator size="large" color="#EB3834" />
             </StyledView>
         );
     }
