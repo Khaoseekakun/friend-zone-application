@@ -18,11 +18,6 @@
       },
       "package": "com.myfirendzone.app"
     },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
     "plugins": [
       "expo-router",
       "expo-font"

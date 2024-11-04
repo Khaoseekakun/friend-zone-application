@@ -6,6 +6,7 @@ import * as Font from 'expo-font';
 import { Entypo } from '@expo/vector-icons';
 import { Alert, AppRegistry } from 'react-native';
 import * as Location from 'expo-location';
+import 'react-native-get-random-values';
 
 AppRegistry.registerComponent("Firend Zone", () => App);
 
