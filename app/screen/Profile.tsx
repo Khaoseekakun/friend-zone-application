@@ -9,7 +9,7 @@ import axios from "axios";
 import { useNavigation } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
-import { PanGestureHandler, TouchableOpacity } from "react-native-gesture-handler";
+import { PanGestureHandler, TextInput, TouchableOpacity } from "react-native-gesture-handler";
 import { LinearGradient } from "expo-linear-gradient";
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated";
@@ -19,6 +19,7 @@ const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledScrollView = styled(ScrollView);
 const StyledIonIcon = styled(Ionicons);
+const StyledTextInput = styled(TextInput);
 type ProfileParam = RouteProp<RootStackParamList, 'ProfileTab'>;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export default function ProfileTab() {
@@ -27,11 +28,18 @@ export default function ProfileTab() {
     const { profileId } = route.params;
 
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const snapPoints = useMemo(() => ["95%"], []);
+    const snapPoints = useMemo(() => ["85%"], []);
     const [loading, setLoading] = useState(true);
     const [userProfile, setUserProfile] = useState<any>(null);
     const [userData, setUserData] = useState<any>({});
     const [isActive, setIsActive] = useState(0);
+
+
+    const [scheduleTime, setScheduleTime] = useState("");
+    const [scheduleDate, setScheduleDate] = useState("");
+    const [scheduleJobs, setScheduleJobs] = useState<string[]>([]);
+    const [scheduleLocation, setScheduleLocation] = useState("");
+
 
     const [images, setImages] = useState<string[]>([
         "https://placehold.co/600x400",
@@ -47,7 +55,6 @@ export default function ProfileTab() {
             const storedUserData = await AsyncStorage.getItem('userData');
             const parsedData = storedUserData ? JSON.parse(storedUserData) : null;
             setUserData(parsedData);
-
             if (!profileId) {
                 Alert.alert("Error", "User profile not found", [
                     {
@@ -151,7 +158,7 @@ export default function ProfileTab() {
 
 
 
-            {userProfile.profile.type === "member" && (
+            {userProfile.profile.type === "member" && userData.role != "member" && (
                 <TouchableOpacity
                     className="w-full px-[15%] mb-4 duration-200"
                     onPress={() => bottomSheetRef.current?.expand()}
@@ -175,13 +182,37 @@ export default function ProfileTab() {
                 index={-1}
 
             >
-                <BottomSheetView style={{ height: "100%" }}>
+                <BottomSheetView style={{ height: "80%" }}>
                     <StyledView className="flex-1 bg-white">
-                        <StyledView className="mt-5 bg-gray-100 rounded-lg mx-5">
-
+                        <StyledView className="flex-row items-center px-4 py-2">
+                            <StyledView className="w-6/12 px-1">
+                                <StyledText className="text-lg text-black font-custom">เวลา</StyledText>
+                                <StyledTextInput
+                                    placeholder="10:10"
+                                    className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full"
+                                    value={scheduleTime}
+                                    onChangeText={setScheduleTime}
+                                    placeholderTextColor="#9CA3AF"
+                                    textContentType='telephoneNumber'
+                                    inputMode='tel'
+                                    enterKeyHint='done'
+                                />
+                            </StyledView>
+                            <StyledView className="w-6/12 px-1">
+                                <StyledText className="text-lg text-black font-custom">วัน/เดือน/ปี</StyledText>
+                                
+                                <StyledTextInput
+                                    placeholder="03/10/2567"
+                                    className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full"
+                                    value={scheduleDate}
+                                    onChangeText={setScheduleDate}
+                                    placeholderTextColor="#9CA3AF"
+                                    textContentType='telephoneNumber'
+                                    inputMode='tel'
+                                    enterKeyHint='done'
+                                />
+                            </StyledView>
                         </StyledView>
-
-
                     </StyledView>
                 </BottomSheetView>
             </BottomSheet>
