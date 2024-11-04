@@ -120,7 +120,7 @@ export default function Login() {
                         <StyledText className="font-custom text-sm text-gray-600 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black dark:text-white z-50 left-2">เบอร์โทรศัพท์</StyledText>
                         <StyledTextInput
                             placeholder="ป้อนเบอร์โทรศัพท์"
-                            className="font-custom border border-gray-300 rounded-full py-4 px-4 text-gray-700 w-full"
+                            className="font-custom border border-gray-300 rounded-full py-4 px-4 text-gray-200 w-full"
                             value={phone}
                             onChangeText={setPhone}
                             placeholderTextColor="#9CA3AF"
@@ -133,7 +133,7 @@ export default function Login() {
                         <StyledText className="font-custom text-sm text-gray-600 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black dark:text-white z-50 left-2">รหัสผ่าน</StyledText>
                         <StyledTextInput
                             placeholder="ป้อนรหัสผ่านของคุณ"
-                            className="font-custom border border-gray-300 rounded-full py-4 px-4 text-gray-700 w-full pr-12"
+                            className="font-custom border border-gray-300 rounded-full py-4 px-4 text-gray-200 w-full pr-12"
                             value={password}
                             onChangeText={setPassword}
                             secureTextEntry={!isPasswordVisible}
