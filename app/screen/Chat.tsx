@@ -205,7 +205,6 @@ export default function Chat() {
 
             const database = getDatabase(FireBaseApp, 'https://friendszone-d1e20-default-rtdb.asia-southeast1.firebasedatabase.app');
             const messagesRef = ref(database, `/channels/${chatId}/messages`);
-            const channelRef = ref(database, `/channels/${chatId}`);
 
             const newMessageRef = push(messagesRef);
             const updates: Record<string, any> = {};

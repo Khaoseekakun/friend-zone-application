@@ -167,6 +167,44 @@ export default function ProfileTab() {
         transform: [{ translateX: withSpring(-isActive * SCREEN_WIDTH) }],
     }));
 
+
+    const createSchedule = async () => {
+        if (!scheduleDate || !scheduleTime) {
+            return Alert.alert('ข้อมูลไม่ครบ', 'โปรดกรอกข้อมูลให้ครบถ้วน', [{ text: 'OK' }]);
+        }
+
+        const [day, month, year] = scheduleDate.split("/");
+        const [hour, minute] = scheduleTime.split(":");
+        const scheduleDateTime = new Date(+year, +month - 1, +day, +hour, +minute).toISOString();
+
+        try {
+            const response = await axios.post('http://49.231.43.37:3000/api/schedule', {
+                customerId: userData.id,
+                memberId: userProfile.profile.id,
+                date: scheduleDateTime,
+                location: scheduleLocation ?? "TEST",
+                jobs: scheduleJobs ?? ["TEST"],
+                latitude: pin?.latitude,
+                longtitude: pin?.longitude,
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Customer ${userData.token}`
+                }
+            })
+
+            if (response.data.status != 200) {
+                Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
+            } else {
+                Alert.alert(`สำเร็จ`, `สร้างนัดหมายสำเร็จ`, [{ text: 'OK' }]);
+                navigation.navigate("ScheduleTab");
+            }
+        } catch (error) {
+            console.error('Failed to create schedule:', error);
+            Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
+        }
+    }
+
     if (loading) {
         return (
             <StyledView className="flex-1 justify-center items-center bg-white dark:bg-black">
@@ -217,14 +255,14 @@ export default function ProfileTab() {
                             <StyledIonIcon className="mt-1" name="male" color={'#ff8df6'} size={30} />
                         )}
 
-                        <StyledIonIcon name="chatbubble-ellipses-outline" size={24} className="right-3 absolute" 
-                        onPress={() => {
-                            navigation.navigate("Chat", {
-                                chatName: userProfile.profile.username,
-                                helper: false,
-                                receiverId: userProfile.profile.id,
-                            })
-                        }}
+                        <StyledIonIcon name="chatbubble-ellipses-outline" size={24} className="right-3 absolute"
+                            onPress={() => {
+                                navigation.navigate("Chat", {
+                                    chatName: userProfile.profile.username,
+                                    helper: false,
+                                    receiverId: userProfile.profile.id,
+                                })
+                            }}
                         ></StyledIonIcon>
                     </StyledView>
 
@@ -350,7 +388,7 @@ export default function ProfileTab() {
                                     styles={{
                                         textInput: {
                                             height: 50,
-                                            borderRadius: '16px',
+                                            borderRadius: 16,
                                             borderWidth: 1,
                                             borderColor: '#d1d5db',
                                             color: '#374151',
@@ -366,8 +404,8 @@ export default function ProfileTab() {
                             </StyledView>
                         </StyledView>
 
-                        {/* <StyledView className="px-6 py-2 h-full rounded-2xl my-2">
-                            {/* <StyledMapView
+                        <StyledView className="px-6 py-2 rounded-2xl my-2 mt-5 h-[50%]">
+                            <StyledMapView
                                 initialRegion={{
                                     latitude: pin ? pin.latitude : 37.78825,
                                     longitude: pin ? pin.longitude : -122.4324,
@@ -381,7 +419,7 @@ export default function ProfileTab() {
 
                                 style={{
                                     borderRadius: 20,
-                                    height: "50%",
+                                    height: "100%",
                                 }}
                             >
                                 {pin && (
@@ -397,8 +435,7 @@ export default function ProfileTab() {
                                         >
                                         </Marker>
 
-                                        {/* Circle around the marker */}
-                        {/* <Circle
+                                        <Circle
                                             center={pin}
                                             radius={250} // radius in meters
                                             strokeColor="rgba(255, 0, 0, 0.5)" // Border color
@@ -406,10 +443,28 @@ export default function ProfileTab() {
                                         />
                                     </>
                                 )}
-                            </StyledMapView> */}
-                        {/* </StyledView> */}
+                            </StyledMapView>
+                        </StyledView>
 
 
+                        <TouchableOpacity
+                            className="w-full px-6"
+                            onPress={createSchedule}
+                            disabled={loading}
+                        >
+                            <LinearGradient
+                                colors={['#EB3834', '#69140F']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                className="rounded-full py-3 shadow-sm"
+                            >
+                                {loading ? (
+                                    <ActivityIndicator size="small" color="#fff" />
+                                ) : (
+                                    <StyledText className="font-custom text-center text-white text-lg font-semibold">ส่ง</StyledText>
+                                )}
+                            </LinearGradient>
+                        </TouchableOpacity>
                     </StyledView>
                 </BottomSheetView>
             </BottomSheet>

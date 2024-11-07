@@ -15,6 +15,7 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import Chat from "../screen/Chat";
 import AccountSetting from "../screen/SettingAccount";
+import ProfileMember from "../screen/ProfileMember";
 
 const Tab = createBottomTabNavigator();
 
@@ -37,6 +38,7 @@ export default function HomeScreen() {
         <Tab.Screen name="Search" component={Search} options={{ headerShown: false }} />
         <Tab.Screen name="Chat" component={Chat} options={{ headerShown: false }} />
         <Tab.Screen name="AccountSetting" component={AccountSetting} options={{ headerShown: false }} />
+        <Tab.Screen name="ProfileMember" component={ProfileMember} options={{ headerShown: false }} />
       </Tab.Navigator>
     </>
   );

@@ -27,7 +27,7 @@ interface ProfileData {
     reviews: number;
 }
 
-export default function Profile() {
+export default function ProfileMember() {
     const navigation = useNavigation();
     const route = useRoute<ProfileParam>();
     const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');

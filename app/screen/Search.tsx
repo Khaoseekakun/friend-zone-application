@@ -28,7 +28,7 @@ type SearchOption = {
 }
 
 type SearchData = {
-    id: number;
+    id: string;
     name: string;
     age: string;
     image: string;
@@ -54,8 +54,8 @@ export default function Search() {
 
     function handlerSearch(options: SearchOption) {
         const searchData = [
-            { id: 1, name: "Maximmilian", age: "18", gender: "หญิง", image: "https://media.istockphoto.com/id/1360667973/photo/portrait-of-thai-high-school-student-in-student-uniform.jpg?s=612x612&w=0&k=20&c=oog4FovHj9r2YD17iatNtbOk0h7KygBd7iTMMmxctKg=", rating: 4.1, reviews: 1502 },
-            { id: 2, name: "Sinsamuth", age: "18", gender: "หญิง", image: "https://st4.depositphotos.com/3563679/38710/i/450/depositphotos_387104672-stock-photo-asia-thai-high-school-student.jpg", rating: 4.5, reviews: 2103 },
+            { id: '671a581526204568fd6fb371', name: "Maximmilian", age: "18", gender: "หญิง", image: "https://media.istockphoto.com/id/1360667973/photo/portrait-of-thai-high-school-student-in-student-uniform.jpg?s=612x612&w=0&k=20&c=oog4FovHj9r2YD17iatNtbOk0h7KygBd7iTMMmxctKg=", rating: 4.1, reviews: 1502 },
+            { id: '671a581526204568fd6fb372', name: "Sinsamuth", age: "18", gender: "หญิง", image: "https://st4.depositphotos.com/3563679/38710/i/450/depositphotos_387104672-stock-photo-asia-thai-high-school-student.jpg", rating: 4.5, reviews: 2103 },
             // ... other data
         ];
         setData(searchData);
@@ -73,7 +73,7 @@ export default function Search() {
                     key={data.id} 
                     style={styles.gridCard}
                     activeOpacity={0.8}
-                    onPress={() => navigation.navigate('ProfileMember', { id: data.id })}
+                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id })}
                 >
                     <Image 
                         source={{ uri: data.image }} 
@@ -111,12 +111,12 @@ export default function Search() {
 
     const renderListItem = ({ item }: { item: SearchData[] }) => (
         <StyledView>
-            {item.map((data) => (
+            {item.map((data, index) => (
                 <TouchableOpacity 
-                    key={data.id}
+                    key={`${data.id}-${index}`}
                     style={styles.listCard}
                     activeOpacity={0.8}
-                    onPress={() => navigation.navigate('ProfileMember', { id: data.id })}
+                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id })}
                 >
                     <Image 
                         source={{ uri: data.image }} 
