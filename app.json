@@ -9,14 +9,14 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.myfirendzone.app"
+      "bundleIdentifier": "com.firendszone.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.myfirendzone.app"
+      "package": "com.firendszone.app"
     },
     "plugins": [
       "expo-router",

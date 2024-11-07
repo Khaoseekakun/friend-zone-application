@@ -15,7 +15,7 @@ import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated"
 import { getAge } from "@/utils/Date";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import * as Location from 'expo-location';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Circle, Marker } from 'react-native-maps';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 const StyledMapView = styled(MapView);
@@ -135,7 +135,7 @@ export default function ProfileTab() {
             const user = await axios.get(`http://49.231.43.37:3000/api/profile/${profileId}`, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${parsedData?.token}`
+                    "Authorization": `All ${parsedData?.token}`
                 }
             });
 
@@ -216,6 +216,16 @@ export default function ProfileTab() {
                         ) : (
                             <StyledIonIcon className="mt-1" name="male" color={'#ff8df6'} size={30} />
                         )}
+
+                        <StyledIonIcon name="chatbubble-ellipses-outline" size={24} className="right-3 absolute" 
+                        onPress={() => {
+                            navigation.navigate("Chat", {
+                                chatName: userProfile.profile.username,
+                                helper: false,
+                                receiverId: userProfile.profile.id,
+                            })
+                        }}
+                        ></StyledIonIcon>
                     </StyledView>
 
                     <StyledView className="left-2">
@@ -318,8 +328,10 @@ export default function ProfileTab() {
                                     placeholder="ค้นหาสถานที่"
                                     minLength={2}
                                     fetchDetails={true}
+
                                     onPress={(data, details = null) => {
                                         if (details) {
+                                            console.log(details.name);
                                             const { lat, lng } = details.geometry.location;
                                             setPin({
                                                 latitude: lat,
@@ -327,17 +339,35 @@ export default function ProfileTab() {
                                             });
                                         }
                                     }}
+
+                                    onFail={(error) => console.error(error)}
+
                                     query={{
                                         key: 'AIzaSyD_MFjeIfNZSWItzTnbzfyD_12bU1MIFIk',
                                         language: 'th',
                                     }}
-                                    className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full placeholder-[#9CA3AF]"
+
+                                    styles={{
+                                        textInput: {
+                                            height: 50,
+                                            borderRadius: '16px',
+                                            borderWidth: 1,
+                                            borderColor: '#d1d5db',
+                                            color: '#374151',
+                                            width: '100%',
+                                            fontFamily: "Kanit"
+                                        },
+                                        container: {
+                                            zIndex: 1000,
+                                        }
+
+                                    }}
                                 />
                             </StyledView>
                         </StyledView>
 
-                        <StyledView className="px-6 py-2 h-full rounded-2xl mt-[100]">
-                            <StyledMapView
+                        {/* <StyledView className="px-6 py-2 h-full rounded-2xl my-2">
+                            {/* <StyledMapView
                                 initialRegion={{
                                     latitude: pin ? pin.latitude : 37.78825,
                                     longitude: pin ? pin.longitude : -122.4324,
@@ -355,21 +385,31 @@ export default function ProfileTab() {
                                 }}
                             >
                                 {pin && (
-                                    <Marker
-                                        coordinate={pin}
-                                        title="Selected Location"
-                                        description={`Latitude: ${pin.latitude}, Longitude: ${pin.longitude}`}
-                                        draggable
-                                        onDragEnd={(e) => {
-                                            const { latitude, longitude } = e.nativeEvent.coordinate;
-                                            setPin({ latitude, longitude });
-                                        }}
-                                    />
-                                )}
-                            </StyledMapView>
-                        </StyledView>
+                                    <>
+                                        <Marker
+                                            coordinate={pin}
+                                            title="Selected Location"
+                                            draggable
+                                            onDragEnd={(e) => {
+                                                const { latitude, longitude } = e.nativeEvent.coordinate;
+                                                setPin({ latitude, longitude });
+                                            }}
+                                        >
+                                        </Marker>
 
-                        
+                                        {/* Circle around the marker */}
+                        {/* <Circle
+                                            center={pin}
+                                            radius={250} // radius in meters
+                                            strokeColor="rgba(255, 0, 0, 0.5)" // Border color
+                                            fillColor="rgba(255, 0, 0, 0.2)" // Fill color
+                                        />
+                                    </>
+                                )}
+                            </StyledMapView> */}
+                        {/* </StyledView> */}
+
+
                     </StyledView>
                 </BottomSheetView>
             </BottomSheet>

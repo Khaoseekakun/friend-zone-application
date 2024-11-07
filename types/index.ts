@@ -25,8 +25,10 @@ export type RootStackParamList = {
   },
   Chat : {
     helper? : boolean
-    chatId : string,
+    chatId? : string,
+    receiverId? : string,
     chatName : string,
+    profileUrl? : string
   },
   MessageTab : undefined,
   ProfileTab : {

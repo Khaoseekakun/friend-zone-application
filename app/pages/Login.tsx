@@ -24,6 +24,7 @@ export default function Login() {
     const scaleValue = useRef(new Animated.Value(1)).current;
     const [pageLoading, setPageLoading] = useState(true);
 
+
     useFocusEffect(() => {
         AsyncStorage.getItem('userToken').then(token => {
             if (token) {

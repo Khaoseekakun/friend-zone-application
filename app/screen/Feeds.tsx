@@ -129,9 +129,7 @@ export default function FeedsTab() {
         if (!loading) return <>
             <StyledView className="mb-[120px]" />
         </>
-        return <ActivityIndicator size="large" style={{
-            marginTop: 60
-        }} />;
+
     };
 
     const handleRefresh = async () => {
