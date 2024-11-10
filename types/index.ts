@@ -32,14 +32,16 @@ export type RootStackParamList = {
   },
   MessageTab : undefined,
   ProfileTab : {
-    profileId : string
+    profileId : string,
+    jobCategory? : string,
   },
   FeedsTab : undefined,
   PostTab : undefined,
   ProfileMember : {
     profileId : string
   },
-  ScheduleTab : undefined,
+  SchedulePage : undefined,
+  ScheduleList : undefined
 };
 
 export type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;

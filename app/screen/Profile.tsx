@@ -15,8 +15,11 @@ import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated"
 import { getAge } from "@/utils/Date";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import * as Location from 'expo-location';
-import MapView, { Circle, Marker } from 'react-native-maps';
+import MapView, { Circle, Marker, LatLng } from 'react-native-maps';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+
+import RNPickerSelect from 'react-native-picker-select';
+import { set } from "firebase/database";
 
 const StyledMapView = styled(MapView);
 const StyledView = styled(View);
@@ -25,12 +28,19 @@ const StyledScrollView = styled(ScrollView);
 const StyledIonIcon = styled(Ionicons);
 const StyledTextInput = styled(TextInput);
 const StyledGooglePlacesAutocomplete = styled(GooglePlacesAutocomplete);
+const StyledTouchableOpacity = styled(TouchableOpacity);
 type ProfileParam = RouteProp<RootStackParamList, 'ProfileTab'>;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export default function ProfileTab() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const route = useRoute<ProfileParam>();
-    const { profileId } = route.params;
+    const { profileId, jobCategory } = route.params;
+
+    const convertJobs = {
+        "Friend": "เพื่อนท่องเที่ยว"
+    }
+
+
 
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ["85%"], []);
@@ -40,15 +50,35 @@ export default function ProfileTab() {
     const [isActive, setIsActive] = useState(0);
     const [scheduleTime, setScheduleTime] = useState("");
     const [scheduleDate, setScheduleDate] = useState("");
-    const [scheduleJobs, setScheduleJobs] = useState<string[]>([]);
+    const [scheduleJobs, setScheduleJobs] = useState<string>();
     const [scheduleLocation, setScheduleLocation] = useState("");
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
+    const [distance, setDistance] = useState<number>(0);
+    const [jobTypes, setJobTypes] = useState<string>("");
+    const [joblist, setJobList] = useState<any>([]);
+    const [geoLocation, setGeoLocation] = useState<{
+        latitude: number,
+        longitude: number,
+        locationName: string
+    }[]>([])
+
+    const [searchFocus, setSearchFocus] = useState<boolean>(false);
+
+    const [locationSearch, setLocationSearch] = useState<string>("");
+
 
     const [pin, setPin] = useState<{
         latitude: number;
         longitude: number;
     } | null>(null);
+
+    const [selfPin, setSelfPin] = useState<{
+        latitude: number;
+        longitude: number;
+    } | null>(null);
+
+
     const [hasLocationPermission, setHasLocationPermission] = useState(false);
     const isFocus = useIsFocused();
     const openAppSettings = () => {
@@ -70,6 +100,21 @@ export default function ProfileTab() {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status === 'granted') {
             setHasLocationPermission(true);
+            const location = await Location.getCurrentPositionAsync({});
+            setSelfPin({
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+            });
+
+
+            setDistance(getDistanceMemberToCustomer({ latitude: location.coords.latitude, longitude: location.coords.longitude }, {
+                latitude: parseFloat(userProfile?.profile.pinLocation[0]),
+                longitude: parseFloat(userProfile?.profile.pinLocation[1])
+            }));
+
+            console.log(userProfile?.profile.pinLocation)
+
+            console.log(`Current Location: ${location.coords.latitude}, ${location.coords.longitude}`);
         }
     };
 
@@ -117,6 +162,57 @@ export default function ProfileTab() {
         setTimePickerVisibility(false);
     };
 
+
+    const searchMapGeoLocation = async (location: string) => {
+        const config = {
+            method: 'get',
+            url: `https://api.geoapify.com/v1/geocode/search?text=${location}&apiKey=11f05231e68b44deac129650b5bf211d`,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+
+        try {
+            const response = await axios(config);
+            const newLocations = response.data.features.map((feature: any) => ({
+                latitude: feature.geometry.coordinates[1],
+                longitude: feature.geometry.coordinates[0],
+                locationName: feature.properties.formatted || location
+            }));
+
+            setGeoLocation(newLocations);
+
+        } catch (error) {
+            console.error("Failed to fetch map geo location:", error);
+        }
+    }
+
+    const loadJobsList = async () => {
+        try {
+            console.log(jobCategory)
+            const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `All ${userData.token}`
+                }
+            })
+
+
+
+            if (resdata.data.status == 200) {
+                setJobList(resdata.data.data.map((job: any) => ({
+                    label: job.jobName,
+                    value: job.id,
+
+                })))
+            }
+
+
+        } catch (error) {
+            console.error("Failed to fetch jobs list:", error);
+        }
+    }
+
     const fetchUserData = useCallback(async () => {
         try {
             const storedUserData = await AsyncStorage.getItem('userData');
@@ -139,6 +235,7 @@ export default function ProfileTab() {
                 }
             });
 
+
             setUserProfile(user.data.data);
         } catch (error) {
             console.error("Failed to fetch user data:", error);
@@ -150,8 +247,8 @@ export default function ProfileTab() {
     useEffect(() => {
         fetchUserData();
         if (isFocus) {
-
             requestLocationPermission();
+            loadJobsList()
         }
     }, [isFocus]);
 
@@ -166,6 +263,34 @@ export default function ProfileTab() {
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ translateX: withSpring(-isActive * SCREEN_WIDTH) }],
     }));
+
+    /**
+    * @param {LatLng} point1 
+    * @param {LatLng} point2 
+    * @returns {number}
+    */
+    const getDistance = (point1: LatLng, point2: LatLng): number => {
+        const R = 6371000;
+        const dLat = (point2.latitude - point1.latitude) * (Math.PI / 180);
+        const dLon = (point2.longitude - point1.longitude) * (Math.PI / 180);
+        const lat1 = point1.latitude * (Math.PI / 180);
+        const lat2 = point2.latitude * (Math.PI / 180);
+
+        const a =
+            Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    };
+
+
+    const getDistanceMemberToCustomer = (selfPin: LatLng, memberPin: LatLng): number => {
+        return getDistance(selfPin, memberPin);
+    }
+
+    const getDistanceMemberToPinLocation = (locationPin: LatLng, memberPin: LatLng): number => {
+        return getDistance(locationPin, memberPin);
+    }
 
 
     const createSchedule = async () => {
@@ -182,8 +307,8 @@ export default function ProfileTab() {
                 customerId: userData.id,
                 memberId: userProfile.profile.id,
                 date: scheduleDateTime,
-                location: scheduleLocation ?? "TEST",
-                jobs: scheduleJobs ?? ["TEST"],
+                location: scheduleLocation,
+                jobs: scheduleJobs,
                 latitude: pin?.latitude,
                 longtitude: pin?.longitude,
             }, {
@@ -197,7 +322,7 @@ export default function ProfileTab() {
                 Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
             } else {
                 Alert.alert(`สำเร็จ`, `สร้างนัดหมายสำเร็จ`, [{ text: 'OK' }]);
-                navigation.navigate("ScheduleTab");
+                navigation.navigate("SchedulePage");
             }
         } catch (error) {
             console.error('Failed to create schedule:', error);
@@ -255,6 +380,10 @@ export default function ProfileTab() {
                             <StyledIonIcon className="mt-1" name="male" color={'#ff8df6'} size={30} />
                         )}
 
+                        <StyledText className="font-custom">
+                            {Number(distance.toFixed(0)) / 1000 > 1 ? `${Number(distance.toFixed(0)) / 1000} Km` : `${Number(distance.toFixed(0))} M`}
+                        </StyledText>
+
                         <StyledIonIcon name="chatbubble-ellipses-outline" size={24} className="right-3 absolute"
                             onPress={() => {
                                 navigation.navigate("Chat", {
@@ -304,7 +433,7 @@ export default function ProfileTab() {
                         end={{ x: 1, y: 0 }}
                         className="rounded-full py-3 shadow-sm"
                     >
-                        {[<StyledText key="login" className="font-custom text-center text-white text-lg font-semibold">นัดหมาย</StyledText>]}
+                        {[<StyledText key="scheduleCreate" className="font-custom text-center text-white text-lg font-semibold">นัดหมาย</StyledText>]}
 
                     </LinearGradient>
                 </TouchableOpacity>
@@ -319,152 +448,208 @@ export default function ProfileTab() {
             >
                 <BottomSheetView style={{ height: "80%" }}>
                     <StyledView className="flex-1 bg-white">
-                        <StyledView className="flex-row items-center px-6 py-2">
-                            <StyledView className="w-6/12 px-1">
-                                <StyledText className="text-lg text-black font-custom">วัน/เดือน/ปี</StyledText>
+                        {
+                            searchFocus ? (
+                                <>
+                                    <StyledView className="flex-row items-center px-6 py-2">
+                                        <StyledView className="w-full px-1">
+                                            <StyledView className="flex-row gap-1 items-center w-full mb-2">
 
-                                <StyledTextInput
-                                    placeholder="03/10/2567"
-                                    className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full"
-                                    value={scheduleDate}
-                                    placeholderTextColor="#9CA3AF"
-                                    onPress={showDatePicker}
-                                    editable={false}
-                                />
-                            </StyledView>
+                                                <StyledIonIcon name="chevron-back" size={24}
+                                                    onPress={() => setSearchFocus(false)}
 
-                            <StyledView className="w-6/12 px-1">
-                                <StyledText className="text-lg text-black font-custom">เวลา</StyledText>
-                                <StyledTextInput
-                                    placeholder="10:10"
-                                    className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full"
-                                    value={scheduleTime}
-                                    placeholderTextColor="#9CA3AF"
-                                    onPress={showTimePicker}
-                                    editable={false}
-                                />
-                            </StyledView>
-                        </StyledView>
-                        <StyledView className="flex-row items-center px-6 py-2">
-                            <StyledView className="w-full px-1">
-                                <StyledText className="text-lg text-black font-custom">ประเภทงาน</StyledText>
+                                                />
+                                                <StyledTextInput
+                                                    placeholder="ค้นหาสถานที่"
+                                                    className="font-custom border border-gray-300 rounded-2xl py-2 mr-2 px-4 text-gray-700 min-w-[80%]"
+                                                    value={locationSearch}
+                                                    placeholderTextColor="#9CA3AF"
+                                                    onChangeText={setLocationSearch}
+                                                >
 
-                                <StyledTextInput
-                                    placeholder="โปรดเลือกประเภทงาน"
-                                    className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full"
-                                    placeholderTextColor="#9CA3AF"
-                                    editable={false}
-                                />
-                            </StyledView>
-                        </StyledView>
+                                                </StyledTextInput>
+                                                <StyledIonIcon
+                                                    name="search"
+                                                    size={24}
+                                                    className=""
+                                                    onPress={() => {
+                                                        setSearchFocus(true)
+                                                        searchMapGeoLocation(locationSearch)
+                                                    }}
+                                                />
 
-                        <StyledView className="flex-row items-center px-6 py-2">
-                            <StyledView className="w-full px-1">
-                                <StyledText className="text-lg text-black font-custom">จุดนัดหมาย</StyledText>
+                                            </StyledView>
+                                            {
+                                                geoLocation.map((location, index) => (
+                                                    <TouchableOpacity
+                                                        key={index}
+                                                        className="flex-row items-center py-2"
+                                                        onPress={() => {
+                                                            setPin(location);
+                                                            setSearchFocus(false);
+                                                            setScheduleLocation(location.locationName);
+                                                        }}
+                                                    >
+                                                        <StyledIonIcon name="location-outline" size={24} className="mr-2" />
+                                                        <StyledText className="text-lg text-black font-custom flex-wrap pr-2 border-b-[1px] border-gray-200 max-w-[95%]">{location.locationName}</StyledText>
+                                                    </TouchableOpacity>
+                                                ))
+                                            }
+                                        </StyledView>
 
-                                <StyledGooglePlacesAutocomplete
-                                    placeholder="ค้นหาสถานที่"
-                                    minLength={2}
-                                    fetchDetails={true}
+                                    </StyledView>
 
-                                    onPress={(data, details = null) => {
-                                        if (details) {
-                                            console.log(details.name);
-                                            const { lat, lng } = details.geometry.location;
-                                            setPin({
-                                                latitude: lat,
-                                                longitude: lng,
-                                            });
-                                        }
-                                    }}
 
-                                    onFail={(error) => console.error(error)}
+                                </>
+                            ) : (
+                                <>
+                                    <StyledView className="flex-row items-center px-6 py-2">
+                                        <StyledView className="w-6/12 px-1">
+                                            <StyledText className="text-lg text-black font-custom">วัน/เดือน/ปี</StyledText>
 
-                                    query={{
-                                        key: 'AIzaSyD_MFjeIfNZSWItzTnbzfyD_12bU1MIFIk',
-                                        language: 'th',
-                                    }}
+                                            <StyledTextInput
+                                                placeholder="03/10/2567"
+                                                className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full"
+                                                value={scheduleDate}
+                                                placeholderTextColor="#9CA3AF"
+                                                onPress={showDatePicker}
+                                                editable={false}
+                                            />
+                                        </StyledView>
 
-                                    styles={{
-                                        textInput: {
-                                            height: 50,
-                                            borderRadius: 16,
-                                            borderWidth: 1,
-                                            borderColor: '#d1d5db',
-                                            color: '#374151',
-                                            width: '100%',
-                                            fontFamily: "Kanit"
-                                        },
-                                        container: {
-                                            zIndex: 1000,
-                                        }
+                                        <StyledView className="w-6/12 px-1">
+                                            <StyledText className="text-lg text-black font-custom">เวลา</StyledText>
+                                            <StyledTextInput
+                                                placeholder="10:10"
+                                                className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full"
+                                                value={scheduleTime}
+                                                placeholderTextColor="#9CA3AF"
+                                                onPress={showTimePicker}
+                                                editable={false}
+                                            />
+                                        </StyledView>
+                                    </StyledView>
+                                    <StyledView className="flex-row items-center px-6 py-2">
+                                        <StyledView className="w-full px-1">
+                                            <StyledText className="text-lg text-black font-custom">ประเภทงาน</StyledText>
 
-                                    }}
-                                />
-                            </StyledView>
-                        </StyledView>
+                                            <RNPickerSelect
+                                                items={joblist}
+                                                onValueChange={setScheduleJobs}
+                                                value={scheduleJobs}
+                                                placeholder={{ label: 'เลือกประเภทงาน', value: null }}
+                                                style={
+                                                    {
+                                                        inputIOS: {
+                                                            fontFamily: 'Kanit',
+                                                            width: '100%',
+                                                            borderColor: '#d1d5db',
+                                                            padding: 16,
+                                                            borderWidth: 1,
+                                                            borderRadius: 16
 
-                        <StyledView className="px-6 py-2 rounded-2xl my-2 mt-5 h-[50%]">
-                            <StyledMapView
-                                initialRegion={{
-                                    latitude: pin ? pin.latitude : 37.78825,
-                                    longitude: pin ? pin.longitude : -122.4324,
-                                    latitudeDelta: 0.0922,
-                                    longitudeDelta: 0.0421,
-                                }}
-                                onPress={(e) => {
-                                    const { latitude, longitude } = e.nativeEvent.coordinate;
-                                    setPin({ latitude, longitude });
-                                }}
 
-                                style={{
-                                    borderRadius: 20,
-                                    height: "100%",
-                                }}
-                            >
-                                {pin && (
-                                    <>
-                                        <Marker
-                                            coordinate={pin}
-                                            title="Selected Location"
-                                            draggable
-                                            onDragEnd={(e) => {
+                                                        },
+                                                        inputAndroid: {
+                                                            fontFamily: 'Kanit',
+                                                            width: '100%',
+                                                            borderColor: '#d1d5db',
+                                                            padding: 16,
+                                                            borderWidth: 1,
+                                                            borderRadius: 16
+
+                                                        },
+
+                                                    }
+                                                }
+
+                                            />
+                                        </StyledView>
+                                    </StyledView>
+
+                                    <StyledView className="items-center px-6 py-2">
+                                        <StyledView className="w-full px-1">
+                                            <StyledText className="text-lg text-black font-custom">จุดนัดหมาย</StyledText>
+
+                                            <StyledTouchableOpacity
+                                                onPress={() => setSearchFocus(true)}
+                                                className="font-custom border-[1px] border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full"
+                                            >
+                                                <StyledText className={`text-[${scheduleLocation.length > 0 ? '#9CA3AF' : '#000'}] font-custom`}>
+                                                    {
+                                                        scheduleLocation.length > 0 ? scheduleLocation : "ค้นหาสถานที่"
+                                                    }
+                                                </StyledText>
+                                            </StyledTouchableOpacity>
+                                        </StyledView>
+                                    </StyledView>
+
+                                    <StyledView className="px-6 py-2 rounded-2xl my-2 mt-5 h-[50%]">
+                                        <StyledMapView
+                                            initialRegion={{
+                                                latitude: pin ? pin.latitude : 37.78825,
+                                                longitude: pin ? pin.longitude : -122.4324,
+                                                latitudeDelta: 0.0922,
+                                                longitudeDelta: 0.0421,
+
+                                            }}
+                                            onPress={(e) => {
                                                 const { latitude, longitude } = e.nativeEvent.coordinate;
                                                 setPin({ latitude, longitude });
                                             }}
+
+                                            style={{
+                                                borderRadius: 20,
+                                                height: "100%",
+                                            }}
                                         >
-                                        </Marker>
+                                            {pin && (
+                                                <>
+                                                    <Marker
+                                                        coordinate={pin}
+                                                        title="Selected Location"
+                                                        draggable
+                                                        onDragEnd={(e) => {
+                                                            const { latitude, longitude } = e.nativeEvent.coordinate;
+                                                            setPin({ latitude, longitude });
+                                                        }}
 
-                                        <Circle
-                                            center={pin}
-                                            radius={250} // radius in meters
-                                            strokeColor="rgba(255, 0, 0, 0.5)" // Border color
-                                            fillColor="rgba(255, 0, 0, 0.2)" // Fill color
-                                        />
-                                    </>
-                                )}
-                            </StyledMapView>
-                        </StyledView>
+                                                    >
+                                                    </Marker>
+
+                                                    <Circle
+                                                        center={pin}
+                                                        radius={250} // radius in meters
+                                                        strokeColor="rgba(255, 0, 0, 0.5)" // Border color
+                                                        fillColor="rgba(255, 0, 0, 0.2)" // Fill color
+                                                    />
+                                                </>
+                                            )}
+                                        </StyledMapView>
+                                    </StyledView>
 
 
-                        <TouchableOpacity
-                            className="w-full px-6"
-                            onPress={createSchedule}
-                            disabled={loading}
-                        >
-                            <LinearGradient
-                                colors={['#EB3834', '#69140F']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 0 }}
-                                className="rounded-full py-3 shadow-sm"
-                            >
-                                {loading ? (
-                                    <ActivityIndicator size="small" color="#fff" />
-                                ) : (
-                                    <StyledText className="font-custom text-center text-white text-lg font-semibold">ส่ง</StyledText>
-                                )}
-                            </LinearGradient>
-                        </TouchableOpacity>
+                                    <TouchableOpacity
+                                        className="w-full px-6"
+                                        onPress={createSchedule}
+                                        disabled={loading}
+                                    >
+                                        <LinearGradient
+                                            colors={['#EB3834', '#69140F']}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 0 }}
+                                            className="rounded-full py-3 shadow-sm"
+                                        >
+                                            {loading ? (
+                                                <ActivityIndicator size="small" color="#fff" />
+                                            ) : (
+                                                <StyledText className="font-custom text-center text-white text-lg font-semibold">ส่ง</StyledText>
+                                            )}
+                                        </LinearGradient>
+                                    </TouchableOpacity>
+                                </>
+                            )
+                        }
                     </StyledView>
                 </BottomSheetView>
             </BottomSheet>

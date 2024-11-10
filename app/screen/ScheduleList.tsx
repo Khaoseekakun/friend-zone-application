@@ -21,7 +21,7 @@ const StyledIonIcon = styled(Ionicons);
 const StyledButton = styled(Button);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 
-export default function SchedulePage() {
+export default function ScheduleList() {
     const navigation = useNavigation<NavigationProp<any>>();
     const [loading, setLoading] = useState(false);
     const [schedule, setSchedule] = useState<Schedule[]>([]);
@@ -31,9 +31,9 @@ export default function SchedulePage() {
     const getStatusColor = (status: string) => {
         switch (status) {
             case "wait_approve":
-                return "text-yellow-400";  // Pending approval
+                return "text-yellow-400";  
             case "wait_payment":
-                return "text-orange-400";  // Waiting for payment
+                return "text-orange-400";  
             case "payment_success":
                 return "text-green-500";   // Payment success
             case "wait_working":
@@ -109,7 +109,7 @@ export default function SchedulePage() {
                     (userId && schedule.customerId === userId) ||
                     (userId && schedule.memberId === userId)
                 ) {
-                    if (schedule.status !== "deleted") {
+                    if (!(schedule.status == "deleted" || schedule.status == "wait_approve" || schedule.status == "wait_payment" || schedule.status == "schedule_cancel")) {
                         schedules.push(schedule);
                     }
                 }
@@ -158,47 +158,6 @@ export default function SchedulePage() {
         }
     }
 
-    const createPayment = async (scheduleId: string) => {
-        const find = schedule.find((item) => item.id === scheduleId);
-        let paymentId = find?.paymentId;
-        if (!find) return Alert.alert('ไม่พบข้อมูล', 'ไม่พบข้อมูลการนัดหมาย', [{ text: 'OK' }]);
-
-        try {
-            setPaymentLoading(true);
-            if (!paymentId) {
-                const response = await axios.post('http://49.231.43.37:3000/api/stripe/create-payment-intent', {
-                    amount: (find.price ?? 100) * 100,
-                    customerId: find.customerId,
-                    memberId: find.memberId,
-                    scheduleId: find.id
-                },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Customer ${userData.token}`
-                        }
-                    }
-                )
-
-                if (response.data.status === 200) {
-                    paymentId = response.data.data.url as string
-                    Linking.openURL(paymentId);
-                } else {
-                    console.log(response.data);
-                    Alert.alert('ผิดพลาด', 'ไม่สามารถสร้างรหัสชำระเงินได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
-                }
-            } else {
-                Linking.openURL(paymentId);
-            }
-
-        } catch (error) {
-            console.log(error)
-            Alert.alert('ผิดพลาด', 'ไม่สามารถสร้างรหัสชำระเงินได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
-        } finally {
-            setPaymentLoading(false);
-        }
-    };
-
     const randomInt = () => Math.floor(Math.random() * 100 + 1);
 
     return (
@@ -215,7 +174,7 @@ export default function SchedulePage() {
                         <ScrollView>
                             {
                                 schedule.map((item, index) => (
-                                    <>
+                                    <StyledView key={`${item.id}-${index}`}>
                                         <StyledView key={`${item.id}-${index}-${userData.id}-${randomInt}`} className="bg-white rounded-b-2xl rounded-tr-2xl w-full h-auto p-3">
                                             <StyledText className="font-custom">รายละเอียดการนัดหมาย</StyledText>
                                             <StyledText className="font-custom text-gray-500">{DateFromat(item.date)}</StyledText>
@@ -235,27 +194,7 @@ export default function SchedulePage() {
                                             </StyledView>
 
                                             {
-                                                item.status === "wait_payment" && userData.role == "customer" ? (
-                                                    <StyledView className="flex-row py-2 justify-end gap-2 items-center">
-                                                        <StyledTouchableOpacity onPress={() => updateScheduleStatus(item.id, 'schedule_cancel', "ยืนยันการยกเลิกการนัดหมาย")}>
-                                                            <StyledText className="font-custom text-gray-500 text-xl">ยกเลิก</StyledText>
-                                                        </StyledTouchableOpacity>
-                                                        <StyledTouchableOpacity
-
-                                                            onPress={() => createPayment(item.id)}
-
-                                                        >
-                                                            <LinearGradient
-                                                                colors={['#EB3834', '#69140F']}
-                                                                start={{ x: 0, y: 0 }}
-                                                                end={{ x: 1, y: 0 }}
-                                                                className="rounded-full py-1 shadow-sm"
-                                                            >
-                                                                <StyledText className="font-custom text-white text-xl px-4">ชำระเงิน</StyledText>
-                                                            </LinearGradient>
-                                                        </StyledTouchableOpacity>
-                                                    </StyledView>
-                                                ) : item.status === "wait_approve" && userData.role === "member" ? (
+                                                 item.status === "wait_approve" && userData.role === "member" ? (
                                                     <StyledView className="flex-row py-2 justify-end gap-2 items-center">
                                                         <StyledTouchableOpacity onPress={() => updateScheduleStatus(item.id, 'schedule_cancel', "ยืนยันการยกเลิกการนัดหมาย")}>
                                                             <StyledText className="font-custom text-gray-500 text-xl">ยกเลิก</StyledText>
@@ -294,12 +233,12 @@ export default function SchedulePage() {
                                                                         userData.role === "customer" ? "กำลังทำงาน" : "กำลังทำงาน" :
                                                                         item.status === "schedule_end_success" ?
                                                                             userData.role === "customer" ? "การนัดหมายสิ้นสุด (สำเร็จ)" : "การนัดหมายสิ้นสุด (สำเร็จ)" :
-                                                                            "สถานะไม่รู้จัก" // Default value for unknown statuses
+                                                                            "สถานะไม่รู้จัก" 
                                             }
                                         </StyledText>
 
 
-                                    </>
+                                    </StyledView>
                                 ))
                             }
 

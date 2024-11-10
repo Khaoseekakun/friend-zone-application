@@ -47,9 +47,8 @@ export default function Search() {
     const { searchType } = router.params;
     const [data, setData] = useState<SearchData[]>([]);
     const [layout, setLayout] = useState(0);
-
     useEffect(() => {
-        handlerSearch({ searchType: "Friend" });
+        handlerSearch({ searchType });
     }, []);
 
     function handlerSearch(options: SearchOption) {
@@ -73,7 +72,7 @@ export default function Search() {
                     key={data.id} 
                     style={styles.gridCard}
                     activeOpacity={0.8}
-                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id })}
+                    onPress={() => navigation.navigate('ProfileTab',  { profileId: data.id, jobCategory: searchType})}
                 >
                     <Image 
                         source={{ uri: data.image }} 
@@ -116,7 +115,7 @@ export default function Search() {
                     key={`${data.id}-${index}`}
                     style={styles.listCard}
                     activeOpacity={0.8}
-                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id })}
+                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType})}
                 >
                     <Image 
                         source={{ uri: data.image }} 

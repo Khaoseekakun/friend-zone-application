@@ -80,17 +80,30 @@ export default function Setting() {
 
                     <StyledView className="flex-row items-center justify-between w-full px-3">
                         <StyledView className="flex-row justify-center">
-                            <StyledIonicons name="calendar-outline" size={24} color="black" className="" />
+                            <StyledIonicons name="alert-circle-outline" size={24} color="black" className="mt-1" />
                             <StyledView className="ml-2">
-                                <StyledText className=" text-gray-700 font-custom text-lg">ตารางเวลา</StyledText>
-                                <StyledText className=" text-gray-500 font-custom text-sm ">เวลาการนัดหมาย</StyledText>
+                                <StyledText className=" text-gray-700 font-custom text-lg">สถานะบัญชี</StyledText>
+                                <StyledText className=" text-gray-500 font-custom text-sm ">ตรวจสอบสิทธิ์การใช้งาน</StyledText>
                             </StyledView>
                         </StyledView>
                         <StyledIonicons name="chevron-forward" size={24} color="gray" />
                     </StyledView>
+
+                    <TouchableOpacity onPress={() => navigation.navigate("ScheduleList")}>
+                        <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
+                            <StyledView className="flex-row justify-center">
+                                <StyledIonicons name="calendar-outline" size={24} color="black" className="mt-1" />
+                                <StyledView className="ml-2">
+                                    <StyledText className=" text-gray-700 font-custom text-lg">ตารางเวลา</StyledText>
+                                    <StyledText className=" text-gray-500 font-custom text-sm ">เวลาการนัดหมาย</StyledText>
+                                </StyledView>
+                            </StyledView>
+                            <StyledIonicons name="chevron-forward" size={24} color="gray" />
+                        </StyledView>
+                    </TouchableOpacity>
                     <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
                         <StyledView className="flex-row justify-center">
-                            <StyledIonicons name="analytics-outline" size={24} color="black" className="" />
+                            <StyledIonicons name="analytics-outline" size={24} color="black" className="mt-1" />
                             <StyledView className="ml-2">
                                 <StyledText className=" text-gray-700 font-custom text-lg">บันทึกประวัติ</StyledText>
                                 <StyledText className=" text-gray-500 font-custom text-sm ">การนัดหมาย, ธุรกรรม, อื่นๆ</StyledText>
@@ -98,9 +111,10 @@ export default function Setting() {
                         </StyledView>
                         <StyledIonicons name="chevron-forward" size={24} color="gray" />
                     </StyledView>
+
                     <StyledView className="flex-row items-center justify-between w-full px-3 pb-2">
                         <StyledView className="flex-row justify-center">
-                            <StyledIonicons name="notifications-outline" size={24} color="black" className="" />
+                            <StyledIonicons name="notifications-outline" size={24} color="black" className="mt-1" />
                             <StyledView className="ml-2">
                                 <StyledText className=" text-gray-700 font-custom text-lg">การแจ้งเตือน</StyledText>
                                 <StyledText className=" text-gray-500 font-custom text-sm ">เปิด-ปิดการแจ้งเตือน</StyledText>

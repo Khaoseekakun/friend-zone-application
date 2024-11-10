@@ -7,11 +7,12 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "@/types";
 import { LinearGradient } from "expo-linear-gradient";
+const GuestIcon = require("../../assets/images/guesticon.jpg")
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
-
+const StyledImage = styled(Image);
 const StyledTouchableWithoutFeedback = styled(TouchableWithoutFeedback);
 type PostUpdateParam = RouteProp<RootStackParamList, 'PostUpdate'>;
 export default function PostUpdate() {
@@ -111,7 +112,11 @@ export default function PostUpdate() {
                     <StyledView className="bg-gray-200 w-full h-[1px]" />
 
                     <StyledView className="w-full flex-row items-center justify-between">
-                        <StyledView className="ml-3 bg-gray-400 rounded-full w-[40px] h-[40px] mt-2" />
+                        <StyledImage source={
+                            userData?.profileUrl ?
+                                { uri: userData?.profileUrl } :
+                                GuestIcon
+                        } className="ml-3 bg-gray-400 rounded-full w-[40px] h-[40px] mt-2" />
                         <StyledView className="flex-row items-center ml-2 rounded-md w-full h-[40px]">
                             <StyledText className="font-bold">{userData?.username}</StyledText>
                         </StyledView>

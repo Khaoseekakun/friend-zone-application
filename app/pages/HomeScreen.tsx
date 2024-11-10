@@ -16,6 +16,7 @@ import { RootStackParamList } from "@/types";
 import Chat from "../screen/Chat";
 import AccountSetting from "../screen/SettingAccount";
 import ProfileMember from "../screen/ProfileMember";
+import ScheduleList from "../screen/ScheduleList";
 
 const Tab = createBottomTabNavigator();
 
@@ -39,6 +40,7 @@ export default function HomeScreen() {
         <Tab.Screen name="Chat" component={Chat} options={{ headerShown: false }} />
         <Tab.Screen name="AccountSetting" component={AccountSetting} options={{ headerShown: false }} />
         <Tab.Screen name="ProfileMember" component={ProfileMember} options={{ headerShown: false }} />
+        <Tab.Screen name="ScheduleList" component={ScheduleList} options={{ headerShown: false }} />
       </Tab.Navigator>
     </>
   );

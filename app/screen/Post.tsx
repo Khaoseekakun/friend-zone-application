@@ -12,12 +12,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Logout } from "@/utils/Auth/Logout";
 import * as ImageManipulator from 'expo-image-manipulator';
 import { LinearGradient } from "expo-linear-gradient";
+const GuestIcon = require("../../assets/images/guesticon.jpg")
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledBottomSheetView = styled(BottomSheetView);
 const StyledTouchableWithoutFeedback = styled(TouchableWithoutFeedback);
+const StyledImage = styled(Image);
 const firebaseConfig = {
     apiKey: "AIzaSyB6-tcwtkosfRGDQq4_6Nvpz47Lnt33_UM",
     authDomain: "friendszone-d1e20.firebaseapp.com",
@@ -178,6 +180,32 @@ export default function Post() {
         }
     };
 
+    const uploadImageFromCamera = async () => {
+        try {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert(`แจ้งเตือน`, `คุณต้องให้สิทธิ์ให้แอปเข้าถึงกล้องของคุณ`, [{ text: 'OK' }]);
+                return;
+            } else {
+                const result = await ImagePicker.launchCameraAsync({
+                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    allowsEditing: true,
+                    aspect: [4, 3],
+                    quality: 1
+                });
+
+                if (!result.canceled) {
+                    const optimizedUri = await optimizeImage(result.assets[0].uri);
+                    setImages(prevImages => [...prevImages, optimizedUri]);
+                }
+            }
+        } catch (error) {
+            console.error("Error uploading image from camera: ", error);
+            Alert.alert(`แจ้งเตือน`, `ไม่สามารถเข้าถึงกล้องของคุณ`, [{ text: 'OK' }]);
+
+        }
+    }
+
     const deleteImagesFromFirebase = async (imageUrls: string[]) => {
         for (const url of imageUrls) {
             const imageRef = ref(storage, url);
@@ -263,7 +291,11 @@ export default function Post() {
                         <StyledView className="bg-gray-200 w-full h-[1px]" />
 
                         <StyledView className="w-full flex-row items-center justify-between">
-                            <StyledView className="ml-3 bg-gray-400 rounded-full w-[40px] h-[40px] mt-2" />
+                            <StyledImage source={
+                                userData?.profileUrl ?
+                                    { uri: userData?.profileUrl } :
+                                    GuestIcon
+                            } className="ml-3 bg-gray-400 rounded-full w-[40px] h-[40px] mt-2" />
                             <StyledView className="flex-row items-center ml-2 rounded-md w-full h-[40px]">
                                 <StyledText className="font-custom font-bold">{userData?.username}</StyledText>
                             </StyledView>
@@ -340,9 +372,9 @@ export default function Post() {
                                             </TouchableOpacity>
                                         </StyledView>
                                         <StyledView className="my-2 py-1">
-                                            <TouchableOpacity onPress={() => { /* Call takePicture() if you want to keep camera option */ }} className="flex-row items-center">
-                                                <Ionicons name="camera" size={24} color="#2b98e8" />
-                                                <StyledText className="pl-4 text-lg font-custom">กล้อง</StyledText>
+                                            <TouchableOpacity onPress={() => { uploadImageFromCamera() }} disabled={images.length >= 6} className="flex-row items-center">
+                                                <Ionicons name="camera" size={24} color={`${images.length >= 6 ? "#2bbbbb" : "#2b98e8"}`} />
+                                                <StyledText className={`pl-4 text-lg font-custom ${images.length >= 6 ? "text-gray-500" : ""}`}>กล้อง</StyledText>
                                             </TouchableOpacity>
                                         </StyledView>
                                     </StyledView>
