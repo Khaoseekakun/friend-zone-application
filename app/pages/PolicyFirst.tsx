@@ -31,7 +31,7 @@ export default function AgreementScreen() {
     }, []);
 
     const handleAgree = () => {
-        navigation.navigate('Register');
+        navigation.navigate('Register', {});
     };
 
     if (loading) {
