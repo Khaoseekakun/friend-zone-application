@@ -349,7 +349,7 @@ export default function FeedsTab() {
                             <StyledView className="w-full flex-row items-center justify-between mt-3 mb-3 px-3">
                                 <TouchableOpacity
                                     className="flex-row bg-gray-300 items-center mr-3 pl-4 rounded-full w-full h-[40px]"
-                                    onPress={() => navigation.navigate('PostTab')}
+                                    onPress={() => navigation.navigate('PostTab', {})}
                                 >
                                     <StyledText className="text-black font-custom">โพสต์อะไรสักอย่าง</StyledText>
                                 </TouchableOpacity>

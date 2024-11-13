@@ -34,7 +34,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export default function ProfileTab() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const route = useRoute<ProfileParam>();
-    const { profileId, jobCategory } = route.params;
+    const { profileId, jobCategory, backPage } = route.params;
 
     const convertJobs = {
         "Friend": "เพื่อนท่องเที่ยว"
@@ -222,7 +222,7 @@ export default function ProfileTab() {
                 Alert.alert("Error", "User profile not found", [
                     {
                         text: "Go to Home",
-                        onPress: () => navigation.navigate("HomeScreen")
+                        onPress: () => navigation.navigate("HomeScreen", {})
                     }
                 ]);
                 return;
@@ -322,7 +322,7 @@ export default function ProfileTab() {
                 Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
             } else {
                 Alert.alert(`สำเร็จ`, `สร้างนัดหมายสำเร็จ`, [{ text: 'OK' }]);
-                navigation.navigate("SchedulePage");
+                navigation.navigate("SchedulePage", {});
             }
         } catch (error) {
             console.error('Failed to create schedule:', error);
@@ -340,7 +340,9 @@ export default function ProfileTab() {
 
     return (
         <StyledView className="flex-1 bg-white">
-            <HeaderApp back="FeedsTab" />
+            <HeaderApp back={
+                backPage ?? 'FeedsTab' 
+            } />
             <StyledScrollView>
                 <StyledView className="flex-1 h-screen">
                     <StyledView>
@@ -384,15 +386,6 @@ export default function ProfileTab() {
                             {Number(distance.toFixed(0)) / 1000 > 1 ? `${Number(distance.toFixed(0)) / 1000} Km` : `${Number(distance.toFixed(0))} M`}
                         </StyledText>
 
-                        <StyledIonIcon name="chatbubble-ellipses-outline" size={24} className="right-3 absolute"
-                            onPress={() => {
-                                navigation.navigate("Chat", {
-                                    chatName: userProfile.profile.username,
-                                    helper: false,
-                                    receiverId: userProfile.profile.id,
-                                })
-                            }}
-                        ></StyledIonIcon>
                     </StyledView>
 
                     <StyledView className="left-2">

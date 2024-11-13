@@ -44,7 +44,7 @@ export default function Search() {
     const navigation = useNavigation<NavigationProp<any>>();
     const [search, setSearch] = useState('');
     const [searchloading, setSearchLoading] = useState(false);
-    const { searchType } = router.params;
+    const { searchType, backPage } = router.params;
     const [data, setData] = useState<SearchData[]>([]);
     const [layout, setLayout] = useState(0);
     useEffect(() => {
@@ -72,7 +72,7 @@ export default function Search() {
                     key={data.id} 
                     style={styles.gridCard}
                     activeOpacity={0.8}
-                    onPress={() => navigation.navigate('ProfileTab',  { profileId: data.id, jobCategory: searchType})}
+                    onPress={() => navigation.navigate('ProfileTab',  { profileId: data.id, jobCategory: searchType, backPage: "SearchCategory"})}
                 >
                     <Image 
                         source={{ uri: data.image }} 
@@ -115,7 +115,7 @@ export default function Search() {
                     key={`${data.id}-${index}`}
                     style={styles.listCard}
                     activeOpacity={0.8}
-                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType})}
+                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "SearchCategory" })}
                 >
                     <Image 
                         source={{ uri: data.image }} 

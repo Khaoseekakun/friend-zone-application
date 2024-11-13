@@ -100,7 +100,7 @@ export default function RegisterStepTwo() {
             <StyledText className={`font-custom text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-200'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-black z-50 px-2`}>{label}</StyledText>
             <StyledView className="flex-row items-center">
                 {isPicker && pickerItems && (
-                    <StyledView className="w-full">
+                    <StyledView className="w-full border-[1px] border-gray-300 rounded-full">
                         <RNPickerSelect
 
                             onValueChange={onChangeText}
@@ -112,8 +112,6 @@ export default function RegisterStepTwo() {
                                 inputIOS: {
                                     fontFamily: 'Kanit',
                                     padding: 16,
-                                    borderWidth: 1,
-                                    borderRadius: 25,
                                     borderColor: theme == "dark" ? '#d1d5db' : '#d1d5db',
                                     width: '100%',
                                     backgroundColor: theme == "dark" ? '#000' : '#fff',
@@ -126,7 +124,9 @@ export default function RegisterStepTwo() {
                                     borderRadius: 25,
                                     borderColor: theme == "dark" ? '#d1d5db' : '#d1d5db',
                                     width: '100%',
-                                    backgroundColor: theme == "dark" ? '#000' : '#fff',
+                                },
+                                placeholder: {
+                                    fontFamily: 'Kanit',
                                 },
 
                             }
@@ -160,7 +160,7 @@ export default function RegisterStepTwo() {
                                     colors={disable ? ['#ccc', '#ccc'] : ['#EB3834', '#69140F']}
                                     start={{ x: 0, y: 0 }}
                                     end={{ x: 1, y: 0 }}
-                                    className="rounded-full py-3 px-4">
+                                    className="rounded-full py-4 px-4">
 
                                     <StyledText className="text-white text-center font-custom">{buttonText}</StyledText>
                                 </LinearGradient>
@@ -180,7 +180,6 @@ export default function RegisterStepTwo() {
             day: '2-digit',
         });
 
-        console.log(formattedDate)
         setBirthdate(formattedDate);
         hideDatePicker();
     };
@@ -215,6 +214,7 @@ export default function RegisterStepTwo() {
     const genderOptions = [
         { label: 'ชาย', value: 'ชาย' },
         { label: 'หญิง', value: 'หญิง' },
+        { label: 'lgbtq+', value: 'lgbtl+' },
     ];
 
     const provinceOptions = [
@@ -282,7 +282,7 @@ export default function RegisterStepTwo() {
 
                         setVerifyPhone(true);
                         await createCustomerAccount();
-                        Alert.alert("สำเร็จ", "สร้างบัญชีสำเร็จ", [{ text: "ตกลง", onPress: () => navigation.navigate('Login') }]);
+                        Alert.alert("สำเร็จ", "สร้างบัญชีสำเร็จ", [{ text: "ตกลง", onPress: () => navigation.navigate('Login', {}) }]);
                     }
                 } catch (error) {
                     handleError(error, 'ไม่สามารถตรวจสอบได้');
@@ -290,7 +290,7 @@ export default function RegisterStepTwo() {
             } else {
                 try {
                     await createCustomerAccount();
-                    Alert.alert("สำเร็จ", "สร้างบัญชีสำเร็จ", [{ text: "ตกลง", onPress: () => navigation.navigate('Login') }]);
+                    Alert.alert("สำเร็จ", "สร้างบัญชีสำเร็จ", [{ text: "ตกลง", onPress: () => navigation.navigate('Login', {}) }]);
                 } catch (error) {
                     handleError(error, 'เกิดข้อผิดพลาดไม่สามารถเชื่อมต่อกับระบบได้');
                 }
@@ -387,7 +387,7 @@ export default function RegisterStepTwo() {
                             <InputField
                                 label={`${isPhoneValid ? 'เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว' : 'เบอร์โทรศัพท์'}`}
                                 placeholder="+66"
-                                inputMode="tel"
+                                inputMode="numeric"
                                 value={phone}
                                 onBlur={handleCheckPhone}
                                 onChangeText={handlePhoneChange}

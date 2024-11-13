@@ -1,11 +1,17 @@
 import { StackNavigationProp } from '@react-navigation/stack';
 
 export type RootStackParamList = {
-  Login: undefined;
-  Register: undefined;
-  HomeScreen: undefined;
-  Agreement: { nextScreen: string }
-  RegisterStepTwo: { username: string, password: string }
+  Login: {
+    backPage?: string;
+  },
+  Register: {
+    backPage?: string;
+  },
+  HomeScreen: {
+    backPage?: string;
+  },
+  Agreement: { nextScreen: string, backPage?: string },
+  RegisterStepTwo: { username: string, password: string, backPage?: string },
   PostUpdate: {
     post: {
       id: string;
@@ -18,30 +24,48 @@ export type RootStackParamList = {
         profileUrl: string;
         verified: boolean;
       }
-    }
+    },
+    backPage?: string;
   },
   Search : {
-    searchType : "Friend" | "Music" | "Dj"
+    searchType : "Friend" | "Music" | "Dj",
+    backPage?: string;
   },
   Chat : {
     helper? : boolean
     chatId? : string,
     receiverId? : string,
     chatName : string,
-    profileUrl? : string
+    profileUrl? : string,
+    backPage?: string;
   },
-  MessageTab : undefined,
+  MessageTab : {
+    backPage?: string;
+  },
   ProfileTab : {
     profileId : string,
     jobCategory? : string,
+    backPage?: string;
   },
-  FeedsTab : undefined,
-  PostTab : undefined,
+  FeedsTab : {
+    backPage?: string;
+  },
+  PostTab : {
+    backPage?: string;
+  },
   ProfileMember : {
-    profileId : string
+    profileId : string,
+    backPage?: string
   },
-  SchedulePage : undefined,
-  ScheduleList : undefined
+  SchedulePage : {
+    backPage?: string;
+  };
+  ScheduleList : {
+    backPage?: string;
+  },
+  SearchCategory: {
+    backPage?: string;
+  }
 };
 
 export type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;

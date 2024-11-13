@@ -45,7 +45,7 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
   const navigation = useNavigation<NavigationProp<any>>();
 
   const handlePress = (index: number, screen: string) => {
-    navigation.navigate(screen);
+    navigation.navigate(screen, {backPage: current});
   };
 
   return (

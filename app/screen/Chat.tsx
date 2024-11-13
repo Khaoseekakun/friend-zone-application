@@ -138,7 +138,6 @@ export default function Chat() {
             if (existingStatus !== 'granted') await Notifications.requestPermissionsAsync();
 
             const token = (await Notifications.getExpoPushTokenAsync()).data;
-            console.log(token);
         };
 
         checkNotificationPermissions();
@@ -341,7 +340,7 @@ export default function Chat() {
     return (
         <StyledView className="flex-1 bg-white">
             <StyledView className="bg-white px-3 text-center pt-[60px] pb-3">
-                <TouchableOpacity onPress={() => navigation.navigate("MessageTab")} className="absolute pt-[60] ml-4">
+                <TouchableOpacity onPress={() => navigation.navigate("MessageTab", {})} className="absolute pt-[60] ml-4">
                     <Ionicons name="chevron-back" size={24} color="" />
                 </TouchableOpacity>
                 <StyledText className="text-center self-center text-lg font-bold text-black">{chatName}</StyledText>
