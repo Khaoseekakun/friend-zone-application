@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, InputModeOptions, Alert, Animated, ActivityIndicator, Appearance } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, InputModeOptions, Alert, Animated, ActivityIndicator, Appearance, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
@@ -8,16 +8,19 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import RNPickerSelect from 'react-native-picker-select';
+import DateTimePicker from 'react-native-ui-datepicker';
+import dayjs from 'dayjs';
+import { set } from 'firebase/database';
 const API_SYSTEM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzeXN0ZW0iOnRydWUsInBlcm1pc3Npb25zIjp7Ik1hbmFnZU90cCI6dHJ1ZSwiTm90aWZpY2F0aW9ucyI6dHJ1ZSwiTWFuYWdlQWRtaW5zIjp0cnVlLCJNYW5hZ2VQYXltZW50cyI6dHJ1ZSwiTWFuYWdlQ3VzdG9tZXIiOnRydWUsIk1hbmFnZU1lbWJlcnMiOnRydWUsIk1hbmFnZVBvc3RzIjp0cnVlLCJNYW5hZ2VTY2hlZHVsZSI6dHJ1ZSwiTWFuYWdlU2V0dGluZ3MiOnRydWV9LCJpYXQiOjE3MjY5NTIxODN9.LZqnLm_8qvrL191MV7OIpUSczeFgGupOb5Pp2UOvyTE';
 
 
-
+const StyledDatePicker = styled(DateTimePicker);
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledSafeAreaView = styled(SafeAreaView);
 const StyledIcon = styled(Ionicons);
-
+const StyledTouchableWithoutFeedback = styled(TouchableWithoutFeedback);
 interface InputFieldProps {
     label: string;
     placeholder: string;
@@ -46,6 +49,7 @@ export default function RegisterStepTwo() {
 
     const [gender, setGender] = useState('');
     const [birthdate, setBirthdate] = useState('');
+    const [showBirthdate, setShowBirthdate] = useState<Date>();
     const [province, setProvince] = useState('');
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [otpButtonDisabled, setOtpButtonDisabled] = useState(false);
@@ -57,6 +61,11 @@ export default function RegisterStepTwo() {
     const scaleValue = useRef(new Animated.Value(1)).current;
 
     const [theme, setTheme] = useState(Appearance.getColorScheme());
+
+    const today = new Date();
+    const maxDate = new Date(today.setFullYear(today.getFullYear() - 18));
+    const minDate = new Date(today.setFullYear(today.getFullYear() - 70));
+
 
     useEffect(() => {
         const listener = Appearance.addChangeListener(({ colorScheme }) => {
@@ -71,13 +80,8 @@ export default function RegisterStepTwo() {
 
     const { username, password } = route.params
 
-    const showDatePicker = () => {
-        setDatePickerVisibility(true);
-    };
-
-    const hideDatePicker = () => {
-        setDatePickerVisibility(false);
-    };
+    const showDatePicker = () => setDatePickerVisibility(true);
+    const hideDatePicker = () => setDatePickerVisibility(false);
 
     const InputField: React.FC<InputFieldProps> = ({
         label,
@@ -114,7 +118,6 @@ export default function RegisterStepTwo() {
                                     padding: 16,
                                     borderColor: theme == "dark" ? '#d1d5db' : '#d1d5db',
                                     width: '100%',
-                                    backgroundColor: theme == "dark" ? '#000' : '#fff',
                                     color: theme == "dark" ? '#fff' : '#000',
                                 },
                                 inputAndroid: {
@@ -145,7 +148,7 @@ export default function RegisterStepTwo() {
                             onChangeText={onChangeText}
                             placeholderTextColor="#d1d5db"
                             editable={editable}
-                            onPressIn={onPress}
+                            onPress={onPress}
                             inputMode={inputMode}
                             maxLength={maxLength}
                             onBlur={onBlur}
@@ -174,6 +177,7 @@ export default function RegisterStepTwo() {
     );
 
     const handleConfirm = (date: Date) => {
+        setShowBirthdate(date);
         const formattedDate = date.toLocaleDateString('th-TH', {
             year: 'numeric',
             month: '2-digit',
@@ -349,96 +353,192 @@ export default function RegisterStepTwo() {
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <StyledSafeAreaView className="flex-1 bg-white dark:bg-black h-full">
-                <StyledView className="flex-1 pt-6 px-6">
-                    <TouchableOpacity onPress={() => navigation.goBack()} className="mt-6">
-                        <StyledIcon name="chevron-back" size={24} className='text-[#1e3a8a] dark:text-white' />
-                    </TouchableOpacity>
-                    <StyledView className='flex-1 justify-center'>
-                        <StyledView className="self-center flex items-center mb-5">
-                            <StyledText className="font-custom text-3xl font-bold text-[#1e3a8a] dark:text-white mt-6 mb-2">ข้อมูลส่วนตัว</StyledText>
-                            <StyledText className="font-custom text-base text-gray-400">กรอกเบอร์มือถือและยืนยันเบอร์มือถือของคุณ</StyledText>
-                        </StyledView>
-                        <InputField
-                            label="เพศ"
-                            placeholder="เลือกเพศของคุณ"
-                            value={gender}
-                            onChangeText={setGender}
-                            isPicker={true}
-                            pickerItems={genderOptions}
-                        />
-                        <InputField
-                            label="วันเกิด"
-                            placeholder="เลือกวันเกิดของคุณ"
-                            value={birthdate}
-                            onChangeText={setBirthdate}
-                            onPress={showDatePicker}
-                            editable={false}
-                        />
-                        <InputField
-                            label="จังหวัด"
-                            placeholder="เลือกจังหวัดของคุณ"
-                            value={province}
-                            onChangeText={setProvince}
-                            isPicker={true}
-                            pickerItems={provinceOptions}
-                        />
-                        <StyledView className="space-y-6">
-                            <InputField
-                                label={`${isPhoneValid ? 'เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว' : 'เบอร์โทรศัพท์'}`}
-                                placeholder="+66"
-                                inputMode="numeric"
-                                value={phone}
-                                onBlur={handleCheckPhone}
-                                onChangeText={handlePhoneChange}
-                                buttonText={`${cooldownTime > 0 ? `${cooldownMessage}` : 'รับ OTP'}`}
-                                maxLength={10}
-                                onButtonPress={handlePhoneVerification}
-                                disable={isPhoneValid != false || phone.length != 10 || otpButtonDisabled == true}
-                                wrong={(isPhoneValid != null) && (isPhoneValid && phone.length == 10)}
 
+            <StyledTouchableWithoutFeedback onPress={() => {
+                Keyboard.dismiss();
+                setDatePickerVisibility(false);
+            }}>
+                <StyledView className='flex-1 bg-white dark:bg-black h-full'>
+                    <StyledView className="flex-1 pt-6 px-6">
+                        <TouchableOpacity onPress={() => navigation.goBack()} className="mt-14">
+                            <StyledIcon name="chevron-back" size={24} className='text-[#1e3a8a] dark:text-white' />
+                        </TouchableOpacity>
+                        <StyledView className='flex-1 justify-center'>
+                            <StyledView className="self-center flex items-center mb-5">
+                                <StyledText className="font-custom text-3xl font-bold text-[#1e3a8a] dark:text-white mb-2">ข้อมูลส่วนตัว</StyledText>
+                                <StyledText className="font-custom text-base text-gray-400">กรอกเบอร์มือถือและยืนยันเบอร์มือถือของคุณ</StyledText>
+                            </StyledView>
+                            <InputField
+                                label="เพศ"
+                                placeholder="เลือกเพศของคุณ"
+                                value={gender}
+                                onChangeText={setGender}
+                                isPicker={true}
+                                pickerItems={genderOptions}
+                            />
+                            <InputField
+                                label="วันเกิด"
+                                placeholder="เลือกวันเกิดของคุณ"
+                                value={birthdate}
+                                onChangeText={setBirthdate}
+                                onPress={showDatePicker}
+                                editable={Platform.OS === "android" ? isDatePickerVisible ? false : true : false}
                             />
 
-                            {showOTP && (
+
+                            <InputField
+                                label="จังหวัด"
+                                placeholder="เลือกจังหวัดของคุณ"
+                                value={province}
+                                onChangeText={setProvince}
+                                isPicker={true}
+                                pickerItems={provinceOptions}
+                            />
+                            <StyledView className="space-y-6">
                                 <InputField
-                                    label="OTP"
-                                    placeholder="รหัสยืนยัน"
-                                    inputMode="tel"
-                                    value={otp} // Use separate state for OTP
-                                    onChangeText={setOtp}
+                                    label={`${isPhoneValid ? 'เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว' : 'เบอร์โทรศัพท์'}`}
+                                    placeholder="+66"
+                                    inputMode="numeric"
+                                    value={phone}
+                                    onBlur={handleCheckPhone}
+                                    onChangeText={handlePhoneChange}
+                                    buttonText={`${cooldownTime > 0 ? `${cooldownMessage}` : 'รับ OTP'}`}
+                                    maxLength={10}
+                                    onButtonPress={handlePhoneVerification}
+                                    disable={isPhoneValid != false || phone.length != 10 || otpButtonDisabled == true}
+                                    wrong={(isPhoneValid != null) && (isPhoneValid && phone.length == 10)}
 
                                 />
-                            )}
+
+                                {showOTP && (
+                                    <InputField
+                                        label="OTP"
+                                        placeholder="รหัสยืนยัน"
+                                        inputMode="tel"
+                                        value={otp} // Use separate state for OTP
+                                        onChangeText={setOtp}
+
+                                    />
+                                )}
+                            </StyledView>
+
+                            <TouchableOpacity className="w-full mt-8" onPress={() => handleVerifyOTP()}>
+                                <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+                                    <LinearGradient
+                                        colors={['#EB3834', '#69140F']}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 0 }}
+                                        className="rounded-full py-3 shadow-sm"
+                                    >
+                                        {loading ? (
+                                            <ActivityIndicator size="small" color="#fff" />
+                                        ) : (
+                                            <StyledText className="font-custom text-center text-white text-lg font-semibold">ถัดไป</StyledText>
+                                        )}
+                                    </LinearGradient>
+                                </Animated.View>
+                            </TouchableOpacity>
                         </StyledView>
-
-                        <TouchableOpacity className="w-full mt-8" onPress={() => handleVerifyOTP()}>
-                            <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
-                                <LinearGradient
-                                    colors={['#EB3834', '#69140F']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 0 }}
-                                    className="rounded-full py-3 shadow-sm"
-                                >
-                                    {loading ? (
-                                        <ActivityIndicator size="small" color="#fff" />
-                                    ) : (
-                                        <StyledText className="font-custom text-center text-white text-lg font-semibold">ถัดไป</StyledText>
-                                    )}
-                                </LinearGradient>
-                            </Animated.View>
-                        </TouchableOpacity>
                     </StyledView>
+                </StyledView>
+            </StyledTouchableWithoutFeedback>
 
+            {
+                Platform.OS === "android" && (
+                    <StyledView className={`${isDatePickerVisible ? "" : "hidden"} absolute bg-white dark:bg-black bottom-0 px-2 border-t-gray-300 border-t-[1px]`}>
+                        <StyledDatePicker
+                            mode="single"
+                            maxDate={maxDate}
+                            startDate={maxDate}
+                            minDate={minDate}
+                            date={
+                                showBirthdate && !isNaN(new Date(showBirthdate).getTime())
+                                    ? new Date(showBirthdate)
+                                    : maxDate
+                            }
+                            onChange={(params) => {
+                                if (params?.date) {
+                                    const selectedDate =
+                                        params.date instanceof Date ? params.date : new Date(params.date as string);
+                                    handleConfirm(selectedDate);
+                                }
+
+                                hideDatePicker();
+                            }}
+
+                            calendarTextStyle={
+                                {
+                                    fontFamily: 'Kanit',
+                                    color: theme == "dark" ? "#9ca3af" : undefined,
+                                }
+                            }
+
+                            headerTextStyle={
+                                {
+                                    fontFamily: 'Kanit',
+                                    color: theme == "dark" ? "#9ca3af" : undefined
+                                }
+                            }
+
+                            headerButtonStyle={{
+                                backgroundColor: theme == "dark" ? "#9ca3af" : undefined,
+                                borderRadius: 8,
+                                padding: 5,
+                                marginTop: 5
+                            }}
+
+                            headerTextContainerStyle={{
+                                marginTop: 5,
+                            }}
+                            
+                            timePickerTextStyle={{
+                                fontFamily: 'Kanit',
+                            }}
+
+                            weekDaysContainerStyle={{
+                                backgroundColor: theme == "dark" ? "#9ca3af" : undefined,
+                                borderRadius: 100,
+                            }}
+
+                            weekDaysTextStyle={{
+                                fontFamily: 'Kanit',
+                            }}
+                            
+                            selectedItemColor={theme == "dark" ? "#9ca3af" : undefined}
+
+                            selectedTextStyle={{
+                                fontFamily: 'Kanit',
+                            }}
+
+                            monthContainerStyle={{
+                                backgroundColor: theme == "dark" ? "#565656" : undefined,
+                                borderColor: theme == "dark" ? "#565656" : undefined,
+                            }}
+
+                            yearContainerStyle={{
+                                backgroundColor: theme == "dark" ? "#565656" : undefined,
+                                borderColor: theme == "dark" ? "#565656" : undefined,
+                            }}
+
+                            locale={"th"}
+                        />
+                    </StyledView>
+                )
+            }
+
+            {
+                Platform.OS === "ios" &&
+                (
                     <DateTimePickerModal
                         isVisible={isDatePickerVisible}
                         mode="date"
                         onConfirm={handleConfirm}
                         onCancel={hideDatePicker}
                         locale="th-TH"
-                        maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
+                        maximumDate={maxDate}
                     />
-                </StyledView>
-            </StyledSafeAreaView>
+                )
+            }
         </KeyboardAvoidingView>
     );
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, ActivityIndicator, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp, useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
@@ -13,7 +13,7 @@ const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledSafeAreaView = styled(SafeAreaView);
-
+const StyledTouchableWithoutFeedback = styled(TouchableWithoutFeedback)
 interface InputFieldProps {
   label: string;
   placeholder: string;
@@ -99,23 +99,23 @@ export default function Register() {
 
   const [pageLoading, setPageLoading] = useState(true);
 
-    useFocusEffect(() => {
-        AsyncStorage.getItem('userToken').then(token => {
-            if (token) {
-                navigation.navigate('HomeScreen', {});
-            } else {
-                setPageLoading(false);
-            }
-        });
-    })
+  useFocusEffect(() => {
+    AsyncStorage.getItem('userToken').then(token => {
+      if (token) {
+        navigation.navigate('HomeScreen', {});
+      } else {
+        setPageLoading(false);
+      }
+    });
+  })
 
-    if(pageLoading) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color="#EB3834" />
-            </View>
-        );
-    }
+  if (pageLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#EB3834" />
+      </View>
+    );
+  }
 
   const handleCheckPassword = (value: string) => {
     setConfirmPassword(value);
@@ -187,8 +187,10 @@ export default function Register() {
 
   return (
 
-    <StyledSafeAreaView className="flex-1 bg-white dark:bg-black h-full pt-[10%]">
-
+    <StyledTouchableWithoutFeedback onPress={() => {
+      Keyboard.dismiss();
+    }}>
+      <StyledView className='flex-1 bg-white dark:bg-black h-full pt-[20%]'>
       <StyledView className="flex-1 px-6">
         <TouchableOpacity onPress={() => navigation.navigate('Login', {})} className="mt-6">
           <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
@@ -243,6 +245,7 @@ export default function Register() {
           </TouchableOpacity>
         </StyledView>
       </StyledView>
-    </StyledSafeAreaView>
+      </StyledView>
+    </StyledTouchableWithoutFeedback >
   );
 }

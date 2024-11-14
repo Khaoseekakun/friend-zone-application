@@ -1,11 +1,10 @@
-import { Animated, Easing, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
 import { Dimensions } from "react-native";
-import React, { useState, useEffect, useRef } from "react";
-import { styled } from "nativewind";
+import React from "react";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
+import { styled } from "nativewind";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -49,13 +48,15 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
   };
 
   return (
-    <View style={{
+    <StyledView style={{
       width: windowWidth,
       aspectRatio,
       elevation: 5,
       position: 'absolute',
       bottom: 0,
-    }}>
+    }}
+    
+    >
       <Svg
         width="100%"
         height="100%"
@@ -126,6 +127,6 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
         ))}
       </StyledView>
 
-    </View >
+    </StyledView >
   );
 }
