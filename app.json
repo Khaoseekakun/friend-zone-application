@@ -9,7 +9,10 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.firendszone.app"
+      "bundleIdentifier": "com.firendszone.app",
+      "infoPlist": {
+      "NSPhotoLibraryUsageDescription": "We need access to your photo library to select images"
+    }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,6 +28,7 @@
     "experiments": {
       "typedRoutes": true
     },
+    "newArchEnabled": true,
     "packagerOpts": {
       "config": "metro.config.js",
       "sourceExts": [

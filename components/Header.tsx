@@ -12,9 +12,10 @@ const StyledText = styled(Text);
 
 interface HeaderAppProps {
     back?: string;
+    searchType?: string;
 }
 
-export const HeaderApp: React.FC<HeaderAppProps> = ({ back }) => {
+export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType }) => {
     const navigation = useNavigation<NavigationProp<any>>();
     const [userData, setuserData] = useState<any>();
     const [province, setProvince] = useState<string>('');
@@ -52,7 +53,7 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back }) => {
                     back && (
                         <StyledView className="">
                             <TouchableOpacity
-                                onPress={() => navigation.navigate(back)}
+                                onPress={() => navigation.navigate(back, { searchType})}
                                 className="ml-1"
                             >
                                 <Ionicons name="chevron-back" size={30} color="white" />

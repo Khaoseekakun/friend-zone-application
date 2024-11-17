@@ -34,7 +34,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export default function ProfileTab() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const route = useRoute<ProfileParam>();
-    const { profileId, jobCategory, backPage } = route.params;
+    const { profileId, jobCategory, backPage, searchType } = route.params;
 
     const convertJobs = {
         "Friend": "เพื่อนท่องเที่ยว"
@@ -218,6 +218,7 @@ export default function ProfileTab() {
             const storedUserData = await AsyncStorage.getItem('userData');
             const parsedData = storedUserData ? JSON.parse(storedUserData) : null;
             setUserData(parsedData);
+            
             if (!profileId) {
                 Alert.alert("Error", "User profile not found", [
                     {
@@ -341,7 +342,9 @@ export default function ProfileTab() {
     return (
         <StyledView className="flex-1 bg-white">
             <HeaderApp back={
-                backPage ?? 'FeedsTab' 
+                backPage ?? 'FeedsTab'
+            } searchType={
+                searchType
             } />
             <StyledScrollView>
                 <StyledView className="flex-1 h-screen">

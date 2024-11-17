@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Platform, Dimensions, StyleSheet, Image, ActivityIndicator } from "react-native";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { View, Text, TouchableOpacity, Platform, Dimensions, StyleSheet, Image, ActivityIndicator, KeyboardAvoidingView, Alert } from "react-native";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
@@ -9,17 +9,19 @@ import { Navigation } from "@/components/Navigation";
 import { HeaderApp } from "@/components/Header";
 import { LinearGradient } from "expo-linear-gradient";
 import HeartIcon from "@/components/svg/heart";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAge } from "@/utils/Date";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledIonIcon = styled(Ionicons);
-
+const StyledTouchableOpacity = styled(TouchableOpacity);
+const StyledIonicons = styled(Ionicons);
 interface Item {
     id: number;
 }
-
-const StyledFlatList = styled(FlatList<Item>);
 
 type SearchParam = RouteProp<RootStackParamList, 'Search'>;
 type SearchOption = {
@@ -37,27 +39,141 @@ type SearchData = {
     reviews: number;
 }
 
+type IMembersDB = {
+    id: string;
+    username: string;
+    token: string;
+    firstname: string;
+    lastname: string;
+    gender: string;
+    verified: boolean;
+    profileUrl?: string;
+    updatedAt: Date;
+    createdAt: Date;
+    deleted: boolean;
+    province: string[];
+    birthday?: Date;
+    pinLocation: number[];
+    bio?: string;
+    rating: number;
+    reviews: number;
+}
+
+
+
 export default function Search() {
+    const [userData, setUserData] = useState<any>();
     const HEIGHT = Dimensions.get('screen').height;
-    const WIDTH = Dimensions.get('screen').width;
     const router = useRoute<SearchParam>();
     const navigation = useNavigation<NavigationProp<any>>();
-    const [search, setSearch] = useState('');
     const [searchloading, setSearchLoading] = useState(false);
+    const [loadPage, setLoadPage] = useState(true);
     const { searchType, backPage } = router.params;
-    const [data, setData] = useState<SearchData[]>([]);
+    const [data, setData] = useState<IMembersDB[]>([]);
     const [layout, setLayout] = useState(0);
+    const [isOpen, setIsOpen] = useState(false);
+    const [ageFilter, setAgeFilter] = useState<string>('');
+    const [ratingFilter, setRatingFilter] = useState<number[]>([]);
+    const [genderFilter, setGenderFilter] = useState<string[]>([]);
+    const [isUserDataLoaded, setIsUserDataLoaded] = useState(false);
+
     useEffect(() => {
-        handlerSearch({ searchType });
+        const fetchUserData = async () => {
+            try {
+                const data = await AsyncStorage.getItem('userData');
+                if (data) {
+                    setUserData(JSON.parse(data));
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            } finally {
+                // ตั้งค่าสถานะเมื่อโหลดข้อมูลเสร็จสิ้น
+                setIsUserDataLoaded(true);
+            }
+        };
+
+        fetchUserData();
     }, []);
 
-    function handlerSearch(options: SearchOption) {
-        const searchData = [
-            { id: '671a581526204568fd6fb371', name: "Maximmilian", age: "18", gender: "หญิง", image: "https://media.istockphoto.com/id/1360667973/photo/portrait-of-thai-high-school-student-in-student-uniform.jpg?s=612x612&w=0&k=20&c=oog4FovHj9r2YD17iatNtbOk0h7KygBd7iTMMmxctKg=", rating: 4.1, reviews: 1502 },
-            { id: '671a581526204568fd6fb372', name: "Sinsamuth", age: "18", gender: "หญิง", image: "https://st4.depositphotos.com/3563679/38710/i/450/depositphotos_387104672-stock-photo-asia-thai-high-school-student.jpg", rating: 4.5, reviews: 2103 },
-            // ... other data
-        ];
-        setData(searchData);
+    const genderOptions = [
+        {
+            name: "ชาย",
+            value: "ชาย"
+        }, {
+            name: "หญิง",
+            value: "หญิง"
+        }, {
+            name: "lgbtq+",
+            value: "lgbtq+"
+        }
+    ]
+
+    const ratingOptions = [
+        {
+            name: "5",
+            value: 5
+        }, {
+            name: "4",
+            value: 4
+        }, {
+            name: "3",
+            value: 3
+        }, {
+            name: "2",
+            value: 2
+        }, {
+            name: "1",
+            value: 1
+        }
+    ]
+
+
+    const jobsCategory = {
+        "Friend": "673080a432edea568b2a6554",
+        "Music": "someMusicCategoryId",
+        "Dj": "someDjCategoryId"
+    }
+
+    useEffect(() => {
+        try {
+            if (isUserDataLoaded && userData) {
+                handlerSearch(true, { searchType });
+            }
+        } catch (error) {
+
+        }
+
+        finally {
+            setLoadPage(false);
+        }
+    }, [isUserDataLoaded, userData]);
+
+    async function handlerSearch(filterSearch: boolean, options: SearchOption) {
+        try {
+            const response = await axios.get(
+                `http://49.231.43.37:3000/api/search/members?jobsCategory=${jobsCategory[searchType]}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `All ${userData?.token}`, // ตรวจสอบให้แน่ใจว่า API ของคุณต้องการ 'All' หรือ 'Bearer'
+                    },
+                }
+            );
+
+            if (response.status !== 200 || !response.data.data) {
+                return Alert.alert("Error", "เกิดข้อผิดพลาดในการค้นหา");
+            }
+
+            const membersData = response.data.data.members.map(
+                (member: any) => member.MembersDB
+            );
+
+
+            setData(membersData);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            Alert.alert("Error", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+        }
     }
 
     const rows = [];
@@ -65,17 +181,17 @@ export default function Search() {
         rows.push(data.slice(i, i + 2));
     }
 
-    const renderGridItem = ({ item }: { item: SearchData[] }) => (
+    const renderGridItem = ({ item }: { item: IMembersDB[] }) => (
         <StyledView style={styles.row}>
             {item.map((data) => (
-                <TouchableOpacity 
-                    key={data.id} 
+                <TouchableOpacity
+                    key={data.id}
                     style={styles.gridCard}
                     activeOpacity={0.8}
-                    onPress={() => navigation.navigate('ProfileTab',  { profileId: data.id, jobCategory: searchType, backPage: "Search"})}
+                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "Search" })}
                 >
-                    <Image 
-                        source={{ uri: data.image }} 
+                    <Image
+                        source={{ uri: data.profileUrl }}
                         style={styles.gridImage}
                     />
                     <LinearGradient
@@ -85,8 +201,8 @@ export default function Search() {
                         style={styles.gridInfoContainer}
                     >
                         <StyledView className="flex-row items-center">
-                            <StyledText className="font-custom text-white text-xl">{data.name}</StyledText>
-                            <StyledText className="font-custom text-white text-xl mx-1">{data.age}</StyledText>
+                            <StyledText className="font-custom text-white text-xl">{data.username}</StyledText>
+                            <StyledText className="font-custom text-white text-xl mx-1">{getAge(data.birthday as unknown as string)}</StyledText>
                             <StyledIonIcon
                                 name={data.gender === "ชาย" ? "male" : "female"}
                                 color={data.gender === "ชาย" ? '#69ddff' : '#ff8df6'}
@@ -98,27 +214,29 @@ export default function Search() {
                             <StyledText className="font-custom text-white text-lg ml-1">
                                 {data.rating.toFixed(1)}
                             </StyledText>
+
                             <StyledText className="font-custom text-gray-300 text-sm ml-1">
                                 ({data.reviews.toLocaleString()})
                             </StyledText>
                         </StyledView>
+
                     </LinearGradient>
                 </TouchableOpacity>
             ))}
         </StyledView>
     );
 
-    const renderListItem = ({ item }: { item: SearchData[] }) => (
+    const renderListItem = ({ item }: { item: IMembersDB[] }) => (
         <StyledView>
             {item.map((data, index) => (
-                <TouchableOpacity 
+                <TouchableOpacity
                     key={`${data.id}-${index}`}
                     style={styles.listCard}
                     activeOpacity={0.8}
-                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "Seatch" })}
+                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "Search" })}
                 >
-                    <Image 
-                        source={{ uri: data.image }} 
+                    <Image
+                        source={{ uri: data.profileUrl }}
                         style={[styles.listImage, { height: HEIGHT / 2.4 }]}
                     />
                     <LinearGradient
@@ -129,8 +247,8 @@ export default function Search() {
                     >
                         <StyledView className="flex-row justify-between items-center w-full px-4">
                             <StyledView className="flex-row items-center">
-                                <StyledText className="font-custom text-white text-2xl">{data.name}</StyledText>
-                                <StyledText className="font-custom text-white text-2xl mx-2">{data.age}</StyledText>
+                                <StyledText className="font-custom text-white text-2xl">{data.username}</StyledText>
+                                <StyledText className="font-custom text-white text-2xl mx-2">{getAge(data.birthday as unknown as string)}</StyledText>
                                 <StyledIonIcon
                                     name={data.gender === "ชาย" ? "male" : "female"}
                                     color={data.gender === "ชาย" ? '#69ddff' : '#ff8df6'}
@@ -145,6 +263,7 @@ export default function Search() {
                                 <StyledText className="font-custom text-gray-300 text-sm ml-1">
                                     ({data.reviews.toLocaleString()})
                                 </StyledText>
+
                             </StyledView>
                         </StyledView>
                     </LinearGradient>
@@ -155,35 +274,136 @@ export default function Search() {
 
     return (
         <>
-            <StyledView className="flex-1 bg-gray-100">
-                <HeaderApp />
-                <FlatList
-                    refreshing={searchloading}
-                    onRefresh={() => handlerSearch({ searchType: "Friend" })}
-                    data={rows}
-                    renderItem={layout === 0 ? renderGridItem : renderListItem}
-                    ListFooterComponent={() => (
-                        <StyledView className="mb-[20%]" />
-                    )}
-                    showsVerticalScrollIndicator={false}
-                />
-                <TouchableOpacity 
-                    style={styles.layoutToggle}
-                    onPress={() => setLayout(layout === 0 ? 1 : 0)}
-                >
-                    <LinearGradient
-                        colors={['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.7)']}
-                        style={styles.layoutToggleInner}
-                    >
-                        <Ionicons
-                            name={layout === 1 ? "grid" : "grid-outline"}
-                            size={24}
-                            color="#FF4B6C"
-                        />
-                    </LinearGradient>
-                </TouchableOpacity>
-            </StyledView>
-            <Navigation current="SearchCategory" />
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+                <StyledView className="flex-1 bg-gray-100">
+
+                    <HeaderApp />
+                    {
+                        loadPage ? (
+                            <>
+                                <StyledView className="flex-1 justify-center items-center">
+                                    <ActivityIndicator size="large" color="#FF4B6C" />
+                                </StyledView>
+                            </>
+                        ) : (
+                            <>
+                                <FlatList
+                                    refreshing={searchloading}
+                                    // onRefresh={() => handlerSearch(true, { searchType: "Friend" })}
+                                    data={rows}
+                                    renderItem={layout === 0 ? renderGridItem : renderListItem}
+                                    ListFooterComponent={() => (
+                                        <StyledView className="mb-[20%]" />
+                                    )}
+                                    showsVerticalScrollIndicator={false}
+                                />
+                                <StyledTouchableOpacity
+                                    className="absolute right-[2%] top-[14%] w-[35px] h-[35px] items-center justify-center rounded-full bg-white"
+                                    onPress={() => setLayout(layout === 0 ? 1 : 0)}
+                                >
+                                    <Ionicons
+                                        name={layout === 1 ? "grid" : "grid-outline"}
+                                        size={24}
+                                        color="#FF4B6C"
+                                    />
+                                </StyledTouchableOpacity>
+
+                                <StyledTouchableOpacity
+                                    className="absolute right-[12%] top-[14%] w-[35px] h-[35px] items-center justify-center rounded-full bg-white"
+                                    onPress={() => {
+                                        setIsOpen(true);
+                                    }}
+                                >
+                                    <Ionicons
+                                        name={"search"}
+                                        size={24}
+                                        color="#FF4B6C"
+                                    />
+                                </StyledTouchableOpacity>
+                            </>
+                        )
+                    }
+                </StyledView>
+
+                <Navigation current="SearchCategory" />
+
+                {isOpen && (
+                    <StyledView className="absolute w-full h-full justify-center items-center">
+
+                        <TouchableOpacity className="absolute flex-1 bg-black opacity-25 w-full h-screen justify-center"
+                            onPress={() => setIsOpen(false)}>
+                        </TouchableOpacity>
+
+                        <StyledView className="absolute flex-1 bg-white w-[90%] h-[40%] rounded-2xl">
+                            <StyledTouchableOpacity className="absolute right-0 m-2"
+                                onPress={() => setIsOpen(false)}
+                            >
+                                <StyledIonicons
+                                    name="close"
+                                    size={30}
+                                    color="black"
+                                />
+                            </StyledTouchableOpacity>
+                            <StyledView className="mt-10 h-[1px] bg-gray-200 w-full"></StyledView>
+                            <StyledView className="px-3 py-1">
+                                <StyledText className="font-custom pl-2 pb-1 text-lg">เพศ</StyledText>
+                                <StyledView className="flex-row">
+                                    {genderOptions.map((option, index) => (
+                                        <StyledTouchableOpacity
+                                            key={index}
+                                            className={`px-3 py-1 rounded-full m-1 ${genderFilter.includes(option.value) ? 'bg-red-500' : 'bg-gray-200'}`}
+                                            onPress={() => {
+                                                if (genderFilter.includes(option.value)) {
+                                                    setGenderFilter(genderFilter.filter((item) => item !== option.value));
+                                                }
+                                                else {
+                                                    setGenderFilter([...genderFilter, option.value]);
+                                                }
+
+                                            }}
+                                        >
+                                            <StyledText className={`font-custom text-lg ${genderFilter.includes(option.value) ? 'text-white' : 'text-black'}`}>{option.name}</StyledText>
+                                        </StyledTouchableOpacity>
+                                    ))}
+                                </StyledView>
+
+                            </StyledView>
+                            <StyledView className="px-3 py-1">
+                                <StyledText className="font-custom pl-2 pb-1 text-lg">คะแนน</StyledText>
+                                <StyledView className="flex-row">
+                                    {ratingOptions.map((option, index) => (
+                                        <StyledTouchableOpacity
+                                            key={index}
+                                            className={`px-4 py-1 rounded-full m-1 ${ratingFilter.includes(option.value) ? 'bg-red-500' : 'bg-gray-200'}`}
+                                            onPress={() => {
+                                                if (ratingFilter.includes(option.value)) {
+                                                    setRatingFilter(ratingFilter.filter((item) => item !== option.value));
+                                                }
+                                                else {
+                                                    setRatingFilter([...ratingFilter, option.value]);
+                                                }
+                                            }}
+                                        >
+                                            <StyledText className={`font-custom text-lg mx-2 ${ratingFilter.includes(option.value) ? 'text-white' : 'text-black'}`}>{option.name}</StyledText>
+                                        </StyledTouchableOpacity>
+                                    ))}
+                                </StyledView>
+                            </StyledView>
+
+                            <StyledTouchableOpacity className="absolute bg-red-500 rounded-full mb-4 mx-3 py-1 px-2 bottom-0 w-[90%] self-center"
+                                onPress={() => {
+                                    handlerSearch
+                                    setIsOpen(false);
+                                }}
+                            >
+                                <StyledText className="font-custom text-lg text-white text-center">ค้นหา</StyledText>
+                            </StyledTouchableOpacity>
+                        </StyledView>
+                    </StyledView>
+
+                )}
+
+            </KeyboardAvoidingView>
         </>
     );
 }

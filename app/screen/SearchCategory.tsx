@@ -1,11 +1,9 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Image, Dimensions } from "react-native";
+import React from "react";
+import { View, Text, TouchableOpacity, Image } from "react-native";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 
 import { styled } from "nativewind";
-import axios from "axios";
-import { HeaderApp } from "@/components/Header";
-import { Navigation } from "@/components/Navigation";
+
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { RootStackParamList } from "@/types";
@@ -13,9 +11,6 @@ import { ScrollView } from "react-native-gesture-handler";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledImage = styled(Image);
-const FriendImage = require("../../assets/images/InApp/friends.jpg");
-const DjImage = require("../../assets/images/InApp/dj.jpg");
-const MusicImage = require("../../assets/images/InApp/musicband.jpg");
 
 const iconFriend1 = require("../../assets/icon/A1.png");
 const iconFriend2 = require("../../assets/icon/A3.png");
@@ -33,7 +28,6 @@ const iconTicket1 = require("../../assets/icon/A10.png");
 const iconCar1 = require("../../assets/icon/A8.png");
 const iconCar2 = require("../../assets/icon/A9.png");
 
-const ScreenWidth = Dimensions.get('screen').width;
 
 
 

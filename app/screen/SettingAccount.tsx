@@ -55,8 +55,8 @@ export default function AccountSetting() {
 
     const fetchUserData = async () => {
         const userData = await AsyncStorage.getItem('userData');
-        const userLISt = JSON.parse(userData as string) || {}
-        const user = await axios.get(`http://49.231.43.37:3000/api/profile/${userLISt.id}`, {
+        const userList = JSON.parse(userData as string) || {}
+        const user = await axios.get(`http://49.231.43.37:3000/api/profile/${userList.id}`, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `All ${JSON.parse(userData as any).token as string}`
@@ -105,7 +105,7 @@ export default function AccountSetting() {
                 const result = await ImagePicker.launchImageLibraryAsync({
                     mediaTypes: ImagePicker.MediaTypeOptions.Images,
                     allowsEditing: true,
-                    aspect: [4, 3],
+                    aspect: [4, 4],
                     quality: 1,
                 });
 
@@ -122,10 +122,6 @@ export default function AccountSetting() {
         }
     }
 
-    const showPrvinceSelection = () => {
-
-    }
-
     const uploadImageFromCamera = async () => {
         try {
             const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -136,7 +132,7 @@ export default function AccountSetting() {
                 const result = await ImagePicker.launchCameraAsync({
                     mediaTypes: ImagePicker.MediaTypeOptions.Images,
                     allowsEditing: true,
-                    aspect: [4, 3],
+                    aspect: [4, 4],
                     quality: 1
                 });
 
@@ -154,6 +150,22 @@ export default function AccountSetting() {
         }
     }
 
+    const updateProfile = async () => {
+        try {
+            const updateResponse = await axios.put(`http://49.231.43.37:3000/api/profile/${userData?.id}`, {
+                username: newUsername,
+                bio: newBio,
+                imageProfile : images
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `All ${JSON.parse(userData as any).token as string}`
+                }
+            })
+        } catch (error) {
+
+        }
+    }
 
     return (
         <KeyboardAvoidingView

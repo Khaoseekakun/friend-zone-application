@@ -45,7 +45,8 @@ export type RootStackParamList = {
   ProfileTab : {
     profileId : string,
     jobCategory? : string,
-    backPage?: string;
+    backPage?: string,
+    searchType? : string
   },
   FeedsTab : {
     backPage?: string;
