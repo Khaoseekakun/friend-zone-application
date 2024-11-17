@@ -151,7 +151,7 @@ export default function Search() {
     async function handlerSearch(filterSearch: boolean, options: SearchOption) {
         try {
             const response = await axios.get(
-                `http://49.231.43.37:3000/api/search/members?jobsCategory=${jobsCategory[searchType]}`,
+                `https://friendszone.app/api/search/members?jobsCategory=${jobsCategory[searchType]}`,
                 {
                     headers: {
                         "Content-Type": "application/json",

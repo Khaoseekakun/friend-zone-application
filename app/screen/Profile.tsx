@@ -190,7 +190,7 @@ export default function ProfileTab() {
     const loadJobsList = async () => {
         try {
             console.log(jobCategory)
-            const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
+            const resdata = await axios.get(`https://friendszone.app/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `All ${userData.token}`
@@ -218,7 +218,7 @@ export default function ProfileTab() {
             const storedUserData = await AsyncStorage.getItem('userData');
             const parsedData = storedUserData ? JSON.parse(storedUserData) : null;
             setUserData(parsedData);
-            
+
             if (!profileId) {
                 Alert.alert("Error", "User profile not found", [
                     {
@@ -229,7 +229,7 @@ export default function ProfileTab() {
                 return;
             }
 
-            const user = await axios.get(`http://49.231.43.37:3000/api/profile/${profileId}`, {
+            const user = await axios.get(`https://friendszone.app/api/profile/${profileId}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `All ${parsedData?.token}`
@@ -304,7 +304,7 @@ export default function ProfileTab() {
         const scheduleDateTime = new Date(+year, +month - 1, +day, +hour, +minute).toISOString();
 
         try {
-            const response = await axios.post('http://49.231.43.37:3000/api/schedule', {
+            const response = await axios.post('https://friendszone.app/api/schedule', {
                 customerId: userData.id,
                 memberId: userProfile.profile.id,
                 date: scheduleDateTime,

@@ -56,7 +56,7 @@ export default function AccountSetting() {
     const fetchUserData = async () => {
         const userData = await AsyncStorage.getItem('userData');
         const userList = JSON.parse(userData as string) || {}
-        const user = await axios.get(`http://49.231.43.37:3000/api/profile/${userList.id}`, {
+        const user = await axios.get(`https://friendszone.app/api/profile/${userList.id}`, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `All ${JSON.parse(userData as any).token as string}`
@@ -152,7 +152,7 @@ export default function AccountSetting() {
 
     const updateProfile = async () => {
         try {
-            const updateResponse = await axios.put(`http://49.231.43.37:3000/api/profile/${userData?.id}`, {
+            const updateResponse = await axios.put(`https://friendszone.app/api/profile/${userData?.id}`, {
                 username: newUsername,
                 bio: newBio,
                 imageProfile : images

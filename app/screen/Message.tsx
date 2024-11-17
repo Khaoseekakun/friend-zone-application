@@ -37,7 +37,7 @@ export default function Message() {
 
     const loadReceiver = async (receiverId: string) => {
         try {
-            const res = await axios.get(`http://49.231.43.37:3000/api/profile/${receiverId}`, {
+            const res = await axios.get(`https://friendszone.app/api/profile/${receiverId}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `All ${userData?.token}`,

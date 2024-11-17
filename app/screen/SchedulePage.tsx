@@ -166,7 +166,7 @@ export default function SchedulePage() {
         try {
             setPaymentLoading(true);
             if (!paymentId) {
-                const response = await axios.post('http://49.231.43.37:3000/api/stripe/create-payment-intent', {
+                const response = await axios.post('https://friendszone.app/api/stripe/create-payment-intent', {
                     amount: (find.price ?? 100) * 100,
                     customerId: find.customerId,
                     memberId: find.memberId,
