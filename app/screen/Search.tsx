@@ -72,7 +72,7 @@ export default function Search() {
                     key={data.id} 
                     style={styles.gridCard}
                     activeOpacity={0.8}
-                    onPress={() => navigation.navigate('ProfileTab',  { profileId: data.id, jobCategory: searchType, backPage: "SearchCategory"})}
+                    onPress={() => navigation.navigate('ProfileTab',  { profileId: data.id, jobCategory: searchType, backPage: "Search"})}
                 >
                     <Image 
                         source={{ uri: data.image }} 
@@ -115,7 +115,7 @@ export default function Search() {
                     key={`${data.id}-${index}`}
                     style={styles.listCard}
                     activeOpacity={0.8}
-                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "SearchCategory" })}
+                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "Seatch" })}
                 >
                     <Image 
                         source={{ uri: data.image }} 

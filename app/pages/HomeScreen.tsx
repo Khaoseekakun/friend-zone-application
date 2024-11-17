@@ -17,13 +17,13 @@ import Chat from "../screen/Chat";
 import AccountSetting from "../screen/SettingAccount";
 import ProfileMember from "../screen/ProfileMember";
 import ScheduleList from "../screen/ScheduleList";
+import { Tabs } from "expo-router";
 
 const Tab = createBottomTabNavigator();
 
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [pageLoading, setPageLoading] = useState(true);
-
   return (
     <>
       <Tab.Navigator tabBar={() => null} >

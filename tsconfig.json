@@ -12,7 +12,11 @@
     "jsx": "react",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true
+    "noEmit": true,
+    "types" : [
+      "react",
+      "react-dom"
+    ]
   },
   "include": [
     "**/*.ts",

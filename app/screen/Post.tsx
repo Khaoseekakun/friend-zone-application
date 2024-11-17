@@ -77,7 +77,7 @@ export default function Post() {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (permissionResult.granted === false) {
-            alert("Permission to access camera roll is required!");
+            Alert.alert('สิทธิ์การเข้าถึง', 'คุณต้องให้สิทธิ์ให้แอปเข้าถึงไฟล์ของคุณ', [{ text: 'OK' }]);
             return;
         }
 
@@ -182,29 +182,37 @@ export default function Post() {
 
     const uploadImageFromCamera = async () => {
         try {
+            // Request camera permissions
             const { status } = await ImagePicker.requestCameraPermissionsAsync();
             if (status !== 'granted') {
-                Alert.alert(`แจ้งเตือน`, `คุณต้องให้สิทธิ์ให้แอปเข้าถึงกล้องของคุณ`, [{ text: 'OK' }]);
+                Alert.alert('แจ้งเตือน', 'คุณต้องให้สิทธิ์ให้แอปเข้าถึงกล้องของคุณ', [{ text: 'OK' }]);
                 return;
-            } else {
-                const result = await ImagePicker.launchCameraAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                    allowsEditing: true,
-                    aspect: [4, 3],
-                    quality: 1
-                });
-
-                if (!result.canceled) {
-                    const optimizedUri = await optimizeImage(result.assets[0].uri);
-                    setImages(prevImages => [...prevImages, optimizedUri]);
-                }
+            }
+    
+            // Open the camera
+            const result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images, // Correct enum usage
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1,
+            });
+    
+            // Check if the camera action was canceled
+            if (result.canceled) {
+                console.log('Camera use was canceled');
+                return;
+            }
+    
+            // Handle the image URI if successful
+            if (result.assets && result.assets.length > 0) {
+                const optimizedUri = await optimizeImage(result.assets[0].uri);
+                setImages((prevImages) => [...prevImages, optimizedUri]);
             }
         } catch (error) {
-            console.error("Error uploading image from camera: ", error);
-            Alert.alert(`แจ้งเตือน`, `ไม่สามารถเข้าถึงกล้องของคุณ`, [{ text: 'OK' }]);
-
+            console.error('Error uploading image from camera:', error);
+            Alert.alert('แจ้งเตือน', 'ไม่สามารถเข้าถึงกล้องของคุณ', [{ text: 'OK' }]);
         }
-    }
+    };
 
     const deleteImagesFromFirebase = async (imageUrls: string[]) => {
         for (const url of imageUrls) {
