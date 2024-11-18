@@ -1,11 +1,10 @@
-import React, { useState } from "react";
-import { View, Text, KeyboardAvoidingView, Platform, ActivityIndicator, TouchableOpacity, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, KeyboardAvoidingView, Platform, TouchableOpacity, Alert } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "expo-router";
 import { NavigationProp, StackActions } from "@react-navigation/native";
 
-import * as Updates from 'expo-updates'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScrollView } from "react-native-gesture-handler";
@@ -16,7 +15,7 @@ const StyledIonicons = styled(Ionicons);
 export default function Setting() {
     const navigation = useNavigation<NavigationProp<any>>();
     const [loading, setLoading] = useState(false);
-
+    const [version, setVersion] = useState('');
 
     const Logout = async () => {
         setLoading(true);
@@ -144,6 +143,8 @@ export default function Setting() {
                         </StyledView>
                     </TouchableOpacity>
                 </ScrollView>
+                <StyledText className="font-custom absolute bottom-7 left-3 text-gray-300">V1.0.0</StyledText>
+                <StyledText className="font-custom absolute bottom-4 left-3 text-gray-300">K2N Tech Studio</StyledText>
             </StyledView>
         </KeyboardAvoidingView >
     );

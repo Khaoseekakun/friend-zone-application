@@ -421,7 +421,9 @@ export default function FeedsTab() {
                             </StyledView>
                             <StyledView className="bg-gray-200 w-full h-[1px]" />
                             <StyledView className="my-2 px-3 py-1">
-                                <TouchableOpacity onPress={() => setIsOpen(false)} className="flex-row items-center">
+                                <TouchableOpacity onPress={() => navigation.navigate("Policy", {
+                                    backPage: "FeedsTab",
+                                })} className="flex-row items-center">
                                     <Ionicons
                                         name="lock-closed-outline"
                                         size={24}
@@ -435,18 +437,6 @@ export default function FeedsTab() {
                                 posts.some((p) => p.id === postAction && p.member.id === userData?.id) ? null :
                                     (
                                         <>
-
-                                            <StyledView className="bg-gray-200 w-full h-[1px]" />
-                                            <StyledView className="my-2 px-3 py-1">
-                                                <TouchableOpacity onPress={() => setIsOpen(false)} className="flex-row items-center">
-                                                    <Ionicons
-                                                        name="alert-circle-outline"
-                                                        size={24}
-                                                        color="black"
-                                                    />
-                                                    <StyledText className="pl-2 text-lg font-custom">ทำไมคุณจึงเห็นโพสต์นี้</StyledText>
-                                                </TouchableOpacity>
-                                            </StyledView>
                                             <StyledView className="bg-gray-200 w-full h-[1px]" />
                                             <StyledView className="my-2 px-3 py-1">
                                                 <TouchableOpacity onPress={() => setIsOpen(false)} className="flex-row items-center">
@@ -459,7 +449,6 @@ export default function FeedsTab() {
                                                 </TouchableOpacity>
                                             </StyledView></>
                                     )
-
                             }
                         </StyledView>
 

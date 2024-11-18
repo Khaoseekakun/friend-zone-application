@@ -29,13 +29,17 @@ const provinceOptions = [
 export default function AccountSetting() {
     const navigation = useNavigation<NavigationProp<any>>();
     const [loading, setLoading] = useState(true);
+    const [cacheUserData, setCacheUserData] = useState<any>();
     const [userData, setuserData] = useState<any>();
     const [images, setImages] = useState<string>();
     const isFocus = useIsFocused();
+    const [loadingUpdate, setLoadingUpdate] = useState(false);
 
     const [newUsername, setNewUsername] = useState('');
     const [newBio, setNewBio] = useState('');
     const [newProvince, setNewProvince] = useState('');
+    const [modalMessage, setModalMessage] = useState('');
+
 
 
     useEffect(() => {
@@ -43,14 +47,19 @@ export default function AccountSetting() {
         try {
             fetchUserData();
         } finally {
-            setLoading(false);
+            if (userData) {
+                setLoading(false);
+            }
         }
 
         if (isFocus) {
-            fetchUserData();
+            setLoading(true);
+            try {
+                fetchUserData();
+            } finally {
+                setLoading(false);
+            }
         }
-
-
     }, [isFocus]);
 
     const fetchUserData = async () => {
@@ -59,12 +68,13 @@ export default function AccountSetting() {
         const user = await axios.get(`https://friendszone.app/api/profile/${userList.id}`, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `All ${JSON.parse(userData as any).token as string}`
+                "Authorization": `All ${userList?.token}`
             }
         });
 
         if (user.data.status !== 200) return null;
         setuserData(user.data.data.profile);
+        setCacheUserData(userList)
 
     };
 
@@ -152,18 +162,51 @@ export default function AccountSetting() {
 
     const updateProfile = async () => {
         try {
-            const updateResponse = await axios.put(`https://friendszone.app/api/profile/${userData?.id}`, {
-                username: newUsername,
-                bio: newBio,
-                imageProfile : images
+            setModalMessage('กำลังตรวจสอบข้อมูล');
+            setLoadingUpdate(true);
+            if (!newUsername) return Alert.alert('แจ้งเตือน', 'กรุณากรอกชื่อผู้ใช้งาน', [{ text: 'OK' }]);
+            setModalMessage('กำลังอัพเดทข้อมูล');
+            const updateResponse = await axios.put(`http://49.231.43.37:3000/api/profile/${userData?.id}`, {
+                username: newUsername ?? userData?.username,
+                bio: newBio ?? userData?.bio ?? null,
+                imageProfile: images ?? userData?.profileUrl ?? null,
             }, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `All ${JSON.parse(userData as any).token as string}`
+                    "Authorization": `All ${cacheUserData?.token}`
                 }
             })
-        } catch (error) {
 
+            if (updateResponse.data.status !== 200) return Alert.alert('แจ้งเตือน', 'ไม่สามารถอัพเดทข้อมูลได้', [{ text: 'OK' }]);
+            setModalMessage('กำลังอัพเดทข้อมูลใหม่');
+
+            const user = await axios.get(`https://friendszone.app/api/profile/${cacheUserData.id}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `All ${cacheUserData?.token}`
+                }
+            });
+
+
+            if (user.data.status !== 200) return Alert.alert('แจ้งเตือน', 'ไม่สามารถอัพเดทข้อมูลได้ในเครื่องได้ โปรดเข้าสู่ระบบใหม่อีกครั้ง', [{ text: 'OK' }]);
+
+            const newData = user.data.data.profile;
+            newData.token = cacheUserData.token;
+            newData.role = cacheUserData.role;
+
+            setModalMessage('กำลังบันทึกข้อมูลใหม่');
+            await AsyncStorage.setItem('userData', JSON.stringify(newData));
+
+
+            setModalMessage('อัพเดทข้อมูลสำเร็จ');
+
+        } catch (error) {
+            console.error('Error updating profile: ', error);
+            return Alert.alert('แจ้งเตือน', 'ไม่สามารถอัพเดทข้อมูลได้', [{ text: 'OK' }]);
+        } finally {
+            setTimeout(() => {
+                setLoadingUpdate(false);
+            }, 1000);
         }
     }
 
@@ -184,6 +227,13 @@ export default function AccountSetting() {
                             <Ionicons name="chevron-back" size={24} color="#fff" />
                         </TouchableOpacity>
                         <StyledText className="absolute self-center text-lg text-white font-custom ">ตั้งค่าบัญชี</StyledText>
+                        {
+                            newUsername || newBio || newProvince ? (
+                                <TouchableOpacity onPress={() => updateProfile()} className="absolute right-0 mr-4">
+                                    <Ionicons name="checkmark" size={24} color="#fff" />
+                                </TouchableOpacity>
+                            ) : null
+                        }
                     </StyledView>
                 </LinearGradient>
                 <ScrollView>
@@ -211,12 +261,7 @@ export default function AccountSetting() {
                                         >
                                             <StyledText className=" text-blue-500 font-custom mt-2">แก้ไขรูปภาพ</StyledText>
                                         </StyledTouchableOpacity>
-
-
                                     </StyledView>
-
-
-
                                     <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
                                         <StyledText className=" text-gray-500 font-custom">บัญชีของคุณ</StyledText>
                                     </StyledView>
@@ -228,7 +273,8 @@ export default function AccountSetting() {
                                             </StyledView>
                                             <StyledView className="w-8/12 border-b-[1px] border-gray-200">
                                                 <StyledInput
-                                                    value={`${userData?.username}`}
+                                                    value={newUsername ? newUsername : userData?.username}
+                                                    onChangeText={setNewUsername}
                                                 />
                                             </StyledView>
                                         </StyledView>
@@ -239,7 +285,8 @@ export default function AccountSetting() {
                                             </StyledView>
                                             <StyledView className="w-8/12 border-b-[1px] border-gray-200">
                                                 <StyledInput
-                                                    value={`${userData?.bio ?? ''}`}
+                                                    value={`${newBio ? newBio : userData?.bio ?? ""}`}
+                                                    onChangeText={setNewBio}
                                                 />
                                             </StyledView>
                                         </StyledView>
@@ -328,28 +375,18 @@ export default function AccountSetting() {
 
                 </BottomSheetView>
             </BottomSheet>
+            <Modal visible={loadingUpdate} transparent={true} animationType="fade">
+                <StyledView className="flex-1 bg-black opacity-50 w-full h-screen">
+
+                </StyledView>
+
+                <StyledView className="absolute flex-1 justify-center items-center w-full h-screen rou">
+                    <StyledView className="w-[300px] p-[20px] bg-white rounded-2xl items-center">
+                        <ActivityIndicator size="large" color="#EB3834" />
+                        <StyledText className="font-custom text-[16px]">{modalMessage}</StyledText>
+                    </StyledView>
+                </StyledView>
+            </Modal>
         </KeyboardAvoidingView >
     );
 }
-
-
-const styles = StyleSheet.create({
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContent: {
-        width: 200,
-        padding: 20,
-        backgroundColor: 'white',
-        borderRadius: 10,
-        alignItems: 'center',
-    },
-    modalText: {
-        marginTop: 10,
-        fontSize: 16,
-        color: '#333',
-    }
-});

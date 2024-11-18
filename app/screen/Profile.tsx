@@ -19,7 +19,6 @@ import MapView, { Circle, Marker, LatLng } from 'react-native-maps';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 import RNPickerSelect from 'react-native-picker-select';
-import { set } from "firebase/database";
 
 const StyledMapView = styled(MapView);
 const StyledView = styled(View);
@@ -111,10 +110,6 @@ export default function ProfileTab() {
                 latitude: parseFloat(userProfile?.profile.pinLocation[0]),
                 longitude: parseFloat(userProfile?.profile.pinLocation[1])
             }));
-
-            console.log(userProfile?.profile.pinLocation)
-
-            console.log(`Current Location: ${location.coords.latitude}, ${location.coords.longitude}`);
         }
     };
 
@@ -189,7 +184,6 @@ export default function ProfileTab() {
 
     const loadJobsList = async () => {
         try {
-            console.log(jobCategory)
             const resdata = await axios.get(`https://friendszone.app/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
                 headers: {
                     "Content-Type": "application/json",
@@ -197,14 +191,14 @@ export default function ProfileTab() {
                 }
             })
 
-
-
             if (resdata.data.status == 200) {
                 setJobList(resdata.data.data.map((job: any) => ({
                     label: job.jobName,
                     value: job.id,
 
                 })))
+            }else{
+                console.log(resdata.data)
             }
 
 
@@ -249,14 +243,16 @@ export default function ProfileTab() {
         fetchUserData();
         if (isFocus) {
             requestLocationPermission();
-            loadJobsList()
+            if (userProfile?.profile.type === "member") {
+                loadJobsList();
+            }
         }
     }, [isFocus]);
 
     const onGestureEvent = ({ nativeEvent }: any) => {
-        if (nativeEvent.translationX < -50 && isActive < images.length - 1) {
+        if (nativeEvent.translationX < -100 && isActive < images.length - 1) {
             setIsActive((prev) => prev + 1);
-        } else if (nativeEvent.translationX > 50 && isActive > 0) {
+        } else if (nativeEvent.translationX > 100 && isActive > 0) {
             setIsActive((prev) => prev - 1);
         }
     };
@@ -326,7 +322,6 @@ export default function ProfileTab() {
                 navigation.navigate("SchedulePage", {});
             }
         } catch (error) {
-            console.error('Failed to create schedule:', error);
             Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
         }
     }
@@ -385,15 +380,19 @@ export default function ProfileTab() {
                             <StyledIonIcon className="mt-1" name="male" color={'#ff8df6'} size={30} />
                         )}
 
-                        <StyledText className="font-custom">
-                            {Number(distance.toFixed(0)) / 1000 > 1 ? `${Number(distance.toFixed(0)) / 1000} Km` : `${Number(distance.toFixed(0))} M`}
-                        </StyledText>
+                        {
+                            userProfile.profile.type === "member" && (
+                                <StyledText className="font-custom">
+                                    {Number(distance.toFixed(0)) / 1000 > 1 ? `${Number(distance.toFixed(0)) / 1000} Km` : `${Number(distance.toFixed(0))} M`}
+                                </StyledText>
+                            )
+                        }
 
                     </StyledView>
 
                     <StyledView className="left-2">
                         <StyledText className="text-[25px] text-black font-custom">Bio</StyledText>
-                        <StyledText className="text-lg text-gray-700 font-custom">ดูแลดีไม่เชื่อลองนัด</StyledText>
+                        <StyledText className="text-lg text-gray-700 font-custom">{userProfile.profile.bio}</StyledText>
                     </StyledView>
                 </StyledView>
             </StyledScrollView>

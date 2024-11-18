@@ -66,6 +66,9 @@ export type RootStackParamList = {
   },
   SearchCategory: {
     backPage?: string;
+  },
+  Policy: {
+    backPage?: string;
   }
 };
 
