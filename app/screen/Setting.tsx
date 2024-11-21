@@ -16,7 +16,7 @@ export default function Setting() {
     const navigation = useNavigation<NavigationProp<any>>();
     const [loading, setLoading] = useState(false);
     const [version, setVersion] = useState('');
-
+    const [userData, setUserData] = useState<any>();
     const Logout = async () => {
         setLoading(true);
         try {
@@ -31,6 +31,14 @@ export default function Setting() {
             setLoading(false);
         }
     }
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const userData = await AsyncStorage.getItem('userData');
+            setUserData(JSON.parse(userData || '{}'));
+        };
+        fetchUserData();
+    }, [])
 
     return (
         <KeyboardAvoidingView
@@ -61,11 +69,41 @@ export default function Setting() {
                     <TouchableOpacity onPress={() => navigation.navigate("AccountSetting")}>
                         <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
                             <StyledView className="flex-row">
-
                                 <StyledIonicons name="person-circle-outline" size={24} color="black" className="mt-1" />
                                 <StyledView className="ml-2">
                                     <StyledText className=" text-gray-700 font-custom text-lg">ตั้งค่าบัญชี</StyledText>
                                     <StyledText className=" text-gray-500 font-custom text-sm ">รหัสผ่าน, รายละเอียดความเป็นส่วนตัว</StyledText>
+                                </StyledView>
+                            </StyledView>
+                            <StyledIonicons name="chevron-forward" size={24} color="gray" />
+                        </StyledView>
+
+                    </TouchableOpacity>
+                    {
+                        userData?.role === "member" && (
+                            <TouchableOpacity onPress={() => navigation.navigate("SettingImagePreviewFirst")}>
+                                <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
+                                    <StyledView className="flex-row">
+                                        <StyledIonicons name="image-outline" size={24} color="black" className="mt-1" />
+                                        <StyledView className="ml-2">
+                                            <StyledText className=" text-gray-700 font-custom text-lg">รูปภาพเมื่อค้นหา</StyledText>
+                                            <StyledText className=" text-gray-500 font-custom text-sm ">แก้ไขรูปภาพเมื่อค้นหา</StyledText>
+                                        </StyledView>
+                                    </StyledView>
+                                    <StyledIonicons name="chevron-forward" size={24} color="gray" />
+                                </StyledView>
+                            </TouchableOpacity>
+                        )
+                    }
+
+                    <TouchableOpacity onPress={() => navigation.navigate("SettingImagePreview")}>
+
+                        <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
+                            <StyledView className="flex-row">
+                                <StyledIonicons name="images-outline" size={24} color="black" className="mt-1" />
+                                <StyledView className="ml-2">
+                                    <StyledText className=" text-gray-700 font-custom text-lg">รูปภาพตัวอย่าง</StyledText>
+                                    <StyledText className=" text-gray-500 font-custom text-sm ">แก้ไขรูปภาพตัวอย่างหน้าโปรไฟล์</StyledText>
                                 </StyledView>
                             </StyledView>
                             <StyledIonicons name="chevron-forward" size={24} color="gray" />

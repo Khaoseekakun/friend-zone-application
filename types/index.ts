@@ -69,6 +69,12 @@ export type RootStackParamList = {
   },
   Policy: {
     backPage?: string;
+  },
+  SettingImagePreview: {
+    backPage?: string;
+  },
+  SettingImagePreviewFirst: {
+    backPage?: string;
   }
 };
 

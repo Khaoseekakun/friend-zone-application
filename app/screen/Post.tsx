@@ -82,7 +82,7 @@ export default function Post() {
         }
 
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: "images",
             aspect: [4, 3],
             quality: 1,
             selectionLimit: images.length < selectcount ? selectcount - images.length : 0,
@@ -191,7 +191,7 @@ export default function Post() {
     
             // Open the camera
             const result = await ImagePicker.launchCameraAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images, // Correct enum usage
+                mediaTypes: "images", // Correct enum usage
                 allowsEditing: true,
                 aspect: [4, 3],
                 quality: 1,

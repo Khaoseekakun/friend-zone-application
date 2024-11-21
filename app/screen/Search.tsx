@@ -57,6 +57,7 @@ type IMembersDB = {
     bio?: string;
     rating: number;
     reviews: number;
+    previewFirstImageUrl: string;
 }
 
 
@@ -191,7 +192,7 @@ export default function Search() {
                     onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "Search" })}
                 >
                     <Image
-                        source={{ uri: data.profileUrl }}
+                        source={{ uri: data.previewFirstImageUrl }}
                         style={styles.gridImage}
                     />
                     <LinearGradient
@@ -200,24 +201,26 @@ export default function Search() {
                         end={{ x: 0, y: 0 }}
                         style={styles.gridInfoContainer}
                     >
-                        <StyledView className="flex-row items-center">
-                            <StyledText className="font-custom text-white text-xl">{data.username}</StyledText>
-                            <StyledText className="font-custom text-white text-xl mx-1">{getAge(data.birthday as unknown as string)}</StyledText>
-                            <StyledIonIcon
-                                name={data.gender === "ชาย" ? "male" : "female"}
-                                color={data.gender === "ชาย" ? '#69ddff' : '#ff8df6'}
-                                size={24}
-                            />
-                        </StyledView>
-                        <StyledView className="flex-row items-center mt-1">
-                            <HeartIcon />
-                            <StyledText className="font-custom text-white text-lg ml-1">
-                                {data.rating.toFixed(1)}
-                            </StyledText>
+                        <StyledView className="absolute bottom-3 px-2">
+                            <StyledView className="flex-row items-center">
+                                <StyledText className="font-custom text-white text-xl">{data.username}</StyledText>
+                                <StyledText className="font-custom text-white text-xl mx-1">{getAge(data.birthday as unknown as string)}</StyledText>
+                                <StyledIonIcon
+                                    name={data.gender === "ชาย" ? "male" : "female"}
+                                    color={data.gender === "ชาย" ? '#69ddff' : '#ff8df6'}
+                                    size={24}
+                                />
+                            </StyledView>
+                            <StyledView className="flex-row items-center mt-1">
+                                <HeartIcon />
+                                <StyledText className="font-custom text-white text-lg ml-1">
+                                    {data.rating.toFixed(1)}
+                                </StyledText>
 
-                            <StyledText className="font-custom text-gray-300 text-sm ml-1">
-                                ({data.reviews.toLocaleString()})
-                            </StyledText>
+                                <StyledText className="font-custom text-gray-300 text-sm ml-1">
+                                    ({data.reviews.toLocaleString()})
+                                </StyledText>
+                            </StyledView>
                         </StyledView>
 
                     </LinearGradient>
@@ -236,7 +239,7 @@ export default function Search() {
                     onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "Search" })}
                 >
                     <Image
-                        source={{ uri: data.profileUrl }}
+                        source={{ uri: data.previewFirstImageUrl }}
                         style={[styles.listImage, { height: HEIGHT / 2.4 }]}
                     />
                     <LinearGradient

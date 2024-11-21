@@ -32,18 +32,29 @@ export default function AccountSetting() {
     const [cacheUserData, setCacheUserData] = useState<any>();
     const [userData, setuserData] = useState<any>();
     const [images, setImages] = useState<string>();
+    const [showImage, setShowImage] = useState<string>();
     const isFocus = useIsFocused();
     const [loadingUpdate, setLoadingUpdate] = useState(false);
 
     const [newUsername, setNewUsername] = useState('');
     const [newBio, setNewBio] = useState('');
     const [newProvince, setNewProvince] = useState('');
+    const [newHeight, setNewHeight] = useState<number>();
+    const [newWeight, setNewWeight] = useState<number>();
     const [modalMessage, setModalMessage] = useState('');
 
-
+    const handlerNewUsername = (value: string) => {
+        // allow A-Z, a-z, o-9 and _
+        const englishRegex = /^[A-Za-z0-9_]*$/;
+        if (!englishRegex.test(value)) {
+            setNewUsername(value.slice(0, -1));
+            return;
+        } else {
+            setNewUsername(value);
+        }
+    }
 
     useEffect(() => {
-
         try {
             fetchUserData();
         } finally {
@@ -92,13 +103,19 @@ export default function AccountSetting() {
         try {
             const manipResult = await ImageManipulator.manipulateAsync(
                 uri,
-                [{ resize: { width: 800 } }],
+                [
+                    { resize: { width: 800 } }
+                ]
+                ,
                 {
                     compress: 0.7,
                     format: ImageManipulator.SaveFormat.JPEG,
+                    base64: true
                 }
+
             );
-            return manipResult.uri;
+            setShowImage(manipResult.uri);
+            return manipResult.base64;
         } catch (error) {
             console.error("Error optimizing image: ", error);
             return uri;
@@ -113,15 +130,15 @@ export default function AccountSetting() {
                 return;
             } else {
                 const result = await ImagePicker.launchImageLibraryAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    mediaTypes: "images",
                     allowsEditing: true,
                     aspect: [4, 4],
-                    quality: 1,
+                    quality: 1
                 });
 
                 if (!result.canceled) {
-                    const optimizedUri = await optimizeImage(result.assets[0].uri);
-                    setImages(optimizedUri);
+                    const optimizedBase64 = await optimizeImage(result.assets[0].uri);
+                    setImages(optimizedBase64);
                     setIsOpen(false);
                     bottomSheetRef.current?.close();
                 }
@@ -140,17 +157,18 @@ export default function AccountSetting() {
                 return;
             } else {
                 const result = await ImagePicker.launchCameraAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    mediaTypes: "images",
                     allowsEditing: true,
                     aspect: [4, 4],
                     quality: 1
                 });
 
                 if (!result.canceled) {
-                    const optimizedUri = await optimizeImage(result.assets[0].uri);
-                    setImages(optimizedUri);
+                    const optimizedBase64 = await optimizeImage(result.assets[0].uri);
+                    setImages(optimizedBase64);
                     setIsOpen(false);
                     bottomSheetRef.current?.close();
+
                 }
             }
         } catch (error) {
@@ -164,12 +182,14 @@ export default function AccountSetting() {
         try {
             setModalMessage('กำลังตรวจสอบข้อมูล');
             setLoadingUpdate(true);
-            if (!newUsername) return Alert.alert('แจ้งเตือน', 'กรุณากรอกชื่อผู้ใช้งาน', [{ text: 'OK' }]);
+            if (newUsername && newUsername == userData.username) return Alert.alert('แจ้งเตือน', 'กรุณากรอกชื่อผู้ใช้งาน', [{ text: 'OK' }]);
             setModalMessage('กำลังอัพเดทข้อมูล');
             const updateResponse = await axios.put(`http://49.231.43.37:3000/api/profile/${userData?.id}`, {
                 username: newUsername ?? userData?.username,
                 bio: newBio ?? userData?.bio ?? null,
-                imageProfile: images ?? userData?.profileUrl ?? null,
+                imageProfile: images,
+                height: newHeight ?? userData?.height ?? 0,
+                weight: newWeight ?? userData?.weight ?? 0
             }, {
                 headers: {
                     "Content-Type": "application/json",
@@ -197,7 +217,6 @@ export default function AccountSetting() {
             setModalMessage('กำลังบันทึกข้อมูลใหม่');
             await AsyncStorage.setItem('userData', JSON.stringify(newData));
 
-
             setModalMessage('อัพเดทข้อมูลสำเร็จ');
 
         } catch (error) {
@@ -211,10 +230,7 @@ export default function AccountSetting() {
     }
 
     return (
-        <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+        <>
             <StyledView className="w-full flex-1 bg-white">
                 <LinearGradient
                     colors={['#EB3834', '#69140F']}
@@ -228,7 +244,7 @@ export default function AccountSetting() {
                         </TouchableOpacity>
                         <StyledText className="absolute self-center text-lg text-white font-custom ">ตั้งค่าบัญชี</StyledText>
                         {
-                            newUsername || newBio || newProvince ? (
+                            newUsername || newBio || newProvince || newHeight || newWeight ? (
                                 <TouchableOpacity onPress={() => updateProfile()} className="absolute right-0 mr-4">
                                     <Ionicons name="checkmark" size={24} color="#fff" />
                                 </TouchableOpacity>
@@ -236,62 +252,66 @@ export default function AccountSetting() {
                         }
                     </StyledView>
                 </LinearGradient>
-                <ScrollView>
-                    {
-                        loading ? <ActivityIndicator size="large" color="#EB3834" style={{
-                            flex: 1,
-                            justifyContent: "center",
-                            alignItems: "center",
-                            top: "100%"
-                        }} /> :
-                            (
-                                <>
 
-                                    <StyledView className="items-center justify-center w-full px-2 py-2">
-                                        <StyledImage
-                                            source={{ uri: images || userData?.profileUrl }}
-                                            className="w-28 h-28 rounded-full bg-gray-600" />
+                <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                >
+                    <ScrollView>
 
-                                        <StyledTouchableOpacity
-                                            onPress={() => {
-                                                setIsOpen(true);
-                                                bottomSheetRef.current?.expand();
-                                            }}
+                        {
+                            loading ? <ActivityIndicator size="large" color="#EB3834" style={{
+                                flex: 1,
+                                justifyContent: "center",
+                                alignItems: "center",
+                                top: "100%"
+                            }} /> :
+                                (
+                                    <>
 
-                                        >
-                                            <StyledText className=" text-blue-500 font-custom mt-2">แก้ไขรูปภาพ</StyledText>
-                                        </StyledTouchableOpacity>
-                                    </StyledView>
-                                    <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
-                                        <StyledText className=" text-gray-500 font-custom">บัญชีของคุณ</StyledText>
-                                    </StyledView>
+                                        <StyledView className="items-center justify-center w-full px-2 py-2">
+                                            <StyledImage
+                                                source={{ uri: showImage || userData?.profileUrl }}
+                                                className="w-28 h-28 rounded-full bg-gray-600" />
 
-                                    <StyledView className="flex-1 px-2">
-                                        <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
-                                            <StyledView className="w-4/12">
-                                                <StyledText className=" text-gray-700 font-custom">ชื่อ</StyledText>
-                                            </StyledView>
-                                            <StyledView className="w-8/12 border-b-[1px] border-gray-200">
-                                                <StyledInput
-                                                    value={newUsername ? newUsername : userData?.username}
-                                                    onChangeText={setNewUsername}
-                                                />
-                                            </StyledView>
+                                            <StyledTouchableOpacity
+                                                onPress={() => {
+                                                    setIsOpen(true);
+                                                    bottomSheetRef.current?.expand();
+                                                }}
+
+                                            >
+                                                <StyledText className=" text-blue-500 font-custom mt-2">แก้ไขรูปภาพ</StyledText>
+                                            </StyledTouchableOpacity>
+                                        </StyledView>
+                                        <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
+                                            <StyledText className=" text-gray-500 font-custom">บัญชีของคุณ</StyledText>
                                         </StyledView>
 
-                                        <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
-                                            <StyledView className="w-4/12">
-                                                <StyledText className=" text-gray-700 font-custom">Bio</StyledText>
-                                            </StyledView>
-                                            <StyledView className="w-8/12 border-b-[1px] border-gray-200">
+                                        <StyledView className="flex-1 px-2">
+
+                                            <StyledView className="w-full pb-3">
+                                                <StyledText className=" text-gray-700 font-custom text-lg pl-1">ชื่อผู้ใช้</StyledText>
                                                 <StyledInput
+                                                    className="text-[16px] font-custom bg-gray-100 px-2 rounded-lg py-2 border-[1px] border-gray-200"
+                                                    value={newUsername ? newUsername : userData?.username}
+                                                    onChangeText={handlerNewUsername}
+                                                />
+                                            </StyledView>
+
+                                            <StyledView className="w-full pb-3">
+                                                <StyledText className=" text-gray-700 font-custom text-lg pl-1">Bio</StyledText>
+                                                <StyledInput
+                                                    className="text-[16px] font-custom bg-gray-100 px-2 rounded-lg py-2 border-[1px] border-gray-200 h-[100px]"
                                                     value={`${newBio ? newBio : userData?.bio ?? ""}`}
                                                     onChangeText={setNewBio}
+                                                    multiline={true}
+                                                    maxLength={256}
+
                                                 />
                                             </StyledView>
-                                        </StyledView>
 
-                                        <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
+                                            {/* <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
                                             <StyledView className="w-4/12">
                                                 <StyledText className=" text-gray-700 font-custom">จังหวัด</StyledText>
                                             </StyledView>
@@ -317,13 +337,45 @@ export default function AccountSetting() {
 
                                                 />
                                             </StyledView>
+                                        </StyledView> */}
                                         </StyledView>
-                                    </StyledView>
-                                </>
-                            )
-                    }
 
-                </ScrollView>
+                                        <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
+                                            <StyledText className=" text-gray-500 font-custom">ข้อมูลที่แสดง</StyledText>
+                                        </StyledView>
+                                        <StyledView className="flex-row justify-center flex-1 px-3 gap-1">
+                                            <StyledView className="w-6/12 pb-3">
+                                                <StyledText className=" text-gray-700 font-custom text-lg pl-1">ส่วนสูง</StyledText>
+                                                <StyledInput
+                                                    className="text-[16px] font-custom bg-gray-100 px-2 rounded-lg py-2 border-[1px] border-gray-200"
+                                                    value={newHeight ? newHeight : userData?.height ?? ""}
+                                                    onChangeText={(number) => setNewHeight(parseInt(number ?? 0))}
+                                                    inputMode="numeric"
+                                                    placeholder="0"
+                                                    maxLength={3}
+
+                                                />
+                                            </StyledView>
+
+                                            <StyledView className="w-6/12 pb-3">
+                                                <StyledText className=" text-gray-700 font-custom text-lg pl-1">น้ำหนัก</StyledText>
+                                                <StyledInput
+                                                    className="text-[16px] font-custom bg-gray-100 px-2 rounded-lg py-2 border-[1px] border-gray-200"
+                                                    value={newWeight ? newWeight : userData?.weight ?? ""}
+                                                    onChangeText={(number) => setNewWeight(parseInt(number ?? 0))}
+                                                    inputMode="numeric"
+                                                    placeholder="0"
+                                                    maxLength={3}
+                                                />
+                                            </StyledView>
+                                        </StyledView>
+                                    </>
+                                )
+                        }
+
+                    </ScrollView>
+
+                </KeyboardAvoidingView >
             </StyledView>
             {isOpen && (
                 <TouchableOpacity className="absolute flex-1 bg-black opacity-25 w-full h-screen justify-center"
@@ -387,6 +439,6 @@ export default function AccountSetting() {
                     </StyledView>
                 </StyledView>
             </Modal>
-        </KeyboardAvoidingView >
+        </>
     );
 }

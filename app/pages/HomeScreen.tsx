@@ -18,6 +18,8 @@ import AccountSetting from "../screen/SettingAccount";
 import ProfileMember from "../screen/ProfileMember";
 import ScheduleList from "../screen/ScheduleList";
 import Policy from "../screen/Policy";
+import SettingImagePreview from "../screen/SettingImagePreview";
+import SettingImagePreviewFirst from "../screen/SettingImagePreviewFirst";
 
 const Tab = createBottomTabNavigator();
 
@@ -42,6 +44,8 @@ export default function HomeScreen() {
         <Tab.Screen name="ProfileMember" component={ProfileMember} options={{ headerShown: false }} />
         <Tab.Screen name="ScheduleList" component={ScheduleList} options={{ headerShown: false }} />
         <Tab.Screen name="Policy" component={Policy} options={{ headerShown: false }} />
+        <Tab.Screen name="SettingImagePreview" component={SettingImagePreview} options={{ headerShown: false }} />
+        <Tab.Screen name="SettingImagePreviewFirst" component={SettingImagePreviewFirst} options={{ headerShown: false }} />
       </Tab.Navigator>
     </>
   );

@@ -127,7 +127,7 @@ export default function Register() {
   };
 
   const onCheckUsername = (value: string) => {
-    const englishRegex = /^[A-Za-z0-9]*$/;
+    const englishRegex = /^[A-Za-z0-9_]*$/;
     setIsUsernameValid(null)
     if (!englishRegex.test(value)) {
       //delete 1 letter from username
@@ -160,8 +160,8 @@ export default function Register() {
       alert('กรุณากรอกชื่อผู้ใช้');
       return;
     }
-
-    if (!/^[A-Za-z0-9]*$/.test(username)) {
+    // allow A-Z, a-z, o-9 and _
+    if (!/^[A-Za-z0-9_]*$/.test(username)) {
       alert('ชื่อผู้ใช้ต้องเป็นภาษาอังกฤษเท่านั้น');
       return;
     }
