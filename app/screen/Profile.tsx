@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { View, Text, Alert, ActivityIndicator, ScrollView, Dimensions, Image, Linking } from "react-native";
+import { View, Text, Alert, ActivityIndicator, ScrollView, Dimensions, Image, Linking, Appearance } from "react-native";
 import { styled } from "nativewind";
 import { HeaderApp } from "@/components/Header";
 import { NavigationProp, RouteProp, useIsFocused, useRoute } from "@react-navigation/native";
@@ -8,18 +8,21 @@ import axios from "axios";
 import { useNavigation } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
-import { PanGestureHandler, TextInput, TouchableOpacity } from "react-native-gesture-handler";
+import { TextInput, TouchableOpacity } from "react-native-gesture-handler";
 import { LinearGradient } from "expo-linear-gradient";
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated";
+import { useSharedValue, configureReanimatedLogger, ReanimatedLogLevel } from "react-native-reanimated";
 import { getAge } from "@/utils/Date";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import * as Location from 'expo-location';
 import MapView, { Circle, Marker, LatLng } from 'react-native-maps';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-
+import Carousel from 'react-native-reanimated-carousel';
 import RNPickerSelect from 'react-native-picker-select';
-
+configureReanimatedLogger({
+    level: ReanimatedLogLevel.warn,
+    strict: false,
+});
 const StyledMapView = styled(MapView);
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -27,6 +30,7 @@ const StyledScrollView = styled(ScrollView);
 const StyledIonIcon = styled(Ionicons);
 const StyledTextInput = styled(TextInput);
 const StyledGooglePlacesAutocomplete = styled(GooglePlacesAutocomplete);
+const StyledImage = styled(Image);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 type ProfileParam = RouteProp<RootStackParamList, 'ProfileTab'>;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -40,7 +44,8 @@ export default function ProfileTab() {
     }
 
 
-
+    const translateX = useSharedValue(0);
+    const currentIndex = useSharedValue(0);
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ["85%"], []);
     const [loading, setLoading] = useState(true);
@@ -54,8 +59,7 @@ export default function ProfileTab() {
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
     const [distance, setDistance] = useState<number>(0);
-    const [jobTypes, setJobTypes] = useState<string>("");
-    const [joblist, setJobList] = useState<any>([]);
+    const [joblist, setJobList] = useState<any[]>([]);
     const [geoLocation, setGeoLocation] = useState<{
         latitude: number,
         longitude: number,
@@ -86,14 +90,7 @@ export default function ProfileTab() {
         });
     };
 
-    const [images, setImages] = useState<string[]>([
-        "https://placehold.co/600x400",
-        "https://placehold.co/600x400",
-        "https://placehold.co/600x400",
-        "https://placehold.co/600x400",
-        "https://placehold.co/600x400",
-        "https://placehold.co/600x400"
-    ]);
+    const [images, setImages] = useState<string[]>([]);
 
     const requestLocationPermission = async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
@@ -184,21 +181,42 @@ export default function ProfileTab() {
 
     const loadJobsList = async () => {
         try {
-            const resdata = await axios.get(`https://friendszone.app/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `All ${userData.token}`
+            if (!jobCategory) {
+                if (userProfile.profile.JobMembers.length > 0) {
+                    const resdata = await axios.get(`https://friendszone.app/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `All ${userData.token}`
+                        }
+                    })
+
+                    if (resdata.data.status == 200) {
+                        setJobList(resdata.data.data.map((job: any) => ({
+                            label: job.jobName,
+                            value: job.id,
+
+                        })))
+                    } else {
+                        console.log(resdata.data)
+                    }
                 }
-            })
+            } else {
+                const resdata = await axios.get(`https://friendszone.app/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `All ${userData.token}`
+                    }
+                })
 
-            if (resdata.data.status == 200) {
-                setJobList(resdata.data.data.map((job: any) => ({
-                    label: job.jobName,
-                    value: job.id,
+                if (resdata.data.status == 200) {
+                    setJobList(resdata.data.data.map((job: any) => ({
+                        label: job.jobName,
+                        value: job.id,
 
-                })))
-            }else{
-                console.log(resdata.data)
+                    })))
+                } else {
+                    console.log(resdata.data)
+                }
             }
 
 
@@ -209,6 +227,7 @@ export default function ProfileTab() {
 
     const fetchUserData = useCallback(async () => {
         try {
+            setLoading(true);
             const storedUserData = await AsyncStorage.getItem('userData');
             const parsedData = storedUserData ? JSON.parse(storedUserData) : null;
             setUserData(parsedData);
@@ -232,6 +251,8 @@ export default function ProfileTab() {
 
 
             setUserProfile(user.data.data);
+            setImages(user.data.data?.profile.previewAllImageUrl)
+            setIsActive(0);
         } catch (error) {
             console.error("Failed to fetch user data:", error);
         } finally {
@@ -241,25 +262,21 @@ export default function ProfileTab() {
 
     useEffect(() => {
         fetchUserData();
-        if (isFocus) {
-            requestLocationPermission();
-            if (userProfile?.profile.type === "member") {
-                loadJobsList();
-            }
+        requestLocationPermission();
+        if (userProfile?.profile.type === "member") {
+            loadJobsList();
         }
-    }, [isFocus]);
+    }, []);
 
-    const onGestureEvent = ({ nativeEvent }: any) => {
-        if (nativeEvent.translationX < -100 && isActive < images.length - 1) {
-            setIsActive((prev) => prev + 1);
-        } else if (nativeEvent.translationX > 100 && isActive > 0) {
-            setIsActive((prev) => prev - 1);
-        }
-    };
+    const [theme, setTheme] = useState(Appearance.getColorScheme());
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [{ translateX: withSpring(-isActive * SCREEN_WIDTH) }],
-    }));
+    useEffect(() => {
+        const listener = Appearance.addChangeListener(({ colorScheme }) => {
+            setTheme(colorScheme);
+        });
+
+        return () => listener.remove();
+    }, [])
 
     /**
     * @param {LatLng} point1 
@@ -302,7 +319,7 @@ export default function ProfileTab() {
         try {
             const response = await axios.post('https://friendszone.app/api/schedule', {
                 customerId: userData.id,
-                memberId: userProfile.profile.id,
+                memberId: userProfile?.profile.id,
                 date: scheduleDateTime,
                 location: scheduleLocation,
                 jobs: scheduleJobs,
@@ -326,80 +343,113 @@ export default function ProfileTab() {
         }
     }
 
-    if (loading) {
+    const ImageSlide: React.FC<{ image: string }> = ({ image }) => {
+        const [loading, setLoading] = useState(true);
+
         return (
-            <StyledView className="flex-1 justify-center items-center bg-white dark:bg-black">
-                <ActivityIndicator size="large" color="#EB3834" />
+            <StyledView className="w-screen bg-gray-400 justify-center items-center">
+                {loading && (
+                    <ActivityIndicator
+                        size="large"
+                        color="#FFFFFF"
+                        style={{ position: 'absolute', zIndex: 1 }}
+                    />
+                )}
+                <Image
+                    source={{ uri: image }}
+                    style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }}
+                    resizeMode="cover"
+                    onLoad={() => setLoading(false)}
+                />
             </StyledView>
         );
-    }
+    };
+
 
     return (
-        <StyledView className="flex-1 bg-white">
+        <StyledView className="flex-1 dark:bg-neutral-900">
             <HeaderApp back={
                 backPage ?? 'FeedsTab'
             } searchType={
                 searchType
             } />
-            <StyledScrollView>
-                <StyledView className="flex-1 h-screen">
-                    <StyledView>
 
-                        <PanGestureHandler onGestureEvent={onGestureEvent}>
-                            <Animated.View style={[{ width: SCREEN_WIDTH * images.length, flexDirection: 'row' }, animatedStyle]}>
-                                {images.map((image, index) => (
-                                    <StyledView key={index} className="w-screen bg-gray-400 justify-center items-center">
-                                        <Image source={{ uri: image }} style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }} resizeMode="cover" />
-                                    </StyledView>
+            {
+                loading ? (
+                    <StyledView className="flex-1 justify-center items-center bg-white dark:bg-neutral-900">
+                        <ActivityIndicator size="large" color="#EB3834" />
+                    </StyledView>
+                ) : (
+                    <StyledScrollView>
+                        <StyledView className="flex-1">
+                            <StyledView style={{
+                                width: SCREEN_WIDTH,
+                            }}>
+                                <Carousel
+                                    style={
+                                        {
+                                            flexDirection: 'row',
+                                        }
+                                    }
+                                    data={images}
+                                    width={SCREEN_WIDTH}
+                                    height={SCREEN_WIDTH}
+                                    renderItem={({ item }) => (
+                                        <StyledImage
+                                            source={{ uri: item }}
+                                            className="w-full h-full"
+                                            resizeMode="cover"
+                                        />
+                                    )}
+                                    onSnapToItem={(number) => {
+                                        setIsActive(number);
+                                    }}
+                                ></Carousel>
+                                <StyledView className="absolute bottom-2 flex-row items-center left-2">
+                                    <StyledIonIcon name="heart" color={'red'} size={40} />
+                                    <StyledText className="text-[30px] text-white font-custom">4.1</StyledText>
+                                    <StyledText className="text-[25px] text-gray-200 font-custom">(1,502)</StyledText>
+                                </StyledView>
+                            </StyledView>
+
+                            <StyledView id="Image Dot" className="absolute top-2 w-full flex-row justify-between px-2 gap-1">
+                                {images.map((_, index) => (
+                                    <StyledView
+                                        key={index}
+                                        className={`${isActive === index ? "bg-gray-300" : "bg-gray-700"} opacity-70 rounded-full h-1 flex-1`}
+                                    />
                                 ))}
-                            </Animated.View>
+                            </StyledView>
 
-                        </PanGestureHandler>
-                        <StyledView className="absolute flex-row items-center bottom-0 left-2">
-                            <StyledIonIcon name="heart" color={'red'} size={40} />
-                            <StyledText className="text-[30px] text-white font-custom">4.1</StyledText>
-                            <StyledText className="text-[25px] text-gray-200 font-custom">(1,502)</StyledText>
+                            <StyledView className="flex-row items-center left-2">
+                                <StyledText className="text-[30px] text-black dark:text-white font-custom">{userProfile?.profile.username} {getAge(userProfile?.profile.birthday)}</StyledText>
+
+                                {userProfile?.profile.gender == "ชาย" ? (
+                                    <StyledIonIcon className="mt-1" name="female" color={'#69ddff'} size={30} />
+                                ) : (
+                                    <StyledIonIcon className="mt-1" name="male" color={'#ff8df6'} size={30} />
+                                )}
+
+                                {
+                                    userProfile?.profile.type === "member" && (
+                                        <StyledText className="font-custom text-black dark:text-white">
+                                            {Number(distance.toFixed(0)) / 1000 > 1 ? `${Number(distance.toFixed(0)) / 1000} Km` : `${Number(distance.toFixed(0))} M`}
+                                        </StyledText>
+                                    )
+                                }
+
+                            </StyledView>
+
+                            <StyledView className="left-2">
+                                <StyledText className="text-[25px] text-black dark:text-white font-custom">Bio</StyledText>
+                                <StyledText className="text-lg text-gray-700 dark:text-gray-200 font-custom">{userProfile?.profile.bio}</StyledText>
+                            </StyledView>
                         </StyledView>
-                    </StyledView>
+                    </StyledScrollView>
+                )
+            }
 
-                    <StyledView id="Image Dot" className="absolute top-2 w-full flex-row justify-between px-2 gap-1">
-                        {images.map((_, index) => (
-                            <StyledView
-                                key={index}
-                                className={`${isActive === index ? "bg-gray-300" : "bg-gray-700"} opacity-70 rounded-full h-1 flex-1`}
-                            />
-                        ))}
-                    </StyledView>
-
-                    <StyledView className="flex-row items-center left-2">
-                        <StyledText className="text-[30px] text-black font-custom">{userProfile.profile.username} {getAge(userProfile?.profile.birthday)}</StyledText>
-
-                        {userProfile.profile.gender == "ชาย" ? (
-                            <StyledIonIcon className="mt-1" name="female" color={'#69ddff'} size={30} />
-                        ) : (
-                            <StyledIonIcon className="mt-1" name="male" color={'#ff8df6'} size={30} />
-                        )}
-
-                        {
-                            userProfile.profile.type === "member" && (
-                                <StyledText className="font-custom">
-                                    {Number(distance.toFixed(0)) / 1000 > 1 ? `${Number(distance.toFixed(0)) / 1000} Km` : `${Number(distance.toFixed(0))} M`}
-                                </StyledText>
-                            )
-                        }
-
-                    </StyledView>
-
-                    <StyledView className="left-2">
-                        <StyledText className="text-[25px] text-black font-custom">Bio</StyledText>
-                        <StyledText className="text-lg text-gray-700 font-custom">{userProfile.profile.bio}</StyledText>
-                    </StyledView>
-                </StyledView>
-            </StyledScrollView>
-
-
-
-            {userProfile.profile.type === "member" && userData.role != "member" && (
+            {userProfile?.profile.type === "member" && userData.role != "member" && (
                 <TouchableOpacity
                     className="w-full px-[15%] mb-4 duration-200"
                     onPress={async () => {
@@ -439,10 +489,13 @@ export default function ProfileTab() {
                 snapPoints={snapPoints}
                 enablePanDownToClose={true}
                 index={-1}
-
+                backgroundStyle={{
+                    borderRadius: 10,
+                    backgroundColor: theme == "dark" ? "#404040" : "#fff"
+                }}
             >
                 <BottomSheetView style={{ height: "80%" }}>
-                    <StyledView className="flex-1 bg-white">
+                    <StyledView className="flex-1">
                         {
                             searchFocus ? (
                                 <>
@@ -452,13 +505,14 @@ export default function ProfileTab() {
 
                                                 <StyledIonIcon name="chevron-back" size={24}
                                                     onPress={() => setSearchFocus(false)}
+                                                    className="text-black dark:text-neutral-200"
 
                                                 />
                                                 <StyledTextInput
                                                     placeholder="ค้นหาสถานที่"
-                                                    className="font-custom border border-gray-300 rounded-2xl py-2 mr-2 px-4 text-gray-700 min-w-[80%]"
+                                                    className="font-custom border border-gray-300 rounded-2xl py-3 mr-2 px-4 text-gray-700 dark:text-neutral-200 min-w-[80%]"
                                                     value={locationSearch}
-                                                    placeholderTextColor="#9CA3AF"
+                                                    placeholderTextColor="#d1d5db"
                                                     onChangeText={setLocationSearch}
                                                 >
 
@@ -466,7 +520,7 @@ export default function ProfileTab() {
                                                 <StyledIonIcon
                                                     name="search"
                                                     size={24}
-                                                    className=""
+                                                    className="text-black dark:text-neutral-200"
                                                     onPress={() => {
                                                         setSearchFocus(true)
                                                         searchMapGeoLocation(locationSearch)
@@ -485,8 +539,8 @@ export default function ProfileTab() {
                                                             setScheduleLocation(location.locationName);
                                                         }}
                                                     >
-                                                        <StyledIonIcon name="location-outline" size={24} className="mr-2" />
-                                                        <StyledText className="text-lg text-black font-custom flex-wrap pr-2 border-b-[1px] border-gray-200 max-w-[95%]">{location.locationName}</StyledText>
+                                                        <StyledIonIcon name="location-outline" size={24} className="mr-2 text-black dark:text-neutral-200" />
+                                                        <StyledText className="text-lg text-black font-custom dark:text-neutral-200 flex-wrap pr-2 border-b-[1px] border-gray-200 max-w-[95%]">{location.locationName}</StyledText>
                                                     </TouchableOpacity>
                                                 ))
                                             }
@@ -500,25 +554,25 @@ export default function ProfileTab() {
                                 <>
                                     <StyledView className="flex-row items-center px-6 py-2">
                                         <StyledView className="w-6/12 px-1">
-                                            <StyledText className="text-lg text-black font-custom">วัน/เดือน/ปี</StyledText>
+                                            <StyledText className="text-lg text-black font-custom dark:text-neutral-200">วัน/เดือน/ปี</StyledText>
 
                                             <StyledTextInput
                                                 placeholder="03/10/2567"
-                                                className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full"
+                                                className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
                                                 value={scheduleDate}
-                                                placeholderTextColor="#9CA3AF"
+                                                placeholderTextColor="#d1d5db"
                                                 onPress={showDatePicker}
                                                 editable={false}
                                             />
                                         </StyledView>
 
                                         <StyledView className="w-6/12 px-1">
-                                            <StyledText className="text-lg text-black font-custom">เวลา</StyledText>
+                                            <StyledText className="text-lg text-black font-custom dark:text-neutral-200">เวลา</StyledText>
                                             <StyledTextInput
                                                 placeholder="10:10"
-                                                className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full"
+                                                className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
                                                 value={scheduleTime}
-                                                placeholderTextColor="#9CA3AF"
+                                                placeholderTextColor="#d1d5db"
                                                 onPress={showTimePicker}
                                                 editable={false}
                                             />
@@ -526,51 +580,50 @@ export default function ProfileTab() {
                                     </StyledView>
                                     <StyledView className="flex-row items-center px-6 py-2">
                                         <StyledView className="w-full px-1">
-                                            <StyledText className="text-lg text-black font-custom">ประเภทงาน</StyledText>
+                                            <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
+                                                ประเภทงาน
+                                            </StyledText>
 
                                             <RNPickerSelect
                                                 items={joblist}
                                                 onValueChange={setScheduleJobs}
                                                 value={scheduleJobs}
                                                 placeholder={{ label: 'เลือกประเภทงาน', value: null }}
-                                                style={
-                                                    {
-                                                        inputIOS: {
-                                                            fontFamily: 'Kanit',
-                                                            width: '100%',
-                                                            borderColor: '#d1d5db',
-                                                            padding: 16,
-                                                            borderWidth: 1,
-                                                            borderRadius: 16
-
-
-                                                        },
-                                                        inputAndroid: {
-                                                            fontFamily: 'Kanit',
-                                                            width: '100%',
-                                                            borderColor: '#d1d5db',
-                                                            padding: 16,
-                                                            borderWidth: 1,
-                                                            borderRadius: 16
-
-                                                        },
-
-                                                    }
-                                                }
-
+                                                style={{
+                                                    inputIOS: {
+                                                        fontFamily: 'Kanit',
+                                                        width: '100%',
+                                                        borderColor: '#d1d5db',
+                                                        color: theme === 'dark' ? '#fff' : '#000',
+                                                        padding: 16,
+                                                        borderWidth: 1,
+                                                        borderRadius: 16,
+                                                        zIndex: 100, 
+                                                    },
+                                                    inputAndroid: {
+                                                        fontFamily: 'Kanit',
+                                                        width: '100%',
+                                                        borderColor: '#d1d5db',
+                                                        color: theme === 'dark' ? '#fff' : '#000',
+                                                        padding: 16,
+                                                        borderWidth: 1,
+                                                        borderRadius: 16,
+                                                    },
+                                                }}
+                                                useNativeAndroidPickerStyle={false} 
                                             />
                                         </StyledView>
                                     </StyledView>
 
                                     <StyledView className="items-center px-6 py-2">
                                         <StyledView className="w-full px-1">
-                                            <StyledText className="text-lg text-black font-custom">จุดนัดหมาย</StyledText>
+                                            <StyledText className="text-lg text-black font-custom dark:text-neutral-200">จุดนัดหมาย</StyledText>
 
                                             <StyledTouchableOpacity
                                                 onPress={() => setSearchFocus(true)}
                                                 className="font-custom border-[1px] border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full"
                                             >
-                                                <StyledText className={`text-[${scheduleLocation.length > 0 ? '#9CA3AF' : '#000'}] font-custom`}>
+                                                <StyledText className={`${scheduleLocation ? "text-black dark:text-neutral-200" : "text-gray-300"} font-custom`}>
                                                     {
                                                         scheduleLocation.length > 0 ? scheduleLocation : "ค้นหาสถานที่"
                                                     }
@@ -626,7 +679,14 @@ export default function ProfileTab() {
 
                                     <TouchableOpacity
                                         className="w-full px-6"
-                                        onPress={createSchedule}
+                                        onPress={() => {
+                                            if (joblist.length <= 0) {
+                                                Alert.alert("ข้อผิดพลาด", "สมาชิกนี้ยังไม่มีประเภทงานที่รองรับ", [{ text: "OK" }])
+                                                return;
+                                            } else {
+                                                createSchedule();
+                                            }
+                                        }}
                                         disabled={loading}
                                     >
                                         <LinearGradient

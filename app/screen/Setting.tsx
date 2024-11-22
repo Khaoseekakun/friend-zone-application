@@ -45,7 +45,7 @@ export default function Setting() {
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <StyledView className="w-full flex-1 bg-white">
+            <StyledView className="w-full flex-1 bg-white dark:bg-neutral-900">
                 <LinearGradient
                     colors={['#EB3834', '#69140F']}
                     start={{ x: 0, y: 0 }}
@@ -62,20 +62,20 @@ export default function Setting() {
                 <ScrollView>
 
                     <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
-                        <StyledText className=" text-gray-500 font-custom">บัญชีของคุณ</StyledText>
-                        <StyledText className=" text-gray-500 font-custom">FriendZone</StyledText>
+                        <StyledText className=" text-gray-500 dark:text-gray-200 font-custom">บัญชีของคุณ</StyledText>
+                        <StyledText className=" text-gray-500 dark:text-gray-200 font-custom">FriendZone</StyledText>
                     </StyledView>
 
                     <TouchableOpacity onPress={() => navigation.navigate("AccountSetting")}>
                         <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
                             <StyledView className="flex-row">
-                                <StyledIonicons name="person-circle-outline" size={24} color="black" className="mt-1" />
+                                <StyledIonicons name="person-circle-outline" size={24}  className="mt-1 text-black dark:text-white" />
                                 <StyledView className="ml-2">
-                                    <StyledText className=" text-gray-700 font-custom text-lg">ตั้งค่าบัญชี</StyledText>
-                                    <StyledText className=" text-gray-500 font-custom text-sm ">รหัสผ่าน, รายละเอียดความเป็นส่วนตัว</StyledText>
+                                    <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">ตั้งค่าบัญชี</StyledText>
+                                    <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">รหัสผ่าน, รายละเอียดความเป็นส่วนตัว</StyledText>
                                 </StyledView>
                             </StyledView>
-                            <StyledIonicons name="chevron-forward" size={24} color="gray" />
+                            <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                         </StyledView>
 
                     </TouchableOpacity>
@@ -84,13 +84,13 @@ export default function Setting() {
                             <TouchableOpacity onPress={() => navigation.navigate("SettingImagePreviewFirst")}>
                                 <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
                                     <StyledView className="flex-row">
-                                        <StyledIonicons name="image-outline" size={24} color="black" className="mt-1" />
+                                        <StyledIonicons name="image-outline" size={24}  className="mt-1 text-black dark:text-white" />
                                         <StyledView className="ml-2">
-                                            <StyledText className=" text-gray-700 font-custom text-lg">รูปภาพเมื่อค้นหา</StyledText>
-                                            <StyledText className=" text-gray-500 font-custom text-sm ">แก้ไขรูปภาพเมื่อค้นหา</StyledText>
+                                            <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">รูปภาพเมื่อค้นหา</StyledText>
+                                            <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">แก้ไขรูปภาพเมื่อค้นหา</StyledText>
                                         </StyledView>
                                     </StyledView>
-                                    <StyledIonicons name="chevron-forward" size={24} color="gray" />
+                                    <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                                 </StyledView>
                             </TouchableOpacity>
                         )
@@ -100,70 +100,70 @@ export default function Setting() {
 
                         <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
                             <StyledView className="flex-row">
-                                <StyledIonicons name="images-outline" size={24} color="black" className="mt-1" />
+                                <StyledIonicons name="images-outline" size={24}  className="mt-1 text-black dark:text-white" />
                                 <StyledView className="ml-2">
-                                    <StyledText className=" text-gray-700 font-custom text-lg">รูปภาพตัวอย่าง</StyledText>
-                                    <StyledText className=" text-gray-500 font-custom text-sm ">แก้ไขรูปภาพตัวอย่างหน้าโปรไฟล์</StyledText>
+                                    <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">รูปภาพตัวอย่าง</StyledText>
+                                    <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">แก้ไขรูปภาพตัวอย่างหน้าโปรไฟล์</StyledText>
                                 </StyledView>
                             </StyledView>
-                            <StyledIonicons name="chevron-forward" size={24} color="gray" />
+                            <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                         </StyledView>
                     </TouchableOpacity>
-                    <StyledView className="w-full h-1.5 bg-gray-100"></StyledView>
+                    <StyledView className="w-full h-1.5 bg-gray-100 dark:bg-neutral-800"></StyledView>
 
                     <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
-                        <StyledText className=" text-gray-500 font-custom">ทั่วไป</StyledText>
+                        <StyledText className=" text-gray-500 dark:text-gray-200 font-custom">ทั่วไป</StyledText>
                     </StyledView>
 
                     <StyledView className="flex-row items-center justify-between w-full px-3">
                         <StyledView className="flex-row justify-center">
-                            <StyledIonicons name="alert-circle-outline" size={24} color="black" className="mt-1" />
+                            <StyledIonicons name="alert-circle-outline" size={24}  className="mt-1 text-black dark:text-white" />
                             <StyledView className="ml-2">
-                                <StyledText className=" text-gray-700 font-custom text-lg">สถานะบัญชี</StyledText>
-                                <StyledText className=" text-gray-500 font-custom text-sm ">ตรวจสอบสิทธิ์การใช้งาน</StyledText>
+                                <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">สถานะบัญชี</StyledText>
+                                <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">ตรวจสอบสิทธิ์การใช้งาน</StyledText>
                             </StyledView>
                         </StyledView>
-                        <StyledIonicons name="chevron-forward" size={24} color="gray" />
+                        <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                     </StyledView>
 
                     <TouchableOpacity onPress={() => navigation.navigate("ScheduleList")}>
                         <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
                             <StyledView className="flex-row justify-center">
-                                <StyledIonicons name="calendar-outline" size={24} color="black" className="mt-1" />
+                                <StyledIonicons name="calendar-outline" size={24}  className="mt-1 text-black dark:text-white" />
                                 <StyledView className="ml-2">
-                                    <StyledText className=" text-gray-700 font-custom text-lg">ตารางเวลา</StyledText>
-                                    <StyledText className=" text-gray-500 font-custom text-sm ">เวลาการนัดหมาย</StyledText>
+                                    <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">ตารางเวลา</StyledText>
+                                    <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">เวลาการนัดหมาย</StyledText>
                                 </StyledView>
                             </StyledView>
-                            <StyledIonicons name="chevron-forward" size={24} color="gray" />
+                            <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                         </StyledView>
                     </TouchableOpacity>
                     <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
                         <StyledView className="flex-row justify-center">
-                            <StyledIonicons name="analytics-outline" size={24} color="black" className="mt-1" />
+                            <StyledIonicons name="analytics-outline" size={24}  className="mt-1 text-black dark:text-white" />
                             <StyledView className="ml-2">
-                                <StyledText className=" text-gray-700 font-custom text-lg">บันทึกประวัติ</StyledText>
-                                <StyledText className=" text-gray-500 font-custom text-sm ">การนัดหมาย, ธุรกรรม, อื่นๆ</StyledText>
+                                <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">บันทึกประวัติ</StyledText>
+                                <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">การนัดหมาย, ธุรกรรม, อื่นๆ</StyledText>
                             </StyledView>
                         </StyledView>
-                        <StyledIonicons name="chevron-forward" size={24} color="gray" />
+                        <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                     </StyledView>
 
                     <StyledView className="flex-row items-center justify-between w-full px-3 pb-2">
                         <StyledView className="flex-row justify-center">
-                            <StyledIonicons name="notifications-outline" size={24} color="black" className="mt-1" />
+                            <StyledIonicons name="notifications-outline" size={24}  className="mt-1 text-black dark:text-white" />
                             <StyledView className="ml-2">
-                                <StyledText className=" text-gray-700 font-custom text-lg">การแจ้งเตือน</StyledText>
-                                <StyledText className=" text-gray-500 font-custom text-sm ">เปิด-ปิดการแจ้งเตือน</StyledText>
+                                <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">การแจ้งเตือน</StyledText>
+                                <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">เปิด-ปิดการแจ้งเตือน</StyledText>
                             </StyledView>
                         </StyledView>
-                        <StyledIonicons name="chevron-forward" size={24} color="gray" />
+                        <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                     </StyledView>
 
-                    <StyledView className="w-full h-1.5 bg-gray-100"></StyledView>
+                    <StyledView className="w-full h-1.5 bg-gray-100 dark:bg-neutral-800"></StyledView>
 
                     <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
-                        <StyledText className=" text-gray-500 font-custom">การเข้าสู่ระบบ</StyledText>
+                        <StyledText className=" text-gray-500 dark:text-gray-200 font-custom">การเข้าสู่ระบบ</StyledText>
                     </StyledView>
 
                     <TouchableOpacity
@@ -177,7 +177,7 @@ export default function Setting() {
                                 </StyledView>
                             </StyledView>
 
-                            <StyledIonicons name="chevron-forward" size={24} color="gray" />
+                            <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                         </StyledView>
                     </TouchableOpacity>
                 </ScrollView>

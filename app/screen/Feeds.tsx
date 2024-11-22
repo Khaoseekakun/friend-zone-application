@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo, useCallback, useEffect } from "react";
-import { View, Text, TouchableOpacity, Modal, Image, ActivityIndicator, FlatList, Alert, StyleSheet, SafeAreaView } from "react-native";
+import { View, Text, TouchableOpacity, Modal, Image, ActivityIndicator, FlatList, Alert, StyleSheet, SafeAreaView, Appearance } from "react-native";
 import { styled } from "nativewind";
 import { HeaderApp } from "@/components/Header";
 import { useNavigation } from "expo-router";
@@ -20,7 +20,7 @@ const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledImage = styled(Image);
 const StyleImageViewer = styled(ImageViewer);
-
+const StyledIonicons = styled(Ionicons);
 const storage = getStorage(FireBaseApp);
 
 export default function FeedsTab() {
@@ -52,6 +52,16 @@ export default function FeedsTab() {
     const [refreshing, setRefreshing] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const isFocused = useIsFocused();
+
+    const [theme, setTheme] = useState(Appearance.getColorScheme());
+
+    useEffect(() => {
+        const listener = Appearance.addChangeListener(({ colorScheme }) => {
+            setTheme(colorScheme);
+        });
+
+        return () => listener.remove();
+    }, [])
 
     useEffect(() => {
         if (isFocused) {
@@ -188,26 +198,26 @@ export default function FeedsTab() {
 
     return (
 
-        <StyledView className="flex-1">
+        <StyledView className="flex-1 bg-white dark:bg-neutral-900">
             <HeaderApp />
             <FlatList
                 data={posts}
                 keyExtractor={(item, index) => `${item.id}_${index}`}
                 renderItem={({ item }) => (
 
-                    <StyledView className="mt-2">
-                        <StyledView className="bg-gray-200 w-full h-[1px] my-2" />
+                    <StyledView className="">
+                        <StyledView className="bg-gray-200 w-full h-[1px] my-2 dark:bg-neutral-700" />
                         <StyledView className="w-full flex-row items-center justify-between">
                             <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab', { profileId: item.member.id })}>
                                 <Image className="ml-3 rounded-full w-[40px] h-[40px]" source={item.member?.profileUrl ? { uri: item.member?.profileUrl } : GuestIcon} />
                                 <StyledView className="pl-3 mt-2 flex-row">
-                                    <StyledText className="font-custom font-bold text-md">{item.member.username} </StyledText>
-                                    {item.member.verified == true ? (<StyledView className="-mt-1"><Ionicons name={'checkmark-done'} size={18} color={'#dd164f'} /></StyledView>) : <></>}
-                                    <StyledText className="font-custom text-md ml-1 text-gray-400">{formatTimeDifference(item.createdAt)}</StyledText>
+                                    <StyledText className="font-custom font-bold text-md dark:text-white">{item.member.username} </StyledText>
+                                    {item.member.verified == true ? (<StyledView className="-mt-1"><StyledIonicons name={'checkmark-done'} size={18} color={'#dd164f'} /></StyledView>) : <></>}
+                                    <StyledText className="font-custom text-md ml-1 text-gray-400 ">{formatTimeDifference(item.createdAt)}</StyledText>
                                 </StyledView>
                             </TouchableOpacity>
                             <StyledView className="mr-3 flex-row items-center mb-2">
-                                <Ionicons
+                                <StyledIonicons
                                     name="ellipsis-horizontal"
                                     size={22}
                                     color="gray"
@@ -218,7 +228,7 @@ export default function FeedsTab() {
                         </StyledView>
 
                         <StyledView className="pl-[65px] pr-9">
-                            <StyledText className="font-custom -mt-3">{item.content}</StyledText>
+                            <StyledText className="font-custom -mt-3 dark:text-white">{item.content}</StyledText>
                             {
                                 item.images.length === 1 ? (
                                     <>
@@ -312,23 +322,23 @@ export default function FeedsTab() {
 
 
                                 <StyledView className="flex-row justify-center mr-5 items-center">
-                                    <Ionicons
-                                        name="heart"
-                                        size={18}
-                                        color="red"
+                                    <StyledIonicons
+                                        name="heart-outline"
+                                        size={24}
                                         onPress={() => { }}
+                                        className="text-red-500"
                                     />
-                                    <StyledText className="font-custom">0</StyledText>
+                                    <StyledText className="font-custom text-white ml-1 text-lg">0</StyledText>
                                 </StyledView>
 
                                 <StyledView className="flex-row justify-center mr-5 items-center">
-                                    <Ionicons
+                                    <StyledIonicons
                                         name="chatbubble-outline"
-                                        size={18}
-                                        color="black"
+                                        size={24}
                                         onPress={() => { }}
+                                        className="text-black dark:text-white"
                                     />
-                                    <StyledText className="font-custom">0</StyledText>
+                                    <StyledText className="font-custom text-white ml-1 text-lg">0</StyledText>
                                 </StyledView>
 
 
@@ -371,7 +381,7 @@ export default function FeedsTab() {
                         loadingRender={() => <ActivityIndicator size="large" color="#ffffff" />}
                     />
                     <TouchableOpacity onPress={() => setModalVisible(false)} className="absolute top-12 p-2 rounded-full">
-                        <Ionicons name="close" size={30} color="white" />
+                        <StyledIonicons name="close" size={30} color="white" />
                     </TouchableOpacity>
                 </StyledView>
             </Modal>
@@ -404,32 +414,35 @@ export default function FeedsTab() {
                 enablePanDownToClose={true}
                 onClose={() => setIsOpen(false)}
                 index={-1}
-
+                backgroundStyle={{
+                    borderRadius: 10,
+                    backgroundColor: theme == "dark" ? "#404040" : "#fff"
+                }}
             >
                 <BottomSheetView style={{ height: "100%" }}>
-                    <StyledView className="flex-1 bg-white">
-                        <StyledView className="mt-5 bg-gray-100 rounded-lg mx-5">
+                    <StyledView className="flex-1">
+                        <StyledView className="mt-5 bg-gray-100 dark:bg-neutral-800 rounded-lg mx-5">
                             <StyledView className="my-2 px-3 py-1">
                                 <TouchableOpacity onPress={() => navigation.navigate("ProfileTab", { profileId: posts.find((p) => p.id == postAction)?.member.id ?? "" })} className="flex-row items-center">
-                                    <Ionicons
+                                    <StyledIonicons
                                         name="information-circle-outline"
                                         size={24}
-                                        color="black"
+                                        className="text-black dark:text-neutral-200"
                                     />
-                                    <StyledText className="pl-2 text-lg font-custom">เกี่ยวกับบัญชีนี้</StyledText>
+                                    <StyledText className="pl-2 text-lg font-custom dark:text-neutral-200">เกี่ยวกับบัญชีนี้</StyledText>
                                 </TouchableOpacity>
                             </StyledView>
-                            <StyledView className="bg-gray-200 w-full h-[1px]" />
+                            <StyledView className="bg-gray-200 dark:bg-neutral-700 w-full h-[1px]" />
                             <StyledView className="my-2 px-3 py-1">
                                 <TouchableOpacity onPress={() => navigation.navigate("Policy", {
                                     backPage: "FeedsTab",
                                 })} className="flex-row items-center">
-                                    <Ionicons
+                                    <StyledIonicons
                                         name="lock-closed-outline"
                                         size={24}
-                                        color="black"
+                                        className="text-black dark:text-neutral-200"
                                     />
-                                    <StyledText className="pl-2 text-lg font-custom">ความเป็นส่วนตัว</StyledText>
+                                    <StyledText className="pl-2 text-lg font-custom dark:text-neutral-200">ความเป็นส่วนตัว</StyledText>
                                 </TouchableOpacity>
                             </StyledView>
 
@@ -437,10 +450,10 @@ export default function FeedsTab() {
                                 posts.some((p) => p.id === postAction && p.member.id === userData?.id) ? null :
                                     (
                                         <>
-                                            <StyledView className="bg-gray-200 w-full h-[1px]" />
+                                            <StyledView className="bg-gray-200 dark:bg-neutral-700 w-full h-[1px]" />
                                             <StyledView className="my-2 px-3 py-1">
-                                                <TouchableOpacity onPress={() => setIsOpen(false)} className="flex-row items-center">
-                                                    <Ionicons
+                                                <TouchableOpacity onPress={() => {}} className="flex-row items-center">
+                                                    <StyledIonicons
                                                         name="warning-outline"
                                                         size={24}
                                                         color="#ff2525"
@@ -455,21 +468,21 @@ export default function FeedsTab() {
                         {
                             posts.some((p) => p.id === postAction && p.member.id === userData?.id) ? (
                                 <>
-                                    <StyledView className="mt-4 bg-gray-100 rounded-lg mx-5">
+                                    <StyledView className="mt-4 bg-gray-100 dark:bg-neutral-800 rounded-lg mx-5">
                                         <StyledView className="my-2 px-3 py-1">
                                             <TouchableOpacity onPress={() => { handleGotoEditPost() }} className="flex-row items-center">
-                                                <Ionicons
+                                                <StyledIonicons
                                                     name="pencil-outline"
                                                     size={24}
-                                                    color="black"
+                                                    className="text-black dark:text-neutral-200"
                                                 />
                                                 <StyledText className="pl-2 text-lg font-custom">แก้ไข</StyledText>
                                             </TouchableOpacity>
                                         </StyledView>
-                                        <StyledView className="bg-gray-200 w-full h-[1px]" />
+                                        <StyledView className="bg-gray-200 dark:bg-neutral-700 w-full h-[1px]" />
                                         <StyledView className="my-2 px-3 py-1">
                                             <TouchableOpacity onPress={() => deleteTwoStep(postAction)} className="flex-row items-center">
-                                                <Ionicons
+                                                <StyledIonicons
                                                     name="trash-outline"
                                                     size={24}
                                                     color="#ff2525"

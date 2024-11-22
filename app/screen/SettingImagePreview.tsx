@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, KeyboardAvoidingView, Platform, ActivityIndicator, TouchableOpacity, Alert, Image, StyleSheet, Modal, TextInput, Dimensions } from "react-native";
+import { View, Text, KeyboardAvoidingView, Platform, ActivityIndicator, TouchableOpacity, Alert, Image, StyleSheet, Modal, TextInput, Dimensions, Appearance } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "expo-router";
@@ -20,6 +20,7 @@ const StyledIonicons = styled(Ionicons);
 const StyledImage = styled(Image);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledInput = styled(TextInput);
+const StyledModal = styled(Modal);
 
 export default function SettingImagePreview() {
     const navigation = useNavigation<NavigationProp<any>>();
@@ -32,9 +33,18 @@ export default function SettingImagePreview() {
     const [modalMessage, setModalMessage] = useState('');
     const isFocus = useIsFocused();
     const bottomSheetRef = React.useRef<BottomSheet>(null);
-    const snapPoints = ['25%'];
+    const snapPoints = ['15%'];
     const [isOpen, setIsOpen] = React.useState(false);
     const [isUpdated, setIsUpdated] = useState<boolean>(false);
+    const [theme, setTheme] = useState(Appearance.getColorScheme());
+
+    useEffect(() => {
+        const listener = Appearance.addChangeListener(({ colorScheme }) => {
+            setTheme(colorScheme);
+        });
+
+        return () => listener.remove();
+    }, [])
 
     useEffect(() => {
         if (JSON.stringify(images) !== JSON.stringify(oldImages)) {
@@ -190,18 +200,19 @@ export default function SettingImagePreview() {
 
 
             if (response.data.status !== 200) {
-                return Alert.alert(`แจ้งเตือน`, `ไม่สามารถบันทึกข้อมูลได้`, [{ text: 'OK' }]);
-            } else{
-                setOldImages(images);
+                setModalMessage('ไม่สามารถบันทึกข้อมูลได้');
+            } else {
                 setIsUpdated(false);
+                setModalMessage('กำลังโหลดข้อมูลใหม่...');
 
-                return Alert.alert(`แจ้งเตือน`, `บันทึกข้อมูลสำเร็จ`, [{ text: 'OK' }]);
+                await fetchUserData();
+                setModalMessage('บันทึกข้อมูลสำเร็จ');
+
             }
 
 
         } catch (error) {
-            console.log(error)
-            return Alert.alert(`แจ้งเตือน`, `ไม่สามารถบันทึกข้อมูลได้`, [{ text: 'OK' }]);
+            setModalMessage('ไม่สามารถบันทึกข้อมูลได้');
         } finally {
             setLoadingUpdate(false);
         }
@@ -209,7 +220,7 @@ export default function SettingImagePreview() {
 
     return (
         <>
-            <StyledView className="w-full flex-1 bg-white">
+            <StyledView className="w-full flex-1 bg-white dark:bg-neutral-900">
                 <LinearGradient
                     colors={['#EB3834', '#69140F']}
                     start={{ x: 0, y: 0 }}
@@ -252,12 +263,13 @@ export default function SettingImagePreview() {
                                                     >
                                                     </StyledImage>
 
-                                                    <TouchableOpacity
+                                                    <StyledTouchableOpacity
                                                         onPress={() => deleteImage(index)}
-                                                        style={{ position: 'absolute', top: -3, right: -3, backgroundColor: '#EB3834', borderRadius: 50 }}
+                                                        style={{ position: 'absolute', top: -3, right: -3, borderRadius: 50 }}
+                                                        className="bg-red-500 dark:bg-neutral-500"
                                                     >
                                                         <Ionicons name="close" size={22} color="white" />
-                                                    </TouchableOpacity>
+                                                    </StyledTouchableOpacity>
                                                 </StyledView>
                                             ))
                                         }
@@ -268,8 +280,8 @@ export default function SettingImagePreview() {
                                                         setIsOpen(true);
                                                         bottomSheetRef.current?.expand();
                                                     }}
-                                                    className={`w-6/12 h-[210px] p-1 justify-center items-center border-[2px] rounded-2xl border-red-500 bg-red-100`}>
-                                                    <StyledView className="bg-red-500 rounded-full w-[50px] h-[50px] justify-center items-center">
+                                                    className={`w-6/12 h-[210px] p-1 justify-center items-center border-[2px] rounded-2xl border-red-500 bg-red-100 dark:bg-neutral-700 dark:border-neutral-400`}>
+                                                    <StyledView className="bg-red-500 dark:bg-neutral-500 rounded-full w-[50px] h-[50px] justify-center items-center">
                                                         <StyledIonicons
                                                             name="add"
                                                             color={"#fff"}
@@ -321,19 +333,39 @@ export default function SettingImagePreview() {
                     }
 
                 </KeyboardAvoidingView >
-            </StyledView>
+                <Modal visible={loadingUpdate} transparent={true} animationType="fade">
+                    <StyledView className="flex-1 bg-black opacity-50 w-full h-screen">
+
+                    </StyledView>
+
+                    <StyledView className="absolute flex-1 justify-center items-center w-full h-screen ">
+                        <StyledView className="w-[300px] p-[20px] bg-white rounded-2xl items-center">
+                            <ActivityIndicator size="large" color="#EB3834" />
+                            <StyledText className="font-custom text-[16px]">{modalMessage}</StyledText>
+                        </StyledView>
+                    </StyledView>
+                </Modal>
+            </StyledView >
+
             {isOpen && (
                 <TouchableOpacity className="absolute flex-1 bg-black opacity-25 w-full h-screen justify-center"
                     onPress={() => bottomSheetRef.current?.close()}>
                 </TouchableOpacity>
-            )}
+            )
+            }
+
+
+
             <BottomSheet
                 ref={bottomSheetRef}
                 snapPoints={snapPoints}
                 enablePanDownToClose={true}
                 onClose={() => setIsOpen(false)}
                 index={-1}
-
+                backgroundStyle={{
+                    borderRadius: 10,
+                    backgroundColor: theme == "dark" ? "#404040" : "#fff"
+                }}
             >
                 <BottomSheetView style={{
                     paddingLeft: 10,
@@ -341,39 +373,48 @@ export default function SettingImagePreview() {
                 }}>
                     <StyledView className="my-1 px-3 py-1">
                         <TouchableOpacity onPress={() => uploadImageFromGallery()} className="flex-row items-center">
-                            <Ionicons
+                            <StyledIonicons
                                 name="image-outline"
                                 size={24}
-                                color="black"
+                                className="text-black dark:text-neutral-200"
                             />
-                            <StyledText className="pl-2 text-lg font-custom">เลือกจากคลัง</StyledText>
+                            <StyledText className="pl-2 text-lg font-custom text-black dark:text-neutral-200">เลือกจากคลัง</StyledText>
                         </TouchableOpacity>
                     </StyledView>
                     <StyledView className="my-1 px-3 py-1">
                         <TouchableOpacity onPress={() => uploadImageFromCamera()} className="flex-row items-center">
-                            <Ionicons
+                            <StyledIonicons
                                 name="camera-outline"
                                 size={24}
-                                color="black"
+                                className="text-black dark:text-neutral-200 "
                             />
-                            <StyledText className="pl-2 text-lg font-custom">ถ่ายภาพ</StyledText>
+                            <StyledText className="pl-2 text-lg font-custom text-black dark:text-neutral-200">ถ่ายภาพ</StyledText>
                         </TouchableOpacity>
                     </StyledView>
 
                 </BottomSheetView>
             </BottomSheet>
-            <Modal visible={loadingUpdate} transparent={true} animationType="fade">
-                <StyledView className="flex-1 bg-black opacity-50 w-full h-screen">
-
-                </StyledView>
-
-                <StyledView className="absolute flex-1 justify-center items-center w-full h-screen">
-                    <StyledView className="w-[300px] p-[20px] bg-white rounded-2xl items-center">
-                        <ActivityIndicator size="large" color="#EB3834" />
-                        <StyledText className="font-custom text-[16px]">{modalMessage}</StyledText>
-                    </StyledView>
-                </StyledView>
-            </Modal>
         </>
     )
 }
+
+const styles = StyleSheet.create({
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        width: 200,
+        padding: 20,
+        backgroundColor: 'white',
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    modalText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#333',
+    }
+});

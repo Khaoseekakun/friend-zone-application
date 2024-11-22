@@ -13,7 +13,6 @@ import { RootStackParamList } from "@/types";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
-const StyledIonIcon = styled(Ionicons);
 const StyledImage = styled(Image);
 const Logo = require("../../assets/images/logo.png");
 const GuestIcon = require("../../assets/images/guesticon.jpg");

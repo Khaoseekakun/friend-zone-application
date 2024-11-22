@@ -126,26 +126,26 @@ export default function Message() {
     const renderItem = ({ item }: { item: Channel }) => {
         const receiver = receiverData[item.channel_id]; // Get receiver from state
         return (
-            <TouchableOpacity onPress={() => handleChannelPress(item)} className="flex-row items-center justify-between p-3 rounded-lg">
+            <TouchableOpacity onPress={() => handleChannelPress(item)} className="flex-row items-center justify-between p-3 rounded-lg" key={`${item.channel_id}`}>
                 <StyledView className="flex-row items-center">
                     <Image
                         source={receiver.profileUrl ? { uri: receiver.profileUrl } : GuestIcon}
                         className="bg-gray-400 rounded-full w-[40px] h-[40px] border-[1px] border-gray-200"
                     />
                     <StyledView className="ml-2">
-                        <StyledText className="font-bold">{receiver ? receiver.username : 'Unknown'}</StyledText>
-                        <StyledText className="text-gray-500">Last message preview here</StyledText>
+                        <StyledText className="font-bold font-custom">{receiver ? receiver.username : 'Unknown'}</StyledText>
+                        <StyledText className="text-gray-500 dark:text-gray-200 font-custom">Last message preview here</StyledText>
                     </StyledView>
                 </StyledView>
-                <StyledText className="text-gray-500">12:00</StyledText>
+                <StyledText className="text-gray-500 dark:text-gray-200">12:00</StyledText>
             </TouchableOpacity>
         );
     };
 
     return (
-        <StyledView className="flex-1 bg-white">
+        <StyledView className="flex-1 bg-white dark:bg-neutral-900">
             <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-                <StyledView className="flex-1 bg-white">
+                <StyledView className="flex-1 bg-white dark:bg-neutral-900">
                     <StyledView className="bg-white px-3 text-center pt-[60px] pb-3">
                         <StyledText className="text-center self-center text-lg font-bold text-black">Messages</StyledText>
                     </StyledView>
