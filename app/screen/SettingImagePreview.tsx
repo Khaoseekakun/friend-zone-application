@@ -367,7 +367,7 @@ export default function SettingImagePreview() {
 
                 </StyledView>
 
-                <StyledView className="absolute flex-1 justify-center items-center w-full h-screen rou">
+                <StyledView className="absolute flex-1 justify-center items-center w-full h-screen">
                     <StyledView className="w-[300px] p-[20px] bg-white rounded-2xl items-center">
                         <ActivityIndicator size="large" color="#EB3834" />
                         <StyledText className="font-custom text-[16px]">{modalMessage}</StyledText>
