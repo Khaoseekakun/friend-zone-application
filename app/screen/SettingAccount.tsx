@@ -199,7 +199,7 @@ export default function AccountSetting() {
             setLoadingUpdate(true);
             if (newUsername && newUsername == userData.username) return Alert.alert('แจ้งเตือน', 'กรุณากรอกชื่อผู้ใช้งาน', [{ text: 'OK' }]);
             setModalMessage('กำลังอัพเดทข้อมูล');
-            const updateResponse = await axios.put(`http://49.231.43.37:3000/api/profile/${userData?.id}`, {
+            const updateResponse = await axios.put(`https://friendszone.app/api/profile/${userData?.id}`, {
                 username: newUsername ?? userData?.username,
                 bio: newBio ?? userData?.bio ?? null,
                 imageProfile: images,

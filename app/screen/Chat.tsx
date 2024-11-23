@@ -57,7 +57,7 @@ export default function Chat() {
         imageUrl: string;
     }) => {
         try {
-            await axios.post('http://49.231.43.37:3000/api/notification/send', {
+            await axios.post('https://friendszone.app/api/notification/send', {
                 title: notify.title,
                 body: notify.body,
                 imageUrl: notify.imageUrl,

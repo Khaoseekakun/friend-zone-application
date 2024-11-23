@@ -66,7 +66,7 @@ export default function HomeScreen() {
       })).data;
 
       if (userData && userData.id && userData.token) {
-        await axios.put('http://49.231.43.37:3000/api/notification/', {
+        await axios.put('https://friendszone.app/api/notification/', {
           userId: userData?.id,
           notificationToken: token
         }, {

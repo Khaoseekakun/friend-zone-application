@@ -20,7 +20,7 @@ export default function Setting() {
     const Logout = async () => {
         setIsLogout(true);
         try {
-            const logoutResponse = await axios.put("http://49.231.43.37:3000/api/oauth/login", {
+            const logoutResponse = await axios.put("https://friendszone.app/api/oauth/login", {
                 userId: userData.id,
             }, {
                 headers: {

@@ -77,7 +77,7 @@ export default function SettingImagePreview() {
     const fetchUserData = async () => {
         const userData = await AsyncStorage.getItem('userData');
         const userList = JSON.parse(userData as string) || {}
-        const user = await axios.get(`http://49.231.43.37:3000/api/profile/${userList.id}`, {
+        const user = await axios.get(`https://friendszone.app/api/profile/${userList.id}`, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `All ${userList?.token}`
@@ -189,7 +189,7 @@ export default function SettingImagePreview() {
         try {
             setLoadingUpdate(true);
             setModalMessage('กำลังบันทึกข้อมูล...');
-            const response = await axios.put(`http://49.231.43.37:3000/api/preview/${userData.id}`, {
+            const response = await axios.put(`https://friendszone.app/api/preview/${userData.id}`, {
                 previewAllImages: images
             }, {
                 headers: {
