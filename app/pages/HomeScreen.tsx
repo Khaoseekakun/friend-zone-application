@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Profile from "../screen/Profile";
-
+import * as Notifications from 'expo-notifications';
 import Message from "../screen/Message";
 import Setting from "../screen/Setting";
 import Feeds from "../screen/Feeds";
@@ -11,8 +11,6 @@ import SearchCategory from "../screen/SearchCategory";
 import Fast from "../screen/Fast";
 import SchedulePage from "../screen/SchedulePage";
 import Search from "../screen/Search";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "@/types";
 import Chat from "../screen/Chat";
 import AccountSetting from "../screen/SettingAccount";
 import ProfileMember from "../screen/ProfileMember";
@@ -20,12 +18,70 @@ import ScheduleList from "../screen/ScheduleList";
 import Policy from "../screen/Policy";
 import SettingImagePreview from "../screen/SettingImagePreview";
 import SettingImagePreviewFirst from "../screen/SettingImagePreviewFirst";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "expo-router";
 
 const Tab = createBottomTabNavigator();
 
 export default function HomeScreen() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const [pageLoading, setPageLoading] = useState(true);
+
+  const [userData, setuUserData] = useState<any>({});
+  const navigation = useNavigation<any>();
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const data = response.notification.request.content.data;
+      if (data && data.screen) {
+        navigation.navigate(data?.screen.name, data.screen.data); 
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [navigation]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const userData = await AsyncStorage.getItem('userData');
+      setuUserData(JSON.parse(userData || '{}'));
+    };
+    fetchUserData();
+
+    
+  }, []);
+
+  const getDeviceId = async () => {
+    return await AsyncStorage.getItem('uuid') as string;
+  };
+
+  useEffect(() => {
+    const checkNotificationPermissions = async () => {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      if (existingStatus !== 'granted') await Notifications.requestPermissionsAsync();
+
+      const token = (await Notifications.getExpoPushTokenAsync({
+        deviceId: await getDeviceId()
+      })).data;
+
+      if (userData && userData.id && userData.token) {
+        await axios.put('http://49.231.43.37:3000/api/notification/', {
+          userId: userData?.id,
+          notificationToken: token
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'All ' + userData?.token, // Add a space after 'All'
+          },
+        });
+
+      }
+    };
+
+    checkNotificationPermissions();
+  }, [userData]);
+
   return (
     <>
       <Tab.Navigator tabBar={() => null} >

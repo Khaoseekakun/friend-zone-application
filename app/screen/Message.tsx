@@ -10,6 +10,7 @@ import FireBaseApp from "@/utils/firebaseConfig";
 import { equalTo, get, getDatabase, orderByChild, query, ref } from "firebase/database";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { formatTimeDifference } from "@/utils/Date";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -82,19 +83,17 @@ export default function Message() {
             const fetchedChannels = Object.keys(data).map((key) => ({ channel_id: key, ...data[key] }));
             setChannels(fetchedChannels);
 
-            // Fetch receiver data for each channel
             const receivers = await Promise.all(fetchedChannels.map(async (channel) => {
-                const receiverId = channel.customer_id === 'someCondition' ? channel.member_id : channel.customer_id;
+                const receiverId = isCustomer ? channel.member_id : channel.customer_id;
                 const receiver = await loadReceiver(receiverId);
-                return { channel_id: channel.channel_id, receiver };
+                return { channel_id: channel.channel_id, receiver, last_message : channel.last_message };
             }));
-
-            // Map receiver data to channels
-            const receiverDataMap = receivers.reduce((acc: { [key: string]: any }, { channel_id, receiver }) => {
-                acc[channel_id] = receiver;
+            const receiverDataMap = receivers.reduce((acc: { [key: string]: any }, { channel_id, receiver, last_message }) => {
+                acc[channel_id] = {...receiver, last_message};
                 return acc;
             }, {});
             setReceiverData(receiverDataMap);
+
         } catch (error) {
             console.error("Error fetching channels:", error);
         } finally {
@@ -105,12 +104,8 @@ export default function Message() {
     useEffect(() => {
         (async() => {
             await fetchUserData();
-            
-        })()
-
-        if (isFocused) {
             fetchChannelsForUser();
-        }
+        })()
     }, [isFocused]);
 
     const handleChannelPress = (item: Channel) => {
@@ -118,7 +113,7 @@ export default function Message() {
         navigation.navigate('Chat', {
             chatId: item.channel_id,
             chatName: `${receiver.username}`,
-            receiverId: item.customer_id,
+            receiverId: isCustomer ? item.member_id : item.customer_id,
             profileUrl: receiver.profileUrl,
         });
     };
@@ -134,10 +129,10 @@ export default function Message() {
                     />
                     <StyledView className="ml-2">
                         <StyledText className="font-bold font-custom">{receiver ? receiver.username : 'Unknown'}</StyledText>
-                        <StyledText className="text-gray-500 dark:text-gray-200 font-custom">Last message preview here</StyledText>
+                        <StyledText className="text-gray-500 dark:text-gray-200 font-custom">{receiver.last_message ? `${receiver.last_message.senderId == userData.id ? "คุณ : " : ""} ${receiver?.last_message?.text}` : 'เริ่มต้นข้อความ'}</StyledText>
                     </StyledView>
                 </StyledView>
-                <StyledText className="text-gray-500 dark:text-gray-200">12:00</StyledText>
+                <StyledText className="text-gray-500 dark:text-gray-200">{receiver.last_message ? formatTimeDifference(receiver?.last_message?.timestamp) : ''}</StyledText>
             </TouchableOpacity>
         );
     };

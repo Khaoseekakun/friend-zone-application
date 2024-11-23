@@ -13,6 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { getDatabase, ref, onValue, update } from "firebase/database";
 import { StripeProvider, useConfirmPayment } from '@stripe/stripe-react-native';
 import { StyleSheet } from "react-native";
+import { makeid } from "@/utils/Date";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -174,7 +175,7 @@ export default function ScheduleList() {
                         <ScrollView>
                             {
                                 schedule.map((item, index) => (
-                                    <StyledView key={`${item.id}-${index}`}>
+                                    <StyledView key={`${item.id}-${index}-${makeid(10)}`}>
                                         <StyledView key={`${item.id}-${index}-${userData.id}-${randomInt}`} className="bg-white rounded-b-2xl rounded-tr-2xl w-full h-auto p-3">
                                             <StyledText className="font-custom">รายละเอียดการนัดหมาย</StyledText>
                                             <StyledText className="font-custom text-gray-500">{DateFromat(item.date)}</StyledText>

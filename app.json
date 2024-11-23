@@ -11,8 +11,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.firendszone.app",
       "infoPlist": {
-      "NSPhotoLibraryUsageDescription": "We need access to your photo library to select images"
-    }
+        "NSPhotoLibraryUsageDescription": "We need access to your photo library to select images",
+        "UIBackgroundModes": ["fetch", "remote-notification"]
+      }
     },
     "android": {
       "adaptiveIcon": {

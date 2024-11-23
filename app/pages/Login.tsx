@@ -23,6 +23,11 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const scaleValue = useRef(new Animated.Value(1)).current;
     const [pageLoading, setPageLoading] = useState(true);
+    const [deviceId, setDeviceId] = useState('');
+    
+    const getDeviceId = async () => {
+        return await AsyncStorage.getItem('uuid') as string;
+    };
 
 
     useFocusEffect(() => {
@@ -33,9 +38,13 @@ export default function Login() {
                 setPageLoading(false);
             }
         });
+
+        (async () => {
+            setDeviceId(await getDeviceId());
+        })();
     })
 
-    if(pageLoading) {
+    if (pageLoading) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <ActivityIndicator size="large" color="#EB3834" />
@@ -51,9 +60,10 @@ export default function Login() {
     const loginHandler = async () => {
         setLoading(true);
         try {
-            const loginData = await axios.post('https://friendszone.app/api/oauth/login', {
+            const loginData = await axios.post('http://49.231.43.37:3000/api/oauth/login', {
                 phoneNumber: phone,
-                password: password
+                password: password,
+                deviceId: deviceId
             }, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -62,7 +72,12 @@ export default function Login() {
             });
 
             if (loginData.data.data.code !== "LOGIN_SUCCESS") {
-                return Alert.alert("ไม่สำเร็จ", "เบอร์โทรศัพท์หรือรหัสผ่านไม่ถูกต้อง", [{ text: "ลองอีกครั้ง" }]);
+                if (loginData.data.data.code === "ALREADY_LOGGED_IN") {
+                    return Alert.alert("ไม่สำเร็จ", "บัญชีนี้กำลังเข้าสู่ระบบในเครื่องอื่นโปรดออกจากระบบก่อน", [{ text: "ลองอีกครั้ง" }]);
+                } else {
+                    return Alert.alert("ไม่สำเร็จ", "เบอร์โทรศัพท์หรือรหัสผ่านไม่ถูกต้อง", [{ text: "ลองอีกครั้ง" }]);
+                }
+
             }
 
             const token = loginData?.data?.data.data.token;
