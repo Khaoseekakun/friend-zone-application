@@ -212,7 +212,8 @@ export default function SchedulePage() {
                     </>
                 ) :
                     schedule.length > 0 ? (
-                        <ScrollView>
+                        <ScrollView
+                        >
                             {
                                 schedule.map((item, index) => (
                                     <StyledView key={`${item.id}-${index}-${userData.id}-${randomInt}`}>
