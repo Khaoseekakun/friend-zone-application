@@ -65,7 +65,6 @@ export default function FeedsTab() {
 
     useEffect(() => {
         if (isFocused) {
-            setLoading(true);
             handleRefresh()
         }
     }, [isFocused]);
@@ -84,6 +83,8 @@ export default function FeedsTab() {
         }
 
         try {
+
+            setLoading(true);
             const response = await axios.get(`https://friendszone.app/api/post?loadLimit=${pageNumber != 1 ? "1" : "10"}&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}`, {
                 headers: {
                     'Content-Type': 'application/json'
@@ -98,9 +99,9 @@ export default function FeedsTab() {
             }
         } catch (error) {
             console.error("Error fetching posts", error);
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
     };
 
     const deleteImagesFromFirebase = async (imageUrls: string[]) => {
@@ -452,7 +453,7 @@ export default function FeedsTab() {
                                         <>
                                             <StyledView className="bg-gray-200 dark:bg-neutral-700 w-full h-[1px]" />
                                             <StyledView className="my-2 px-3 py-1">
-                                                <TouchableOpacity onPress={() => {}} className="flex-row items-center">
+                                                <TouchableOpacity onPress={() => { }} className="flex-row items-center">
                                                     <StyledIonicons
                                                         name="warning-outline"
                                                         size={24}

@@ -20,7 +20,7 @@ import SettingImagePreview from "../screen/SettingImagePreview";
 import SettingImagePreviewFirst from "../screen/SettingImagePreviewFirst";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 
 const Tab = createBottomTabNavigator();
 

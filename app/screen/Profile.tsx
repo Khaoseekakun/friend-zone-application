@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { View, Text, Alert, ActivityIndicator, ScrollView, Dimensions, Image, Linking, Appearance } from "react-native";
+import { View, Text, Alert, ActivityIndicator, ScrollView, Dimensions, Image, Linking, Appearance, Platform } from "react-native";
 import { styled } from "nativewind";
 import { HeaderApp } from "@/components/Header";
 import { NavigationProp, RouteProp, useIsFocused, useRoute } from "@react-navigation/native";
@@ -19,10 +19,14 @@ import MapView, { Circle, Marker, LatLng } from 'react-native-maps';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import Carousel from 'react-native-reanimated-carousel';
 import RNPickerSelect from 'react-native-picker-select';
+import { sendPushNotification } from "@/utils/Notification";
+import DateTimePicker from 'react-native-ui-datepicker';
+
 configureReanimatedLogger({
     level: ReanimatedLogLevel.warn,
     strict: false,
 });
+
 const StyledMapView = styled(MapView);
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -32,13 +36,14 @@ const StyledTextInput = styled(TextInput);
 const StyledGooglePlacesAutocomplete = styled(GooglePlacesAutocomplete);
 const StyledImage = styled(Image);
 const StyledTouchableOpacity = styled(TouchableOpacity);
+const StyledDatePicker = styled(DateTimePicker);
 type ProfileParam = RouteProp<RootStackParamList, 'ProfileTab'>;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export default function ProfileTab() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const route = useRoute<ProfileParam>();
     const { profileId, jobCategory, backPage, searchType } = route.params;
-
+    const isFoucs = useIsFocused()
     const convertJobs = {
         "Friend": "เพื่อนท่องเที่ยว"
     }
@@ -83,7 +88,6 @@ export default function ProfileTab() {
 
 
     const [hasLocationPermission, setHasLocationPermission] = useState(false);
-    const isFocus = useIsFocused();
     const openAppSettings = () => {
         Linking.openSettings().catch(() => {
             Alert.alert('ไม่สามารถไปหน้าตั้งค่าได้', 'โปรดเปิดการอนุญาตการเข้าถึงตำแหน่ง ด้วยตัวคุณเอง');
@@ -266,7 +270,7 @@ export default function ProfileTab() {
         if (userProfile?.profile.type === "member") {
             loadJobsList();
         }
-    }, []);
+    }, [isFoucs]);
 
     const [theme, setTheme] = useState(Appearance.getColorScheme());
 
@@ -312,9 +316,24 @@ export default function ProfileTab() {
             return Alert.alert('ข้อมูลไม่ครบ', 'โปรดกรอกข้อมูลให้ครบถ้วน', [{ text: 'OK' }]);
         }
 
-        const [day, month, year] = scheduleDate.split("/");
-        const [hour, minute] = scheduleTime.split(":");
-        const scheduleDateTime = new Date(+year, +month - 1, +day, +hour, +minute).toISOString();
+        const [day, month, year] = scheduleDate.split("/").map(Number);
+        const [hour, minute] = scheduleTime.split(":").map(Number);
+
+
+        const scheduleDateTime = new Date(year, month - 1, day, hour, minute); 
+        if (isNaN(scheduleDateTime.getTime())) {
+            return Alert.alert('ผิดพลาด', 'ข้อมูลเวลาไม่ถูกต้องโปรดระบุใหม่อีกครั้ง')
+        }
+
+        const now: Date = new Date();
+
+        const diffInMilliseconds = scheduleDateTime.getTime() - now.getTime(); 
+        const diffInHours = diffInMilliseconds / (1000 * 60 * 60); 
+
+        if (diffInHours < 2) {
+            return Alert.alert('ผิดพลาด', 'โปรดระบุเวลานัดหมายล่วงหน้า 2 ชั่วโมงขึ้นไป')
+        }
+
 
         try {
             const response = await axios.post('https://friendszone.app/api/schedule', {
@@ -336,6 +355,15 @@ export default function ProfileTab() {
                 Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
             } else {
                 Alert.alert(`สำเร็จ`, `สร้างนัดหมายสำเร็จ`, [{ text: 'OK' }]);
+                sendPushNotification(userData?.token, userProfile?.profile.id, {
+                    title: `นัดหมายใหม่`,
+                    body: `${userData.username} ต้องนัดหมายกับคุณ โปรดตรวจสอบนัดหมาย`,
+                    imageUrl: `${userData.profileUrl}`,
+                    screen: {
+                        name: "SchedulePage",
+                        data: {}
+                    }
+                })
                 navigation.navigate("SchedulePage", {});
             }
         } catch (error) {
@@ -556,26 +584,31 @@ export default function ProfileTab() {
                                         <StyledView className="w-6/12 px-1">
                                             <StyledText className="text-lg text-black font-custom dark:text-neutral-200">วัน/เดือน/ปี</StyledText>
 
-                                            <StyledTextInput
-                                                placeholder="03/10/2567"
-                                                className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
-                                                value={scheduleDate}
-                                                placeholderTextColor="#d1d5db"
-                                                onPress={showDatePicker}
-                                                editable={false}
-                                            />
+                                            <TouchableOpacity
+                                                onPress={showDatePicker}>
+                                                <StyledTextInput
+                                                    placeholder="03/10/2567"
+                                                    className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                                                    value={scheduleDate}
+                                                    placeholderTextColor="#d1d5db"
+                                                    editable={false}
+                                                />
+                                            </TouchableOpacity>
                                         </StyledView>
 
                                         <StyledView className="w-6/12 px-1">
                                             <StyledText className="text-lg text-black font-custom dark:text-neutral-200">เวลา</StyledText>
-                                            <StyledTextInput
-                                                placeholder="10:10"
-                                                className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
-                                                value={scheduleTime}
-                                                placeholderTextColor="#d1d5db"
-                                                onPress={showTimePicker}
-                                                editable={false}
-                                            />
+
+                                            <TouchableOpacity
+                                                onPress={showTimePicker}>
+                                                <StyledTextInput
+                                                    placeholder="10:10"
+                                                    className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                                                    value={scheduleTime}
+                                                    placeholderTextColor="#d1d5db"
+                                                    editable={false}
+                                                />
+                                            </TouchableOpacity>
                                         </StyledView>
                                     </StyledView>
                                     <StyledView className="flex-row items-center px-6 py-2">
@@ -598,7 +631,7 @@ export default function ProfileTab() {
                                                         padding: 16,
                                                         borderWidth: 1,
                                                         borderRadius: 16,
-                                                        zIndex: 100, 
+                                                        zIndex: 100,
                                                     },
                                                     inputAndroid: {
                                                         fontFamily: 'Kanit',
@@ -610,7 +643,7 @@ export default function ProfileTab() {
                                                         borderRadius: 16,
                                                     },
                                                 }}
-                                                useNativeAndroidPickerStyle={false} 
+                                                useNativeAndroidPickerStyle={false}
                                             />
                                         </StyledView>
                                     </StyledView>
@@ -710,6 +743,15 @@ export default function ProfileTab() {
             </BottomSheet>
 
             <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="date"
+                onConfirm={handleConfirm}
+                onCancel={hideDatePicker}
+                locale="th-TH"
+                minimumDate={new Date(Date.now())}
+            />
+
+            <DateTimePickerModal
                 isVisible={isTimePickerVisible}
                 mode="time"
                 onConfirm={handleTimeConfirm}
@@ -726,14 +768,7 @@ export default function ProfileTab() {
                 }
             />
 
-            <DateTimePickerModal
-                isVisible={isDatePickerVisible}
-                mode="date"
-                onConfirm={handleConfirm}
-                onCancel={hideDatePicker}
-                locale="th-TH"
-                minimumDate={new Date(Date.now())}
-            />
+
         </StyledView>
     );
 }

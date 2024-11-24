@@ -199,7 +199,7 @@ export default function SchedulePage() {
         }
     };
 
-    const randomInt = () => Math.floor(Math.random() * 100 + 1);
+    const randomInt = () => Math.floor(Math.random() * 1000 + 1);
 
     return (
         <StyledView className="flex-1">
@@ -215,8 +215,8 @@ export default function SchedulePage() {
                         <ScrollView>
                             {
                                 schedule.map((item, index) => (
-                                    <>
-                                        <StyledView key={`${item.id}-${index}-${userData.id}-${randomInt}`} className="bg-white rounded-b-2xl rounded-tr-2xl w-full h-auto p-3">
+                                    <StyledView key={`${item.id}-${index}-${userData.id}-${randomInt}`}>
+                                        <StyledView className="bg-white rounded-b-2xl rounded-tr-2xl w-full h-auto p-3">
                                             <StyledText className="font-custom">รายละเอียดการนัดหมาย</StyledText>
                                             <StyledText className="font-custom text-gray-500">{DateFromat(item.date)}</StyledText>
                                             <StyledText className="font-custom text-gray-500">สถานที่ {item.location}</StyledText>
@@ -299,7 +299,7 @@ export default function SchedulePage() {
                                         </StyledText>
 
 
-                                    </>
+                                    </StyledView>
                                 ))
                             }
 
