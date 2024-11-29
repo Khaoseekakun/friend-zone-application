@@ -9,6 +9,7 @@ import * as Location from 'expo-location';
 import 'react-native-get-random-values';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { v4 as uuidv4 } from 'uuid';
+import ErrorBoundary from '@/utils/ErrorBoundary';
 AppRegistry.registerComponent("Firend Zone", () => App);
 
 export default function App() {
@@ -71,8 +72,12 @@ export default function App() {
     }
 
     return (
-        <AuthProvider>
-            <AppNavigator />
-        </AuthProvider>
+        <ErrorBoundary>
+            <AuthProvider>
+                <AppNavigator />
+            </AuthProvider>
+        </ErrorBoundary>
     );
 }
+
+

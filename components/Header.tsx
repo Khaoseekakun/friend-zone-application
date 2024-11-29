@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StatusBar, Image } from "react-native";
+import { View, Text, TouchableOpacity, StatusBar, Image, Platform } from "react-native";
 import { styled } from "nativewind";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from "expo-router";
 import { NavigationProp } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
-const WhiteLogo = require("../assets/images/logo-white.png")
+const WhiteLogo = require("../assets/images/guesticon.jpg")
 const StyledView = styled(View);
 const StyledText = styled(Text);
-
+const StyledImage = styled(Image)
 interface HeaderAppProps {
     back?: string;
     searchType?: string;
@@ -45,10 +45,10 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType }) => {
             colors={['#EB3834', '#69140F']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            className="w-full top-0 h-[106px]"
+            className={`w-full top-0 ${Platform.OS == "ios" ? "h-[106px]" : "h-auto"}`}
         >
             <StatusBar barStyle={'light-content'}></StatusBar>
-            <StyledView className="w-full flex-row items-center justify-between mt-12">
+            <StyledView className={`w-full flex-row items-center justify-between ${Platform.OS == "ios" ? "mt-12" : "my-auto py-2"}`}>
                 {
                     back && (
                         <StyledView className="">
@@ -62,11 +62,15 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType }) => {
                     )
                 }
                 <TouchableOpacity className="flex-1 flex-row left-0 shadow-md" onPress={() => navigation.navigate('ProfileTab', { profileId: userData?.id })}>
-                    <Image className=" rounded-full w-[42px] h-[42px]" source={
+                    <StyledImage className=" rounded-full w-[42px] h-[42px] m-1 border-white border-[2px]" source={
+                        userData?.profileUrl ? {
+                            uri : userData?.profileUrl 
+                        } : 
                         WhiteLogo
+                    
                     }>
 
-                    </Image>
+                    </StyledImage>
                     <StyledView className="">
 
                         <StyledText className="font-bold font-custom text-lg text-white">

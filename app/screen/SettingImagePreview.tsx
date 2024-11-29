@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, KeyboardAvoidingView, Platform, ActivityIndicator, TouchableOpacity, Alert, Image, StyleSheet, Modal, TextInput, Dimensions, Appearance } from "react-native";
+import { View, Text, KeyboardAvoidingView, Platform, ActivityIndicator, TouchableOpacity, Alert, Image, StyleSheet, Modal, TextInput, Dimensions, Appearance, GestureResponderEvent } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "expo-router";
@@ -12,7 +12,7 @@ import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";;
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import axios from "axios";
-
+import DraggableFlatList from 'react-native-draggable-flatlist';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -27,16 +27,19 @@ export default function SettingImagePreview() {
     const [loading, setLoading] = useState(true);
     const [cacheUserData, setCacheUserData] = useState<any>();
     const [userData, setuserData] = useState<any>();
-    const [images, setImages] = useState<string[]>([]);
+    const [images, setImages] = useState(Array(9).fill(null));
     const [oldImages, setOldImages] = useState<string[]>([]);
     const [loadingUpdate, setLoadingUpdate] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
     const isFocus = useIsFocused();
     const bottomSheetRef = React.useRef<BottomSheet>(null);
+    const albumBottomSheetRef = React.useRef<BottomSheet>(null);
     const snapPoints = ['15%'];
     const [isOpen, setIsOpen] = React.useState(false);
     const [isUpdated, setIsUpdated] = useState<boolean>(false);
     const [theme, setTheme] = useState(Appearance.getColorScheme());
+    const [page, setPage] = useState(1)
+    const [album, setAlbum] = useState(false)
 
     useEffect(() => {
         const listener = Appearance.addChangeListener(({ colorScheme }) => {
@@ -86,8 +89,14 @@ export default function SettingImagePreview() {
 
         if (user.data.status !== 200) return null;
         setuserData(user.data.data.profile);
-        setOldImages(user.data.data.profile.previewAllImageUrl);
-        setImages(user.data.data.profile.previewAllImageUrl);
+
+        const previewImages = user.data.data.profile.previewAllImageUrl;
+        const updatedImages = [...previewImages];
+        while (updatedImages.length < 9) {
+            updatedImages.push(null);
+        }
+        setOldImages(updatedImages)
+        setImages(updatedImages);
         setCacheUserData(userList)
 
     };
@@ -133,7 +142,7 @@ export default function SettingImagePreview() {
                     result.assets.forEach(async (image) => {
                         const optimizedBase64 = await optimizeImage(image.uri);
                         if (optimizedBase64) {
-                            setImages(prevImages => [...prevImages, optimizedBase64]);
+                            setImages(prevImages => [...prevImages, optimizedBase64] as string[]);
                         }
                     })
 
@@ -165,7 +174,7 @@ export default function SettingImagePreview() {
                     result.assets.forEach(async (image) => {
                         const optimizedBase64 = await optimizeImage(image.uri);
                         if (optimizedBase64) {
-                            setImages(prevImages => [...prevImages, optimizedBase64]);
+                            setImages(prevImages => [...prevImages, optimizedBase64] as string[]);
                         }
                     })
 
@@ -181,9 +190,10 @@ export default function SettingImagePreview() {
     }
 
     const deleteImage = (index: number) => {
-        const newImages = images.filter((image, i) => i !== index);
-        setImages(newImages);
-    }
+        const updatedImages = [...images];
+        updatedImages[index] = null;
+        setImages(updatedImages);
+    };
 
     const updateImagePreview = async () => {
         try {
@@ -218,20 +228,68 @@ export default function SettingImagePreview() {
         }
     }
 
+
+
+    interface RenderItemParams<T> {
+        item: T;
+        getIndex: any;
+        drag: (event?: GestureResponderEvent) => void;
+        isActive: boolean;
+    }
+
+    const renderItem = ({
+        item,
+        getIndex,
+        drag,
+        isActive,
+    }: RenderItemParams<String>) => {
+        return item !== null ? (
+            <StyledView key={`Image-${getIndex}`} className={`w-4/12 h-[180px] p-1`}>
+                <StyledTouchableOpacity
+                    onLongPress={(event: GestureResponderEvent) => drag(event)}
+                    disabled={isActive}
+                    className="w-full h-full"
+                >
+                    <StyledImage
+                        className="bg-gray-500 rounded-2xl w-full h-full"
+                        source={{
+                            uri: `${item.startsWith('https://') ? item : `data:image/jpeg;base64,${item}`}`,
+                        }}
+                    />
+                </StyledTouchableOpacity>
+                <StyledTouchableOpacity
+                    onPress={() => deleteImage(getIndex)}
+                    style={{ position: 'absolute', top: -3, right: -3, borderRadius: 50 }}
+                    className="bg-red-500 dark:bg-neutral-500"
+                >
+                    <Ionicons name="close" size={22} color="white" />
+                </StyledTouchableOpacity>
+            </StyledView>
+        ) : (
+            <StyledView key={`Image-${getIndex}`} className={`w-4/12 h-[180px] p-1`}>
+                <StyledImage className="bg-gray-500 rounded-2xl w-full h-full" />
+            </StyledView>
+        );
+    };
+
+    const BigImage = Dimensions.get("screen").width;
+    const sizeBigImage = (BigImage / 2).toFixed(0);
+    const sizeMinImage = (Number(sizeBigImage) / 2).toFixed(0);
+
     return (
         <>
-            <StyledView className="w-full flex-1 bg-white dark:bg-neutral-900">
+            <StyledView className="w-full flex-1 bg-gray-50 dark:bg-neutral-900">
                 <LinearGradient
                     colors={['#EB3834', '#69140F']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
-                    className="text-center top-0 h-[92px] justify-center"
+                    className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[60px]"} justify-center`}
                 >
-                    <StyledView className="mt-5">
-                        <TouchableOpacity onPress={() => navigation.navigate("SettingTab")} className="absolute ml-4">
+                    <StyledView className={`${Platform.OS == "ios" ? "mt-8" : ""}`}>
+                        <TouchableOpacity onPress={() => navigation.navigate("SettingTab")} className=" ml-4">
                             <Ionicons name="chevron-back" size={24} color="#fff" />
                         </TouchableOpacity>
-                        <StyledText className="absolute self-center text-lg text-white font-custom ">ตั้งค่ารูปภาพตัวอย่าง</StyledText>
+                        <StyledText className="absolute self-center text-lg text-white font-custom ">{page == 1 ? "แก้ไขข้อมูล" : "พรีวิว"}</StyledText>
                     </StyledView>
                 </LinearGradient>
 
@@ -239,63 +297,62 @@ export default function SettingImagePreview() {
                     style={{ flex: 1 }}
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 >
-                    <ScrollView>
+                    {/* <ScrollView> */}
+                    <StyledText className="font-custom text-gray-500 mt-3 mb-1 pl-3"> รูปภาพน่าสนใจ </StyledText>
+                    <StyledView className="bg-white">
+                        <DraggableFlatList
+                            data={images}
+                            onDragEnd={({ data }) => {
+                                setImages(data);
+                            }}
+                            keyExtractor={(item, index) => `draggable-item-${index}`}
+                            renderItem={renderItem}
+                            style={{
+                                flex: 1
+                            }}
+                            containerStyle={{ flex: 1 }}
 
-                        {
-                            loading ? <ActivityIndicator size="large" color="#EB3834" style={{
-                                flex: 1,
-                                justifyContent: "center",
-                                alignItems: "center",
-                                top: "100%"
-                            }} /> :
-                                (
-                                    <StyledView className="flex-row flex-wrap flex-1 px-3 pt-2">
-                                        {
-                                            images.map((image, index) => (
-                                                <StyledView key={`Image-${index}`} className={`w-6/12 h-[210px] p-1`}>
-                                                    <StyledImage className="bg-gray-500 rounded-2xl w-full h-full"
-                                                        source={{
-                                                            uri: `${image.startsWith('https://') ? image : `data:image/jpeg;base64,${image}`}`
-                                                        }}
-                                                        onLoad={() => (
-                                                            <ActivityIndicator size="small" color="#000" style={{ position: 'absolute', alignItems: "center" }} />
-                                                        )}
-                                                    >
-                                                    </StyledImage>
+                        />
+                    </StyledView>
 
-                                                    <StyledTouchableOpacity
-                                                        onPress={() => deleteImage(index)}
-                                                        style={{ position: 'absolute', top: -3, right: -3, borderRadius: 50 }}
-                                                        className="bg-red-500 dark:bg-neutral-500"
-                                                    >
-                                                        <Ionicons name="close" size={22} color="white" />
-                                                    </StyledTouchableOpacity>
-                                                </StyledView>
-                                            ))
-                                        }
-                                        {
-                                            images.length < 6 && (
-                                                <StyledTouchableOpacity
-                                                    onPress={() => {
-                                                        setIsOpen(true);
-                                                        bottomSheetRef.current?.expand();
-                                                    }}
-                                                    className={`w-6/12 h-[210px] p-1 justify-center items-center border-[2px] rounded-2xl border-red-500 bg-red-100 dark:bg-neutral-700 dark:border-neutral-400`}>
-                                                    <StyledView className="bg-red-500 dark:bg-neutral-500 rounded-full w-[50px] h-[50px] justify-center items-center">
-                                                        <StyledIonicons
-                                                            name="add"
-                                                            color={"#fff"}
-                                                            size={40}
-                                                        />
-                                                    </StyledView>
-                                                </StyledTouchableOpacity>
-                                            )
-                                        }
-                                    </StyledView>
-                                )
-                        }
 
-                    </ScrollView>
+
+                    {/* {
+                        images.map((image, index) => (
+                            image != null ? (
+                                <StyledView key={`Image-${index}`} className={`w-4/12 h-[180px] p-1`}>
+                                    <StyledImage className="bg-gray-500 rounded-2xl w-full h-full"
+                                        source={{
+                                            uri: `${image?.startsWith('https://') ? image : `data:image/jpeg;base64,${image}`}`
+                                        }}
+                                        onLoad={() => (
+                                            <ActivityIndicator size="small" color="#000" style={{ position: 'absolute', alignItems: "center" }} />
+                                        )}
+                                    >
+                                    </StyledImage>
+
+                                    <StyledTouchableOpacity
+                                        onPress={() => deleteImage(index)}
+                                        style={{ position: 'absolute', top: -3, right: -3, borderRadius: 50 }}
+                                        className="bg-red-500 dark:bg-neutral-500"
+                                    >
+                                        <Ionicons name="close" size={22} color="white" />
+                                    </StyledTouchableOpacity>
+                                </StyledView>
+                            ) : (
+                                <StyledView key={`Image-${index}`} className={`w-4/12 h-[180px] p-1`}>
+                                    <StyledImage className="bg-gray-500 rounded-2xl w-full h-full"
+                                        onLoad={() => (
+                                            <ActivityIndicator size="small" color="#000" style={{ position: 'absolute', alignItems: "center" }} />
+                                        )}
+                                    >
+                                    </StyledImage>
+                                </StyledView>
+                            )
+                        ))
+                    } */}
+
+                    {/* </ScrollView> */}
 
                     {
                         (isUpdated) && (
@@ -306,12 +363,9 @@ export default function SettingImagePreview() {
                                             disabled={(loading || loadingUpdate)}
                                             onPress={() => setImages(oldImages)}
                                         >
-                                            {
-                                                loadingUpdate ? <ActivityIndicator size={25} color="#fff" /> :
-                                                    <StyledText className="font-custom text-white text-[20px]">
-                                                        คืนค่า
-                                                    </StyledText>
-                                            }
+                                            <StyledText className="font-custom text-white text-[20px]">
+                                                คืนค่า
+                                            </StyledText>
                                         </StyledTouchableOpacity>
                                     </StyledView>
                                     <StyledView className="w-6/12 items-center">
@@ -319,12 +373,9 @@ export default function SettingImagePreview() {
                                             disabled={(loading || loadingUpdate)}
                                             onPress={updateImagePreview}
                                         >
-                                            {
-                                                loadingUpdate ? <ActivityIndicator size={25} color="#fff" /> :
-                                                    <StyledText className="font-custom text-white text-[20px]">
-                                                        บันทึก
-                                                    </StyledText>
-                                            }
+                                            <StyledText className="font-custom text-white text-[20px]">
+                                                บันทึก
+                                            </StyledText>
                                         </StyledTouchableOpacity>
                                     </StyledView>
                                 </StyledView>
@@ -349,10 +400,11 @@ export default function SettingImagePreview() {
 
             {isOpen && (
                 <TouchableOpacity className="absolute flex-1 bg-black opacity-25 w-full h-screen justify-center"
-                    onPress={() => bottomSheetRef.current?.close()}>
+                    onPress={() => {
+                        bottomSheetRef.current?.close()
+                    }}>
                 </TouchableOpacity>
-            )
-            }
+            )}
 
 
 
