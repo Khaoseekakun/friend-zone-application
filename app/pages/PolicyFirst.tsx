@@ -5,15 +5,17 @@ import axios from 'axios';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types'; // Adjust the import path as needed
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
+const StyledIcon = styled(Ionicons);
 
 export default function AgreementScreen() {
     const [policyContent, setPolicyContent] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
+    const [agree, setAgree] = useState(false);
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     useEffect(() => {
         const fetchPolicyContent = async () => {
@@ -50,6 +52,12 @@ export default function AgreementScreen() {
         );
     }
 
+
+    const handlerAgree = () => {
+
+    }
+
+
     return (
         <StyledView className="bg-white dark:bg-black flex-1">
 
@@ -65,16 +73,32 @@ export default function AgreementScreen() {
                 ))}
             </ScrollView>
 
+
+            <StyledView className='flex-row w-4/5 self-center mt-4'>
+                <TouchableOpacity
+                    onPress={() => {setAgree(!agree)}}
+                >
+                    <StyledIcon
+                        name={agree ? "checkbox-outline" : "stop-outline"} 
+                        size={20}
+                        className={`${agree ? "text-black" : "text-red-500"}`}
+                    >
+
+                    </StyledIcon>
+                </TouchableOpacity>
+                <StyledText className={`font-custom text-center ${agree ? "text-black" : "text-red-500"} font-semibold ml-1`}>ฉันได้อ่านและยอมรับข้อตกลงนี้</StyledText>
+            </StyledView>
             <TouchableOpacity className="w-4/5 mb-16 self-center mt-11"
-                onPress={handleAgree}>
+                disabled={!agree}
+                >
                 <LinearGradient
 
-                    colors={['#EB3834', '#69140F']}
+                    colors={agree ? ['#EB3834', '#69140F'] : ['#7f7f7f', '#505050']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     className="rounded-full py-3 shadow-sm"
                 >
-                    <StyledText className="font-custom text-center text-white text-lg font-semibold">I AGREE</StyledText>
+                    <StyledText className="font-custom text-center text-white text-lg font-semibold">ถัดไป</StyledText>
                 </LinearGradient>
             </TouchableOpacity>
         </StyledView>
