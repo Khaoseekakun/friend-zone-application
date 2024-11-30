@@ -12,7 +12,8 @@ import { useNavigation } from 'expo-router';
 import { getStorage } from 'firebase/storage';
 import { styled } from 'nativewind';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ActivityIndicator, Alert, Appearance, Image, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Appearance, Image, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
 import ImageViewer from 'react-native-image-zoom-viewer';
 
 const GuestIcon = require("../../assets/images/guesticon.jpg")
@@ -21,8 +22,9 @@ const StyledText = styled(Text);
 const StyledImage = styled(Image);
 const StyleImageViewer = styled(ImageViewer);
 const StyledIonicons = styled(Ionicons);
+const StyledInput = styled(TextInput)
 const storage = getStorage(FireBaseApp);
-
+const StyledTouchableOpacity = styled(TouchableOpacity)
 interface UserProfile {
     id: string;
     images: Array<string>;
@@ -58,6 +60,7 @@ export default function PostView() {
 
     const [profileData, setProfileData] = useState<UserProfile | null>(null);
 
+    const snapPointsComment = ['25%'];
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState([] as string[]);
     const [isOpen, setIsOpen] = useState(false);
@@ -65,12 +68,14 @@ export default function PostView() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [posts, setPosts] = useState<Post[]>([]);
     const bottomSheetRef = useRef<BottomSheet>(null);
+    const bottomSheetRefComment = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ["35%"], []);
     const [userData, setuserData] = useState<any>();
     const [postAction, setPostAction] = useState('');
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-
+    const [newComment, setNewComment] = useState("")
     const [theme, setTheme] = useState(Appearance.getColorScheme());
+    const [commentId, setCommantId] = useState("")
 
     const deleteTwoStep = async (postId: string) => {
         Alert.alert('ยืนยันการลบ', 'คุณต้องการลบโพสต์นี้ใช่หรือไม่', [{
@@ -149,6 +154,12 @@ export default function PostView() {
         setIsOpen(true);
     }, []);
 
+    const BottomSheetShowComment = () => {
+        bottomSheetRefComment.current?.snapToIndex(0);
+        setIsOpen(true);
+    }
+
+    
     const openImageModal = (imageUrl: string[], index: number = 0) => {
         setSelectedImage(imageUrl);
         setSelectedImageIndex(index);
@@ -156,9 +167,17 @@ export default function PostView() {
     };
 
 
+    const postComment = () => {
+        try {
+
+        } catch (error) {
+
+        }
+    }
+
     return (
         <>
-            <StyledView className="flex-1 bg-white dark:bg-neutral-900">
+            <StyledView className="flex-1 bg-white dark:bg-neutral-900 h-full">
                 <StyledView
                     className={`flex-row justify-center items-center px-4 border-b border-neutral-200 dark:border-neutral-800 w-full ${Platform.OS == "ios" ? "mt-8" : ""} ${Platform.OS == "ios" ? "h-[92px]" : "h-[60px]"}`}
                 >
@@ -172,7 +191,9 @@ export default function PostView() {
                     <StyledText className="dark:text-white font-bold text-lg">Post</StyledText>
                 </StyledView>
 
-                <StyledView >
+                <ScrollView style={{
+                    flex: 1
+                }}>
                     <StyledView className="my-1" />
                     <StyledView className="w-full flex-row items-center justify-between">
                         <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab', { profileId: item.member.id })}>
@@ -309,22 +330,79 @@ export default function PostView() {
                                 />
                                 <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">0</StyledText>
                             </StyledView>
-
-
                         </StyledView>
-                    </StyledView>
-                </StyledView>
 
+                        <StyledView className='relative justify-start mt-2'>
+                            <StyledView className='flex-row justify-start border-t-[1px] py-2 border-gray-100'>
+                                <StyledImage className='bg-gray-500 rounded-full w-[30px] h-[30px]'
+                                    source={GuestIcon} />
+                                <StyledView className='px-2'>
+                                    <StyledView className='flex-row'>
+                                        <StyledText className='font-custom font-bold'>Sinsamuth</StyledText>
+                                        <StyledText className='pl-2 text-gray-400 font-custom'>1 ชม.</StyledText>
+                                    </StyledView>
+                                    <StyledText className='flex-wrap text-gray-700 font-custom pr-6'>
+                                        สวัสดีทดสอบแสดงความคิดเห็น
+                                    </StyledText>
+                                </StyledView>
+                                <StyledTouchableOpacity className='absolute right-2'>
+                                    <StyledIonicons
+                                        name="ellipsis-horizontal"
+                                        size={18}
+                                        color="gray"
+                                        accessibilityLabel="Settings"
+                                        onPress={() => { BottomSheetShowComment(), setCommantId("0") }}
+                                    />
+                                </StyledTouchableOpacity>
+                            </StyledView>
+                            <StyledView className='flex-row justify-start border-t-[1px] py-2 border-gray-100'>
+                                <StyledImage className='bg-gray-500 rounded-full w-[30px] h-[30px]'
+                                    source={GuestIcon} />
+                                <StyledView className='px-2'>
+                                    <StyledView className='flex-row'>
+                                        <StyledText className='font-custom font-bold'>Sinsamuth</StyledText>
+                                        <StyledText className='pl-2 text-gray-400 font-custom'>1 ชม.</StyledText>
+                                    </StyledView>
+                                    <StyledText className='flex-wrap text-gray-700 font-custom pr-6'>
+                                        ว่างๆไว้ไปเที่ยวด้วยกันอีกนะครับ
+                                    </StyledText>
+                                </StyledView>
+                            </StyledView>
+                        </StyledView>
+
+
+                    </StyledView>
+
+
+                </ScrollView>
                 <StyledView className='absolute bottom-0 bg-white w-full border-t-[1px] border-gray-200 px-2 py-2'>
                     <StyledView className="w-full flex-row items-center justify-between">
-                        <TouchableOpacity
+                        <StyledView
                             className="flex-row bg-gray-300 items-center mr-3 pl-4 rounded-full w-full h-[40px]"
                         >
-                            <StyledText className="text-gray-500 font-custom">แสดงความคิดเห็น</StyledText>
-                        </TouchableOpacity>
+                            <StyledInput
+                                className="font-custom text-black"
+                                placeholder='แสดงความคิดเห็น'
+                                value={newComment}
+                                onChangeText={setNewComment}
+                            >
+
+
+                            </StyledInput>
+                        </StyledView>
+                        <StyledTouchableOpacity className='absolute right-3'
+                            onPress={postComment}>
+                            <StyledIonicons
+                                className={`${newComment.length > 0 ? 'text-black' : 'text-gray-500'}`}
+                                name="send"
+                                size={25}>
+
+                            </StyledIonicons>
+                        </StyledTouchableOpacity>
                     </StyledView>
                 </StyledView>
             </StyledView>
+
 
             <Modal animationType="fade" visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
                 <StyledView className="flex-1 justify-center h-screen bg-black">
@@ -451,6 +529,35 @@ export default function PostView() {
 
                         }
 
+                    </StyledView>
+                </BottomSheetView>
+            </BottomSheet>
+
+            <BottomSheet
+                ref={bottomSheetRefComment}
+                snapPoints={snapPointsComment}
+                enablePanDownToClose={true}
+                onClose={() => setIsOpen(false)}
+                index={-1}
+                backgroundStyle={{
+                    borderRadius: 10,
+                    backgroundColor: theme == "dark" ? "#404040" : "#fff"
+                }}
+            >
+                <BottomSheetView style={{ height: "100%" }}>
+                    <StyledView className="flex-1">
+                        <StyledView className="mt-5 bg-gray-100 dark:bg-neutral-800 rounded-lg mx-5">
+                            <StyledView className="my-2 px-3 py-1">
+                                <TouchableOpacity onPress={() => deleteTwoStep(postAction)} className="flex-row items-center">
+                                    <StyledIonicons
+                                        name="trash-outline"
+                                        size={24}
+                                        color="#ff2525"
+                                    />
+                                    <StyledText className="text-[#ff2525] pl-2 text-lg font-custom">ลบความคิดเห็น</StyledText>
+                                </TouchableOpacity>
+                            </StyledView>
+                        </StyledView>
                     </StyledView>
                 </BottomSheetView>
             </BottomSheet>
