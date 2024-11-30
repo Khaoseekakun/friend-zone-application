@@ -120,29 +120,6 @@ export default function EditProfile() {
         }
     };
 
-    const addImage = async (camera = false) => {
-        const picker = camera ? ImagePicker.launchCameraAsync : ImagePicker.launchImageLibraryAsync;
-        try {
-            const result = await picker({
-                mediaTypes: "images",
-                allowsEditing: true,
-                aspect: [1, 1],
-                quality: 1
-            });
-
-            if (!result.canceled && result.assets[0]) {
-                const optimized = await ImageManipulator.manipulateAsync(
-                    result.assets[0].uri,
-                    [{ resize: { width: 1080 } }],
-                    { compress: 0.8 }
-                );
-                setImages(prev => [...prev, { uri: optimized.uri, id: Date.now().toString() }]);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
     const saveProfile = async () => {
         try {
             setLoading(true);
@@ -190,7 +167,7 @@ export default function EditProfile() {
                     className="absolute left-4"
                     onPress={() => navigation.navigate("SettingTab", {})}
                 >
-                    <StyledText className="dark:text-white font-custom text-lg">กลับ</StyledText>
+                    <StyledText className="text-gray-500 dark:text-white font-custom text-lg">กลับ</StyledText>
                 </TouchableOpacity>
 
                 <StyledText className="dark:text-white font-bold text-lg">แก้ไข</StyledText>
