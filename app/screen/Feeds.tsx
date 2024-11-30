@@ -141,7 +141,7 @@ export default function FeedsTab() {
                 </StyledView>
             );
         }
-    
+
         return <StyledView className="mb-[120px]" />;
     };
 
@@ -202,7 +202,7 @@ export default function FeedsTab() {
     const renderItems = ({ item }: {
         item: Post
     }) => (
-        <StyledView className="">
+        <StyledView >
             <StyledView className="bg-gray-200 w-full h-[1px] my-2 dark:bg-neutral-700" />
             <StyledView className="w-full flex-row items-center justify-between">
                 <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab', { profileId: item.member.id })}>
@@ -315,6 +315,7 @@ export default function FeedsTab() {
                         </>
                     ) : null
                 }
+
                 <StyledView id="post-action" className="flex-row relative justify-start mt-2">
 
 
@@ -325,18 +326,25 @@ export default function FeedsTab() {
                             onPress={() => { }}
                             className="text-red-500"
                         />
-                        <StyledText className="font-custom text-white ml-1 text-lg">0</StyledText>
+                        <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">0</StyledText>
                     </StyledView>
 
-                    <StyledView className="flex-row justify-center mr-5 items-center">
-                        <StyledIonicons
-                            name="chatbubble-outline"
-                            size={24}
-                            onPress={() => { }}
-                            className="text-black dark:text-white"
-                        />
-                        <StyledText className="font-custom text-white ml-1 text-lg">0</StyledText>
-                    </StyledView>
+                    <TouchableOpacity onPress={() => navigation.navigate("PostView", {
+                        backPage: "FeedsTab",
+                        author: item.member,
+                        images: item.images,
+                        postId: item.id
+                    })}>
+                        <StyledView className="flex-row justify-center mr-5 items-center">
+                            <StyledIonicons
+                                name="chatbubble-outline"
+                                size={24}
+                                onPress={() => { }}
+                                className="text-black dark:text-white"
+                            />
+                            <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">0</StyledText>
+                        </StyledView>
+                    </TouchableOpacity>
 
 
                 </StyledView>

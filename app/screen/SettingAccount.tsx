@@ -15,7 +15,7 @@ const StyledInput = styled(TextInput);
 const StyledIonicons = styled(Ionicons)
 interface UserProfile {
     id: string;
-    images: Array<{ uri: string, id: string }>;
+    images: Array<string>;
     bio: string;
     education: string;
     location: string;
@@ -27,7 +27,7 @@ export default function EditProfile() {
     const navigation = useNavigation<any>();
     const [profileData, setProfileData] = useState<UserProfile | null>(null);
     const [username, setUsername] = useState("");
-    const [images, setImages] = useState<Array<{ uri: string, id: string }>>([]);
+    const [images, setImages] = useState<Array<string>>([]);
     const [bio, setBio] = useState("");
     const [education, setEducation] = useState("");
     const [location, setLocation] = useState("");
@@ -65,11 +65,8 @@ export default function EditProfile() {
                     setHeight(profile.height?.toString() || "");
                     setWeight(profile.weight?.toString() || "");
 
-                    if (Array.isArray(profile.profileImages)) {
-                        setImages(profile.profileImages.map((url: string) => ({
-                            uri: url,
-                            id: Date.now().toString()
-                        })));
+                    if (Array.isArray(profile.previewAllImageUrl)) {
+                        setImages(profile.previewAllImageUrl);
                     } else {
                         setImages([]);
                     }
@@ -79,6 +76,28 @@ export default function EditProfile() {
             console.error(error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const optimizeImage = async (uri: string) => {
+        try {
+            const manipResult = await ImageManipulator.manipulateAsync(
+                uri,
+                [
+                    { resize: { width: 800 } }
+                ]
+                ,
+                {
+                    compress: 0.7,
+                    format: ImageManipulator.SaveFormat.JPEG,
+                    base64: true
+                }
+
+            );
+            return manipResult.base64;
+        } catch (error) {
+            console.error("Error optimizing image: ", error);
+            return uri;
         }
     };
 
@@ -103,16 +122,12 @@ export default function EditProfile() {
                 });
 
             if (!result.canceled && result.assets[0]) {
-                const optimizedImage = await ImageManipulator.manipulateAsync(
-                    result.assets[0].uri,
-                    [{ resize: { width: 1080 } }],
-                    { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
-                );
-
-                setImages(prev => [...prev, {
-                    uri: optimizedImage.uri,
-                    id: Date.now().toString()
-                }]);
+                result.assets.forEach(async (image) => {
+                    const optimizedBase64 = await optimizeImage(image.uri);
+                    if (optimizedBase64) {
+                        setImages(prevImages => [...prevImages, optimizedBase64] as string[]);
+                    }
+                })
             }
         } catch (error) {
             console.error('Image pick failed:', error);
@@ -134,7 +149,7 @@ export default function EditProfile() {
                     location,
                     height,
                     weight,
-                    images: images.map(img => img.uri),
+                    images: images
                 },
                 {
                     headers: {
@@ -187,7 +202,9 @@ export default function EditProfile() {
                     {images.map((image, index) => (
                         <StyledView key={`Image-${index}`} className="w-4/12 h-[180px] p-1">
                             <StyledImage
-                                source={{ uri: image.uri }}
+                                source={{
+                                    uri: `${image?.startsWith('https://') ? image : `data:image/jpeg;base64,${image}`}`
+                                }}
                                 className="bg-gray-500 rounded-2xl w-full h-full"
                             />
                             <StyledTouchableOpacity

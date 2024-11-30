@@ -27,41 +27,41 @@ export type RootStackParamList = {
     },
     backPage?: string;
   },
-  Search : {
-    searchType : "Friend" | "Music" | "Dj",
+  Search: {
+    searchType: "Friend" | "Music" | "Dj",
     backPage?: string;
   },
-  Chat : {
-    helper? : boolean
-    chatId? : string,
-    receiverId? : string,
-    chatName : string,
-    profileUrl? : string,
+  Chat: {
+    helper?: boolean
+    chatId?: string,
+    receiverId?: string,
+    chatName: string,
+    profileUrl?: string,
     backPage?: string;
   },
-  MessageTab : {
+  MessageTab: {
     backPage?: string;
   },
-  ProfileTab : {
-    profileId : string,
-    jobCategory? : string,
+  ProfileTab: {
+    profileId: string,
+    jobCategory?: string,
     backPage?: string,
-    searchType? : string
+    searchType?: string
   },
-  FeedsTab : {
+  FeedsTab: {
     backPage?: string;
   },
-  PostTab : {
+  PostTab: {
     backPage?: string;
   },
-  ProfileMember : {
-    profileId : string,
+  ProfileMember: {
+    profileId: string,
     backPage?: string
   },
-  SchedulePage : {
+  SchedulePage: {
     backPage?: string;
   };
-  ScheduleList : {
+  ScheduleList: {
     backPage?: string;
   },
   SearchCategory: {
@@ -75,6 +75,12 @@ export type RootStackParamList = {
   },
   SettingImagePreviewFirst: {
     backPage?: string;
+  },
+  PostView: {
+    backPage?: string;
+    postId: string;
+    images: string[]
+    author: any
   }
 };
 
