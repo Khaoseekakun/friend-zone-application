@@ -27,7 +27,13 @@ export default function EditProfile() {
     const navigation = useNavigation<any>();
     const [profileData, setProfileData] = useState<UserProfile | null>(null);
     const [username, setUsername] = useState("");
+    const [profile, setProfile] = useState<string>("")
     const [images, setImages] = useState<Array<string>>([]);
+
+    const [oldProfile, oldSetProfile] = useState<string>("")
+    const [oldImages, oldSetImages] = useState<Array<string>>([]);
+
+    const [isUpdated, setIsUpdated] = useState<boolean>(false);
     const [bio, setBio] = useState("");
     const [education, setEducation] = useState("");
     const [location, setLocation] = useState("");
@@ -35,14 +41,24 @@ export default function EditProfile() {
     const [weight, setWeight] = useState("");
     const [loading, setLoading] = useState(true);
     const StyledTouchableOpacity = styled(TouchableOpacity);
+    const [loadingUpdate, setLoadingUpdate] = useState(false);
 
     const deleteImage = (index: number) => {
         setImages(prev => prev.filter((_, i) => i !== index));
     };
 
     useEffect(() => {
+        if (JSON.stringify(images) !== JSON.stringify(oldImages)) {
+            setIsUpdated(true);
+            console.log("Updated");
+        } else {
+            setIsUpdated(false);
+        }
+    }, [images, oldImages]);
+
+    useEffect(() => {
         fetchUserData();
-    }, []);
+    }, [loadingUpdate]);
 
     const fetchUserData = async () => {
         try {
@@ -67,8 +83,10 @@ export default function EditProfile() {
 
                     if (Array.isArray(profile.previewAllImageUrl)) {
                         setImages(profile.previewAllImageUrl);
+                        oldSetImages(profile.previewAllImageUrl)
                     } else {
                         setImages([]);
+                        oldSetImages([]);
                     }
                 }
             }
@@ -147,8 +165,8 @@ export default function EditProfile() {
                     bio,
                     education,
                     location,
-                    height,
-                    weight,
+                    height: Number(height),
+                    weight: Number(weight),
                     images: images
                 },
                 {
@@ -157,7 +175,10 @@ export default function EditProfile() {
                     }
                 }
             );
-            navigation.goBack();
+
+
+            setIsUpdated(false)
+            oldSetImages(images)
         } catch (error) {
             console.error(error);
         } finally {
@@ -195,9 +216,22 @@ export default function EditProfile() {
                 </TouchableOpacity>
             </StyledView>
 
-            {/* Rest of the component remains the same, but use state values in components */}
             <ScrollView className="flex-1">
-                <StyledText className="font-custom text-gray-500 mt-3 mb-1 pl-3">รูปภาพน่าสนใจ</StyledText>
+                <StyledView className="flex-row justify-between items-center">
+
+                    <StyledText className="font-custom text-gray-500 mt-3 mb-1 pl-3">รูปภาพน่าสนใจ</StyledText>
+                    {
+                        (isUpdated) && (
+                            <TouchableOpacity>
+                                <StyledIonicons
+                                    name="resize">
+                                </StyledIonicons>
+                            </TouchableOpacity>
+                        )
+                    }
+
+                </StyledView>
+
                 <StyledView className="flex-row flex-wrap px-2">
                     {images.map((image, index) => (
                         <StyledView key={`Image-${index}`} className="w-4/12 h-[180px] p-1">
@@ -286,6 +320,41 @@ export default function EditProfile() {
                     </StyledView>
                 </StyledView>
             </ScrollView>
+
+            {
+                (isUpdated) && (
+                    <StyledView className="absolute bottom-5 w-full px-2 ">
+                        <StyledView className="items-center flex-row w-full">
+                            <StyledView className="w-6/12 items-center">
+                                <StyledTouchableOpacity className="rounded-full bg-slate-400 w-11/12 items-center py-2"
+                                    disabled={(loading || loadingUpdate)}
+                                    onPress={() => setImages(oldImages)}
+                                >
+                                    {
+                                        loadingUpdate ? <ActivityIndicator size={25} color="#fff" /> :
+                                            <StyledText className="font-custom text-white text-[20px]">
+                                                คืนค่า
+                                            </StyledText>
+                                    }
+                                </StyledTouchableOpacity>
+                            </StyledView>
+                            <StyledView className="w-6/12 items-center">
+                                <TouchableOpacity className="rounded-full bg-red-500 w-11/12 items-center py-2"
+                                    disabled={(loading || loadingUpdate)}
+                                    onPress={saveProfile}
+                                >
+                                    {
+                                        loadingUpdate ? <ActivityIndicator size={25} color="#fff" /> :
+                                            <StyledText className="font-custom text-white text-[20px]">
+                                                บันทึก
+                                            </StyledText>
+                                    }
+                                </TouchableOpacity>
+                            </StyledView>
+                        </StyledView>
+                    </StyledView>
+                )
+            }
         </StyledView>
     );
 }

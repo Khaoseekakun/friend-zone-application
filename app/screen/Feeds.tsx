@@ -331,9 +331,7 @@ export default function FeedsTab() {
 
                     <TouchableOpacity onPress={() => navigation.navigate("PostView", {
                         backPage: "FeedsTab",
-                        author: item.member,
-                        images: item.images,
-                        postId: item.id
+                        item: item
                     })}>
                         <StyledView className="flex-row justify-center mr-5 items-center">
                             <StyledIonicons

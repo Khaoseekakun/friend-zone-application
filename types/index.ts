@@ -78,10 +78,21 @@ export type RootStackParamList = {
   },
   PostView: {
     backPage?: string;
-    postId: string;
-    images: string[]
-    author: any
+    item : Post
   }
 };
 
 export type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
+
+interface Post {
+  id: string;
+  content: string;
+  images: string[];
+  createdAt: string;
+  member: {
+      id: string;
+      username: string;
+      profileUrl: string;
+      verified: boolean;
+  }
+}
