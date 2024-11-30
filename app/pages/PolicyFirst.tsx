@@ -52,12 +52,6 @@ export default function AgreementScreen() {
         );
     }
 
-
-    const handlerAgree = () => {
-
-    }
-
-
     return (
         <StyledView className="bg-white dark:bg-black flex-1">
 
@@ -90,6 +84,7 @@ export default function AgreementScreen() {
             </StyledView>
             <TouchableOpacity className="w-4/5 mb-16 self-center mt-11"
                 disabled={!agree}
+                onPress={handleAgree}
                 >
                 <LinearGradient
 

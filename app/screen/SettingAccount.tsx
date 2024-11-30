@@ -12,7 +12,7 @@ const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledImage = styled(Image);
 const StyledInput = styled(TextInput);
-
+const StyledIonicons = styled(Ionicons)
 interface UserProfile {
     id: string;
     images: Array<{ uri: string, id: string }>;
@@ -24,7 +24,7 @@ interface UserProfile {
 }
 
 export default function EditProfile() {
-    const navigation = useNavigation();
+    const navigation = useNavigation<any>();
     const [profileData, setProfileData] = useState<UserProfile | null>(null);
     const [username, setUsername] = useState("");
     const [images, setImages] = useState<Array<{ uri: string, id: string }>>([]);
@@ -96,9 +96,9 @@ export default function EditProfile() {
             const result = await (useCamera ?
                 ImagePicker.launchCameraAsync :
                 ImagePicker.launchImageLibraryAsync)({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    mediaTypes: "images",
                     allowsEditing: true,
-                    aspect: [1, 1],
+                    aspect: [6, 4],
                     quality: 1
                 });
 
@@ -124,7 +124,7 @@ export default function EditProfile() {
         const picker = camera ? ImagePicker.launchCameraAsync : ImagePicker.launchImageLibraryAsync;
         try {
             const result = await picker({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                mediaTypes: "images",
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: 1
@@ -175,52 +175,64 @@ export default function EditProfile() {
 
     if (loading) {
         return (
-            <StyledView className="flex-1 bg-neutral-950 items-center justify-center">
+            <StyledView className="flex-1 bg-gray-100 dark:bg-neutral-950 items-center justify-center">
                 <ActivityIndicator size="large" color="#FF3366" />
             </StyledView>
         );
     }
 
     return (
-        <StyledView className="flex-1 bg-neutral-950">
-            <StyledView className="flex-row justify-between items-center px-4 py-3 border-b border-neutral-800 mt-11">
-                <StyledText className="text-white"></StyledText>
-                <StyledText className="pl-10 text-white font-bold text-lg">แก้ไข</StyledText>
-                <TouchableOpacity onPress={saveProfile}>
-                    <StyledText className="text-pink-500 font-semibold">เสร็จสิ้น</StyledText>
+        <StyledView className="flex-1 bg-gray-100 dark:bg-neutral-950">
+            <StyledView
+                className={`flex-row justify-center items-center px-4 border-b border-neutral-200 dark:border-neutral-800 w-full ${Platform.OS == "ios" ? "mt-8" : ""} ${Platform.OS == "ios" ? "h-[92px]" : "h-[60px]"}`}
+            >
+                <TouchableOpacity
+                    className="absolute left-4"
+                    onPress={() => navigation.navigate("SettingTab", {})}
+                >
+                    <StyledText className="dark:text-white font-custom text-lg">กลับ</StyledText>
+                </TouchableOpacity>
+
+                <StyledText className="dark:text-white font-bold text-lg">แก้ไข</StyledText>
+
+                <TouchableOpacity
+                    className="absolute right-4"
+                    onPress={saveProfile}
+                >
+                    <StyledText className="text-blue-500 font-custom text-lg">เสร็จสิ้น</StyledText>
                 </TouchableOpacity>
             </StyledView>
 
             {/* Rest of the component remains the same, but use state values in components */}
             <ScrollView className="flex-1">
-    <StyledText className="font-custom text-gray-500 mt-3 mb-1 pl-3">รูปภาพน่าสนใจ</StyledText>
-    <StyledView className="flex-row flex-wrap px-2">
-        {images.map((image, index) => (
-            <StyledView key={`Image-${index}`} className="w-4/12 h-[180px] p-1">
-                <StyledImage 
-                    source={{ uri: image.uri }}
-                    className="bg-gray-500 rounded-2xl w-full h-full"
-                />
-                <StyledTouchableOpacity
-                    onPress={() => deleteImage(index)}
-                    style={{ position: 'absolute', top: -3, right: -3, borderRadius: 50 }}
-                    className="bg-red-500 p-1"
-                >
-                    <Ionicons name="close" size={22} color="white" />
-                </StyledTouchableOpacity>
-            </StyledView>
-        ))}
-        {images.length < 9 && (
-            <TouchableOpacity
-                onPress={() => handleImagePick(false)}
-                className="w-4/12 h-[180px] p-1"
-            >
-                <StyledView className="flex-1 rounded-xl bg-neutral-800 items-center justify-center border border-neutral-700 border-dashed">
-                    <Ionicons name="add" size={40} color="white" />
+                <StyledText className="font-custom text-gray-500 mt-3 mb-1 pl-3">รูปภาพน่าสนใจ</StyledText>
+                <StyledView className="flex-row flex-wrap px-2">
+                    {images.map((image, index) => (
+                        <StyledView key={`Image-${index}`} className="w-4/12 h-[180px] p-1">
+                            <StyledImage
+                                source={{ uri: image.uri }}
+                                className="bg-gray-500 rounded-2xl w-full h-full"
+                            />
+                            <StyledTouchableOpacity
+                                onPress={() => deleteImage(index)}
+                                style={{ position: 'absolute', top: -3, right: -3, borderRadius: 50 }}
+                                className="bg-red-500 p-1"
+                            >
+                                <StyledIonicons className="text-white" name="close" size={15} color="white" />
+                            </StyledTouchableOpacity>
+                        </StyledView>
+                    ))}
+                    {images.length < 9 && (
+                        <TouchableOpacity
+                            onPress={() => handleImagePick(false)}
+                            className="w-4/12 h-[180px] p-1"
+                        >
+                            <StyledView className="flex-1 rounded-xl bg-white dark:bg-neutral-800 items-center justify-center border border-neutral-300 dark:border-neutral-700 border-dashed">
+                                <StyledIonicons className="text-black dark:text-white" name="add" size={40} color="white" />
+                            </StyledView>
+                        </TouchableOpacity>
+                    )}
                 </StyledView>
-            </TouchableOpacity>
-        )}
-    </StyledView>
 
                 <StyledView className="px-4 py-2 space-y-6">
                     <StyledView>
@@ -228,7 +240,7 @@ export default function EditProfile() {
                         <StyledInput
                             multiline
                             numberOfLines={4}
-                            className="bg-neutral-800 rounded-xl p-4 text-white"
+                            className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white"
                             placeholder="เล่าเรื่องราวของคุณ..."
                             placeholderTextColor="#666"
                             value={bio}
@@ -238,30 +250,30 @@ export default function EditProfile() {
 
                     <StyledView className="space-y-3">
                         <TouchableOpacity
-                            className="flex-row items-center justify-between bg-neutral-800 px-4 py-3 rounded-xl"
+                            className="flex-row items-center justify-between bg-white dark:bg-neutral-800 px-4 py-3 rounded-xl"
                             onPress={() => {/* Navigation to education screen */ }}
                         >
                             <StyledView className="flex-row items-center">
-                                <Ionicons name="school-outline" size={22} color="#fff" />
-                                <StyledText className="text-white ml-3">การศึกษา</StyledText>
+                                <StyledIonicons className="text-black dark:text-white" name="school-outline" size={22} />
+                                <StyledText className="dark:text-white ml-3">การศึกษา</StyledText>
                             </StyledView>
                             <StyledText className="text-neutral-500">{education || "เพิ่ม"}</StyledText>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            className="flex-row items-center justify-between bg-neutral-800 px-4 py-3 rounded-xl"
+                            className="flex-row items-center justify-between bg-white dark:bg-neutral-800 px-4 py-3 rounded-xl"
                             onPress={() => {/* Navigation to location screen */ }}
                         >
                             <StyledView className="flex-row items-center">
-                                <Ionicons name="location-outline" size={22} color="#fff" />
-                                <StyledText className="text-white ml-3">ที่อยู่</StyledText>
+                                <StyledIonicons className="text-black dark:text-white" name="location-outline" size={22} />
+                                <StyledText className="dark:text-white ml-3">ที่อยู่</StyledText>
                             </StyledView>
                             <StyledText className="text-neutral-500">{location || "เพิ่ม"}</StyledText>
                         </TouchableOpacity>
 
                         <StyledView className="flex-row space-x-2">
                             <StyledInput
-                                className="flex-1 bg-neutral-800 rounded-xl px-4 py-3 text-white text-center"
+                                className="flex-1 bg-white dark:bg-neutral-800 rounded-xl px-4 py-3 dark:text-white text-center"
                                 placeholder="ส่วนสูง"
                                 placeholderTextColor="#666"
                                 keyboardType="numeric"
@@ -269,7 +281,7 @@ export default function EditProfile() {
                                 onChangeText={setHeight}
                             />
                             <StyledInput
-                                className="flex-1 bg-neutral-800 rounded-xl px-4 py-3 text-white text-center"
+                                className="flex-1 bg-white dark:bg-neutral-800 rounded-xl px-4 py-3 dark:text-white text-center"
                                 placeholder="น้ำหนัก"
                                 placeholderTextColor="#666"
                                 keyboardType="numeric"
