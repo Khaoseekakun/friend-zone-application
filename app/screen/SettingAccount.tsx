@@ -1,455 +1,285 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, KeyboardAvoidingView, Platform, ActivityIndicator, TouchableOpacity, Alert, Image, Modal, TextInput, Appearance } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, Platform, ActivityIndicator } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "expo-router";
-import { NavigationProp, useIsFocused } from "@react-navigation/native";
-
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LinearGradient } from "expo-linear-gradient";
-import { ScrollView } from "react-native-gesture-handler";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";;
-import * as ImageManipulator from 'expo-image-manipulator';
+import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-
-import RNPickerSelect from 'react-native-picker-select';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
-const StyledIonicons = styled(Ionicons);
 const StyledImage = styled(Image);
-const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledInput = styled(TextInput);
-const StyledBottomSheetView = styled(BottomSheetView);
-const StyledBottomSheet = styled(BottomSheet);
 
-const provinceOptions = [
-    { label: 'Nakhon Ratchasima', value: 'Nakhon Ratchasima' }
-];
+interface UserProfile {
+    id: string;
+    images: Array<{ uri: string, id: string }>;
+    bio: string;
+    education: string;
+    location: string;
+    height: string;
+    weight: string;
+}
 
-export default function AccountSetting() {
-    const navigation = useNavigation<NavigationProp<any>>();
+export default function EditProfile() {
+    const navigation = useNavigation();
+    const [profileData, setProfileData] = useState<UserProfile | null>(null);
+    const [username, setUsername] = useState("");
+    const [images, setImages] = useState<Array<{ uri: string, id: string }>>([]);
+    const [bio, setBio] = useState("");
+    const [education, setEducation] = useState("");
+    const [location, setLocation] = useState("");
+    const [height, setHeight] = useState("");
+    const [weight, setWeight] = useState("");
     const [loading, setLoading] = useState(true);
-    const [cacheUserData, setCacheUserData] = useState<any>();
-    const [userData, setuserData] = useState<any>();
-    const [images, setImages] = useState<string>();
-    const [showImage, setShowImage] = useState<string>();
-    const isFocus = useIsFocused();
-    const [loadingUpdate, setLoadingUpdate] = useState(false);
+    const StyledTouchableOpacity = styled(TouchableOpacity);
 
-    const [newUsername, setNewUsername] = useState('');
-    const [newBio, setNewBio] = useState('');
-    const [newProvince, setNewProvince] = useState('');
-    const [newHeight, setNewHeight] = useState<number>();
-    const [newWeight, setNewWeight] = useState<number>();
-    const [modalMessage, setModalMessage] = useState('');
-
-    const handlerNewUsername = (value: string) => {
-        // allow A-Z, a-z, o-9 and _
-        const englishRegex = /^[A-Za-z0-9_]*$/;
-        if (!englishRegex.test(value)) {
-            setNewUsername(value.slice(0, -1));
-            return;
-        } else {
-            setNewUsername(value);
-        }
-    }
-
-    const [theme, setTheme] = useState(Appearance.getColorScheme());
-    useEffect(() => {
-        const listener = Appearance.addChangeListener(({ colorScheme }) => {
-            setTheme(colorScheme);
-        });
-
-        return () => listener.remove();
-    }, [])
+    const deleteImage = (index: number) => {
+        setImages(prev => prev.filter((_, i) => i !== index));
+    };
 
     useEffect(() => {
-        
-
-        try {
-            fetchUserData();
-        } finally {
-            if (userData) {
-                setLoading(false);
-            }
-        }
-
-        if (isFocus) {
-            setLoading(true);
-            try {
-                fetchUserData();
-            } finally {
-                setLoading(false);
-            }
-        }
-
-
-    }, [isFocus]);
+        fetchUserData();
+    }, []);
 
     const fetchUserData = async () => {
-        const userData = await AsyncStorage.getItem('userData');
-        const userList = JSON.parse(userData as string) || {}
-        const user = await axios.get(`https://friendszone.app/api/profile/${userList.id}`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `All ${userList?.token}`
-            }
-        });
-
-        if (user.data.status !== 200) return null;
-        setuserData(user.data.data.profile);
-        setCacheUserData(userList)
-
-    };
-
-
-    const bottomSheetRef = React.useRef<BottomSheet>(null);
-    const snapPoints = ['25%'];
-    const [isOpen, setIsOpen] = React.useState(false);
-
-    const deleteCurrentImage = async () => {
-
-    }
-
-
-    const optimizeImage = async (uri: string) => {
         try {
-            const manipResult = await ImageManipulator.manipulateAsync(
-                uri,
-                [
-                    { resize: { width: 800 } }
-                ]
-                ,
-                {
-                    compress: 0.7,
-                    format: ImageManipulator.SaveFormat.JPEG,
-                    base64: true
-                }
+            const userData = await AsyncStorage.getItem('userData');
+            if (userData) {
+                const userList = JSON.parse(userData);
+                const response = await axios.get(`https://friendszone.app/api/profile/${userList.id}`, {
+                    headers: {
+                        "Authorization": `All ${userList?.token}`
+                    }
+                });
 
-            );
-            setShowImage(manipResult.uri);
-            return manipResult.base64;
+                if (response.data.status === 200) {
+                    const profile = response.data.data.profile;
+                    setProfileData(profile);
+                    setBio(profile.bio || "");
+                    setUsername(profile.username || "");
+                    setEducation(profile.education || "");
+                    setLocation(profile.location || "");
+                    setHeight(profile.height?.toString() || "");
+                    setWeight(profile.weight?.toString() || "");
+
+                    if (Array.isArray(profile.profileImages)) {
+                        setImages(profile.profileImages.map((url: string) => ({
+                            uri: url,
+                            id: Date.now().toString()
+                        })));
+                    } else {
+                        setImages([]);
+                    }
+                }
+            }
         } catch (error) {
-            console.error("Error optimizing image: ", error);
-            return uri;
+            console.error(error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const uploadImageFromGallery = async () => {
+    const handleImagePick = async (useCamera = true) => {
         try {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            const { status } = useCamera ?
+                await ImagePicker.requestCameraPermissionsAsync() :
+                await ImagePicker.requestMediaLibraryPermissionsAsync();
+
             if (status !== 'granted') {
-                Alert.alert(`แจ้งเตือน`, `คุณต้องให้สิทธิ์ให้แอปเข้าถึงคลังภาพของคุณ`, [{ text: 'OK' }]);
+                alert(useCamera ? 'Need camera access' : 'Need gallery access');
                 return;
-            } else {
-                const result = await ImagePicker.launchImageLibraryAsync({
-                    mediaTypes: "images",
+            }
+
+            const result = await (useCamera ?
+                ImagePicker.launchCameraAsync :
+                ImagePicker.launchImageLibraryAsync)({
+                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
                     allowsEditing: true,
-                    aspect: [4, 4],
+                    aspect: [1, 1],
                     quality: 1
                 });
 
-                if (!result.canceled) {
-                    const optimizedBase64 = await optimizeImage(result.assets[0].uri);
-                    setImages(optimizedBase64);
-                    setIsOpen(false);
-                    bottomSheetRef.current?.close();
-                }
+            if (!result.canceled && result.assets[0]) {
+                const optimizedImage = await ImageManipulator.manipulateAsync(
+                    result.assets[0].uri,
+                    [{ resize: { width: 1080 } }],
+                    { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+                );
+
+                setImages(prev => [...prev, {
+                    uri: optimizedImage.uri,
+                    id: Date.now().toString()
+                }]);
             }
         } catch (error) {
-            console.error("Error uploading image from gallery: ", error);
-            Alert.alert(`แจ้งเตือน`, `ไม่สามารถเข้าถึงคลังภาพของคุณ`, [{ text: 'OK' }]);
+            console.error('Image pick failed:', error);
+            alert('Failed to pick image');
         }
-    }
+    };
 
-    const uploadImageFromCamera = async () => {
+    const addImage = async (camera = false) => {
+        const picker = camera ? ImagePicker.launchCameraAsync : ImagePicker.launchImageLibraryAsync;
         try {
-            const { status } = await ImagePicker.requestCameraPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert(`แจ้งเตือน`, `คุณต้องให้สิทธิ์ให้แอปเข้าถึงกล้องของคุณ`, [{ text: 'OK' }]);
-                return;
-            } else {
-                const result = await ImagePicker.launchCameraAsync({
-                    mediaTypes: "images",
-                    allowsEditing: true,
-                    aspect: [4, 4],
-                    quality: 1
-                });
-
-                if (!result.canceled) {
-                    const optimizedBase64 = await optimizeImage(result.assets[0].uri);
-                    setImages(optimizedBase64);
-                    setIsOpen(false);
-                    bottomSheetRef.current?.close();
-
-                }
-            }
-        } catch (error) {
-            console.error("Error uploading image from camera: ", error);
-            Alert.alert(`แจ้งเตือน`, `ไม่สามารถเข้าถึงกล้องของคุณ`, [{ text: 'OK' }]);
-
-        }
-    }
-
-    const updateProfile = async () => {
-        try {
-            setModalMessage('กำลังตรวจสอบข้อมูล');
-            setLoadingUpdate(true);
-            if (newUsername && newUsername == userData.username) return Alert.alert('แจ้งเตือน', 'กรุณากรอกชื่อผู้ใช้งาน', [{ text: 'OK' }]);
-            setModalMessage('กำลังอัพเดทข้อมูล');
-            const updateResponse = await axios.put(`https://friendszone.app/api/profile/${userData?.id}`, {
-                username: newUsername ?? userData?.username,
-                bio: newBio ?? userData?.bio ?? null,
-                imageProfile: images,
-                height: newHeight ?? userData?.height ?? 0,
-                weight: newWeight ?? userData?.weight ?? 0
-            }, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `All ${cacheUserData?.token}`
-                }
-            })
-
-            if (updateResponse.data.status !== 200) return Alert.alert('แจ้งเตือน', 'ไม่สามารถอัพเดทข้อมูลได้', [{ text: 'OK' }]);
-            setModalMessage('กำลังอัพเดทข้อมูลใหม่');
-
-            const user = await axios.get(`https://friendszone.app/api/profile/${cacheUserData.id}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `All ${cacheUserData?.token}`
-                }
+            const result = await picker({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1
             });
 
-
-            if (user.data.status !== 200) return Alert.alert('แจ้งเตือน', 'ไม่สามารถอัพเดทข้อมูลได้ในเครื่องได้ โปรดเข้าสู่ระบบใหม่อีกครั้ง', [{ text: 'OK' }]);
-
-            const newData = user.data.data.profile;
-            newData.token = cacheUserData.token;
-            newData.role = cacheUserData.role;
-
-            setModalMessage('กำลังบันทึกข้อมูลใหม่');
-            await AsyncStorage.setItem('userData', JSON.stringify(newData));
-            await fetchUserData();
-
-            setModalMessage('อัพเดทข้อมูลสำเร็จ');
-
-            //clear new data
-
-            setNewUsername('');
-            setNewBio('');
-            setNewProvince('');
-            setNewHeight(0);
-            setNewWeight(0);
-            setImages('');
-            setShowImage(userData?.profileUrl);
+            if (!result.canceled && result.assets[0]) {
+                const optimized = await ImageManipulator.manipulateAsync(
+                    result.assets[0].uri,
+                    [{ resize: { width: 1080 } }],
+                    { compress: 0.8 }
+                );
+                setImages(prev => [...prev, { uri: optimized.uri, id: Date.now().toString() }]);
+            }
         } catch (error) {
-            console.error('Error updating profile: ', error);
-            return Alert.alert('แจ้งเตือน', 'ไม่สามารถอัพเดทข้อมูลได้', [{ text: 'OK' }]);
-        } finally {
-            setTimeout(() => {
-                setLoadingUpdate(false);
-            }, 1000);
+            console.error(error);
         }
+    };
+
+    const saveProfile = async () => {
+        try {
+            setLoading(true);
+            const userData = await AsyncStorage.getItem('userData');
+            if (!userData) return;
+
+            const userList = JSON.parse(userData);
+            await axios.put(`https://friendszone.app/api/profile/${userList.id}`,
+                {
+                    bio,
+                    education,
+                    location,
+                    height,
+                    weight,
+                    images: images.map(img => img.uri),
+                },
+                {
+                    headers: {
+                        "Authorization": `All ${userList?.token}`
+                    }
+                }
+            );
+            navigation.goBack();
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <StyledView className="flex-1 bg-neutral-950 items-center justify-center">
+                <ActivityIndicator size="large" color="#FF3366" />
+            </StyledView>
+        );
     }
 
     return (
-        <>
-            <StyledView className="w-full flex-1 bg-white dark:bg-neutral-900">
-                <LinearGradient
-                    colors={['#EB3834', '#69140F']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[60px]" } justify-center`}
-                >
-                    <StyledView className={`${Platform.OS == "ios" ? "mt-8" : ""}`}>
-                        <TouchableOpacity onPress={() => navigation.navigate("SettingTab")} className="ml-4">
-                            <StyledIonicons name="chevron-back" size={24} color="#fff" />
-                        </TouchableOpacity>
-                        <StyledText className="absolute self-center text-lg text-white font-custom ">ตั้งค่าบัญชี</StyledText>
-                        {
-                            newUsername || newBio || newProvince || newHeight || newWeight || images ? (
-                                <>
-                                    <TouchableOpacity onPress={() => {
-                                        setNewUsername('');
-                                        setNewBio('');
-                                        setNewProvince('');
-                                        setNewHeight(0);
-                                        setNewWeight(0);
-                                        setImages('');
-                                        setShowImage(userData?.profileUrl);
-                                    }} className="absolute right-0 mr-10">
-                                        <StyledIonicons name="refresh-outline" size={24} color="#fff" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => updateProfile()} className="absolute right-0 mr-4">
-                                        <StyledIonicons name="checkmark" size={24} color="#fff" />
-                                    </TouchableOpacity>
-                                </>
-                            ) : null
-                        }
-                    </StyledView>
-                </LinearGradient>
-
-                <KeyboardAvoidingView
-                    style={{ flex: 1 }}
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                >
-                    <ScrollView>
-
-                        {
-                            loading ? <ActivityIndicator size="large" color="#EB3834" style={{
-                                flex: 1,
-                                justifyContent: "center",
-                                alignItems: "center",
-                                top: "100%"
-                            }} /> :
-                                (
-                                    <>
-
-                                        <StyledView className="items-center justify-center w-full px-2 py-2">
-                                            <StyledImage
-                                                source={{ uri: showImage || userData?.profileUrl }}
-                                                className="w-28 h-28 rounded-full bg-gray-600" />
-
-                                            <StyledTouchableOpacity
-                                                onPress={() => {
-                                                    setIsOpen(true);
-                                                    bottomSheetRef.current?.expand();
-                                                }}
-
-                                            >
-                                                <StyledText className=" text-blue-500 dark:text-blue-200 underline font-custom mt-2">แก้ไขรูปภาพ</StyledText>
-                                            </StyledTouchableOpacity>
-                                        </StyledView>
-                                        <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
-                                            <StyledText className=" text-gray-500 dark:text-gray-200 font-custom">บัญชีของคุณ</StyledText>
-                                        </StyledView>
-
-                                        <StyledView className="flex-1 px-2">
-
-                                            <StyledView className="w-full pb-3">
-                                                <StyledText className=" text-gray-700 dark:text-gray-400 font-custom text-lg pl-1">ชื่อผู้ใช้</StyledText>
-                                                <StyledInput
-                                                    className="text-[16px] font-custom bg-gray-100 dark:bg-neutral-700 px-2 rounded-lg py-2 border-[1px] border-neutral-200 dark:border-neutral-500 dark:text-neutral-200"
-                                                    value={newUsername ? newUsername : userData?.username}
-                                                    onChangeText={handlerNewUsername}
-                                                />
-                                            </StyledView>
-
-                                            <StyledView className="w-full pb-3">
-                                                <StyledText className=" text-gray-700 dark:text-gray-400 font-custom text-lg pl-1">Bio</StyledText>
-                                                <StyledInput
-                                                    className="text-[16px] font-custom bg-gray-100 dark:bg-neutral-700 px-2 rounded-lg py-2 border-[1px] border-neutral-200 dark:border-neutral-500 dark:text-neutral-200 h-[100px]"
-                                                    value={`${newBio ? newBio : userData?.bio}`}
-                                                    onChangeText={setNewBio}
-                                                    multiline={true}
-                                                    maxLength={256}
-
-                                                />
-                                            </StyledView>
-                                        </StyledView>
-
-                                        <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
-                                            <StyledText className=" text-gray-500 dark:text-gray-200 font-custom">ข้อมูลที่แสดง</StyledText>
-                                        </StyledView>
-                                        <StyledView className="flex-row justify-center flex-1 px-3 gap-1">
-                                            <StyledView className="w-6/12 pb-3">
-                                                <StyledText className=" text-gray-700 dark:text-gray-400 font-custom text-lg pl-1">ส่วนสูง</StyledText>
-                                                <StyledInput
-                                                    className="text-[16px] font-custom bg-gray-100 dark:bg-neutral-700 px-2 rounded-lg py-2 border-[1px] border-neutral-200 dark:border-neutral-500 dark:text-neutral-200"
-                                                    value={newHeight ? newHeight : userData?.height}
-                                                    onChangeText={(number) => setNewHeight(parseInt(number ?? 0))}
-                                                    inputMode="numeric"
-                                                    placeholder="0"
-                                                    maxLength={3}
-
-                                                />
-                                            </StyledView>
-
-                                            <StyledView className="w-6/12 pb-3">
-                                                <StyledText className=" text-gray-700 dark:text-gray-400 font-custom text-lg pl-1">น้ำหนัก</StyledText>
-                                                <StyledInput
-                                                    className="text-[16px] font-custom bg-gray-100 dark:bg-neutral-700 px-2 rounded-lg py-2 border-[1px] border-neutral-200 dark:border-neutral-500 dark:text-neutral-200"
-                                                    value={newWeight ? newWeight : userData?.weight}
-                                                    onChangeText={(number) => setNewWeight(parseInt(number ?? 0))}
-                                                    inputMode="numeric"
-                                                    placeholder="0"
-                                                    maxLength={3}
-                                                />
-                                            </StyledView>
-                                        </StyledView>
-                                    </>
-                                )
-                        }
-
-                    </ScrollView>
-
-                </KeyboardAvoidingView >
-            </StyledView>
-            {isOpen && (
-                <TouchableOpacity className="absolute flex-1 bg-black opacity-25 w-full h-screen justify-center"
-                    onPress={() => bottomSheetRef.current?.close()}>
+        <StyledView className="flex-1 bg-neutral-950">
+            <StyledView className="flex-row justify-between items-center px-4 py-3 border-b border-neutral-800 mt-11">
+                <StyledText className="text-white"></StyledText>
+                <StyledText className="pl-10 text-white font-bold text-lg">แก้ไข</StyledText>
+                <TouchableOpacity onPress={saveProfile}>
+                    <StyledText className="text-pink-500 font-semibold">เสร็จสิ้น</StyledText>
                 </TouchableOpacity>
-            )}
+            </StyledView>
 
-            <StyledBottomSheet
-                ref={bottomSheetRef}
-                snapPoints={snapPoints}
-                enablePanDownToClose={true}
-                onClose={() => setIsOpen(false)}
-                index={-1}
-                backgroundStyle={{
-                    borderRadius: 10,
-                    backgroundColor: theme == "dark" ? "#404040" : "#fff"
-                }}
+            {/* Rest of the component remains the same, but use state values in components */}
+            <ScrollView className="flex-1">
+    <StyledText className="font-custom text-gray-500 mt-3 mb-1 pl-3">รูปภาพน่าสนใจ</StyledText>
+    <StyledView className="flex-row flex-wrap px-2">
+        {images.map((image, index) => (
+            <StyledView key={`Image-${index}`} className="w-4/12 h-[180px] p-1">
+                <StyledImage 
+                    source={{ uri: image.uri }}
+                    className="bg-gray-500 rounded-2xl w-full h-full"
+                />
+                <StyledTouchableOpacity
+                    onPress={() => deleteImage(index)}
+                    style={{ position: 'absolute', top: -3, right: -3, borderRadius: 50 }}
+                    className="bg-red-500 p-1"
+                >
+                    <Ionicons name="close" size={22} color="white" />
+                </StyledTouchableOpacity>
+            </StyledView>
+        ))}
+        {images.length < 9 && (
+            <TouchableOpacity
+                onPress={() => handleImagePick(false)}
+                className="w-4/12 h-[180px] p-1"
             >
-                <StyledBottomSheetView className="px-[10px">
-                    <StyledView className="my-1 px-3 py-1">
-                        <TouchableOpacity onPress={() => uploadImageFromGallery()} className="flex-row items-center">
-                            <StyledIonicons
-                                name="image-outline"
-                                size={24}
-                                className="text-black dark:text-neutral-200"
-                            />
-                            <StyledText className="pl-2 text-lg font-custom text-black dark:text-neutral-200">เลือกจากคลัง</StyledText>
-                        </TouchableOpacity>
-                    </StyledView>
-                    <StyledView className="my-1 px-3 py-1">
-                        <TouchableOpacity onPress={() => uploadImageFromCamera()} className="flex-row items-center">
-                            <StyledIonicons
-                                name="camera-outline"
-                                size={24}
-                                className="text-black dark:text-neutral-200 "
-                            />
-                            <StyledText className="pl-2 text-lg font-custom text-black dark:text-neutral-200">ถ่ายภาพ</StyledText>
-                        </TouchableOpacity>
-                    </StyledView>
-                    <StyledView className="my-1 px-3 py-1">
-                        <TouchableOpacity onPress={() => deleteCurrentImage()} className="flex-row items-center">
-                            <StyledIonicons
-                                name="trash-bin-outline"
-                                size={24}
-                                color="#ef4444"
-                            />
-                            <StyledText className="pl-2 text-red-500 text-lg font-custom">ลบรูปภาพปัจจุบันออก</StyledText>
-                        </TouchableOpacity>
-                    </StyledView>
-
-                </StyledBottomSheetView>
-            </StyledBottomSheet>
-            <Modal visible={loadingUpdate} transparent={true} animationType="fade">
-                <StyledView className="flex-1 bg-black opacity-50 w-full h-screen">
-
+                <StyledView className="flex-1 rounded-xl bg-neutral-800 items-center justify-center border border-neutral-700 border-dashed">
+                    <Ionicons name="add" size={40} color="white" />
                 </StyledView>
+            </TouchableOpacity>
+        )}
+    </StyledView>
 
-                <StyledView className="absolute flex-1 justify-center items-center w-full h-screen rou">
-                    <StyledView className="w-[300px] p-[20px] bg-white dark:bg-neutral-700 rounded-2xl items-center">
-                        <ActivityIndicator size="large" color="#EB3834" />
-                        <StyledText className="font-custom text-[16px] dark:text-neutral-200">{modalMessage}</StyledText>
+                <StyledView className="px-4 py-2 space-y-6">
+                    <StyledView>
+                        <StyledText className="text-neutral-400 text-base mb-2">เกี่ยวกับฉัน</StyledText>
+                        <StyledInput
+                            multiline
+                            numberOfLines={4}
+                            className="bg-neutral-800 rounded-xl p-4 text-white"
+                            placeholder="เล่าเรื่องราวของคุณ..."
+                            placeholderTextColor="#666"
+                            value={bio}
+                            onChangeText={setBio}
+                        />
+                    </StyledView>
+
+                    <StyledView className="space-y-3">
+                        <TouchableOpacity
+                            className="flex-row items-center justify-between bg-neutral-800 px-4 py-3 rounded-xl"
+                            onPress={() => {/* Navigation to education screen */ }}
+                        >
+                            <StyledView className="flex-row items-center">
+                                <Ionicons name="school-outline" size={22} color="#fff" />
+                                <StyledText className="text-white ml-3">การศึกษา</StyledText>
+                            </StyledView>
+                            <StyledText className="text-neutral-500">{education || "เพิ่ม"}</StyledText>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            className="flex-row items-center justify-between bg-neutral-800 px-4 py-3 rounded-xl"
+                            onPress={() => {/* Navigation to location screen */ }}
+                        >
+                            <StyledView className="flex-row items-center">
+                                <Ionicons name="location-outline" size={22} color="#fff" />
+                                <StyledText className="text-white ml-3">ที่อยู่</StyledText>
+                            </StyledView>
+                            <StyledText className="text-neutral-500">{location || "เพิ่ม"}</StyledText>
+                        </TouchableOpacity>
+
+                        <StyledView className="flex-row space-x-2">
+                            <StyledInput
+                                className="flex-1 bg-neutral-800 rounded-xl px-4 py-3 text-white text-center"
+                                placeholder="ส่วนสูง"
+                                placeholderTextColor="#666"
+                                keyboardType="numeric"
+                                value={height}
+                                onChangeText={setHeight}
+                            />
+                            <StyledInput
+                                className="flex-1 bg-neutral-800 rounded-xl px-4 py-3 text-white text-center"
+                                placeholder="น้ำหนัก"
+                                placeholderTextColor="#666"
+                                keyboardType="numeric"
+                                value={weight}
+                                onChangeText={setWeight}
+                            />
+                        </StyledView>
                     </StyledView>
                 </StyledView>
-            </Modal>
-        </>
+            </ScrollView>
+        </StyledView>
     );
 }

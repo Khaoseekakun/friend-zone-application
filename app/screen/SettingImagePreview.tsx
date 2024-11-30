@@ -28,6 +28,17 @@ export default function SettingImagePreview() {
     const [cacheUserData, setCacheUserData] = useState<any>();
     const [userData, setuserData] = useState<any>();
     const [images, setImages] = useState(Array(9).fill(null));
+    // const [images, setImages] = useState([
+    //     'https://images.pexels.com/photos/47547/squirrel-animal-cute-rodents-47547.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    //     'https://images.pexels.com/photos/47547/squirrel-animal-cute-rodents-47547.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    //     'https://images.pexels.com/photos/47547/squirrel-animal-cute-rodents-47547.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    //     'https://images.pexels.com/photos/47547/squirrel-animal-cute-rodents-47547.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    //     'https://images.pexels.com/photos/47547/squirrel-animal-cute-rodents-47547.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    //     'https://images.pexels.com/photos/47547/squirrel-animal-cute-rodents-47547.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    //     'https://images.pexels.com/photos/47547/squirrel-animal-cute-rodents-47547.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    //     'https://images.pexels.com/photos/47547/squirrel-animal-cute-rodents-47547.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    //     'https://images.pexels.com/photos/47547/squirrel-animal-cute-rodents-47547.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+    // ]);
     const [oldImages, setOldImages] = useState<string[]>([]);
     const [loadingUpdate, setLoadingUpdate] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
@@ -307,6 +318,7 @@ export default function SettingImagePreview() {
                             }}
                             keyExtractor={(item, index) => `draggable-item-${index}`}
                             renderItem={renderItem}
+                            numColumns={3}
                             style={{
                                 flex: 1
                             }}
