@@ -182,28 +182,24 @@ export default function Post() {
 
     const uploadImageFromCamera = async () => {
         try {
-            // Request camera permissions
             const { status } = await ImagePicker.requestCameraPermissionsAsync();
             if (status !== 'granted') {
                 Alert.alert('แจ้งเตือน', 'คุณต้องให้สิทธิ์ให้แอปเข้าถึงกล้องของคุณ', [{ text: 'OK' }]);
                 return;
             }
     
-            // Open the camera
             const result = await ImagePicker.launchCameraAsync({
-                mediaTypes: "images", // Correct enum usage
+                mediaTypes: "images", 
                 allowsEditing: true,
                 aspect: [4, 3],
                 quality: 1,
             });
     
-            // Check if the camera action was canceled
             if (result.canceled) {
                 console.log('Camera use was canceled');
                 return;
             }
     
-            // Handle the image URI if successful
             if (result.assets && result.assets.length > 0) {
                 const optimizedUri = await optimizeImage(result.assets[0].uri);
                 setImages((prevImages) => [...prevImages, optimizedUri]);

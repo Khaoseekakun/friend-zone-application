@@ -248,7 +248,7 @@ export default function Search() {
                         end={{ x: 0, y: 0 }}
                         style={styles.listInfoContainer}
                     >
-                        <StyledView className="flex-row justify-between items-center w-full px-4">
+                        <StyledView className="flex-row justify-between items-center w-full px-4 -bottom-6">
                             <StyledView className="flex-row items-center">
                                 <StyledText className="font-custom text-white text-2xl">{data.username}</StyledText>
                                 <StyledText className="font-custom text-white text-2xl mx-2">{getAge(data.birthday as unknown as string)}</StyledText>

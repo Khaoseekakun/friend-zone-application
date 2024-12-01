@@ -1,18 +1,16 @@
-import { HeaderApp } from '@/components/Header'
-import { Navigation } from '@/components/Navigation';
+
 import { RootStackParamList } from '@/types';
+import { Comments, Likes, MembersDB } from '@/types/prismaInterface';
 import { formatTimeDifference } from '@/utils/Date';
-import FireBaseApp from '@/utils/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
+import { NavigationProp, RouteProp, useIsFocused, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import { useNavigation } from 'expo-router';
-import { getStorage } from 'firebase/storage';
 import { styled } from 'nativewind';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ActivityIndicator, Alert, Appearance, Image, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Appearance, Image, Keyboard, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import ImageViewer from 'react-native-image-zoom-viewer';
 
@@ -23,7 +21,6 @@ const StyledImage = styled(Image);
 const StyleImageViewer = styled(ImageViewer);
 const StyledIonicons = styled(Ionicons);
 const StyledInput = styled(TextInput)
-const storage = getStorage(FireBaseApp);
 const StyledTouchableOpacity = styled(TouchableOpacity)
 interface UserProfile {
     id: string;
@@ -40,15 +37,16 @@ interface Post {
     content: string;
     images: string[];
     createdAt: string;
-    member: {
-        id: string;
-        username: string;
-        profileUrl: string;
-        verified: boolean;
+    member: MembersDB
+    _count: {
+        comments: number,
+        likes: number
     }
+    likes: Likes[]
 }
 
 type PostUpdateParam = RouteProp<RootStackParamList, 'PostView'>;
+
 export default function PostView() {
 
     const route = useRoute<PostUpdateParam>();
@@ -76,6 +74,9 @@ export default function PostView() {
     const [newComment, setNewComment] = useState("")
     const [theme, setTheme] = useState(Appearance.getColorScheme());
     const [commentId, setCommantId] = useState("")
+    const [commentList, setComment] = useState<Comments[]>([])
+    const [inputDisable, setInputDisable] = useState(false)
+    const isFocus = useIsFocused()
 
     const deleteTwoStep = async (postId: string) => {
         Alert.alert('ยืนยันการลบ', 'คุณต้องการลบโพสต์นี้ใช่หรือไม่', [{
@@ -118,19 +119,28 @@ export default function PostView() {
     }
 
     useEffect(() => {
+        if (isFocus) {
+            setInputDisable(false)
+        }
         fetchUserData();
+
         const listener = Appearance.addChangeListener(({ colorScheme }) => {
             setTheme(colorScheme);
         });
 
         return () => listener.remove();
-    }, []);
+    }, [isFocus]);
+
+    useEffect(() => {
+        fetchComent()
+    }, [userData])
 
     const fetchUserData = async () => {
         try {
             const userData = await AsyncStorage.getItem('userData');
             if (userData) {
                 const userList = JSON.parse(userData);
+                setuserData(userList)
                 const response = await axios.get(`https://friendszone.app/api/profile/${userList.id}`, {
                     headers: {
                         "Authorization": `All ${userList?.token}`
@@ -159,7 +169,7 @@ export default function PostView() {
         setIsOpen(true);
     }
 
-    
+
     const openImageModal = (imageUrl: string[], index: number = 0) => {
         setSelectedImage(imageUrl);
         setSelectedImageIndex(index);
@@ -167,19 +177,60 @@ export default function PostView() {
     };
 
 
-    const postComment = () => {
+    const postComment = async () => {
         try {
+            Keyboard.dismiss()
+            setInputDisable(true)
+            const response = await axios.post(
+                `http://49.231.43.37:3000/api/post/${item.id}/comment`,
+                {
+                    content: newComment,
+                    userId: userData?.id,
+                },
+                {
+                    headers: {
+                        Authorization: `All ${userData?.token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
 
+            if (response.data.status === 200) {
+                setNewComment("")
+                fetchComent()
+            }
         } catch (error) {
-
+            console.error("Error posting comment:", error);
+        } finally {
+            setInputDisable(false)
         }
-    }
+    };
+
+    const fetchComent = async () => {
+        try {
+            const response = await axios.get(
+                `http://49.231.43.37:3000/api/post/${item.id}/comment`,
+                {
+                    headers: {
+                        Authorization: `All ${userData?.token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (response.data.status === 200) {
+                setComment(response.data.data.comments)
+            }
+        } catch (error) {
+            console.error("Error posting comment:", error);
+        }
+    };
 
     return (
         <>
-            <StyledView className="flex-1 bg-white dark:bg-neutral-900 h-full">
+            <StyledView className="flex-1 bg-white dark:bg-neutral-900 h-screen">
                 <StyledView
-                    className={`flex-row justify-center items-center px-4 border-b border-neutral-200 dark:border-neutral-800 w-full ${Platform.OS == "ios" ? "mt-8" : ""} ${Platform.OS == "ios" ? "h-[92px]" : "h-[60px]"}`}
+                    className={`flex-row justify-center items-center px-4 border-b border-neutral-200 dark:border-neutral-800 w-full ${Platform.OS == "ios" ? "mt-8" : ""} ${Platform.OS == "ios" ? "h-[60px]" : "h-[60px]"}`}
                 >
                     <TouchableOpacity
                         className="absolute left-4"
@@ -191,9 +242,7 @@ export default function PostView() {
                     <StyledText className="dark:text-white font-bold text-lg">Post</StyledText>
                 </StyledView>
 
-                <ScrollView style={{
-                    flex: 1
-                }}>
+                <ScrollView>
                     <StyledView className="my-1" />
                     <StyledView className="w-full flex-row items-center justify-between">
                         <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab', { profileId: item.member.id })}>
@@ -215,7 +264,7 @@ export default function PostView() {
                         </StyledView>
                     </StyledView>
 
-                    <StyledView className="px-2">
+                    <StyledView className="px-2 mb-[60px]">
                         <StyledText className="font-custom mt-3 dark:text-white">{item.content}</StyledText>
                         {
                             item.images.length === 1 ? (
@@ -317,7 +366,7 @@ export default function PostView() {
                                     onPress={() => { }}
                                     className="text-red-500"
                                 />
-                                <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">0</StyledText>
+                                <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">{item._count.likes}</StyledText>
                             </StyledView>
 
 
@@ -328,81 +377,71 @@ export default function PostView() {
                                     onPress={() => { }}
                                     className="text-black dark:text-white"
                                 />
-                                <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">0</StyledText>
+                                <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">{commentList.length}</StyledText>
                             </StyledView>
                         </StyledView>
 
                         <StyledView className='relative justify-start mt-2'>
-                            <StyledView className='flex-row justify-start border-t-[1px] py-2 border-gray-100'>
-                                <StyledImage className='bg-gray-500 rounded-full w-[30px] h-[30px]'
-                                    source={GuestIcon} />
-                                <StyledView className='px-2'>
-                                    <StyledView className='flex-row'>
-                                        <StyledText className='font-custom font-bold'>Sinsamuth</StyledText>
-                                        <StyledText className='pl-2 text-gray-400 font-custom'>1 ชม.</StyledText>
+                            {
+                                commentList.map((comment) => (
+                                    <StyledView key={comment.id} className='flex-row justify-start border-t-[1px] py-2 border-gray-100'>
+                                        <StyledImage className='bg-gray-500 rounded-full w-[30px] h-[30px]'
+                                            source={comment.accountType == "customer" ? comment.customer?.profileUrl ? { uri: comment.customer.profileUrl } : GuestIcon : comment.member?.profileUrl ? { uri: comment.member.profileUrl } : GuestIcon} />
+                                        <StyledView className='px-2'>
+                                            <TouchableOpacity onPress={() => navigation.navigate('ProfileTab', { profileId: comment.accountType == "customer" ? comment.customer?.id as string : comment.member?.id as string})}>
+                                                <StyledView className='flex-row'>
+                                                    <StyledText className='font-custom font-bold'>{comment.accountType == "customer" ? comment.customer?.username : comment.member?.username}</StyledText>
+                                                    <StyledText className='pl-2 text-gray-400 font-custom'>{formatTimeDifference(comment.createdAt.toString())}</StyledText>
+                                                </StyledView>
+                                            </TouchableOpacity>
+
+                                            <StyledText className='flex-wrap text-gray-700 font-custom pr-6'>
+                                                {comment.content}
+                                            </StyledText>
+                                        </StyledView>
+                                        <StyledTouchableOpacity className='absolute right-2'>
+                                            <StyledIonicons
+                                                name="ellipsis-horizontal"
+                                                size={18}
+                                                color="gray"
+                                                accessibilityLabel="Settings"
+                                                onPress={() => { BottomSheetShowComment(), setCommantId("0") }}
+                                            />
+                                        </StyledTouchableOpacity>
                                     </StyledView>
-                                    <StyledText className='flex-wrap text-gray-700 font-custom pr-6'>
-                                        สวัสดีทดสอบแสดงความคิดเห็น
-                                    </StyledText>
-                                </StyledView>
-                                <StyledTouchableOpacity className='absolute right-2'>
-                                    <StyledIonicons
-                                        name="ellipsis-horizontal"
-                                        size={18}
-                                        color="gray"
-                                        accessibilityLabel="Settings"
-                                        onPress={() => { BottomSheetShowComment(), setCommantId("0") }}
-                                    />
-                                </StyledTouchableOpacity>
-                            </StyledView>
-                            <StyledView className='flex-row justify-start border-t-[1px] py-2 border-gray-100'>
-                                <StyledImage className='bg-gray-500 rounded-full w-[30px] h-[30px]'
-                                    source={GuestIcon} />
-                                <StyledView className='px-2'>
-                                    <StyledView className='flex-row'>
-                                        <StyledText className='font-custom font-bold'>Sinsamuth</StyledText>
-                                        <StyledText className='pl-2 text-gray-400 font-custom'>1 ชม.</StyledText>
-                                    </StyledView>
-                                    <StyledText className='flex-wrap text-gray-700 font-custom pr-6'>
-                                        ว่างๆไว้ไปเที่ยวด้วยกันอีกนะครับ
-                                    </StyledText>
-                                </StyledView>
-                            </StyledView>
+                                ))
+                            }
+
                         </StyledView>
-
-
                     </StyledView>
-
-
                 </ScrollView>
-                <StyledView className='absolute bottom-0 bg-white w-full border-t-[1px] border-gray-200 px-2 py-2'>
-                    <StyledView className="w-full flex-row items-center justify-between">
-                        <StyledView
-                            className="flex-row bg-gray-300 items-center mr-3 pl-4 rounded-full w-full h-[40px]"
+
+            </StyledView>
+            <StyledView className='absolute bottom-0 bg-white w-full border-t-[1px] border-gray-200 px-2 py-2 mb-3'>
+                <StyledView className="w-full flex-row items-center justify-between">
+                    <StyledView
+                        className="flex-row bg-gray-300 items-center mr-3 pl-4 rounded-full w-full h-[40px]"
+                    >
+                        <StyledInput
+                            className="font-custom text-black"
+                            placeholder='แสดงความคิดเห็น'
+                            value={newComment}
+                            onChangeText={setNewComment}
+                            editable={!inputDisable}
                         >
-                            <StyledInput
-                                className="font-custom text-black"
-                                placeholder='แสดงความคิดเห็น'
-                                value={newComment}
-                                onChangeText={setNewComment}
-                            >
-
-
-                            </StyledInput>
-                        </StyledView>
-                        <StyledTouchableOpacity className='absolute right-3'
-                            onPress={postComment}>
-                            <StyledIonicons
-                                className={`${newComment.length > 0 ? 'text-black' : 'text-gray-500'}`}
-                                name="send"
-                                size={25}>
-
-                            </StyledIonicons>
-                        </StyledTouchableOpacity>
+                        </StyledInput>
                     </StyledView>
+                    <StyledTouchableOpacity className='absolute right-3'
+                        onPress={postComment}>
+                        <StyledIonicons
+                            className={`${newComment.length > 0 ? 'text-black' : 'text-gray-500'}`}
+                            name="send"
+                            size={25}>
+
+                        </StyledIonicons>
+                    </StyledTouchableOpacity>
                 </StyledView>
             </StyledView>
-
 
             <Modal animationType="fade" visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
                 <StyledView className="flex-1 justify-center h-screen bg-black">

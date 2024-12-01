@@ -59,7 +59,7 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType }) => {
                                 <Ionicons name="chevron-back" size={30} color="white" />
                             </TouchableOpacity>
                         </StyledView>
-                    )
+                    ) 
                 }
                 <TouchableOpacity className="flex-1 flex-row left-0 shadow-md" onPress={() => navigation.navigate('ProfileTab', { profileId: userData?.id })}>
                     <StyledImage className=" rounded-full w-[42px] h-[42px] m-1 border-white border-[2px]" source={
@@ -76,7 +76,7 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType }) => {
                         <StyledText className="font-bold font-custom text-lg text-white">
                             Friend Zone
                         </StyledText>
-                        <StyledText className="text-white font-bold font-custom">
+                        <StyledText className="text-white font-bold font-custom absolute mt-6">
                             {userData?.username}
                         </StyledText>
                     </StyledView>

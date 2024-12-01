@@ -52,6 +52,7 @@ export type RootStackParamList = {
     jobCategory?: string,
     backPage?: string,
     searchType?: string
+    backData?:any
   },
   FeedsTab: {
     backPage?: string;

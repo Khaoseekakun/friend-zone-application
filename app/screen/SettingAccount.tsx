@@ -197,7 +197,7 @@ export default function EditProfile() {
     return (
         <StyledView className="flex-1 bg-gray-100 dark:bg-neutral-950">
             <StyledView
-                className={`flex-row justify-center items-center px-4 border-b border-neutral-200 dark:border-neutral-800 w-full ${Platform.OS == "ios" ? "mt-8" : ""} ${Platform.OS == "ios" ? "h-[92px]" : "h-[60px]"}`}
+                className={`flex-row justify-center items-center px-4 border-b border-neutral-200 dark:border-neutral-800 w-full ${Platform.OS == "ios" ? "mt-8" : ""} ${Platform.OS == "ios" ? "h-[80px]" : "h-[60px]"}`}
             >
                 <TouchableOpacity
                     className="absolute left-4"
