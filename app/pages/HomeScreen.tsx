@@ -86,24 +86,24 @@ export default function HomeScreen() {
   return (
     <>
       <Tab.Navigator tabBar={() => null} >
-        <Tab.Screen name="FeedsTab" component={Feeds} options={{ headerShown: false }} />
-        <Tab.Screen name="MessageTab" component={Message} options={{ headerShown: false }} />
-        <Tab.Screen name="SettingTab" component={Setting} options={{ headerShown: false }} />
-        <Tab.Screen name="ProfileTab" component={Profile} options={{ headerShown: false }} />
-        <Tab.Screen name="PostTab" component={Post} options={{ headerShown: false }} />
-        <Tab.Screen name="PostUpdate" component={PostUpdate} options={{ headerShown: false }} />
-        <Tab.Screen name="FastTab" component={Fast} options={{ headerShown: false }} />
-        <Tab.Screen name="SearchCategory" component={SearchCategory} options={{ headerShown: false }} />
-        <Tab.Screen name="SchedulePage" component={SchedulePage} options={{ headerShown: false }} />
-        <Tab.Screen name="Search" component={Search} options={{ headerShown: false }} />
-        <Tab.Screen name="Chat" component={Chat} options={{ headerShown: false }} />
-        <Tab.Screen name="AccountSetting" component={AccountSetting} options={{ headerShown: false }} />
-        <Tab.Screen name="ProfileMember" component={ProfileMember} options={{ headerShown: false }} />
-        <Tab.Screen name="ScheduleList" component={ScheduleList} options={{ headerShown: false }} />
-        <Tab.Screen name="Policy" component={Policy} options={{ headerShown: false }} />
-        <Tab.Screen name="SettingImagePreview" component={SettingImagePreview} options={{ headerShown: false }} />
-        <Tab.Screen name="SettingImagePreviewFirst" component={SettingImagePreviewFirst} options={{ headerShown: false }} />
-        <Tab.Screen name="PostView" component={PostView} options={{ headerShown: false }} />
+        <Tab.Screen name="FeedsTab" component={Feeds} options={{ headerShown: false, animation: "fade" }} />
+        <Tab.Screen name="MessageTab" component={Message} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="SettingTab" component={Setting} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="ProfileTab" component={Profile} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="PostTab" component={Post} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="PostUpdate" component={PostUpdate} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="FastTab" component={Fast} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="SearchCategory" component={SearchCategory} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="SchedulePage" component={SchedulePage} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="Search" component={Search} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="Chat" component={Chat} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="AccountSetting" component={AccountSetting} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="ProfileMember" component={ProfileMember} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="ScheduleList" component={ScheduleList} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="Policy" component={Policy} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="SettingImagePreview" component={SettingImagePreview} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="SettingImagePreviewFirst" component={SettingImagePreviewFirst} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="PostView" component={PostView} options={{ headerShown: false, animation: "fade" }} />
       </Tab.Navigator>
     </>
   );

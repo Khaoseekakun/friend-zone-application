@@ -14,6 +14,7 @@ import { deleteObject, getStorage, ref } from "firebase/storage";
 import { Navigation } from "@/components/Navigation";
 import FireBaseApp from "@/utils/firebaseConfig";
 import { RootStackParamList } from "@/types";
+import { Likes, MembersDB } from "@/types/prismaInterface";
 const GuestIcon = require("../../assets/images/guesticon.jpg")
 
 const StyledView = styled(View);
@@ -33,13 +34,15 @@ export default function FeedsTab() {
         content: string;
         images: string[];
         createdAt: string;
-        member: {
-            id: string;
-            username: string;
-            profileUrl: string;
-            verified: boolean;
+        member: MembersDB
+        _count: {
+            comments: number,
+            likes: number
         }
+        likes: Likes[]
     }
+
+
     const [isDeleting, setIsDeleting] = useState(false);
     const [posts, setPosts] = useState<Post[]>([]);
     const [page, setPage] = useState(1);
@@ -64,12 +67,6 @@ export default function FeedsTab() {
     }, [])
 
     useEffect(() => {
-        if (isFocused) {
-            handleRefresh()
-        }
-    }, [isFocused]);
-
-    useEffect(() => {
         const fetchUserData = async () => {
             const userData = await AsyncStorage.getItem('userData');
             setuserData(JSON.parse(userData || '{}'));
@@ -85,7 +82,7 @@ export default function FeedsTab() {
         try {
 
             setLoading(true);
-            const response = await axios.get(`https://friendszone.app/api/post?loadLimit=${pageNumber != 1 ? "1" : "10"}&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}`, {
+            const response = await axios.get(`http://49.231.43.37:3000/api/post?loadLimit=${pageNumber != 1 ? "1" : "10"}&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}&by=${userData?.id}`, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -199,156 +196,222 @@ export default function FeedsTab() {
         bottomSheetRef.current?.close();
     }
 
-    const renderItems = ({ item }: {
-        item: Post
-    }) => (
-        <StyledView >
-            <StyledView className="bg-gray-200 w-full h-[1px] my-2 dark:bg-neutral-700" />
-            <StyledView className="w-full flex-row items-center justify-between">
-                <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab', { profileId: item.member.id })}>
-                    <Image className="ml-3 rounded-full w-[40px] h-[40px]" source={item.member?.profileUrl ? { uri: item.member?.profileUrl } : GuestIcon} />
-                    <StyledView className="pl-3 mt-2 flex-row">
-                        <StyledText className="font-custom font-bold text-md dark:text-white">{item.member.username} </StyledText>
-                        {item.member.verified == true ? (<StyledView className="-mt-1"><StyledIonicons name={'checkmark-done'} size={18} color={'#dd164f'} /></StyledView>) : <></>}
-                        <StyledText className="font-custom text-md ml-1 text-gray-400 ">{formatTimeDifference(item.createdAt)}</StyledText>
-                    </StyledView>
-                </TouchableOpacity>
-                <StyledView className="mr-3 flex-row items-center mb-2">
-                    <StyledIonicons
-                        name="ellipsis-horizontal"
-                        size={22}
-                        color="gray"
-                        accessibilityLabel="Settings"
-                        onPress={() => { BottomSheetShow(0), setPostAction(item.id) }}
-                    />
-                </StyledView>
-            </StyledView>
+    const renderItems = ({ item, index }: {
+        item: Post,
+        index: number
+    }) => {
 
-            <StyledView className="pl-[65px] pr-9">
-                <StyledText className="font-custom -mt-3 dark:text-white">{item.content}</StyledText>
-                {
-                    item.images.length === 1 ? (
-                        <>
-                            <TouchableOpacity onPress={() => openImageModal(item.images)}>
-                                <StyledImage source={{ uri: item.images[0] }} className="rounded-md mt-2 h-96 w-full" />
-                            </TouchableOpacity>
-                        </>
-                    ) : item.images.length === 2 ? (
-                        <>
-                            <StyledView className="max-h-[350px] mb-2">
-                                <TouchableOpacity onPress={() => openImageModal(item.images, 0)}>
-                                    <StyledImage source={{ uri: item.images[0] }} className="rounded-t-md mt-2 h-[175px] w-full" />
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={() => openImageModal(item.images, 1)}>
-                                    <StyledImage source={{ uri: item.images[1] }} className="rounded-b-md h-[175px] w-full" />
-                                </TouchableOpacity>
-                            </StyledView>
-                        </>
-                    ) : item.images.length === 3 ? (
-                        <>
-                            <StyledView className="max-h-[350px] mb-2">
-                                <TouchableOpacity onPress={() => openImageModal(item.images, 0)}>
-                                    <StyledImage source={{ uri: item.images[0] }} className="rounded-t-md mt-2 h-[175px] w-full" />
-                                </TouchableOpacity>
-                                <StyledView className="flex-row">
-                                    <TouchableOpacity onPress={() => openImageModal(item.images, 1)} className="w-1/2">
-                                        <StyledImage source={{ uri: item.images[1] }} className="rounded-bl-md h-[175px] w-full" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => openImageModal(item.images, 2)} className="w-1/2">
-                                        <StyledImage source={{ uri: item.images[2] }} className="rounded-br-md h-[175px] w-full" />
-                                    </TouchableOpacity>
-                                </StyledView>
-                            </StyledView>
-                        </>
-                    ) : item.images.length === 4 ? (
-                        <>
-                            <StyledView className="max-h-[350px] mb-2">
-                                <StyledView className="flex-row">
-                                    <TouchableOpacity onPress={() => openImageModal(item.images, 0)} className="w-1/2">
-                                        <StyledImage source={{ uri: item.images[0] }} className="rounded-tl-md h-[175px] w-full" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => openImageModal(item.images, 1)} className="w-1/2">
-                                        <StyledImage source={{ uri: item.images[1] }} className="rounded-tr-md h-[175px] w-full" />
-                                    </TouchableOpacity>
-                                </StyledView>
+        const toggleLike = async (postId: string) => {
+            try {
+                const response = await axios.put(
+                    `http://49.231.43.37:3000/api/post/${postId}/likes`,
+                    {
+                        by: userData?.id
+                    },
+                    {
+                        headers: {
+                            Authorization: `All ${userData?.token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
 
-                                <StyledView className="flex-row">
-                                    <TouchableOpacity onPress={() => openImageModal(item.images, 2)} className="w-1/2">
-                                        <StyledImage source={{ uri: item.images[2] }} className="rounded-bl-md h-[175px] w-full" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => openImageModal(item.images, 3)} className="w-1/2">
-                                        <StyledImage source={{ uri: item.images[3] }} className="rounded-br-md h-[175px] w-full" />
-                                    </TouchableOpacity>
-                                </StyledView>
-                            </StyledView>
-                        </>
-                    ) : item.images.length > 4 ? (
-                        <>
-                            <StyledView className="max-h-[350px] mb-2 shadow-sm">
-                                <StyledView className="flex-row">
-                                    <TouchableOpacity onPress={() => openImageModal(item.images, 0)} className="w-1/2">
-                                        <StyledImage source={{ uri: item.images[0] }} className="rounded-tl-md h-[175px] w-full" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => openImageModal(item.images, 1)} className="w-1/2">
-                                        <StyledImage source={{ uri: item.images[1] }} className="rounded-tr-md h-[175px] w-full" />
-                                    </TouchableOpacity>
-                                </StyledView>
+                if (response.data.status === 200) {
+                    const { like, newLike } = response.data.data;
 
-                                <StyledView className="flex-row">
-                                    <TouchableOpacity onPress={() => openImageModal(item.images, 2)} className="w-1/2">
-                                        <StyledImage source={{ uri: item.images[2] }} className="rounded-bl-md h-[175px] w-full" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => openImageModal(item.images, 3)} className="w-1/2">
-                                        <StyledImage source={{ uri: item.images[3] }} className="rounded-br-md h-[175px] w-full" />
-                                        <StyledView className="absolute top-0 right-0 bg-black rounded-br-md opacity-50 w-full h-full flex-row justify-center items-center">
+                    setPosts(
+                        posts.map((post) => {
+                            if (post.id === postId) {
+                                const updatedLikes = like
+                                    ? [...post.likes, newLike] 
+                                    : post.likes.filter((like) => like.author !== userData?.id); 
 
-                                        </StyledView>
-                                        <StyledView className="absolute top-0 right-0 w-full h-full flex-row justify-center items-center">
-                                            <StyledText className="font-custom text-white absolute text-center text-2xl" style={{ alignSelf: 'center' }}>
-                                                +{item.images.length - 4}
-                                            </StyledText>
-                                        </StyledView>
+                                const updatedLikeCount = like
+                                    ? post._count.likes + 1
+                                    : post._count.likes - 1;
 
-                                    </TouchableOpacity>
-                                </StyledView>
-                            </StyledView>
-                        </>
-                    ) : null
+                                return {
+                                    ...post,
+                                    likes: updatedLikes,
+                                    _count: {
+                                        likes: updatedLikeCount,
+                                        comments: post._count.comments || 0,
+                                    },
+                                };
+                            }
+                            return post;
+                        })
+                    );
                 }
+            } catch (error) {
 
-                <StyledView id="post-action" className="flex-row relative justify-start mt-2">
+            }
+        };
+
+        return (
+            <TouchableOpacity onPress={() => navigation.navigate("PostView", {
+                backPage: "FeedsTab",
+                item: item
+            })} >
+                <StyledView className="bg-gray-200 w-full h-[1px] my-2 dark:bg-neutral-700" />
+                <StyledView className="w-full flex-row items-center justify-between">
 
 
-                    <StyledView className="flex-row justify-center mr-5 items-center">
-                        <StyledIonicons
-                            name="heart-outline"
-                            size={24}
-                            onPress={() => { }}
-                            className="text-red-500"
-                        />
-                        <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">0</StyledText>
-                    </StyledView>
+                    <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm"
+                        onPress={() => navigation.navigate('ProfileTab', { profileId: item.member.id })}
+                    >
 
-                    <TouchableOpacity onPress={() => navigation.navigate("PostView", {
-                        backPage: "FeedsTab",
-                        item: item
-                    })}>
-                        <StyledView className="flex-row justify-center mr-5 items-center">
-                            <StyledIonicons
-                                name="chatbubble-outline"
-                                size={24}
-                                onPress={() => { }}
-                                className="text-black dark:text-white"
-                            />
-                            <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">0</StyledText>
+                        <Image className="ml-3 rounded-full w-[40px] h-[40px]" source={item.member?.profileUrl ? { uri: item.member?.profileUrl } : GuestIcon} />
+                        <StyledView className="pl-3 mt-2 flex-row">
+                            <StyledText className="font-custom font-bold text-md dark:text-white">{item.member.username} </StyledText>
+                            {item.member.verified == true ? (<StyledView className="-mt-1"><StyledIonicons name={'checkmark-done'} size={18} color={'#dd164f'} /></StyledView>) : <></>}
+                            <StyledText className="font-custom text-md ml-1 text-gray-400 ">{formatTimeDifference(item.createdAt)}</StyledText>
                         </StyledView>
+
                     </TouchableOpacity>
 
 
+                    <StyledView className="mr-3 flex-row items-center mb-2">
+                        <StyledIonicons
+                            name="ellipsis-horizontal"
+                            size={22}
+                            color="gray"
+                            accessibilityLabel="Settings"
+                            onPress={() => { BottomSheetShow(0), setPostAction(item.id) }}
+                        />
+                    </StyledView>
                 </StyledView>
-            </StyledView>
-        </StyledView>
-    )
+
+                <StyledView className="pl-[65px] pr-9">
+                    <StyledText className="font-custom -mt-3 dark:text-white">{item.content}</StyledText>
+                    {
+                        item.images.length === 1 ? (
+                            <>
+                                <TouchableOpacity onPress={() => openImageModal(item.images)}>
+                                    <StyledImage source={{ uri: item.images[0] }} className="rounded-md mt-2 h-96 w-full" />
+                                </TouchableOpacity>
+                            </>
+                        ) : item.images.length === 2 ? (
+                            <>
+                                <StyledView className="max-h-[350px] mb-2">
+                                    <TouchableOpacity onPress={() => openImageModal(item.images, 0)}>
+                                        <StyledImage source={{ uri: item.images[0] }} className="rounded-t-md mt-2 h-[175px] w-full" />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => openImageModal(item.images, 1)}>
+                                        <StyledImage source={{ uri: item.images[1] }} className="rounded-b-md h-[175px] w-full" />
+                                    </TouchableOpacity>
+                                </StyledView>
+                            </>
+                        ) : item.images.length === 3 ? (
+                            <>
+                                <StyledView className="max-h-[350px] mb-2">
+                                    <TouchableOpacity onPress={() => openImageModal(item.images, 0)}>
+                                        <StyledImage source={{ uri: item.images[0] }} className="rounded-t-md mt-2 h-[175px] w-full" />
+                                    </TouchableOpacity>
+                                    <StyledView className="flex-row">
+                                        <TouchableOpacity onPress={() => openImageModal(item.images, 1)} className="w-1/2">
+                                            <StyledImage source={{ uri: item.images[1] }} className="rounded-bl-md h-[175px] w-full" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => openImageModal(item.images, 2)} className="w-1/2">
+                                            <StyledImage source={{ uri: item.images[2] }} className="rounded-br-md h-[175px] w-full" />
+                                        </TouchableOpacity>
+                                    </StyledView>
+                                </StyledView>
+                            </>
+                        ) : item.images.length === 4 ? (
+                            <>
+                                <StyledView className="max-h-[350px] mb-2">
+                                    <StyledView className="flex-row">
+                                        <TouchableOpacity onPress={() => openImageModal(item.images, 0)} className="w-1/2">
+                                            <StyledImage source={{ uri: item.images[0] }} className="rounded-tl-md h-[175px] w-full" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => openImageModal(item.images, 1)} className="w-1/2">
+                                            <StyledImage source={{ uri: item.images[1] }} className="rounded-tr-md h-[175px] w-full" />
+                                        </TouchableOpacity>
+                                    </StyledView>
+
+                                    <StyledView className="flex-row">
+                                        <TouchableOpacity onPress={() => openImageModal(item.images, 2)} className="w-1/2">
+                                            <StyledImage source={{ uri: item.images[2] }} className="rounded-bl-md h-[175px] w-full" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => openImageModal(item.images, 3)} className="w-1/2">
+                                            <StyledImage source={{ uri: item.images[3] }} className="rounded-br-md h-[175px] w-full" />
+                                        </TouchableOpacity>
+                                    </StyledView>
+                                </StyledView>
+                            </>
+                        ) : item.images.length > 4 ? (
+                            <>
+                                <StyledView className="max-h-[350px] mb-2 shadow-sm">
+                                    <StyledView className="flex-row">
+                                        <TouchableOpacity onPress={() => openImageModal(item.images, 0)} className="w-1/2">
+                                            <StyledImage source={{ uri: item.images[0] }} className="rounded-tl-md h-[175px] w-full" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => openImageModal(item.images, 1)} className="w-1/2">
+                                            <StyledImage source={{ uri: item.images[1] }} className="rounded-tr-md h-[175px] w-full" />
+                                        </TouchableOpacity>
+                                    </StyledView>
+
+                                    <StyledView className="flex-row">
+                                        <TouchableOpacity onPress={() => openImageModal(item.images, 2)} className="w-1/2">
+                                            <StyledImage source={{ uri: item.images[2] }} className="rounded-bl-md h-[175px] w-full" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => openImageModal(item.images, 3)} className="w-1/2">
+                                            <StyledImage source={{ uri: item.images[3] }} className="rounded-br-md h-[175px] w-full" />
+                                            <StyledView className="absolute top-0 right-0 bg-black rounded-br-md opacity-50 w-full h-full flex-row justify-center items-center">
+
+                                            </StyledView>
+                                            <StyledView className="absolute top-0 right-0 w-full h-full flex-row justify-center items-center">
+                                                <StyledText className="font-custom text-white absolute text-center text-2xl" style={{ alignSelf: 'center' }}>
+                                                    +{item.images.length - 4}
+                                                </StyledText>
+                                            </StyledView>
+
+                                        </TouchableOpacity>
+                                    </StyledView>
+                                </StyledView>
+                            </>
+                        ) : null
+                    }
+                    <StyledView id="post-action" className="flex-row relative justify-start mt-2">
+
+                        <TouchableOpacity onPress={() => toggleLike(item.id)}>
+                            <StyledView className="flex-row justify-center mr-5 items-center">
+                                <StyledIonicons
+                                    name={
+                                        posts[index].likes.length > 0 ? "heart" : "heart-outline"
+                                    }
+                                    size={24}
+                                    className="text-red-500"
+                                />
+                                <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">
+                                    {item._count?.likes || 0}
+                                </StyledText>
+                            </StyledView>
+                        </TouchableOpacity>
+
+
+                        <TouchableOpacity onPress={() => navigation.navigate("PostView", {
+                            backPage: "FeedsTab",
+                            item: item
+                        })}>
+                            <StyledView className="flex-row justify-center mr-5 items-center">
+                                <StyledIonicons
+                                    name="chatbubble-outline"
+                                    size={24}
+                                    onPress={() => { }}
+                                    className="text-black dark:text-white"
+                                />
+                                <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">{item?._count.comments}</StyledText>
+                            </StyledView>
+                        </TouchableOpacity>
+
+
+                    </StyledView>
+                </StyledView>
+            </TouchableOpacity>
+        )
+    }
 
     return (
 
@@ -356,13 +419,13 @@ export default function FeedsTab() {
             <HeaderApp />
             <FlatList
                 data={posts}
-                keyExtractor={(item, index) => `${item.id}_${index}`} // Ensure unique keys
+                keyExtractor={(item, index) => `${item.id}_${index}`}
                 renderItem={renderItems}
-                onEndReached={loadMorePosts} // Directly pass the function without wrapping in an anonymous arrow function
-                onEndReachedThreshold={0.8} // Set threshold for loading more posts
+                onEndReached={loadMorePosts}
+                onEndReachedThreshold={0.8}
                 refreshing={refreshing}
-                onRefresh={handleRefresh} // Pass the function reference directly
-                ListFooterComponent={renderFooter} // Pass the function reference directly
+                onRefresh={handleRefresh}
+                ListFooterComponent={renderFooter}
                 ListHeaderComponent={
                     userData?.role !== 'customer'
                         ? () => (
@@ -408,8 +471,6 @@ export default function FeedsTab() {
                     </View>
                 </View>
             </Modal>
-
-
 
             {isOpen && (
                 <TouchableOpacity className="absolute flex-1 bg-black opacity-25 w-full h-screen justify-center"
@@ -532,3 +593,6 @@ const styles = StyleSheet.create({
         color: '#333',
     }
 });
+
+
+

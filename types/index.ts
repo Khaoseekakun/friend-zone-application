@@ -1,4 +1,5 @@
 import { StackNavigationProp } from '@react-navigation/stack';
+import { Likes, MembersDB } from './prismaInterface';
 
 export type RootStackParamList = {
   Login: {
@@ -28,6 +29,10 @@ export type RootStackParamList = {
     backPage?: string;
   },
   Search: {
+    searchType: "Friend" | "Music" | "Dj",
+    backPage?: string;
+  },
+  SearchLoading: {
     searchType: "Friend" | "Music" | "Dj",
     backPage?: string;
   },
@@ -89,10 +94,10 @@ interface Post {
   content: string;
   images: string[];
   createdAt: string;
-  member: {
-      id: string;
-      username: string;
-      profileUrl: string;
-      verified: boolean;
+  member: MembersDB
+  _count : {
+      comments : number,
+      likes : number
   }
+  likes : Likes[]
 }
