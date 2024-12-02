@@ -5,6 +5,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from "expo-router";
 import { NavigationProp } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { LinearGradient } from "expo-linear-gradient";
 const WhiteLogo = require("../assets/images/guesticon.jpg")
 const StyledView = styled(View);
@@ -31,14 +32,6 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType }) => {
         };
         fetchUserData();
     }, []);
-
-    const HandleChangeProvince = async (province: string) => {
-        try {
-            await AsyncStorage.setItem('province', province);
-        } catch (e) {
-            console.log(e);
-        }
-    }
 
     return (
         <LinearGradient
@@ -83,10 +76,6 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType }) => {
                 </TouchableOpacity>
 
                 <StyledView className="mr-3 flex-row items-center">
-                    <StyledText className="mr-2 text-lg text-right text-white font-custom wrapper w-[100px] leading-5">
-                        {/* {Nakhon Ratchasima} */}
-                        {province ? province : userData?.province ?? "ไม่ระบุ"}
-                    </StyledText>
                     <Ionicons
                         name="settings"
                         size={24}
