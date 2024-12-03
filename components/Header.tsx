@@ -7,27 +7,24 @@ import { NavigationProp } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { LinearGradient } from "expo-linear-gradient";
+import { RootStackParamList } from "@/types";
 const WhiteLogo = require("../assets/images/guesticon.jpg")
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledImage = styled(Image)
+const StyledIonicons = styled(Ionicons)
 interface HeaderAppProps {
-    back?: string;
+    back?: any;
     searchType?: string;
 }
 
-export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType }) => {
-    const navigation = useNavigation<NavigationProp<any>>();
+export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType } ) => {
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [userData, setuserData] = useState<any>();
-    const [province, setProvince] = useState<string>('');
 
     useEffect(() => {
         const fetchUserData = async () => {
             const userData = await AsyncStorage.getItem('userData');
-            const province = await AsyncStorage.getItem('province');
-            if (province) {
-                setProvince(province);
-            }
             setuserData(JSON.parse(userData || '{}'));
         };
         fetchUserData();
@@ -46,21 +43,21 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType }) => {
                     back && (
                         <StyledView className="">
                             <TouchableOpacity
-                                onPress={() => navigation.navigate(back, { searchType})}
+                                onPress={() => navigation.navigate(back, { searchType })}
                                 className="ml-1"
                             >
                                 <Ionicons name="chevron-back" size={30} color="white" />
                             </TouchableOpacity>
                         </StyledView>
-                    ) 
+                    )
                 }
                 <TouchableOpacity className="flex-1 flex-row left-0 shadow-md" onPress={() => navigation.navigate('ProfileTab', { profileId: userData?.id })}>
                     <StyledImage className=" rounded-full w-[42px] h-[42px] m-1 border-white border-[2px]" source={
                         userData?.profileUrl ? {
-                            uri : userData?.profileUrl 
-                        } : 
-                        WhiteLogo
-                    
+                            uri: userData?.profileUrl
+                        } :
+                            WhiteLogo
+
                     }>
 
                     </StyledImage>
@@ -75,12 +72,19 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType }) => {
                     </StyledView>
                 </TouchableOpacity>
 
-                <StyledView className="mr-3 flex-row items-center">
-                    <Ionicons
+                <StyledView className="mr-3 flex-row items-center gap-2">
+                    <StyledIonicons
+                        name="notifications"
+                        size={24}
+                        color="white"
+                        onPress={() => navigation.navigate('Notification', {})}
+                        accessibilityLabel="Settings"
+                    />
+                    <StyledIonicons
                         name="settings"
                         size={24}
                         color="white"
-                        onPress={() => navigation.navigate('SettingTab')}
+                        onPress={() => navigation.navigate('SettingTab', {})}
                         accessibilityLabel="Settings"
                     />
                 </StyledView>

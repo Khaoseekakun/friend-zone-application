@@ -34,7 +34,7 @@ export default function HomeScreen() {
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
       const data = response.notification.request.content.data;
       if (data && data.screen) {
-        navigation.navigate(data?.screen.name, data.screen.data); 
+        navigation.navigate(data?.screen.name, data.screen.data);
       }
     });
 
@@ -50,7 +50,7 @@ export default function HomeScreen() {
     };
     fetchUserData();
 
-    
+
   }, []);
 
   const getDeviceId = async () => {
@@ -59,24 +59,28 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const checkNotificationPermissions = async () => {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      if (existingStatus !== 'granted') await Notifications.requestPermissionsAsync();
+      try {
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        if (existingStatus !== 'granted') await Notifications.requestPermissionsAsync();
 
-      const token = (await Notifications.getExpoPushTokenAsync({
-        deviceId: await getDeviceId()
-      })).data;
+        const token = (await Notifications.getExpoPushTokenAsync({
+          deviceId: await getDeviceId()
+        })).data;
 
-      if (userData && userData.id && userData.token) {
-        await axios.put('https://friendszone.app/api/notification/', {
-          userId: userData?.id,
-          notificationToken: token
-        }, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'All ' + userData?.token, // Add a space after 'All'
-          },
-        });
+        if (userData && userData.id && userData.token) {
+          await axios.put('https://friendszone.app/api/notification/', {
+            userId: userData?.id,
+            notificationToken: token
+          }, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'All ' + userData?.token, // Add a space after 'All'
+            },
+          });
 
+        }
+      } catch (error) {
+        console.log('')
       }
     };
 
@@ -87,22 +91,22 @@ export default function HomeScreen() {
     <>
       <Tab.Navigator tabBar={() => null} >
         <Tab.Screen name="FeedsTab" component={Feeds} options={{ headerShown: false, animation: "fade" }} />
-        <Tab.Screen name="MessageTab" component={Message} options={{ headerShown: false, animation: "shift"  }} />
-        <Tab.Screen name="SettingTab" component={Setting} options={{ headerShown: false, animation: "shift"  }} />
-        <Tab.Screen name="ProfileTab" component={Profile} options={{ headerShown: false, animation: "shift"  }} />
-        <Tab.Screen name="PostTab" component={Post} options={{ headerShown: false, animation: "shift"  }} />
-        <Tab.Screen name="PostUpdate" component={PostUpdate} options={{ headerShown: false, animation: "shift"  }} />
-        <Tab.Screen name="FastTab" component={Fast} options={{ headerShown: false, animation: "shift"  }} />
-        <Tab.Screen name="SearchCategory" component={SearchCategory} options={{ headerShown: false, animation: "shift"  }} />
-        <Tab.Screen name="SchedulePage" component={SchedulePage} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="MessageTab" component={Message} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="SettingTab" component={Setting} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="ProfileTab" component={Profile} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="PostTab" component={Post} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="PostUpdate" component={PostUpdate} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="FastTab" component={Fast} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="SearchCategory" component={SearchCategory} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="SchedulePage" component={SchedulePage} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="Search" component={Search} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="Chat" component={Chat} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="AccountSetting" component={AccountSetting} options={{ headerShown: false, animation: "shift"  }} />
-        <Tab.Screen name="ProfileMember" component={ProfileMember} options={{ headerShown: false, animation: "shift"  }} />
-        <Tab.Screen name="ScheduleList" component={ScheduleList} options={{ headerShown: false, animation: "shift"  }} />
-        <Tab.Screen name="Policy" component={Policy} options={{ headerShown: false, animation: "shift"  }} />
-        <Tab.Screen name="SettingImagePreview" component={SettingImagePreview} options={{ headerShown: false, animation: "shift"  }} />
-        <Tab.Screen name="SettingImagePreviewFirst" component={SettingImagePreviewFirst} options={{ headerShown: false, animation: "shift"  }} />
+        <Tab.Screen name="AccountSetting" component={AccountSetting} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="ProfileMember" component={ProfileMember} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="ScheduleList" component={ScheduleList} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="Policy" component={Policy} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="SettingImagePreview" component={SettingImagePreview} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="SettingImagePreviewFirst" component={SettingImagePreviewFirst} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="PostView" component={PostView} options={{ headerShown: false, animation: "fade" }} />
       </Tab.Navigator>
     </>

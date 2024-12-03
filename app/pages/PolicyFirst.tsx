@@ -55,25 +55,35 @@ export default function AgreementScreen() {
     return (
         <StyledView className="bg-white dark:bg-black flex-1">
 
+
             <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center mt-16">ยินดีต้อนรับสู่</StyledText>
             <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center">Friend Zone</StyledText>
             <StyledText className="font-custom text-base text-gray-400 text-center mt-1">โปรดอ่านเงื่อนไขและข้อตกลง</StyledText>
-
+            <TouchableOpacity onPress={() => navigation.navigate('Login', {})} className="absolute mt-16 px-3">
+                <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
+            </TouchableOpacity>
             <ScrollView className="flex-1 w-4/5 mt-6 self-center">
                 {policyContent.map((item, index) => (
-                    <StyledText key={index} className="font-custom text-base text-gray-700 dark:text-gray-200 mt-4">
-                        {`${index + 1}. ${item}`}
-                    </StyledText>
+                    <StyledView id={`${index}`}>
+                        {item.split('\n').map((line, lineIndex) => (
+                            <StyledView className='mb-2'>
+                                <StyledText key={lineIndex} className="font-custom text-base">
+                                    {`${line.replace(/\\n/g, '\n')}`}
+                                </StyledText>
+                            </StyledView>
+                        ))}
+                    </StyledView>
+
                 ))}
             </ScrollView>
 
 
             <StyledView className='flex-row w-4/5 self-center mt-4'>
                 <TouchableOpacity
-                    onPress={() => {setAgree(!agree)}}
+                    onPress={() => { setAgree(!agree) }}
                 >
                     <StyledIcon
-                        name={agree ? "checkbox-outline" : "stop-outline"} 
+                        name={agree ? "checkbox-outline" : "stop-outline"}
                         size={20}
                         className={`${agree ? "text-black" : "text-red-500"}`}
                     >
@@ -85,7 +95,7 @@ export default function AgreementScreen() {
             <TouchableOpacity className="w-4/5 mb-16 self-center mt-11"
                 disabled={!agree}
                 onPress={handleAgree}
-                >
+            >
                 <LinearGradient
 
                     colors={agree ? ['#EB3834', '#69140F'] : ['#7f7f7f', '#505050']}

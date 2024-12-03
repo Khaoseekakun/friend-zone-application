@@ -192,7 +192,7 @@ export default function Register() {
     }}>
       <StyledView className='flex-1 bg-white dark:bg-black h-full pt-[20%]'>
       <StyledView className="flex-1 px-6">
-        <TouchableOpacity onPress={() => navigation.navigate('Login', {})} className="mt-6">
+        <TouchableOpacity onPress={() => navigation.navigate('Agreement', {})} className="mt-6">
           <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
         </TouchableOpacity>
 

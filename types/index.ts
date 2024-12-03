@@ -11,7 +11,7 @@ export type RootStackParamList = {
   HomeScreen: {
     backPage?: string;
   },
-  Agreement: { nextScreen: string, backPage?: string },
+  Agreement: { nextScreen?: string, backPage?: string },
   RegisterStepTwo: { username: string, password: string, backPage?: string },
   PostUpdate: {
     post: {
@@ -52,7 +52,7 @@ export type RootStackParamList = {
     jobCategory?: string,
     backPage?: string,
     searchType?: string
-    backData?:any
+    backData?: any
   },
   FeedsTab: {
     backPage?: string;
@@ -84,7 +84,13 @@ export type RootStackParamList = {
   },
   PostView: {
     backPage?: string;
-    item : Post
+    item: Post
+  },
+  SettingTab: {
+    backPage?: string
+  },
+  Notification: {
+    backPage?: string
   }
 };
 
@@ -96,9 +102,9 @@ interface Post {
   images: string[];
   createdAt: string;
   member: MembersDB
-  _count : {
-      comments : number,
-      likes : number
+  _count: {
+    comments: number,
+    likes: number
   }
-  likes : Likes[]
+  likes: Likes[]
 }
