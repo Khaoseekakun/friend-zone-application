@@ -82,7 +82,8 @@ export default function FeedsTab() {
         try {
 
             setLoading(true);
-            const response = await axios.get(`http://49.231.43.37:3000/api/post?loadLimit=${pageNumber != 1 ? "5" : "10"}&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}&by=${userData?.id}`, {
+            const response = await axios.get(`https://friendszone.app/api/post?loadLimit=${pageNumber != 1 ? "1" : "10"}&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}&by=${userData?.id}`, {
+
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -207,7 +208,7 @@ export default function FeedsTab() {
         const toggleLike = async (postId: string) => {
             try {
                 const response = await axios.put(
-                    `http://49.231.43.37:3000/api/post/${postId}/likes`,
+                    `https://friendszone.app/api/post/${postId}/likes`,
                     {
                         by: userData?.id
                     },

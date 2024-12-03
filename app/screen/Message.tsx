@@ -119,7 +119,7 @@ export default function Message() {
     };
 
     const renderItem = ({ item }: { item: Channel }) => {
-        const receiver = receiverData[item.channel_id]; // Get receiver from state
+        const receiver = receiverData[item.channel_id];
         return (
             <TouchableOpacity onPress={() => handleChannelPress(item)} className="flex-row items-center justify-between p-3 rounded-lg" key={`${item.channel_id}`}>
                 <StyledView className="flex-row items-center">

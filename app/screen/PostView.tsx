@@ -182,7 +182,7 @@ export default function PostView() {
             Keyboard.dismiss()
             setInputDisable(true)
             const response = await axios.post(
-                `http://49.231.43.37:3000/api/post/${item.id}/comment`,
+                `https://friendszone.app/api/post/${item.id}/comment`,
                 {
                     content: newComment,
                     userId: userData?.id,
@@ -209,7 +209,7 @@ export default function PostView() {
     const fetchComent = async () => {
         try {
             const response = await axios.get(
-                `http://49.231.43.37:3000/api/post/${item.id}/comment`,
+                `https://friendszone.app/api/post/${item.id}/comment`,
                 {
                     headers: {
                         Authorization: `All ${userData?.token}`,
