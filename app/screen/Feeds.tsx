@@ -82,18 +82,21 @@ export default function FeedsTab() {
         try {
 
             setLoading(true);
-            const response = await axios.get(`http://49.231.43.37:3000/api/post?loadLimit=${pageNumber != 1 ? "1" : "10"}&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}&by=${userData?.id}`, {
+            const response = await axios.get(`https://friendszone.app/api/post?loadLimit=${pageNumber != 1 ? "1" : "10"}&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}&by=${userData?.id}`, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
             const newPosts = response.data.data.posts;
-            if (newPosts.length > 0) {
-                setPosts(prevPosts => [...prevPosts, ...newPosts]);
-                setPage(pageNumber++);
-            } else {
-                setHasMore(false);
+            if (newPosts) {
+                if (newPosts.length > 0) {
+                    setPosts(prevPosts => [...prevPosts, ...newPosts]);
+                    setPage(pageNumber++);
+                } else {
+                    setHasMore(false);
+                }
             }
+
         } catch (error) {
             console.error("Error fetching posts", error);
         } finally {
@@ -204,7 +207,7 @@ export default function FeedsTab() {
         const toggleLike = async (postId: string) => {
             try {
                 const response = await axios.put(
-                    `http://49.231.43.37:3000/api/post/${postId}/likes`,
+                    `https://friendszone.app/api/post/${postId}/likes`,
                     {
                         by: userData?.id
                     },
@@ -223,8 +226,8 @@ export default function FeedsTab() {
                         posts.map((post) => {
                             if (post.id === postId) {
                                 const updatedLikes = like
-                                    ? [...post.likes, newLike] 
-                                    : post.likes.filter((like) => like.author !== userData?.id); 
+                                    ? [...post.likes, newLike]
+                                    : post.likes.filter((like) => like.author !== userData?.id);
 
                                 const updatedLikeCount = like
                                     ? post._count.likes + 1
@@ -253,7 +256,7 @@ export default function FeedsTab() {
                 backPage: "FeedsTab",
                 item: item
             })} >
-                <StyledView className="bg-gray-200 w-full h-[1px] my-2 dark:bg-neutral-700" />
+                <StyledView className="bg-gray-200 w-full h-[1px] mb-2 dark:bg-neutral-700" />
                 <StyledView className="w-full flex-row items-center justify-between">
 
 
@@ -261,7 +264,10 @@ export default function FeedsTab() {
                         onPress={() => navigation.navigate('ProfileTab', { profileId: item.member.id })}
                     >
 
-                        <Image className="ml-3 rounded-full w-[40px] h-[40px]" source={item.member?.profileUrl ? { uri: item.member?.profileUrl } : GuestIcon} />
+                        <StyledView className="ml-3 ">
+                            <Image className="rounded-full w-[40px] h-[40px]" source={item.member?.profileUrl ? { uri: item.member?.profileUrl } : GuestIcon} />
+                            <StyledView className="absolute right-0 bottom-0 rounded-full w-[12px] h-[12px] bg-green-600"></StyledView>
+                        </StyledView>
                         <StyledView className="pl-3 mt-2 flex-row">
                             <StyledText className="font-custom font-bold text-md dark:text-white">{item.member.username} </StyledText>
                             {item.member.verified == true ? (<StyledView className="-mt-1"><StyledIonicons name={'checkmark-done'} size={18} color={'#dd164f'} /></StyledView>) : <></>}
@@ -373,7 +379,7 @@ export default function FeedsTab() {
                             </>
                         ) : null
                     }
-                    <StyledView id="post-action" className="flex-row relative justify-start mt-2">
+                    <StyledView id="post-action" className="flex-row relative justify-start mt-2 mb-2">
 
                         <TouchableOpacity onPress={() => toggleLike(item.id)}>
                             <StyledView className="flex-row justify-center mr-5 items-center">

@@ -108,19 +108,19 @@ export default function Setting() {
                         )
                     }
 
-                    <TouchableOpacity onPress={() => navigation.navigate("SettingImagePreview")}>
+                        {/* <TouchableOpacity onPress={() => navigation.navigate("SettingImagePreview")}>
 
-                        <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
-                            <StyledView className="flex-row">
-                                <StyledIonicons name="images-outline" size={24} className="mt-1 text-black dark:text-white" />
-                                <StyledView className="ml-2">
-                                    <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">รูปภาพตัวอย่าง</StyledText>
-                                    <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">แก้ไขรูปภาพตัวอย่างหน้าโปรไฟล์</StyledText>
+                            <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
+                                <StyledView className="flex-row">
+                                    <StyledIonicons name="images-outline" size={24} className="mt-1 text-black dark:text-white" />
+                                    <StyledView className="ml-2">
+                                        <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">รูปภาพตัวอย่าง</StyledText>
+                                        <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">แก้ไขรูปภาพตัวอย่างหน้าโปรไฟล์</StyledText>
+                                    </StyledView>
                                 </StyledView>
+                                <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                             </StyledView>
-                            <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
-                        </StyledView>
-                    </TouchableOpacity>
+                        </TouchableOpacity> */}
                     <StyledView className="w-full h-1.5 bg-gray-100 dark:bg-neutral-800"></StyledView>
 
                     <StyledView className="flex-row items-center justify-between w-full px-3 py-2">

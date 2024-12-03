@@ -51,9 +51,19 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
     <StyledView style={{
       width: windowWidth,
       aspectRatio,
-      elevation: 5,
       position: 'absolute',
       bottom: 0,
+      
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: -4,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+
+      elevation: 5,
+      backgroundColor: 'transparent'
     }}
     
     >
