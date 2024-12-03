@@ -1,13 +1,14 @@
-import { Text, View } from "react-native";
+import { Appearance, Text, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
 import { Dimensions } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
+const StyledIonicons = styled(Ionicons);
 const originalWidth = 411;
 const originalHeight = 80;
 
@@ -44,8 +45,18 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
   const navigation = useNavigation<NavigationProp<any>>();
 
   const handlePress = (index: number, screen: string) => {
-    navigation.navigate(screen, {backPage: current});
+    navigation.navigate(screen, { backPage: current });
   };
+
+  const [theme, setTheme] = useState(Appearance.getColorScheme());
+
+  useEffect(() => {
+    const listener = Appearance.addChangeListener(({ colorScheme }) => {
+      setTheme(colorScheme);
+    });
+
+    return () => listener.remove();
+  }, [])
 
   return (
     <StyledView style={{
@@ -53,7 +64,7 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
       aspectRatio,
       position: 'absolute',
       bottom: 0,
-      
+
       shadowColor: '#000',
       shadowOffset: {
         width: 0,
@@ -65,7 +76,7 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
       elevation: 5,
       backgroundColor: 'transparent'
     }}
-    
+
     >
       <Svg
         width="100%"
@@ -73,14 +84,16 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
         viewBox={`0 0 ${originalWidth} ${originalHeight}`}
         fill="none"
         style={{
-          backgroundColor: 'transparent',
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 50 },
-          shadowOpacity: 0.5,
-          shadowRadius: 2,
+          shadowColor: '#171717',
+          shadowOffset: { width: -2, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 3,
         }}
       >
-        <Path d={svgList[pageNumber[current]]} fill="white" />
+        <Path
+          d={svgList[pageNumber[current]]}
+          fill={theme === "light" ? "#fff" : "#262626"}
+        />
       </Svg>
 
       <StyledView style={{
@@ -95,7 +108,7 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
           <StyledView key={index} style={{ width: tabWidth, alignItems: "center" }}>
             {pageNumber[current] === index && (
               <StyledView
-                className="absolute w-[65px] h-[65px] bg-white bottom-[95px] rounded-full"
+                className="absolute w-[65px] h-[65px] bg-white dark:bg-[#262626] bottom-[95px] rounded-full"
               />
             )}
           </StyledView>
@@ -117,7 +130,7 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
               alignItems: "center",
               bottom: 80,
             }}>
-            <Ionicons
+            <StyledIonicons
               key={`${iconName}-${index}`}
               name={index === pageNumber[current] ? icons[index] : `${icons[index]}-outline` as any}
               size={30}
@@ -127,10 +140,10 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
                 bottom: index === pageNumber[current] ? 100 : 60,
               }}
 
-              color={"#EB5177"}
+              className="text-[#EB5177] dark:text-white"
 
             />
-            <StyledText className="relative font-bold font-custom bottom-[55] text-[#EA4080]">
+            <StyledText className="relative font-bold font-custom bottom-[55] text-[#EB5177] dark:text-white">
               {`${iconNames[index]}`}
             </StyledText>
           </StyledView>

@@ -422,7 +422,7 @@ export default function FeedsTab() {
 
     return (
 
-        <StyledView className="flex-1 bg-white dark:bg-neutral-900">
+        <StyledView className="flex-1 bg-gray-100 dark:bg-neutral-900">
             <HeaderApp />
             <FlatList
                 data={posts}
