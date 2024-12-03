@@ -92,6 +92,7 @@ export type RootStackParamList = {
   Notification: {
     backPage?: string
   }
+  SelectRegisterPage : undefined
 };
 
 export type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;

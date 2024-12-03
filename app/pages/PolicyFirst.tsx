@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { styled } from 'nativewind';
 import axios from 'axios';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation } from "expo-router";
+import { NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types'; // Adjust the import path as needed
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,7 +34,7 @@ export default function AgreementScreen() {
     }, []);
 
     const handleAgree = () => {
-        navigation.navigate('Register', {});
+        navigation.navigate('SelectRegisterPage');
     };
 
     if (loading) {
@@ -53,21 +54,23 @@ export default function AgreementScreen() {
     }
 
     return (
-        <StyledView className="bg-white dark:bg-black flex-1">
+        <StyledView className="bg-white dark:bg-neutral-900 flex-1">
 
 
             <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center mt-16">ยินดีต้อนรับสู่</StyledText>
             <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center">Friend Zone</StyledText>
             <StyledText className="font-custom text-base text-gray-400 text-center mt-1">โปรดอ่านเงื่อนไขและข้อตกลง</StyledText>
+            
             <TouchableOpacity onPress={() => navigation.navigate('Login', {})} className="absolute mt-16 px-3">
                 <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
             </TouchableOpacity>
-            <ScrollView className="flex-1 w-4/5 mt-6 self-center">
+
+            <ScrollView className="flex-1 w-10/12 mt-6 p-2 rounded-xl self-center dark:bg-neutral-800">
                 {policyContent.map((item, index) => (
-                    <StyledView id={`${index}`}>
+                    <StyledView key={`${index}`}>
                         {item.split('\n').map((line, lineIndex) => (
-                            <StyledView className='mb-2'>
-                                <StyledText key={lineIndex} className="font-custom text-base">
+                            <StyledView key={lineIndex} className='mb-2'>
+                                <StyledText className="font-custom text-base text-gray-800 dark:text-white">
                                     {`${line.replace(/\\n/g, '\n')}`}
                                 </StyledText>
                             </StyledView>
@@ -85,12 +88,12 @@ export default function AgreementScreen() {
                     <StyledIcon
                         name={agree ? "checkbox-outline" : "stop-outline"}
                         size={20}
-                        className={`${agree ? "text-black" : "text-red-500"}`}
+                        className={`${agree ? "text-black dark:text-white" : "text-red-500"}`}
                     >
 
                     </StyledIcon>
                 </TouchableOpacity>
-                <StyledText className={`font-custom text-center ${agree ? "text-black" : "text-red-500"} font-semibold ml-1`}>ฉันได้อ่านและยอมรับข้อตกลงนี้</StyledText>
+                <StyledText className={`font-custom text-center ${agree ? "text-black dark:text-white" : "text-red-500"} font-semibold ml-1`}>ฉันได้อ่านและยอมรับข้อตกลงนี้</StyledText>
             </StyledView>
             <TouchableOpacity className="w-4/5 mb-16 self-center mt-11"
                 disabled={!agree}

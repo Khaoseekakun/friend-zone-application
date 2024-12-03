@@ -46,7 +46,7 @@ const InputField: React.FC<InputFieldProps> = ({
   isPasswordVisible
 }) => (
   <StyledView className="w-full mb-7">
-    <StyledText className={`font-custom text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-300'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-black z-50 px-2`}>{label}</StyledText>
+    <StyledText className={`font-custom text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-300'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-neutral-900 z-50 px-2`}>{label}</StyledText>
     <StyledView className="font-custom w-full relative">
       {isPicker && pickerItems ? (
         <RNPickerSelect
@@ -190,7 +190,7 @@ export default function Register() {
     <StyledTouchableWithoutFeedback onPress={() => {
       Keyboard.dismiss();
     }}>
-      <StyledView className='flex-1 bg-white dark:bg-black h-full pt-[20%]'>
+      <StyledView className='flex-1 bg-white dark:bg-neutral-900 h-full pt-[20%]'>
       <StyledView className="flex-1 px-6">
         <TouchableOpacity onPress={() => navigation.navigate('Agreement', {})} className="mt-6">
           <Ionicons name="chevron-back" size={24} color="#1e3a8a" />

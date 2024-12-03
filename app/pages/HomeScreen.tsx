@@ -22,6 +22,8 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import PostView from "../screen/PostView";
+import NotificationPage from "../screen/Notifications";
+import SelectRegisterPage from "./SelectRegisterPage";
 
 const Tab = createBottomTabNavigator();
 
@@ -108,6 +110,7 @@ export default function HomeScreen() {
         <Tab.Screen name="SettingImagePreview" component={SettingImagePreview} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="SettingImagePreviewFirst" component={SettingImagePreviewFirst} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="PostView" component={PostView} options={{ headerShown: false, animation: "fade" }} />
+        <Tab.Screen name="Notification" component={NotificationPage} options={{ headerShown: false, animation: "shift" }} />
       </Tab.Navigator>
     </>
   );
