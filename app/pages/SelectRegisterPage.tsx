@@ -12,7 +12,7 @@ const StyledView = styled(View)
 const StyledText = styled(Text)
 const StyledIonicons = styled(Ionicons)
 export default function SelectRegisterPage() {
-    
+
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     return (
         <>
@@ -24,6 +24,26 @@ export default function SelectRegisterPage() {
                     <TouchableOpacity onPress={() => navigation.goBack()} className="absolute ml-4">
                         <StyledIonicons name="chevron-back" size={24} className='text-black dark:text-neutral-200' />
                     </TouchableOpacity>
+                </StyledView>
+                <StyledView className="flex-1 justify-center items-center w-full">
+                    <StyledView className="flex-row justify-between self-center">
+                        <StyledView className="w-6/12">
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate("Register", {})}>
+                                <StyledView className="bg-red-500 mx-4 justify-center rounded-xl">
+                                    <StyledText className="text-center text-white py-2">สมัครเป็นผู้ใช้</StyledText>
+                                </StyledView>
+                            </TouchableOpacity>
+                        </StyledView>
+                        <StyledView className="w-6/12">
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate("RegisterMember", {})}>
+                                <StyledView className="bg-red-500 mx-4 justify-center rounded-xl">
+                                    <StyledText className="text-center text-white py-2">สมัครเป็นสมาชิก</StyledText>
+                                </StyledView>
+                            </TouchableOpacity>
+                        </StyledView>
+                    </StyledView>
                 </StyledView>
             </StyledView>
         </>

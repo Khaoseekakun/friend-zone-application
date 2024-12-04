@@ -8,6 +8,7 @@ import HomeScreen from '../../app/pages/HomeScreen';
 import { useAuth } from '@/utils/context/AuthContext';
 import React from 'react';
 import SelectRegisterPage from '@/app/pages/SelectRegisterPage';
+import RegisterMember from '@/app/pages/RegisterMember';
 
 const Stack = createStackNavigator();
 export function AppNavigator() {
@@ -30,6 +31,7 @@ export function AppNavigator() {
                 <Stack.Screen name="RegisterStepTwo" component={RegisterStepTwo} />
                 <Stack.Screen name="Agreement" component={PolicyFirst} />
                 <Stack.Screen name="SelectRegisterPage" component={SelectRegisterPage} />
+                <Stack.Screen name="RegisterMember" component={RegisterMember} />
             </>
         </Stack.Navigator>
     );
