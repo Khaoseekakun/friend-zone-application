@@ -141,7 +141,7 @@ export default function Message() {
                     </StyledView>
                     <StyledView className="w-full px-5 mt-2 h-full">
                         {loading ? (
-                            <ActivityIndicator size="large" color="#0000ff" />
+                            <ActivityIndicator size="small" color="#999" />
                         ) : (
                             <FlatList
                                 refreshing={true}

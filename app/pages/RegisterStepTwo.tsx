@@ -14,6 +14,7 @@ import { set } from 'firebase/database';
 const API_SYSTEM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzeXN0ZW0iOnRydWUsInBlcm1pc3Npb25zIjp7Ik1hbmFnZU90cCI6dHJ1ZSwiTm90aWZpY2F0aW9ucyI6dHJ1ZSwiTWFuYWdlQWRtaW5zIjp0cnVlLCJNYW5hZ2VQYXltZW50cyI6dHJ1ZSwiTWFuYWdlQ3VzdG9tZXIiOnRydWUsIk1hbmFnZU1lbWJlcnMiOnRydWUsIk1hbmFnZVBvc3RzIjp0cnVlLCJNYW5hZ2VTY2hlZHVsZSI6dHJ1ZSwiTWFuYWdlU2V0dGluZ3MiOnRydWV9LCJpYXQiOjE3MjY5NTIxODN9.LZqnLm_8qvrL191MV7OIpUSczeFgGupOb5Pp2UOvyTE';
 
 
+const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledDatePicker = styled(DateTimePicker);
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -121,6 +122,7 @@ export default function RegisterStepTwo() {
                                         borderColor: theme == "dark" ? '#d1d5db' : '#d1d5db',
                                         width: '100%',
                                         color: theme == "dark" ? '#fff' : '#000',
+                                        padding: 16,
                                     },
                                     inputAndroid: {
                                         fontFamily: 'Kanit',
@@ -268,8 +270,6 @@ export default function RegisterStepTwo() {
             console.error(error);
         }
     };
-
-
     const handleVerifyOTP = async () => {
         setLoading(true);
         try {
@@ -356,12 +356,12 @@ export default function RegisterStepTwo() {
         >
             <StyledView className='flex-1 bg-white dark:bg-neutral-900 h-full'>
                 <StyledView className="flex-1 pt-6 px-6">
-                    <TouchableOpacity onPress={() => navigation.goBack()} className="mt-14">
+                    <StyledTouchableOpacity onPress={() => navigation.goBack()} className="mt-14">
                         <StyledIcon name="chevron-back" size={24} className='text-[#1e3a8a] dark:text-white' />
-                    </TouchableOpacity>
-                    <StyledView className='flex-1 justify-center'>
+                    </StyledTouchableOpacity>
+                    <StyledView className='flex-1'>
 
-                        <StyledView className="self-center flex items-center mb-5">
+                        <StyledView className="self-center flex items-center mb-5 mt-5">
                             <StyledText className="font-custom text-3xl font-bold text-[#1e3a8a] dark:text-white mb-2">ข้อมูลส่วนตัว</StyledText>
                             <StyledText className="font-custom text-base text-gray-400">กรอกเบอร์มือถือและยืนยันเบอร์มือถือของคุณ</StyledText>
                         </StyledView>
