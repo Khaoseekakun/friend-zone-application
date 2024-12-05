@@ -29,6 +29,14 @@ export default function Chat() {
         senderId: string;
         timestamp: string;
         status: string;
+        images: string[];
+        details: {
+            billingPrice: number;
+            startTime: string;
+            endTime: string;
+            date: string;
+            location: string;
+        }
     }
 
     interface Channel {
@@ -130,6 +138,7 @@ export default function Chat() {
 
                 if (loadOldMessage) {
                     setMessages(prevMessages => {
+
                         const firstLoadedMessage = loadedMessages[0];
                         if (prevMessages.length > 0 && prevMessages[0].id === firstLoadedMessage.id) {
                             loadedMessages.shift();
@@ -332,13 +341,14 @@ export default function Chat() {
             if (index === 0) return true;
             const prevMessageTime = new Date(messages[index - 1].timestamp);
             const currentMessageTime = new Date(item.timestamp);
-            return (currentMessageTime.getTime() - prevMessageTime.getTime()) > 10 * 60 * 3000;
+            return (currentMessageTime.getTime() - prevMessageTime.getTime()) > 10 * 60 * 1000;
         })();
 
         return (
             <>
+
                 {showTimestamp && (
-                    <StyledView className="items-center justify-center">
+                    <StyledView className="items-center justify-center mt-1">
                         <StyledText className="text-gray-500 text-xs font-custom pb-1">
                             {new Date(item.timestamp).toLocaleTimeString('th-TH', {
                                 hour: '2-digit',
@@ -348,19 +358,79 @@ export default function Chat() {
                     </StyledView>
                 )}
 
-                <StyledView className={`flex-row ${isMyMessage ? 'justify-end' : 'justify-start'}`}>
-                    {!isMyMessage && (
-                        <StyledImage
-                            className="rounded-full w-[32px] h-[32px] mr-2"
-                            source={isMyMessage ? Logo : profileUrl ? { uri: profileUrl } : GuestIcon}
-                        />
-                    )}
-                    <StyledView className={`${isMyMessage ? 'bg-[#EB3834]' : 'bg-gray-200'} rounded-2xl px-3 py-2 max-w-[80%] mb-3`}>
-                        <StyledText className={`${isMyMessage ? 'text-white' : 'text-black'} font-custom text-base`}>
-                            {item.text}
-                        </StyledText>
+                {item.senderId == "system" ? (
+                    <StyledView className={`flex-row justify-center`}>
+                        <StyledView className={`${isMyMessage ? 'bg-[#EB3834]' : ''} rounded-xl px-3 py-2 max-w-[80%] mb-3 border-neutral-500 border-dashed border-[1px] w-full`}>
+                            <StyledText className={`${isMyMessage ? 'text-white' : 'text-black dark:text-white'} font-custom text-2xl text-center`}>
+                                ฿ {item.details.billingPrice.toLocaleString()}
+                            </StyledText>
+                            <StyledView className="my-1 border-t-[1px] border-neutral-700 pt-3">
+                                <StyledView className="flex-row justify-between items-center">
+                                    <StyledText className={`text-black dark:text-gray-300 font-custom text-base`}>
+                                        วันที่นัดหมาย
+                                    </StyledText>
+                                    <StyledText className={`text-black dark:text-white font-custom text-base`}>
+                                        {new Date(item.details.date).toLocaleDateString('th-TH', {})}
+                                    </StyledText>
+                                </StyledView>
+
+                                <StyledView className="flex-row justify-between items-center">
+                                    <StyledText className={`text-black dark:text-gray-300 font-custom text-base`}>
+                                        เวลาเริ่ม
+                                    </StyledText>
+                                    <StyledText className={`text-black dark:text-white font-custom text-base`}>
+                                        {new Date(item.details.startTime).toLocaleDateString('th-TH', {})} {new Date(item.details.startTime).getHours()} {new Date(item.details.startTime).getMinutes() > 0 ? `: ${new Date(item.details.startTime).getMinutes()}` : '00'}
+                                    </StyledText>
+                                </StyledView>
+                                <StyledView className="flex-row justify-between items-center ">
+                                    <StyledText className={`text-black dark:text-gray-300 font-custom text-base`}>
+                                        เวลาสิ้นสุด
+                                    </StyledText>
+                                    <StyledText className={`text-black dark:text-white font-custom text-base`}>
+                                        {new Date(item.details.endTime).toLocaleDateString('th-TH', {})} {new Date(item.details.endTime).getHours()} {new Date(item.details.endTime).getMinutes() > 0 ? `: ${new Date(item.details.endTime).getMinutes()}` : '00'}
+                                    </StyledText>
+                                </StyledView>
+                            </StyledView>
+
+                            <StyledView className="mt-2  border-t-[1px] border-neutral-700 pt-1">
+                                <StyledTouchableOpacity>
+                                    <StyledText className={`text-black dark:text-gray-300 font-custom text-base`}>
+                                        สถานที่ (คลิกเพื่อเปิด)
+                                    </StyledText>
+                                    <StyledText className={`text-black dark:text-white font-custom text-base warp`}>
+                                        - {item.details.location}
+                                    </StyledText>
+                                </StyledTouchableOpacity>
+                            </StyledView>
+                            <StyledView className="mt-2  border-t-[1px] border-neutral-700 pt-1">
+                                <StyledView className="flex-row justify-between items-center ">
+                                    <StyledText className={`text-black dark:text-neutral-500 font-custom text-sm`}>
+                                        ref
+                                    </StyledText>
+                                    <StyledText className={`text-black dark:text-neutral-500 font-custom text-sm`}>
+                                        {item.id}
+                                    </StyledText>
+                                </StyledView>
+                            </StyledView>
+                        </StyledView>
                     </StyledView>
-                </StyledView>
+                ) : (
+                    <StyledView className={`flex-row ${isMyMessage ? 'justify-end' : 'justify-start'}`}>
+                        {!isMyMessage && (
+                            <StyledImage
+                                className="rounded-full w-[32px] h-[32px] mr-2"
+                                source={isMyMessage ? Logo : profileUrl ? { uri: profileUrl } : GuestIcon}
+                            />
+                        )}
+                        <StyledView className={`${isMyMessage ? 'bg-[#EB3834]' : 'bg-gray-200'} rounded-2xl px-3 py-2 max-w-[80%] mb-3`}>
+                            <StyledText className={`${isMyMessage ? 'text-white' : 'text-black'} font-custom text-base`}>
+                                {item.text}
+                            </StyledText>
+                        </StyledView>
+                    </StyledView >
+                )
+                }
+
             </>
         );
     };
@@ -375,7 +445,7 @@ export default function Chat() {
             >
                 <StyledView className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[60px]"} justify-center border-b-[1px] pt-3 border-gray-200 dark:border-neutral-800`}>
                     <TouchableOpacity onPress={() => navigation.navigate("MessageTab", {})} className="absolute ml-4">
-                        <StyledIcon name="chevron-back" size={24} className="text-black dark:text-white"/>
+                        <StyledIcon name="chevron-back" size={24} className="text-black dark:text-white" />
                     </TouchableOpacity>
                     <StyledText className="text-center self-center text-lg font-custom text-black dark:text-white">{chatName}</StyledText>
                 </StyledView>
@@ -411,7 +481,7 @@ export default function Chat() {
                 )}
 
                 <StyledView className="self-center max-h-[120px] px-2 items-center justify-center py-3 w-full border-t border-gray-200 bg-white dark:bg-neutral-900 dark:border-neutral-800 ">
-                    <StyledView className="w-full max-h-[120px] bg-white dark:bg-neutral-800 rounded-3xl mb-3"
+                    <StyledView className="w-full max-h-[120px] bg-neutral-200 dark:bg-neutral-800 rounded-3xl mb-3"
                     >
                         <StyledTextInput
                             multiline
@@ -429,11 +499,11 @@ export default function Chat() {
                         {
                             newMessage.length > 0 ? (
                                 <StyledView className="absolute right-0 h-[45px] w-[45px] bottom-0">
-                                    <StyledTouchableOpacity 
-                                    onPress={sendMessage}
+                                    <StyledTouchableOpacity
+                                        onPress={sendMessage}
                                     >
                                         <StyledView className="w-full h-full rounded-full items-center justify-center flex-row">
-                                            <StyledIcon name="send" size={30} className="self-center mr-2 text-white">
+                                            <StyledIcon name="send" size={30} className="self-center mr-2 text-dark dark:text-white">
 
                                             </StyledIcon>
                                         </StyledView>
@@ -443,14 +513,14 @@ export default function Chat() {
                                 <StyledView className="absolute right-4 h-[45px] w-[90px]">
                                     <StyledView className="w-full h-full rounded-full items-center justify-center flex-row">
 
-                                        <StyledIcon name="mic-outline" size={30} className="self-center mr-2 text-white">
+                                        <StyledIcon name="mic-outline" size={30} className="self-center mr-2 text-dark dark:text-white">
 
                                         </StyledIcon>
 
-                                        <StyledIcon name="image-outline" size={30} className="self-center mr-2 text-white">
+                                        <StyledIcon name="image-outline" size={30} className="self-center mr-2 text-dark dark:text-white">
 
                                         </StyledIcon>
-                                        <StyledIcon name="camera-outline" size={30} className="self-center mr-2 text-white">
+                                        <StyledIcon name="camera-outline" size={30} className="self-center mr-2 text-dark dark:text-white">
 
                                         </StyledIcon>
                                     </StyledView>
