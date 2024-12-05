@@ -91,6 +91,12 @@ export type RootStackParamList = {
   },
   Notification: {
     backPage?: string
+  },
+  SelectRegisterPage : {
+    backPage?: string
+  },
+  RegisterMember: {
+    backPage?: string
   }
 };
 

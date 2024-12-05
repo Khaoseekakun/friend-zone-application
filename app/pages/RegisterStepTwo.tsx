@@ -105,7 +105,7 @@ export default function RegisterStepTwo() {
         wrong
     }) => (
         <StyledView className="w-full mb-7">
-            <StyledText className={`font-custom text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-200'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-black z-50 px-2`}>{label}</StyledText>
+            <StyledText className={`font-custom text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-200'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-neutral-900 z-50 px-2`}>{label}</StyledText>
             <StyledView className="flex-row items-center">
                 {isPicker && pickerItems && (
                     <StyledView className="w-full border-[1px] border-gray-300 rounded-full">
@@ -354,7 +354,7 @@ export default function RegisterStepTwo() {
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <StyledView className='flex-1 bg-white dark:bg-black h-full'>
+            <StyledView className='flex-1 bg-white dark:bg-neutral-900 h-full'>
                 <StyledView className="flex-1 pt-6 px-6">
                     <StyledTouchableOpacity onPress={() => navigation.goBack()} className="mt-14">
                         <StyledIcon name="chevron-back" size={24} className='text-[#1e3a8a] dark:text-white' />
@@ -392,7 +392,6 @@ export default function RegisterStepTwo() {
                             pickerItems={provinceOptions}
                         />
 
-                        <StyledView className="space-y-6">
                             <InputField
                                 label={`${isPhoneValid ? 'เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว' : 'เบอร์โทรศัพท์'}`}
                                 placeholder="+66"
@@ -418,7 +417,6 @@ export default function RegisterStepTwo() {
 
                                 />
                             )}
-                        </StyledView>
 
                         <TouchableOpacity className="w-full mt-8" onPress={() => handleVerifyOTP()}>
                             <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
