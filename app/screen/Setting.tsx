@@ -91,7 +91,7 @@ export default function Setting() {
                         </StyledView>
 
                     </TouchableOpacity>
-                    {
+                    {/* {
                         userData?.role === "member" && (
                             <TouchableOpacity onPress={() => navigation.navigate("SettingImagePreviewFirst")}>
                                 <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
@@ -106,7 +106,7 @@ export default function Setting() {
                                 </StyledView>
                             </TouchableOpacity>
                         )
-                    }
+                    } */}
 
                         {/* <TouchableOpacity onPress={() => navigation.navigate("SettingImagePreview")}>
 
