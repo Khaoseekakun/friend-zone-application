@@ -62,11 +62,6 @@ export default function Message() {
     const fetchChannelsForUser = useCallback(async () => {
         setLoading(true);
 
-        if (!userData || !userData.id) {
-            setLoading(false);
-            return;
-        }
-
         const database = getDatabase(FireBaseApp, 'https://friendszone-d1e20-default-rtdb.asia-southeast1.firebasedatabase.app');
         const messagePath = '/channels';
         const channelsRef = ref(database, messagePath);
@@ -128,7 +123,7 @@ export default function Message() {
                         className="bg-gray-400 rounded-full w-[40px] h-[40px] border-[1px] border-gray-200"
                     />
                     <StyledView className="ml-2">
-                        <StyledText className="font-bold font-custom">{receiver ? receiver.username : 'Unknown'}</StyledText>
+                        <StyledText className="font-bold font-custom text-gray-500 dark:text-gray-200">{receiver ? receiver.username : 'Unknown'}</StyledText>
                         <StyledText className="text-gray-500 dark:text-gray-200 font-custom">{receiver.last_message ? `${receiver.last_message.senderId == userData.id ? "คุณ : " : ""} ${receiver?.last_message?.text}` : 'เริ่มต้นข้อความ'}</StyledText>
                     </StyledView>
                 </StyledView>
@@ -141,8 +136,8 @@ export default function Message() {
         <StyledView className="flex-1 bg-white dark:bg-neutral-900">
             <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
                 <StyledView className="flex-1 bg-white dark:bg-neutral-900">
-                    <StyledView className="bg-white px-3 text-center pt-[60px] pb-3">
-                        <StyledText className="text-center self-center text-lg font-bold text-black">Messages</StyledText>
+                    <StyledView className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[60px]" } justify-center mt-3`}>
+                        <StyledText className="text-black dark:text-gray-200 text-center self-center text-lg font-custom ">Messages</StyledText>
                     </StyledView>
                     <StyledView className="w-full px-5 mt-2 h-full">
                         {loading ? (
@@ -156,10 +151,10 @@ export default function Message() {
                                 renderItem={renderItem}
                                 ListHeaderComponent={() => (
                                     <>
-                                        <StyledView className="w-full px-2 mt-2">
+                                        <StyledView className="w-full px-2 mt-2 mb-2">
                                             <StyledTextInput
                                                 placeholder="ค้นหา"
-                                                className="py-2 w-full bg-gray-100 rounded-full text-lg pl-10 pr-9 placeholder-gray-500"
+                                                className="py-2 w-full bg-gray-100 rounded-full text-lg pl-10 pr-9 placeholder-gray-500 font-custom"
                                                 value={search}
                                                 onChangeText={setSearch}
                                                 inputMode='text'
@@ -180,11 +175,11 @@ export default function Message() {
                                             <StyledView className="flex-row items-center">
                                                 <Image source={AppLogo} className="bg-gray-400 rounded-full w-[40px] h-[40px]" />
                                                 <StyledView className="ml-2">
-                                                    <StyledText className="font-bold">Friend Zone Helper</StyledText>
-                                                    <StyledText className="text-gray-500">คุณ : สวัสดีครับ</StyledText>
+                                                    <StyledText className="font-bold text-gray-500 dark:text-gray-200 font-custom">Friend Zone Helper</StyledText>
+                                                    <StyledText className="text-gray-500 dark:text-gray-200 font-custom">คุณ : สวัสดีครับ</StyledText>
                                                 </StyledView>
                                             </StyledView>
-                                            <StyledText className="text-gray-500">12:00</StyledText>
+                                            <StyledText className="text-gray-500 dark:text-gray-200 font-custom">12:00</StyledText>
                                         </TouchableOpacity>
                                     </>
                                 )}
