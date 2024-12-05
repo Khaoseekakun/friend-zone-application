@@ -46,14 +46,10 @@ export default function SearchCategory() {
             end={{ x: 0, y: 1 }}
             className="flex-1"
         >
-            <StyledScrollView className={`mt-10`}>
-
-            <TouchableOpacity onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()} className="absolute pt-[15] ml-4">
-                    <Ionicons name="chevron-back" size={24} color="#fff" />
-                </TouchableOpacity>
-                <StyledView className="w-full px-8 items-center mt-10">
+            <StyledScrollView className={``}>
+                <StyledView className="w-full px-8 items-center mt-5">
                     <StyledView className="flex-row">
-                        <TouchableOpacity onPress={() => { navigation.navigate('Search', { searchType: "Friend"}) }} className="w-6/12 rounded-2xl h-[230px] justify-center m-2">
+                        <TouchableOpacity onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }} className="w-6/12 rounded-2xl h-[230px] justify-center m-2">
 
                             <StyledView className="absolute w-full bg-black rounded-2xl opacity-20 h-full" />
                             <StyledView className="absolute flex-row w-full items-center">
@@ -146,6 +142,9 @@ export default function SearchCategory() {
 
 
             </StyledScrollView>
+            <TouchableOpacity onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()} className="absolute left-2 top-2 bg-[#EB3834] p-1 rounded-full">
+                <Ionicons name="chevron-back" size={30} color="white" />
+            </TouchableOpacity>
         </LinearGradient>
     );
 }

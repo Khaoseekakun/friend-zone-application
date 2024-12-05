@@ -45,7 +45,7 @@ export default function SchedulePage() {
             case "schedule_end_success":
                 return "text-green-600";   // Schedule complete
             default:
-                return "text-gray-500";    // Unknown status
+                return "text-gray-500 dark:text-gray-200";    // Unknown status
         }
     };
 
@@ -204,7 +204,7 @@ export default function SchedulePage() {
     return (
         <StyledView className="flex-1">
             <HeaderApp />
-            <StyledView className="flex-1 bg-gray-200 dark:bg-black px-2 pt-2">
+            <StyledView className="flex-1 bg-gray-200 dark:bg-neutral-900 px-2 pt-2">
                 {loading ? (
                     <>
                         <ActivityIndicator size="large" color="#EB3834" />
@@ -212,34 +212,35 @@ export default function SchedulePage() {
                     </>
                 ) :
                     schedule.length > 0 ? (
-                        <ScrollView
-                        >
+                        <ScrollView style={{
+                            paddingBottom: 100
+                        }}>
                             {
                                 schedule.map((item, index) => (
-                                    <StyledView key={`${item.id}-${index}-${userData.id}-${randomInt}`}>
-                                        <StyledView className="bg-white rounded-b-2xl rounded-tr-2xl w-full h-auto p-3">
-                                            <StyledText className="font-custom">รายละเอียดการนัดหมาย</StyledText>
-                                            <StyledText className="font-custom text-gray-500">{DateFromat(item.date)}</StyledText>
-                                            <StyledText className="font-custom text-gray-500">สถานที่ {item.location}</StyledText>
+                                    <StyledView key={`${item.id}-${index}-${userData.id}-${randomInt}`} className={`${index == schedule.length -1 ? "mb-[120px]" : null}`}>
+                                        <StyledView className="bg-white dark:bg-neutral-600 rounded-b-2xl rounded-tr-2xl w-full h-auto p-3">
+                                            <StyledText className="font-custom text-gray-500 dark:text-gray-200">รายละเอียดการนัดหมาย</StyledText>
+                                            <StyledText className="font-custom text-gray-500 dark:text-gray-200">{DateFromat(item.date)}</StyledText>
+                                            <StyledText className="font-custom text-gray-500 dark:text-gray-200">สถานที่ {item.location}</StyledText>
                                             <StyledView className="w-full h-[1px] bg-gray-600 my-2"></StyledView>
-                                            <StyledText className="font-custom text-gray-500">รูปแบบงาน</StyledText>
+                                            <StyledText className="font-custom text-gray-500 dark:text-gray-200">รูปแบบงาน</StyledText>
 
-                                            <StyledText className="flex-row gap-2 py-2">
+                                            <StyledText className="flex-row gap-2 py-2 text-gray-500 dark:text-gray-200 px-2">
                                                 {
                                                     item.jobs
                                                 }
                                             </StyledText>
 
                                             <StyledView className="flex-row py-2 justify-between mt-5">
-                                                <StyledText className="font-custom text-gray-500 text-xl">ทำเนียมการนัดหมาย (Moo)</StyledText>
-                                                <StyledText className="font-custom text-gray-500 text-xl">200.00 ฿</StyledText>
+                                                <StyledText className="font-custom text-gray-500 dark:text-gray-200 text-xl">ทำเนียมการนัดหมาย (Moo)</StyledText>
+                                                <StyledText className="font-custom text-gray-500 dark:text-gray-200 text-xl">200.00 ฿</StyledText>
                                             </StyledView>
 
                                             {
                                                 item.status === "wait_payment" && userData.role == "customer" ? (
                                                     <StyledView className="flex-row py-2 justify-end gap-2 items-center">
                                                         <StyledTouchableOpacity onPress={() => updateScheduleStatus(item.id, 'schedule_cancel', "ยืนยันการยกเลิกการนัดหมาย")}>
-                                                            <StyledText className="font-custom text-gray-500 text-xl">ยกเลิก</StyledText>
+                                                            <StyledText className="font-custom text-gray-500 dark:text-gray-200 text-xl">ยกเลิก</StyledText>
                                                         </StyledTouchableOpacity>
                                                         <StyledTouchableOpacity
 
@@ -259,7 +260,7 @@ export default function SchedulePage() {
                                                 ) : item.status === "wait_approve" && userData.role === "member" ? (
                                                     <StyledView className="flex-row py-2 justify-end gap-2 items-center">
                                                         <StyledTouchableOpacity onPress={() => updateScheduleStatus(item.id, 'schedule_cancel', "ยืนยันการยกเลิกการนัดหมาย")}>
-                                                            <StyledText className="font-custom text-gray-500 text-xl">ยกเลิก</StyledText>
+                                                            <StyledText className="font-custom text-gray-500 dark:text-gray-200 text-xl">ยกเลิก</StyledText>
                                                         </StyledTouchableOpacity>
                                                         <StyledTouchableOpacity
                                                             onPress={() => updateScheduleStatus(item.id, 'wait_payment', 'ยืนยันการนัดหมาย')}
