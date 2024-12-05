@@ -13,11 +13,13 @@ import axios from "axios";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
+const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledImage = styled(Image);
+const StyledIcon = styled(Ionicons);
 const Logo = require("../../assets/images/logo.png");
 const GuestIcon = require("../../assets/images/guesticon.jpg");
 
-const MESSAGE_LIMIT = 20;
+const MESSAGE_LIMIT = 10;
 
 export default function Chat() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -50,6 +52,9 @@ export default function Chat() {
     const [channels, setChannels] = useState<Channel[]>([]);
     const [channelId, setChatId] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
+
+
+    const [inputFocus, setInputFocus] = useState(false);
 
     const sendPushNotification = async (receiverId: string, notify: {
         title: string;
@@ -104,12 +109,7 @@ export default function Chat() {
                     limitToLast(MESSAGE_LIMIT + 1)
                 )
                 :
-                query(
-                    messagesRef,
-                    orderByChild("timestamp"),
-                    endAt((Date.now() / 1000).toFixed(0), "timestamp"),
-                    limitToLast(MESSAGE_LIMIT)
-                );
+                query(messagesRef, orderByChild("timestamp"), limitToLast(MESSAGE_LIMIT));
 
             const snapshot = await get(queryConfig);
             if (snapshot.exists()) {
@@ -368,17 +368,17 @@ export default function Chat() {
 
 
     return (
-        <StyledView className="flex-1 bg-white">
-            <StyledView className="bg-white px-3 text-center pt-[60px] pb-3">
-                <TouchableOpacity onPress={() => navigation.navigate("MessageTab", {})} className="absolute pt-[60] ml-4">
-                    <Ionicons name="chevron-back" size={24} color="" />
-                </TouchableOpacity>
-                <StyledText className="text-center self-center text-lg font-bold text-black">{chatName}</StyledText>
-            </StyledView>
+        <StyledView className="flex-1 bg-white dark:bg-neutral-900">
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
+                <StyledView className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[60px]"} justify-center border-b-[1px] pt-3 border-gray-200 dark:border-neutral-800`}>
+                    <TouchableOpacity onPress={() => navigation.navigate("MessageTab", {})} className="absolute ml-4">
+                        <StyledIcon name="chevron-back" size={24} className="text-black dark:text-white"/>
+                    </TouchableOpacity>
+                    <StyledText className="text-center self-center text-lg font-custom text-black dark:text-white">{chatName}</StyledText>
+                </StyledView>
                 {isLoading && !refreshing ? (
                     <StyledView className="flex-1 items-center justify-center">
                         <ActivityIndicator size="large" color="#EB3834" />
@@ -408,32 +408,60 @@ export default function Chat() {
                         }}
 
                     />
-
-
                 )}
 
-                <StyledView className="self-center px-2 items-center gap-2 relative py-2 w-full border-t border-gray-200">
-                    <StyledView className="flex-row w-full items-center min-h-[36px] bg-gray-100 rounded-lg px-4 mb-6">
+                <StyledView className="self-center max-h-[120px] px-2 items-center justify-center py-3 w-full border-t border-gray-200 bg-white dark:bg-neutral-900 dark:border-neutral-800 ">
+                    <StyledView className="w-full max-h-[120px] bg-white dark:bg-neutral-800 rounded-3xl mb-3"
+                    >
                         <StyledTextInput
-                            placeholder="พิมพ์ข้อความ..."
-                            className="flex-1 py-2 text-base"
-                            value={newMessage}
-                            onChangeText={setNewMessage}
                             multiline
-                            onFocus={scrollToBottom}
-                        />
-                        {isSending ? (
-                            <ActivityIndicator size="small" color="#EB3834" />
-                        ) : (
-                            <TouchableOpacity onPress={sendMessage} disabled={!newMessage.trim()} className="-right-2">
-                                <Ionicons name="send" size={24} color={newMessage.trim() ? "#EB3834" : "gray"} />
-                            </TouchableOpacity>
-                        )}
+                            className={`w-full px-4 font-custom ${inputFocus ? "max-h-[120px]" : "max-h-[50px]"} dark:text-white py-3 pr-[50px]`}
+                            onChangeText={(text) => {
+                                setNewMessage(text);
+                                setInputFocus(true);
+                            }}
+                            placeholder="พิมพ์ข้อความ..."
+                            value={newMessage}
+                            onPress={() => setInputFocus(true)}
+                        >
+
+                        </StyledTextInput>
+                        {
+                            newMessage.length > 0 ? (
+                                <StyledView className="absolute right-0 h-[45px] w-[45px] bottom-0">
+                                    <StyledTouchableOpacity 
+                                    onPress={sendMessage}
+                                    >
+                                        <StyledView className="w-full h-full rounded-full items-center justify-center flex-row">
+                                            <StyledIcon name="send" size={30} className="self-center mr-2 text-white">
+
+                                            </StyledIcon>
+                                        </StyledView>
+                                    </StyledTouchableOpacity>
+                                </StyledView>
+                            ) : (
+                                <StyledView className="absolute right-4 h-[45px] w-[90px]">
+                                    <StyledView className="w-full h-full rounded-full items-center justify-center flex-row">
+
+                                        <StyledIcon name="mic-outline" size={30} className="self-center mr-2 text-white">
+
+                                        </StyledIcon>
+
+                                        <StyledIcon name="image-outline" size={30} className="self-center mr-2 text-white">
+
+                                        </StyledIcon>
+                                        <StyledIcon name="camera-outline" size={30} className="self-center mr-2 text-white">
+
+                                        </StyledIcon>
+                                    </StyledView>
+                                </StyledView>
+                            )
+                        }
                     </StyledView>
                 </StyledView>
-            </KeyboardAvoidingView>
+            </KeyboardAvoidingView >
 
-        </StyledView>
+        </StyledView >
     );
 }
 
