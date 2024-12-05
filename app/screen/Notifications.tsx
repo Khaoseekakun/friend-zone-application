@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from 'react';
 import {
   View,
   Text,
@@ -9,251 +9,256 @@ import {
   Platform,
   SafeAreaView,
   Image,
-} from "react-native";
-import { ChevronLeft } from "lucide-react-native";
-import { NavigationProp } from "@react-navigation/native";
+} from 'react-native';
+import { ChevronLeft, Heart, MessageCircle, Calendar, Bell } from 'lucide-react-native';
+import { NavigationProp } from '@react-navigation/native';
+
+type NotificationType = 'like' | 'comment' | 'appointment' | 'message' | 'system';
 
 interface Notification {
-  id: number;
-  username: string;
-  action: string;
+  id: string;
+  type: NotificationType;
+  content: string;
   timestamp: string;
-  type: 'like' | 'follow' | 'comment' | 'tag';
-  read: boolean;
+  isRead: boolean;
+  data: {
+    postId?: string;
+    appointmentId?: string;
+    chatId?: string;
+    userId?: string;
+  };
+  user?: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
 }
 
-interface NotificationGroups {
-  today: Notification[];
-  yesterday: Notification[];
-  thisWeek: Notification[];
-  older: Notification[];
-}
-
-interface NotificationPageProps {
+interface Props {
   navigation: NavigationProp<any>;
 }
 
-// ฟังก์ชันสำหรับแปลงเวลา
-const formatNotificationTime = (dateString: string): string => {
-  const now: Date = new Date();
-  const date: Date = new Date(dateString);
-  const diffTime: number = now.getTime() - date.getTime();
-  const diffDays: number = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  const diffHours: number = Math.floor(diffTime / (1000 * 60 * 60));
-  const diffMinutes: number = Math.floor(diffTime / (1000 * 60));
+export default function NotificationsScreen({ navigation }: Props) {
+  const isDark = useColorScheme() === 'dark';
+  const isIOS = Platform.OS === 'ios';
 
-  if (diffMinutes < 1) return 'เมื่อสักครู่';
-  if (diffMinutes < 60) return `${diffMinutes} นาทีที่แล้ว`;
-  if (diffHours < 24) return `${diffHours} ชั่วโมงที่แล้ว`;
-  if (diffDays < 7) return `${diffDays} วันที่แล้ว`;
-  
-  return date.toLocaleDateString('th-TH', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-};
-
-// ฟังก์ชันสำหรับจัดกลุ่มการแจ้งเตือนตามวัน
-const groupNotificationsByDate = (notifications: Notification[]): NotificationGroups => {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const lastWeek = new Date(today);
-  lastWeek.setDate(lastWeek.getDate() - 7);
-
-  return notifications.reduce((groups: NotificationGroups, notification: Notification) => {
-    const notifDate = new Date(notification.timestamp);
-
-    if (notifDate >= today) {
-      groups.today.push(notification);
-    } else if (notifDate >= yesterday) {
-      groups.yesterday.push(notification);
-    } else if (notifDate >= lastWeek) {
-      groups.thisWeek.push(notification);
-    } else {
-      groups.older.push(notification);
+  const getNotificationIcon = (type: NotificationType) => {
+    switch (type) {
+      case 'like':
+        return <Heart size={20} color="#FF4B4B" />;
+      case 'comment':
+        return <MessageCircle size={20} color="#4B7BFF" />;
+      case 'appointment':
+        return <Calendar size={20} color="#47C479" />;
+      case 'message':
+        return <MessageCircle size={20} color="#9B51E0" />;
+      case 'system':
+        return <Bell size={20} color="#FFA726" />;
     }
+  };
 
-    return groups;
-  }, { today: [], yesterday: [], thisWeek: [], older: [] });
-};
+  const formatTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor(diff / (1000 * 60));
 
-export default function NotificationPage({ navigation }: NotificationPageProps) {
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === "dark";
-  const isIOS = Platform.OS === "ios";
-  
-  const [notifications] = useState<Notification[]>([
-    {
-      id: 1,
-      username: "username_1",
-      action: "ถูกใจรูปภาพของคุณ",
-      timestamp: "2024-12-05T13:20:12",
-      type: "like",
-      read: false,
-    },
-    {
-      id: 2,
-      username: "another_user",
-      action: "เริ่มติดตามคุณ",
-      timestamp: "2024-12-04T10:15:00",
-      type: "follow",
-      read: false,
-    },
-    {
-      id: 3,
-      username: "user_3",
-      action: "แสดงความคิดเห็นในโพสต์ของคุณ: 'สวยมากเลย! 🔥'",
-      timestamp: "2024-12-03T08:30:00",
-      type: "comment",
-      read: true,
-    },
-    {
-      id: 4,
-      username: "username_4",
-      action: "แท็กคุณในโพสต์",
-      timestamp: "2024-11-30T15:45:00",
-      type: "tag",
-      read: true,
-    },
-  ]);
+    if (minutes < 1) return 'เมื่อสักครู่';
+    if (minutes < 60) return `${minutes} นาทีที่แล้ว`;
+    if (hours < 24) return `${hours} ชั่วโมงที่แล้ว`;
+    if (days < 7) return `${days} วันที่แล้ว`;
+    
+    return date.toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
 
-  const groupedNotifications = groupNotificationsByDate(notifications);
+  const handlePress = (notification: Notification) => {
+    // ตรวจสอบประเภทและนำทางไปยังหน้าที่เกี่ยวข้อง
+    switch (notification.type) {
+      case 'appointment':
+        navigation.navigate('AppointmentDetail', { id: notification.data.appointmentId });
+        break;
+      case 'message':
+        navigation.navigate('Chat', { id: notification.data.chatId });
+        break;
+      case 'like':
+      case 'comment':
+        navigation.navigate('Post', { id: notification.data.postId });
+        break;
+    }
+  };
+
+  const notifications: Notification[] = [
+    {
+      id: '1',
+      type: 'appointment',
+      content: 'ต้องการนัดเจอกันที่ร้านกาแฟ',
+      timestamp: '2024-12-05T10:30:00',
+      isRead: false,
+      data: { appointmentId: '123' },
+      user: {
+        id: '1',
+        name: 'John Doe',
+        avatar: '/api/placeholder/40/40',
+      },
+    },
+    {
+      id: '2',
+      type: 'system',
+      content: 'การนัดหมายของคุณกับ Sarah จะเริ่มในอีก 1 ชั่วโมง',
+      timestamp: '2024-12-05T09:15:00',
+      isRead: false,
+      data: { appointmentId: '124' },
+    },
+    {
+      id: '3',
+      type: 'message',
+      content: 'ส่งข้อความถึงคุณ',
+      timestamp: '2024-12-04T15:20:00',
+      isRead: true,
+      data: { chatId: '456' },
+      user: {
+        id: '2',
+        name: 'Jane Smith',
+        avatar: '/api/placeholder/40/40',
+      },
+    },
+    {
+      id: '4',
+      type: 'like',
+      content: 'ถูกใจโพสต์ของคุณ',
+      timestamp: '2024-12-04T12:00:00',
+      isRead: true,
+      data: { postId: '789' },
+      user: {
+        id: '3',
+        name: 'Mike Wilson',
+        avatar: '/api/placeholder/40/40',
+      },
+    },
+  ];
 
   const styles = StyleSheet.create({
     safeArea: {
       flex: 1,
-      backgroundColor: isDarkMode ? "#000" : "#fff",
+      backgroundColor: isDark ? '#000' : '#fff',
     },
     container: {
       flex: 1,
     },
     header: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       paddingHorizontal: 16,
       paddingTop: isIOS ? 8 : 16,
       paddingBottom: 8,
       borderBottomWidth: 0.5,
-      borderBottomColor: isDarkMode ? "#333" : "#ddd",
-    },
-    headerLeft: {
-      flexDirection: "row",
-      alignItems: "center",
-      flex: 1,
-    },
-    backButton: {
-      marginRight: 16,
+      borderBottomColor: isDark ? '#333' : '#ddd',
     },
     headerTitle: {
       fontSize: 20,
-      fontWeight: "700",
-      color: isDarkMode ? "white" : "black",
+      fontWeight: '700',
+      color: isDark ? '#fff' : '#000',
+      marginLeft: 12,
     },
-    sectionTitle: {
-      fontSize: 15,
-      fontWeight: "600",
-      color: isDarkMode ? "#fff" : "#000",
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      backgroundColor: isDarkMode ? "#000" : "#fff",
+    notificationContainer: {
+      flexDirection: 'row',
+      padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: isDark ? '#222' : '#f5f5f5',
+      backgroundColor: isDark ? '#000' : '#fff',
     },
-    notificationItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      backgroundColor: isDarkMode ? "#000" : "#fff",
-    },
-    unreadNotification: {
-      backgroundColor: isDarkMode ? "#111" : "#fafafa",
+    unread: {
+      backgroundColor: isDark ? '#111' : '#f8f8f8',
     },
     avatar: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       marginRight: 12,
-      backgroundColor: "#ddd",
     },
-    contentContainer: {
+    systemIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: isDark ? '#333' : '#f0f0f0',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 12,
+    },
+    content: {
       flex: 1,
     },
-    usernameText: {
-      fontSize: 13,
-      fontWeight: "600",
-      color: isDarkMode ? "#fff" : "#000",
+    name: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: isDark ? '#fff' : '#000',
+      marginBottom: 4,
     },
-    actionText: {
-      fontSize: 13,
-      color: isDarkMode ? "#bbb" : "#666",
-      flex: 1,
+    message: {
+      fontSize: 14,
+      color: isDark ? '#bbb' : '#666',
+      marginBottom: 4,
     },
-    timeText: {
+    time: {
       fontSize: 12,
-      color: isDarkMode ? "#666" : "#999",
-      marginTop: 4,
+      color: isDark ? '#666' : '#999',
+    },
+    iconContainer: {
+      position: 'absolute',
+      bottom: -6,
+      right: 8,
+      backgroundColor: isDark ? '#000' : '#fff',
+      borderRadius: 12,
+      padding: 4,
+      borderWidth: 1.5,
+      borderColor: isDark ? '#333' : '#eee',
     },
   });
 
-  const renderNotificationItem = (notification) => (
+  const NotificationItem = ({ item }: { item: Notification }) => (
     <TouchableOpacity
-      key={notification.id}
-      style={[
-        styles.notificationItem,
-        !notification.read && styles.unreadNotification,
-      ]}
+      style={[styles.notificationContainer, !item.isRead && styles.unread]}
+      onPress={() => handlePress(item)}
     >
-      <Image
-        source={{ uri: "/api/placeholder/44/44" }}
-        style={styles.avatar}
-      />
-      <View style={styles.contentContainer}>
-        <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-          <Text style={styles.usernameText}>{notification.username}</Text>
-          <Text style={styles.actionText}>{" " + notification.action}</Text>
+      {item.type === 'system' ? (
+        <View style={styles.systemIcon}>
+          {getNotificationIcon(item.type)}
         </View>
-        <Text style={styles.timeText}>
-          {formatNotificationTime(notification.timestamp)}
-        </Text>
+      ) : (
+        <View>
+          <Image source={{ uri: item.user?.avatar }} style={styles.avatar} />
+          <View style={styles.iconContainer}>
+            {getNotificationIcon(item.type)}
+          </View>
+        </View>
+      )}
+      <View style={styles.content}>
+        {item.user && <Text style={styles.name}>{item.user.name}</Text>}
+        <Text style={styles.message}>{item.content}</Text>
+        <Text style={styles.time}>{formatTime(item.timestamp)}</Text>
       </View>
     </TouchableOpacity>
   );
-
-  const renderSection = (title, notifications) => {
-    if (notifications.length === 0) return null;
-    return (
-      <>
-        <Text style={styles.sectionTitle}>{title}</Text>
-        {notifications.map(renderNotificationItem)}
-      </>
-    );
-  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
-              <ChevronLeft
-                size={28}
-                color={isDarkMode ? "white" : "black"}
-              />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>การแจ้งเตือน</Text>
-          </View>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <ChevronLeft size={24} color={isDark ? '#fff' : '#000'} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>การแจ้งเตือน</Text>
         </View>
-
         <ScrollView>
-          {renderSection("วันนี้", groupedNotifications.today)}
-          {renderSection("เมื่อวาน", groupedNotifications.yesterday)}
-          {renderSection("สัปดาห์นี้", groupedNotifications.thisWeek)}
-          {renderSection("ก่อนหน้านี้", groupedNotifications.older)}
+          {notifications.map((notification) => (
+            <NotificationItem key={notification.id} item={notification} />
+          ))}
         </ScrollView>
       </View>
     </SafeAreaView>
