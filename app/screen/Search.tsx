@@ -11,7 +11,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import HeartIcon from "@/components/svg/heart";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Location from 'expo-location';
 import { getAge } from "@/utils/Date";
+import { LatLng } from 'react-native-maps';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -77,6 +79,9 @@ export default function Search() {
     const [ratingFilter, setRatingFilter] = useState<number[]>([]);
     const [genderFilter, setGenderFilter] = useState<string[]>([]);
     const [isUserDataLoaded, setIsUserDataLoaded] = useState(false);
+    const [hasLocationPermission, setHasLocationPermission] = useState(false);
+    const [selfPin, setSelfPin] = useState<LatLng | null>(null);
+    const [distance, setDistance] = useState<number>(0);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -92,8 +97,32 @@ export default function Search() {
                 setIsUserDataLoaded(true);
             }
         };
+        const requestLocationPermission = async () => {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status === 'granted') { // แก้ == เป็น ===
+                setHasLocationPermission(true);
+                const location = await Location.getCurrentPositionAsync({}); // แก้จาก requestCurrentPermissionsAsync เป็น getCurrentPositionAsync
+                setSelfPin({
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                });
+        
+                setDistance(getDistanceMemberToCustomer( // แก้ setDestance เป็น setDistance
+                    {
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
+                    },
+                    {
+                        latitude: data.pinLocation[0], // แก้การเข้าถึง pinLocation
+                        longitude: data.pinLocation[1]
+                    }
+                ));
+            }
+        };
 
+        requestLocationPermission();
         fetchUserData();
+
     }, []);
 
     const genderOptions = [
@@ -182,6 +211,30 @@ export default function Search() {
         rows.push(data.slice(i, i + 2));
     }
 
+    /**
+    * @param {LatLng} point1 
+    * @param {LatLng} point2 
+    * @returns {number}
+    */
+    const getDistance = (point1: LatLng, point2: LatLng): number => {
+        const R = 6371000;
+        const dLat = (point2.latitude - point1.latitude) * (Math.PI / 180);
+        const dLon = (point2.longitude - point1.longitude) * (Math.PI / 180);
+        const lat1 = point1.latitude * (Math.PI / 180);
+        const lat2 = point2.latitude * (Math.PI / 180);
+
+        const a =
+            Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    };
+
+
+    const getDistanceMemberToCustomer = (selfPin: LatLng, memberPin: LatLng): number => {
+        return getDistance(selfPin, memberPin);
+    }
+
     const renderGridItem = ({ item }: { item: IMembersDB[] }) => (
         <StyledView style={styles.row}>
             {item.map((data) => (
@@ -212,14 +265,21 @@ export default function Search() {
                                 />
                             </StyledView>
                             <StyledView className="flex-row items-center mt-1">
-                                <HeartIcon />
-                                <StyledText className="font-custom text-white text-lg ml-1">
-                                    {data.rating.toFixed(1)}
-                                </StyledText>
-
-                                <StyledText className="font-custom text-gray-300 text-sm ml-1">
-                                    ({data.reviews.toLocaleString()})
-                                </StyledText>
+                                <StyledView className="flex-row items-center">
+                                    <HeartIcon />
+                                    <StyledText className="font-custom text-white text-lg ml-1">
+                                        {data.rating.toFixed(1)}
+                                    </StyledText>
+                                </StyledView>
+                                <StyledView>
+                                    <StyledText className="font-custom text-gray-300 text-sm ml-1">
+                                        ( 10{distance > 0 && `(${
+                                                distance > 1000
+                                                    ? `${(distance / 1000).toFixed(1)} Km`
+                                                    : `${distance.toFixed(0)} M`
+                                            })`} km.)
+                                    </StyledText>
+                                </StyledView>
                             </StyledView>
                         </StyledView>
 
@@ -266,7 +326,6 @@ export default function Search() {
                                 <StyledText className="font-custom text-gray-300 text-sm ml-1">
                                     ({data.reviews.toLocaleString()})
                                 </StyledText>
-
                             </StyledView>
                         </StyledView>
                     </LinearGradient>
