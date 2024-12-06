@@ -1,353 +1,343 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Platform, KeyboardAvoidingView, Button, TouchableOpacity, Alert, Linking, Modal, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator, Modal, Alert, Linking } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import FireBaseApp from "../../utils/firebaseConfig";
 import { styled } from "nativewind";
-import { Ionicons } from "@expo/vector-icons";
-import { FlatList, ScrollView, TextInput } from "react-native-gesture-handler";
+import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import axios from "axios";
-import { Navigation } from "@/components/Navigation";
-import { HeaderApp } from "@/components/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { getDatabase, ref, onValue, update } from "firebase/database";
-import { StripeProvider, useConfirmPayment } from '@stripe/stripe-react-native';
-import { StyleSheet } from "react-native";
+import FireBaseApp from "../../utils/firebaseConfig";
+import { HeaderApp } from "@/components/Header";
+import { Navigation } from "@/components/Navigation";
+import { Ionicons } from "@expo/vector-icons";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
-const StyledTextInput = styled(TextInput);
-const StyledIonIcon = styled(Ionicons);
-const StyledButton = styled(Button);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 
-export default function SchedulePage() {
-    const navigation = useNavigation<NavigationProp<any>>();
-    const [loading, setLoading] = useState(false);
-    const [schedule, setSchedule] = useState<Schedule[]>([]);
-    const [userData, setUserData] = useState<any>({});
-    const database = getDatabase(FireBaseApp, 'https://friendszone-d1e20-default-rtdb.asia-southeast1.firebasedatabase.app');
-    const [paymentLoading, setPaymentLoading] = useState(false);
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case "wait_approve":
-                return "text-yellow-400";  // Pending approval
-            case "wait_payment":
-                return "text-orange-400";  // Waiting for payment
-            case "payment_success":
-                return "text-green-500";   // Payment success
-            case "wait_working":
-                return "text-blue-400";    // Waiting to work
-            case "schedule_cancel":
-                return "text-red-500";     // Cancelled schedule
-            case "schedule_working":
-                return "text-indigo-500";  // Schedule in progress
-            case "schedule_end_success":
-                return "text-green-600";   // Schedule complete
-            default:
-                return "text-gray-500 dark:text-gray-200";    // Unknown status
-        }
-    };
-
-    useEffect(() => {
-        (async () => {
-            await fetchUserData();
-        })();
-    }, []);
-
-    useEffect(() => {
-        if (userData.id) {
-            loadSchedule();
-        }
-    }, [userData]);
-
-    const fetchUserData = async () => {
-        const userData = await AsyncStorage.getItem('userData');
-        setUserData(JSON.parse(userData as string) || {});
-    };
-
-    const loadSchedule = () => {
-        setLoading(true);
-        try {
-            subscribeToSchedules(userData.id, (schedules) => {
-                return setSchedule(schedules);
-            });
-        } catch (error) {
-            console.log(error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    type Schedule = {
-        id: string;
-        customerId: string;
-        memberId: string;
-        date: string;
-        location: string;
-        jobs: string[];
-        latitude: number;
-        longitude: number;
-        status: string;
-        price?: number;
-        paymentId?: string;
-    };
-
-    const subscribeToSchedules = (
-        userId?: string,
-        onUpdate?: (schedules: Schedule[]) => void
-    ) => {
-        const schedulesRef = ref(database, "schedules");
-        onValue(schedulesRef, (snapshot) => {
-            const schedules: Schedule[] = [];
-
-            snapshot.forEach((childSnapshot) => {
-                const schedule = childSnapshot.val() as Schedule;
-                schedule.id = childSnapshot.key;
-
-                if (
-                    (userId && schedule.customerId === userId) ||
-                    (userId && schedule.memberId === userId)
-                ) {
-                    if (schedule.status !== "deleted") {
-                        schedules.push(schedule);
-                    }
-                }
-            });
-
-            if (onUpdate) {
-                onUpdate(schedules);
-            }
-        });
-    };
-
-    const DateFromat = (date_value: string) => {
-        const dateObj = new Date(date_value);
-        const day = dateObj.toLocaleDateString('th-TH', { weekday: 'long' });
-        const date = dateObj.getDate();
-        const month = dateObj.toLocaleDateString('th-TH', { month: 'long' });
-        const year = dateObj.getFullYear() + 543;
-        const time = dateObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-
-        return `${day} ที่ ${date} ${month} พ.ศ.${year} เวลา ${time} น.`;
-    };
-
-    function updateScheduleStatus(scheduleId: string, status: string, alertMessage?: string) {
-        if (!alertMessage) return updateStatus();
-
-        Alert.alert('คำเตือน', alertMessage, [
-            {
-                style: 'cancel',
-                text: 'ยกเลิก'
-            }, {
-                style: "default",
-                text: 'ยืนยัน',
-                onPress: () => updateStatus()
-            }
-        ])
-
-        async function updateStatus() {
-            try {
-                //firebase update status
-                const scheduleRef = ref(database, `schedules/${scheduleId}`);
-                await update(scheduleRef, { status: status });
-            } catch (error) {
-                console.log(error);
-                Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตสถานะการนัดหมายได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
-            }
-        }
-    }
-
-    const createPayment = async (scheduleId: string) => {
-        const find = schedule.find((item) => item.id === scheduleId);
-        let paymentId = find?.paymentId;
-        if (!find) return Alert.alert('ไม่พบข้อมูล', 'ไม่พบข้อมูลการนัดหมาย', [{ text: 'OK' }]);
-
-        try {
-            setPaymentLoading(true);
-            if (!paymentId) {
-                const response = await axios.post('https://friendszone.app/api/stripe/create-payment-intent', {
-                    amount: (find.price ?? 100) * 100,
-                    customerId: find.customerId,
-                    memberId: find.memberId,
-                    scheduleId: find.id
-                },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Customer ${userData.token}`
-                        }
-                    }
-                )
-
-                if (response.data.status === 200) {
-                    paymentId = response.data.data.url as string
-                    Linking.openURL(paymentId);
-                } else {
-                    console.log(response.data);
-                    Alert.alert('ผิดพลาด', 'ไม่สามารถสร้างรหัสชำระเงินได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
-                }
-            } else {
-                Linking.openURL(paymentId);
-            }
-
-        } catch (error) {
-            console.log(error)
-            Alert.alert('ผิดพลาด', 'ไม่สามารถสร้างรหัสชำระเงินได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
-        } finally {
-            setPaymentLoading(false);
-        }
-    };
-
-    const randomInt = () => Math.floor(Math.random() * 1000 + 1);
-
-    return (
-        <StyledView className="flex-1">
-            <HeaderApp />
-            <StyledView className="flex-1 bg-gray-200 dark:bg-neutral-900 px-2 pt-2">
-                {loading ? (
-                    <>
-                        <ActivityIndicator size="large" color="#EB3834" />
-                        <StyledText className="font-custom text-center">กำลังโหลดข้อมูล...</StyledText>
-                    </>
-                ) :
-                    schedule.length > 0 ? (
-                        <ScrollView style={{
-                            paddingBottom: 100
-                        }}>
-                            {
-                                schedule.map((item, index) => (
-                                    <StyledView key={`${item.id}-${index}-${userData.id}-${randomInt}`} className={`${index == schedule.length -1 ? "mb-[120px]" : null}`}>
-                                        <StyledView className="bg-white dark:bg-neutral-600 rounded-b-2xl rounded-tr-2xl w-full h-auto p-3">
-                                            <StyledText className="font-custom text-gray-500 dark:text-gray-200">รายละเอียดการนัดหมาย</StyledText>
-                                            <StyledText className="font-custom text-gray-500 dark:text-gray-200">{DateFromat(item.date)}</StyledText>
-                                            <StyledText className="font-custom text-gray-500 dark:text-gray-200">สถานที่ {item.location}</StyledText>
-                                            <StyledView className="w-full h-[1px] bg-gray-600 my-2"></StyledView>
-                                            <StyledText className="font-custom text-gray-500 dark:text-gray-200">รูปแบบงาน</StyledText>
-
-                                            <StyledText className="flex-row gap-2 py-2 text-gray-500 dark:text-gray-200 px-2">
-                                                {
-                                                    item.jobs
-                                                }
-                                            </StyledText>
-
-                                            <StyledView className="flex-row py-2 justify-between mt-5">
-                                                <StyledText className="font-custom text-gray-500 dark:text-gray-200 text-xl">ทำเนียมการนัดหมาย (Moo)</StyledText>
-                                                <StyledText className="font-custom text-gray-500 dark:text-gray-200 text-xl">200.00 ฿</StyledText>
-                                            </StyledView>
-
-                                            {
-                                                item.status === "wait_payment" && userData.role == "customer" ? (
-                                                    <StyledView className="flex-row py-2 justify-end gap-2 items-center">
-                                                        <StyledTouchableOpacity onPress={() => updateScheduleStatus(item.id, 'schedule_cancel', "ยืนยันการยกเลิกการนัดหมาย")}>
-                                                            <StyledText className="font-custom text-gray-500 dark:text-gray-200 text-xl">ยกเลิก</StyledText>
-                                                        </StyledTouchableOpacity>
-                                                        <StyledTouchableOpacity
-
-                                                            onPress={() => createPayment(item.id)}
-
-                                                        >
-                                                            <LinearGradient
-                                                                colors={['#EB3834', '#69140F']}
-                                                                start={{ x: 0, y: 0 }}
-                                                                end={{ x: 1, y: 0 }}
-                                                                className="rounded-full py-1 shadow-sm"
-                                                            >
-                                                                <StyledText className="font-custom text-white text-xl px-4">ชำระเงิน</StyledText>
-                                                            </LinearGradient>
-                                                        </StyledTouchableOpacity>
-                                                    </StyledView>
-                                                ) : item.status === "wait_approve" && userData.role === "member" ? (
-                                                    <StyledView className="flex-row py-2 justify-end gap-2 items-center">
-                                                        <StyledTouchableOpacity onPress={() => updateScheduleStatus(item.id, 'schedule_cancel', "ยืนยันการยกเลิกการนัดหมาย")}>
-                                                            <StyledText className="font-custom text-gray-500 dark:text-gray-200 text-xl">ยกเลิก</StyledText>
-                                                        </StyledTouchableOpacity>
-                                                        <StyledTouchableOpacity
-                                                            onPress={() => updateScheduleStatus(item.id, 'wait_payment', 'ยืนยันการนัดหมาย')}
-                                                        >
-                                                            <LinearGradient
-                                                                colors={['#EB3834', '#69140F']}
-                                                                start={{ x: 0, y: 0 }}
-                                                                end={{ x: 1, y: 0 }}
-                                                                className="rounded-full py-1 shadow-sm"
-                                                            >
-                                                                <StyledText className="font-custom text-white text-xl px-4">ยืนยันการนัดหมาย</StyledText>
-                                                            </LinearGradient>
-                                                        </StyledTouchableOpacity>
-                                                    </StyledView>
-                                                ) : null
-                                            }
-                                        </StyledView>
-                                        <StyledText
-                                            className={`font-custom text-right pr-2 mb-2 ${getStatusColor(item.status)}`}
-                                        >
-                                            {
-                                                item.status === "wait_approve" ?
-                                                    userData.role === "customer" ? "รอการยืนยันจากสมาชิก" : "คำขอรอการตอบกลับ" :
-                                                    item.status === "wait_payment" ?
-                                                        userData.role === "customer" ? "รอการชำระเงิน" : "รอการตรวจสอบการชำระเงิน" :
-                                                        item.status === "payment_success" ?
-                                                            userData.role === "customer" ? "ชำระเงินสำเร็จ (โปรดรอถึงเวลานัดหมาย)" : "การชำระเงินได้รับการยืนยัน (โปรดเตรียมตัวสำหรับการนัดหมาย)" :
-                                                            item.status === "wait_working" ?
-                                                                userData.role === "customer" ? "รอการทำงาน" : "กำลังเตรียมงาน" :
-                                                                item.status === "schedule_cancel" ?
-                                                                    userData.role === "customer" ? "การนัดหมายถูกยกเลิก" : "การนัดหมายถูกยกเลิก" :
-                                                                    item.status === "schedule_working" ?
-                                                                        userData.role === "customer" ? "กำลังทำงาน" : "กำลังทำงาน" :
-                                                                        item.status === "schedule_end_success" ?
-                                                                            userData.role === "customer" ? "การนัดหมายสิ้นสุด (สำเร็จ)" : "การนัดหมายสิ้นสุด (สำเร็จ)" :
-                                                                            "สถานะไม่รู้จัก" // Default value for unknown statuses
-                                            }
-                                        </StyledText>
-
-
-                                    </StyledView>
-                                ))
-                            }
-
-                        </ScrollView>
-                    ) : (
-                        <StyledView className="flex-1 justify-center items-center">
-                            <StyledText className="text-lg font-custom">ไม่พบข้อมูล</StyledText>
-                        </StyledView>
-                    )
-                }
-
-
-            </StyledView>
-            <Navigation current="SchedulePage" />
-            <Modal visible={paymentLoading} transparent={true} animationType="fade">
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <ActivityIndicator size="large" color="#EB3834" />
-                        <StyledText className="font-custom" style={styles.modalText}>โปรดรอสักครู่กำลังสร้างรายการชำระเงิน...</StyledText>
-                    </View>
-                </View>
-            </Modal>
-        </StyledView>
-
-
-
-    );
+interface Schedule {
+  id: string;
+  customerId: string;
+  memberId: string;
+  date: string;
+  location: string;
+  jobs: string;
+  latitude: number;
+  longitude: number;
+  status: string;
+  price?: number;
+  paymentId?: string;
 }
 
-const styles = StyleSheet.create({
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContent: {
-        width: 200,
-        padding: 20,
-        backgroundColor: 'white',
-        borderRadius: 10,
-        alignItems: 'center',
-    },
-    modalText: {
-        marginTop: 10,
-        fontSize: 16,
-        color: '#333',
+const STATUS_DISPLAY = {
+  wait_approve: {
+    customer: "รอการยืนยันจากสมาชิก",
+    member: "คำขอรอการตอบกลับ",
+    color: "text-yellow-400"
+  },
+  wait_payment: {
+    customer: "รอการชำระเงิน",
+    member: "รอการตรวจสอบการชำระเงิน",
+    color: "text-orange-400"
+  },
+  payment_success: {
+    customer: "ชำระเงินสำเร็จ (โปรดรอถึงเวลานัดหมาย)",
+    member: "การชำระเงินได้รับการยืนยัน (โปรดเตรียมตัวสำหรับการนัดหมาย)",
+    color: "text-green-500"
+  },
+  schedule_cancel: {
+    customer: "การนัดหมายถูกยกเลิก",
+    member: "การนัดหมายถูกยกเลิก",
+    color: "text-red-500"
+  },
+  schedule_working: {
+    customer: "กำลังทำงาน",
+    member: "กำลังทำงาน",
+    color: "text-indigo-500"
+  },
+  schedule_end_success: {
+    customer: "การนัดหมายสิ้นสุด (สำเร็จ)",
+    member: "การนัดหมายสิ้นสุด (สำเร็จ)",
+    color: "text-green-600"
+  }
+};
+
+export default function SchedulePage() {
+  const navigation = useNavigation<NavigationProp<any>>();
+  const [loading, setLoading] = useState(true);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [userData, setUserData] = useState<any>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const database = getDatabase(FireBaseApp, 'https://friendszone-d1e20-default-rtdb.asia-southeast1.firebasedatabase.app');
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const data = await AsyncStorage.getItem('userData');
+      console.log('User Data from AsyncStorage:', data);
+      
+      if (data) {
+        const parsedData = JSON.parse(data);
+        setUserData(parsedData);
+        console.log('Parsed User Data:', parsedData);
+        subscribeToSchedules(parsedData.id);
+      } else {
+        setError('ไม่พบข้อมูลผู้ใช้');
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      setError('เกิดข้อผิดพลาดในการโหลดข้อมูลผู้ใช้');
+      setLoading(false);
     }
-});
+  };
+
+  const subscribeToSchedules = (userId: string) => {
+    console.log('Subscribing to schedules for user:', userId);
+    
+    try {
+      const schedulesRef = ref(database, 'schedules');
+      
+      onValue(schedulesRef, (snapshot) => {
+        console.log('Received Firebase snapshot');
+        const schedulesData: Schedule[] = [];
+        
+        snapshot.forEach((childSnapshot) => {
+          const schedule = childSnapshot.val();
+          console.log('Schedule data:', schedule);
+          
+          if (schedule && 
+              (schedule.customerId === userId || schedule.memberId === userId) && 
+              schedule.status !== 'deleted') {
+            schedulesData.push({
+              ...schedule,
+              id: childSnapshot.key as string
+            });
+          }
+        });
+        
+        console.log('Processed schedules:', schedulesData);
+        setSchedules(schedulesData);
+        setLoading(false);
+      }, (error) => {
+        console.error('Firebase subscription error:', error);
+        setError('เกิดข้อผิดพลาดในการโหลดข้อมูลการนัดหมาย');
+        setLoading(false);
+      });
+    } catch (error) {
+      console.error('Error setting up Firebase subscription:', error);
+      setError('เกิดข้อผิดพลาดในการเชื่อมต่อกับฐานข้อมูล');
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('th-TH', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return dateString;
+    }
+  };
+
+  const updateStatus = async (scheduleId: string, newStatus: string, message?: string) => {
+    const updateScheduleStatus = async () => {
+      try {
+        await update(ref(database, `schedules/${scheduleId}`), {
+          status: newStatus
+        });
+      } catch (error) {
+        console.error('Status update error:', error);
+        Alert.alert('ข้อผิดพลาด', 'ไม่สามารถอัพเดทสถานะได้ กรุณาลองใหม่');
+      }
+    };
+
+    if (message) {
+      Alert.alert('ยืนยัน', message, [
+        { text: 'ยกเลิก', style: 'cancel' },
+        { text: 'ยืนยัน', onPress: updateScheduleStatus }
+      ]);
+    } else {
+      await updateScheduleStatus();
+    }
+  };
+
+  const createPayment = async (scheduleId: string) => {
+    const schedule = schedules.find(s => s.id === scheduleId);
+    if (!schedule) return;
+
+    setPaymentLoading(true);
+    try {
+      if (schedule.paymentId) {
+        await Linking.openURL(schedule.paymentId);
+      } else {
+        const response = await axios.post(
+          'https://friendszone.app/api/stripe/create-payment-intent',
+          {
+            amount: (schedule.price || 200) * 100,
+            customerId: schedule.customerId,
+            memberId: schedule.memberId,
+            scheduleId: schedule.id
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Customer ${userData.token}`
+            }
+          }
+        );
+
+        if (response.data.status === 200) {
+          await Linking.openURL(response.data.data.url);
+        } else {
+          throw new Error('Payment creation failed');
+        }
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถสร้างรายการชำระเงินได้ กรุณาลองใหม่');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  const ScheduleItem = ({ schedule }: { schedule: Schedule }) => {
+    const status = STATUS_DISPLAY[schedule.status as keyof typeof STATUS_DISPLAY];
+    
+    return (
+      <StyledView className="mb-4 bg-white dark:bg-neutral-800 rounded-xl p-4 shadow-sm">
+        <StyledText className={`text-right mb-2 font-custom ${status?.color}`}>
+          {userData.role === 'customer' ? status?.customer : status?.member}
+        </StyledText>
+
+        <StyledView className="border-t border-gray-100 dark:border-gray-700 pt-4">
+          <StyledText className="font-custom text-gray-600 dark:text-gray-300">
+            {formatDate(schedule.date)}
+          </StyledText>
+          
+          <StyledText className="font-custom text-gray-600 dark:text-gray-300 mt-2">
+            สถานที่: {schedule.location}
+          </StyledText>
+
+          <StyledText className="font-custom text-gray-600 dark:text-gray-300 mt-2">
+            รูปแบบงาน: {schedule.jobs}
+          </StyledText>
+
+          <StyledView className="flex-row justify-between items-center mt-4">
+            <StyledText className="font-custom text-gray-700 dark:text-gray-300">
+              ค่าธรรมเนียม
+            </StyledText>
+            <StyledText className="font-custom text-xl text-gray-800 dark:text-gray-200">
+              ฿{(schedule.price || 200).toFixed(2)}
+            </StyledText>
+          </StyledView>
+
+          {((schedule.status === 'wait_payment' && userData.role === 'customer') ||
+            (schedule.status === 'wait_approve' && userData.role === 'member')) && (
+            <StyledView className="flex-row justify-end mt-4 space-x-3">
+              <StyledTouchableOpacity
+                className="bg-gray-200 dark:bg-neutral-700 px-4 py-2 rounded-full"
+                onPress={() => updateStatus(schedule.id, 'schedule_cancel', 'ยืนยันการยกเลิกการนัดหมาย?')}
+              >
+                <StyledText className="font-custom text-gray-700 dark:text-gray-300">
+                  ยกเลิก
+                </StyledText>
+              </StyledTouchableOpacity>
+
+              <StyledTouchableOpacity
+                onPress={() => {
+                  if (schedule.status === 'wait_payment') {
+                    createPayment(schedule.id);
+                  } else {
+                    updateStatus(schedule.id, 'wait_payment', 'ยืนยันการนัดหมาย?');
+                  }
+                }}
+              >
+                <LinearGradient
+                  colors={['#EB3834', '#69140F']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  className="rounded-full px-6 py-2"
+                >
+                  <StyledText className="font-custom text-white">
+                    {schedule.status === 'wait_payment' ? 'ชำระเงิน' : 'ยืนยัน'}
+                  </StyledText>
+                </LinearGradient>
+              </StyledTouchableOpacity>
+            </StyledView>
+          )}
+        </StyledView>
+      </StyledView>
+    );
+  };
+
+  return (
+    <StyledView className="flex-1 bg-gray-100 dark:bg-neutral-900">
+      <HeaderApp />
+      
+      <StyledView className="flex-1 px-4 pt-4">
+        {loading ? (
+          <StyledView className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#EB3834" />
+            <StyledText className="font-custom mt-4 text-gray-600 dark:text-gray-300">
+              กำลังโหลดข้อมูล...
+            </StyledText>
+          </StyledView>
+        ) : error ? (
+          <StyledView className="flex-1 justify-center items-center">
+            <Ionicons name="alert-circle-outline" size={48} color="#EB3834" />
+            <StyledText className="font-custom text-lg text-red-500 mt-4 text-center">
+              {error}
+            </StyledText>
+          </StyledView>
+        ) : schedules.length > 0 ? (
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 80 }}
+          >
+            {schedules.map((schedule) => (
+              <ScheduleItem 
+                key={schedule.id} 
+                schedule={schedule}
+              />
+            ))}
+          </ScrollView>
+        ) : (
+          <StyledView className="flex-1 justify-center items-center">
+            <Ionicons name="calendar-outline" size={48} color="#666" />
+            <StyledText className="font-custom text-lg text-gray-600 dark:text-gray-300 mt-4">
+              ไม่พบการนัดหมาย
+            </StyledText>
+          </StyledView>
+        )}
+      </StyledView>
+
+      <Navigation current="SchedulePage" />
+
+      <Modal visible={paymentLoading} transparent animationType="fade">
+        <StyledView className="flex-1 bg-black/50 justify-center items-center">
+          <StyledView className="bg-white dark:bg-neutral-800 rounded-xl p-6 w-4/5 max-w-sm">
+            <ActivityIndicator size="large" color="#EB3834" />
+            <StyledText className="font-custom text-center mt-4 text-gray-700 dark:text-gray-300">
+              กำลังสร้างรายการชำระเงิน...
+            </StyledText>
+          </StyledView>
+        </StyledView>
+      </Modal>
+    </StyledView>
+  );
+}
