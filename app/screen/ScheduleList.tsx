@@ -36,17 +36,17 @@ export default function ScheduleList() {
             case "wait_payment":
                 return "text-orange-400";  
             case "payment_success":
-                return "text-green-500";   // Payment success
+                return "text-green-500";
             case "wait_working":
-                return "text-blue-400";    // Waiting to work
+                return "text-blue-400";
             case "schedule_cancel":
-                return "text-red-500";     // Cancelled schedule
+                return "text-red-500";
             case "schedule_working":
-                return "text-indigo-500";  // Schedule in progress
+                return "text-indigo-500";
             case "schedule_end_success":
-                return "text-green-600";   // Schedule complete
+                return "text-green-600";
             default:
-                return "text-gray-500";    // Unknown status
+                return "text-gray-500";
         }
     };
 
