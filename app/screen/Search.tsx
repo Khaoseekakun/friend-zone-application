@@ -93,7 +93,6 @@ export default function Search() {
             } catch (error) {
                 console.error('Error fetching user data:', error);
             } finally {
-                // ตั้งค่าสถานะเมื่อโหลดข้อมูลเสร็จสิ้น
                 setIsUserDataLoaded(true);
             }
         };
@@ -106,17 +105,6 @@ export default function Search() {
                     latitude: location.coords.latitude,
                     longitude: location.coords.longitude,
                 });
-        
-                setDistance(getDistanceMemberToCustomer( // แก้ setDestance เป็น setDistance
-                    {
-                        latitude: location.coords.latitude,
-                        longitude: location.coords.longitude,
-                    },
-                    {
-                        latitude: data.pinLocation[0], // แก้การเข้าถึง pinLocation
-                        longitude: data.pinLocation[1]
-                    }
-                ));
             }
         };
 

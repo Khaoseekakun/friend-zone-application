@@ -37,27 +37,13 @@ export default function SearchCategory() {
             end={{ x: 0, y: 1 }}
             className="flex-1"
         >
-            <StyledScrollView className="flex-1 pt-12">
+            <StyledScrollView className="flex-1 ">
                 {/* Header */}
-                <StyledView className="px-6 pb-6">
-                    <TouchableOpacity 
-                        onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()} 
-                        className="w-10 h-10 rounded-full bg-white/20 items-center justify-center mb-4"
-                    >
-                        <Ionicons name="chevron-back" size={24} color="#fff" />
-                    </TouchableOpacity>
-                    <StyledText className="text-white text-3xl font-bold mb-2">
-                        บริการของเรา
-                    </StyledText>
-                    <StyledText className="text-white/80 text-base">
-                        เลือกบริการที่คุณต้องการ
-                    </StyledText>
-                </StyledView>
 
                 <StyledView className="w-full px-8 items-center mt-5">
                     <StyledView className="flex-row">
-                        <TouchableOpacity 
-                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }} 
+                        <TouchableOpacity
+                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }}
                             className="w-6/12 rounded-2xl h-[230px] justify-center m-2"
                         >
                             <StyledView className="absolute w-full bg-black rounded-2xl opacity-20 h-full" />
@@ -70,9 +56,9 @@ export default function SearchCategory() {
                             </StyledText>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
-                            disabled 
-                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }} 
+                        <TouchableOpacity
+                            disabled
+                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }}
                             className="w-6/12 rounded-2xl h-[230px] justify-center m-2"
                         >
                             <StyledView className="absolute flex-row w-full items-center">
@@ -90,9 +76,9 @@ export default function SearchCategory() {
                     </StyledView>
 
                     <StyledView className="flex-row">
-                        <TouchableOpacity 
-                            disabled 
-                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }} 
+                        <TouchableOpacity
+                            disabled
+                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }}
                             className="w-6/12 rounded-2xl h-[230px] justify-center m-2"
                         >
                             <StyledView className="absolute w-full bg-black rounded-2xl opacity-20 h-full" />
@@ -109,9 +95,9 @@ export default function SearchCategory() {
                             </StyledText>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
-                            disabled 
-                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }} 
+                        <TouchableOpacity
+                            disabled
+                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }}
                             className="w-6/12 rounded-2xl h-[230px] justify-center m-2"
                         >
                             <StyledView className="absolute w-full justify-center items-center">
@@ -128,9 +114,9 @@ export default function SearchCategory() {
                     </StyledView>
 
                     <StyledView className="flex-row">
-                        <TouchableOpacity 
-                            disabled 
-                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }} 
+                        <TouchableOpacity
+                            disabled
+                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }}
                             className="w-6/12 rounded-2xl h-[230px] justify-center m-2"
                         >
                             <StyledView className="absolute w-full bg-black rounded-2xl opacity-20 h-full" />
@@ -146,9 +132,9 @@ export default function SearchCategory() {
                             </StyledText>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
-                            disabled 
-                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }} 
+                        <TouchableOpacity
+                            disabled
+                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }}
                             className="w-6/12 rounded-2xl h-[230px] justify-center m-2"
                         >
                             <StyledView className="absolute justify-center w-full">
@@ -165,6 +151,14 @@ export default function SearchCategory() {
                         </TouchableOpacity>
                     </StyledView>
                 </StyledView>
+
+                
+                <TouchableOpacity
+                    onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()}
+                    className="w-10 h-10 rounded-full bg-white/50 items-center justify-center absolute top-6 left-6"
+                >
+                    <Ionicons name="chevron-back" size={24} color="#fff" />
+                </TouchableOpacity>
             </StyledScrollView>
         </LinearGradient>
     );

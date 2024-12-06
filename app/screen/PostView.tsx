@@ -87,6 +87,10 @@ export default function PostView() {
         }])
     }
 
+    useEffect(() => {
+        setComment([])
+    }, [])
+
 
     const deletePost = async (postId: string) => {
 
@@ -384,18 +388,18 @@ export default function PostView() {
                         <StyledView className='relative justify-start mt-2'>
                             {
                                 commentList.map((comment) => (
-                                    <StyledView key={comment.id} className='flex-row justify-start border-t-[1px] py-2 border-gray-100'>
+                                    <StyledView key={comment.id} className='flex-row justify-start border-t-[1px] py-2 border-gray-100 dark:border-neutral-800'>
                                         <StyledImage className='bg-gray-500 rounded-full w-[30px] h-[30px]'
                                             source={comment.accountType == "customer" ? comment.customer?.profileUrl ? { uri: comment.customer.profileUrl } : GuestIcon : comment.member?.profileUrl ? { uri: comment.member.profileUrl } : GuestIcon} />
                                         <StyledView className='px-2'>
                                             <TouchableOpacity onPress={() => navigation.navigate('ProfileTab', { profileId: comment.accountType == "customer" ? comment.customer?.id as string : comment.member?.id as string})}>
                                                 <StyledView className='flex-row'>
-                                                    <StyledText className='font-custom font-bold'>{comment.accountType == "customer" ? comment.customer?.username : comment.member?.username}</StyledText>
+                                                    <StyledText className='font-custom font-bold dark:text-white'>{comment.accountType == "customer" ? comment.customer?.username : comment.member?.username}</StyledText>
                                                     <StyledText className='pl-2 text-gray-400 font-custom'>{formatTimeDifference(comment.createdAt.toString())}</StyledText>
                                                 </StyledView>
                                             </TouchableOpacity>
 
-                                            <StyledText className='flex-wrap text-gray-700 font-custom pr-6'>
+                                            <StyledText className='flex-wrap text-gray-700 dark:text-gray-300 font-custom pr-6'>
                                                 {comment.content}
                                             </StyledText>
                                         </StyledView>
@@ -417,10 +421,10 @@ export default function PostView() {
                 </ScrollView>
 
             </StyledView>
-            <StyledView className='absolute bottom-0 bg-white w-full border-t-[1px] border-gray-200 px-2 py-2 mb-3'>
+            <StyledView className='absolute bottom-0 bg-white dark:bg-neutral-800 w-full border-t-[1px] border-neutral-200 dark:border-neutral-800 px-2 py-2'>
                 <StyledView className="w-full flex-row items-center justify-between">
                     <StyledView
-                        className="flex-row bg-gray-300 items-center mr-3 pl-4 rounded-full w-full h-[40px]"
+                        className="flex-row bg-gray-300 dark:bg-neutral-600 items-center mr-3 pl-4 rounded-full w-full h-[40px]"
                     >
                         <StyledInput
                             className="font-custom text-black"

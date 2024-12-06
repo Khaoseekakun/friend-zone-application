@@ -101,7 +101,7 @@ export default function Message() {
             await fetchUserData();
             fetchChannelsForUser();
         })()
-    }, [isFocused]);
+    }, []);
 
     const handleChannelPress = (item: Channel) => {
         const receiver = receiverData[item.channel_id];
