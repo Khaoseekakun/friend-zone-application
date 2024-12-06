@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { ChevronLeft, Heart, MessageCircle, Calendar, Bell } from 'lucide-react-native';
 import { NavigationProp } from '@react-navigation/native';
+import { styled } from 'nativewind';
 
 type NotificationType = 'like' | 'comment' | 'appointment' | 'message' | 'system';
 
@@ -69,7 +70,7 @@ export default function NotificationsScreen({ navigation }: Props) {
     if (minutes < 60) return `${minutes} นาทีที่แล้ว`;
     if (hours < 24) return `${hours} ชั่วโมงที่แล้ว`;
     if (days < 7) return `${days} วันที่แล้ว`;
-    
+
     return date.toLocaleDateString('th-TH', {
       year: 'numeric',
       month: 'short',
@@ -81,7 +82,7 @@ export default function NotificationsScreen({ navigation }: Props) {
     // ตรวจสอบประเภทและนำทางไปยังหน้าที่เกี่ยวข้อง
     switch (notification.type) {
       case 'appointment':
-        navigation.navigate('AppointmentDetail', { id: notification.data.appointmentId });
+        navigation.navigate('SchedulePage', { id: notification.data.appointmentId });
         break;
       case 'message':
         navigation.navigate('Chat', { id: notification.data.chatId });
@@ -118,7 +119,7 @@ export default function NotificationsScreen({ navigation }: Props) {
     {
       id: '3',
       type: 'message',
-      content: 'ส่งข้อความถึงคุณ',
+      content: 'แสดงความคิดเห็นในโพสต์ของคุณ',
       timestamp: '2024-12-04T15:20:00',
       isRead: true,
       data: { chatId: '456' },
@@ -221,46 +222,45 @@ export default function NotificationsScreen({ navigation }: Props) {
     },
   });
 
+  const StyledView = styled(View)
+  const StyledText = styled(Text)
+  const StyledTouchableOpacity = styled(TouchableOpacity)
+
   const NotificationItem = ({ item }: { item: Notification }) => (
-    <TouchableOpacity
-      style={[styles.notificationContainer, !item.isRead && styles.unread]}
+    <StyledTouchableOpacity
+      className={`mx-1 px-2 flex-row items-center py-2 ${item.isRead ? 'bg-white' : 'bg-gray-100'}`}
       onPress={() => handlePress(item)}
     >
-      {item.type === 'system' ? (
-        <View style={styles.systemIcon}>
+
+      <StyledView>
+        <StyledView className=' items-center bg-white p-2 rounded-full mr-2'>
           {getNotificationIcon(item.type)}
-        </View>
-      ) : (
-        <View>
-          <Image source={{ uri: item.user?.avatar }} style={styles.avatar} />
-          <View style={styles.iconContainer}>
-            {getNotificationIcon(item.type)}
-          </View>
-        </View>
-      )}
-      <View style={styles.content}>
-        {item.user && <Text style={styles.name}>{item.user.name}</Text>}
-        <Text style={styles.message}>{item.content}</Text>
-        <Text style={styles.time}>{formatTime(item.timestamp)}</Text>
-      </View>
-    </TouchableOpacity>
+        </StyledView>
+      </StyledView>
+
+      <StyledView >
+        <StyledText className='font-custom text-gray-700' >{item.content}</StyledText>
+        <StyledText className='font-custom text-gray-400' >{formatTime(item.timestamp)}</StyledText>
+      </StyledView>
+    </StyledTouchableOpacity>
   );
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <StyledView style={styles.container}>
+        <StyledView style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <ChevronLeft size={24} color={isDark ? '#fff' : '#000'} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>การแจ้งเตือน</Text>
-        </View>
+          <StyledText className='font-custom text-gray-700' style={styles.headerTitle}>การแจ้งเตือน</StyledText>
+        </StyledView>
         <ScrollView>
           {notifications.map((notification) => (
             <NotificationItem key={notification.id} item={notification} />
           ))}
         </ScrollView>
-      </View>
+      </StyledView>
     </SafeAreaView>
   );
 }

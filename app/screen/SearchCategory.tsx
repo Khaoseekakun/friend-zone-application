@@ -104,6 +104,97 @@ export default function SearchCategory() {
                     <StyledText className="text-white/80 text-base">
                         เลือกบริการที่คุณต้องการ
                     </StyledText>
+            <StyledScrollView className={``}>
+                <StyledView className="w-full px-8 items-center mt-5">
+                    <StyledView className="flex-row">
+                        <TouchableOpacity onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }} className="w-6/12 rounded-2xl h-[230px] justify-center m-2">
+
+                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-20 h-full" />
+                            <StyledView className="absolute flex-row w-full items-center">
+                                <StyledImage source={iconFriend1} className="absolute w-[130px] h-[130px] right-[28%]"></StyledImage>
+                                <StyledImage source={iconFriend2} className="absolute w-[130px] h-[130px] left-[28%]"></StyledImage>
+                            </StyledView>
+
+                            <StyledText className="absolute self-center font-custom text-white text-xl bottom-4">เพื่อนเที่ยว</StyledText>
+
+                        </TouchableOpacity>
+
+                        <TouchableOpacity disabled onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }} className="w-6/12 rounded-2xl h-[230px] justify-center m-2">
+
+                            <StyledView className="absolute flex-row w-full items-center">
+                                <StyledImage source={iconDJ1} className="absolute w-[130px] h-[130px] right-[20%]"></StyledImage>
+                                <StyledImage source={iconDJ2} className="absolute w-[130px] h-[130px] left-[37%]"></StyledImage>
+                            </StyledView>
+
+                            <StyledText className="absolute self-center font-custom text-white text-xl bottom-4">MC/DJ/พิธีกร</StyledText>
+
+                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-[0.50] h-[230px]" />
+
+                            <StyledText className="self-center text-center font-custom text-white text-2xl">SOON</StyledText>
+                        </TouchableOpacity>
+                    </StyledView>
+
+                    <StyledView className="flex-row">
+                        <TouchableOpacity disabled onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }} className="w-6/12 rounded-2xl h-[230px] justify-center m-2">
+
+                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-20 h-full" />
+                            <StyledView className="absolute flex-row w-full items-center">
+                                <StyledImage source={iconMusic1} className="absolute w-[180px] h-[180px] bottom-[-75px]"></StyledImage>
+                                <StyledImage source={iconMusic2} className="absolute w-[130px] h-[130px] bottom-[-50px] left-[40%] rotate-12"></StyledImage>
+                            </StyledView>
+
+                            <StyledText className="absolute self-center font-custom text-white text-xl bottom-4">วงดนตรี/นักร้อง</StyledText>
+
+                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-[0.50] h-[230px]" />
+
+                            <StyledText className="self-center text-center font-custom text-white text-2xl">SOON</StyledText>
+
+                        </TouchableOpacity>
+
+                        <TouchableOpacity disabled onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }} className="w-6/12 rounded-2xl h-[230px] justify-center m-2">
+
+                            <StyledView className="absolute w-full justify-center items-center">
+                                <StyledImage source={iconTable1} className="absolute w-[230px] h-[230px] bottom-[-95px]"></StyledImage>
+                            </StyledView>
+
+                            <StyledText className="absolute self-center font-custom text-white text-xl bottom-4">จองโต๊ะ</StyledText>
+
+                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-[0.50] h-[230px]" />
+
+                            <StyledText className="self-center text-center font-custom text-white text-2xl">SOON</StyledText>
+                        </TouchableOpacity>
+                    </StyledView>
+
+                    <StyledView className="flex-row">
+                        <TouchableOpacity disabled onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }} className="w-6/12 rounded-2xl h-[230px] justify-center m-2">
+
+                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-20 h-full" />
+                            <StyledView className="absolute justify-center w-full items-center">
+                                <StyledImage source={iconTicket1} className="w-[130px] h-[130px] right-1.5"></StyledImage>
+                            </StyledView>
+
+                            <StyledText className="absolute self-center font-custom text-white text-xl bottom-4">Concert</StyledText>
+
+                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-[0.50] h-[230px]" />
+
+                            <StyledText className="self-center text-center font-custom text-white text-2xl">SOON</StyledText>
+
+                        </TouchableOpacity>
+
+                        <TouchableOpacity disabled onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }} className="w-6/12 rounded-2xl h-[230px] justify-center m-2">
+
+                            <StyledView className="absolute justify-center w-full ">
+                                <StyledImage source={iconCar1} className="absolute self-center w-[200px] h-[200px] right-[-5%]"></StyledImage>
+                                <StyledImage source={iconCar2} className="absolute self-center w-[90px] h-[90px] bottom-2 left-[15%]"></StyledImage>
+                            </StyledView>
+
+                            <StyledText className="absolute self-center font-custom text-white text-xl bottom-4">FDrive</StyledText>
+
+                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-[0.50] h-[230px]" />
+
+                            <StyledText className="self-center text-center font-custom text-white text-2xl">SOON</StyledText>
+                        </TouchableOpacity>
+                    </StyledView>
                 </StyledView>
 
                 {/* Categories Grid */}
@@ -160,6 +251,9 @@ export default function SearchCategory() {
                     </StyledView>
                 </StyledView>
             </StyledScrollView>
+            <TouchableOpacity onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()} className="absolute left-2 top-2 bg-[#EB3834] p-1 rounded-full">
+                <Ionicons name="chevron-back" size={30} color="white" />
+            </TouchableOpacity>
         </LinearGradient>
     );
 }
