@@ -250,12 +250,12 @@ export default function EditProfile() {
                     className="absolute left-4"
                     onPress={() => navigation.goBack()}
                 >
-                    <StyledText className="text-gray-500 dark:text-white font-custom text-lg">
+                    <StyledText className="font-custom text-gray-500 dark:text-white text-lg">
                         กลับ
                     </StyledText>
                 </TouchableOpacity>
 
-                <StyledText className="dark:text-white font-bold text-lg">
+                <StyledText className="dark:text-white  text-lg font-custom">
                     แก้ไข
                 </StyledText>
 
@@ -273,7 +273,7 @@ export default function EditProfile() {
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
                 <StyledView className="px-4 py-4 space-y-6 mb-16">
                     <StyledView>
-                        <StyledText className="text-neutral-400 text-base mb-2">
+                        <StyledText className="font-custom text-neutral-400 text-base mb-2">
                             รูปภาพน่าสนใจ
                         </StyledText>
                         <StyledView className="flex-row flex-wrap">
@@ -291,7 +291,7 @@ export default function EditProfile() {
                                         onPress={() => deleteImage(index)}
                                         className="absolute -top-1 -right-1 bg-red-500 rounded-full p-1"
                                     >
-                                        <StyledIonicons name="close" size={15} className="text-white" />
+                                        <StyledIonicons name="close" size={15} className="font-custom text-white" />
                                     </StyledTouchableOpacity>
                                 </StyledView>
                             ))}
@@ -301,7 +301,7 @@ export default function EditProfile() {
                                     className="w-4/12 aspect-[3/4] p-1"
                                 >
                                     <StyledView className="flex-1 rounded-xl bg-white dark:bg-neutral-800 items-center justify-center border border-neutral-300 dark:border-neutral-700 border-dashed">
-                                        <StyledIonicons name="add" size={40} className="text-black dark:text-white" />
+                                        <StyledIonicons name="add" size={40} className="font-custom text-black dark:text-white" />
                                     </StyledView>
                                 </TouchableOpacity>
                             )}
@@ -309,13 +309,13 @@ export default function EditProfile() {
                     </StyledView>
 
                     <StyledView>
-                        <StyledText className="text-neutral-400 text-base mb-2">
+                        <StyledText className="font-custom text-neutral-400 text-base mb-2">
                             เกี่ยวกับฉัน
                         </StyledText>
                         <StyledInput
                             multiline
                             numberOfLines={4}
-                            className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white"
+                            className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom "
                             placeholder="เล่าเรื่องราวของคุณ..."
                             placeholderTextColor="#666"
                             value={bio}
@@ -324,27 +324,13 @@ export default function EditProfile() {
                     </StyledView>
 
                     <StyledView className="space-y-3">
-                        <TouchableOpacity className="flex-row items-center justify-between bg-white dark:bg-neutral-800 px-4 py-3 rounded-xl">
+                        <TouchableOpacity className="flex-row items-center justify-between bg-white dark:bg-neutral-800 px-4 py-1 rounded-xl">
                             <StyledView className="flex-row items-center">
-                                <StyledIonicons name="school-outline" size={22} className="text-black dark:text-white" />
-                                <StyledText className="dark:text-white ml-3">การศึกษา</StyledText>
+                                <StyledIonicons name="location-outline" size={22} className="font-custom text-black dark:text-white" />
+                                <StyledText className="dark:text-white ml-3 font-custom ">ที่อยู่</StyledText>
                             </StyledView>
                             <StyledInput
-                                className="flex-1 text-right dark:text-white"
-                                value={education}
-                                onChangeText={setEducation}
-                                placeholder="เพิ่มการศึกษา"
-                                placeholderTextColor="#666"
-                            />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity className="flex-row items-center justify-between bg-white dark:bg-neutral-800 px-4 py-3 rounded-xl">
-                            <StyledView className="flex-row items-center">
-                                <StyledIonicons name="location-outline" size={22} className="text-black dark:text-white" />
-                                <StyledText className="dark:text-white ml-3">ที่อยู่</StyledText>
-                            </StyledView>
-                            <StyledInput
-                                className="flex-1 text-right dark:text-white"
+                                className="flex-1 text-right dark:text-white font-custom "
                                 value={location}
                                 onChangeText={setLocation}
                                 placeholder="เพิ่มที่อยู่"
@@ -354,12 +340,12 @@ export default function EditProfile() {
 
                         <StyledView className="flex-row space-x-2">
                             <StyledView className="flex-1">
-                                <StyledView className="bg-white dark:bg-neutral-800 rounded-xl px-4 py-3">
-                                    <StyledText className="text-neutral-400 text-sm mb-1">
-                                        ส่วนสูง (ซม.)
-                                    </StyledText>
+                                <StyledText className="font-custom text-neutral-400 text-sm mb-1">
+                                    ส่วนสูง (ซม.)
+                                </StyledText>
+                                <StyledView className="bg-white dark:bg-neutral-800 rounded-xl px-4 py-1">
                                     <StyledInput
-                                        className="dark:text-white text-right"
+                                        className="dark:text-white text-right font-custom "
                                         value={height}
                                         onChangeText={setHeight}
                                         placeholder="0"
@@ -369,12 +355,13 @@ export default function EditProfile() {
                                 </StyledView>
                             </StyledView>
                             <StyledView className="flex-1">
-                                <StyledView className="bg-white dark:bg-neutral-800 rounded-xl px-4 py-3">
-                                    <StyledText className="text-neutral-400 text-sm mb-1">
-                                        น้ำหนัก (กก.)
-                                    </StyledText>
+
+                                <StyledText className="font-custom text-neutral-400 text-sm mb-1">
+                                    น้ำหนัก (กก.)
+                                </StyledText>
+                                <StyledView className="bg-white dark:bg-neutral-800 rounded-xl px-4 py-1">
                                     <StyledInput
-                                        className="dark:text-white text-right"
+                                        className="dark:text-white text-right font-custom "
                                         value={weight}
                                         onChangeText={setWeight}
                                         placeholder="0"
@@ -386,7 +373,7 @@ export default function EditProfile() {
                         </StyledView>
                     </StyledView>
                     <StyledView>
-                        <StyledText className="text-neutral-400 text-base mb-3">
+                        <StyledText className="font-custom text-neutral-400 text-base mb-3">
                             บริการของฉัน
                         </StyledText>
                         <StyledView className="flex-row flex-wrap gap-2">
@@ -395,8 +382,8 @@ export default function EditProfile() {
                                     key={service.id}
                                     onPress={() => toggleService(service.id)}
                                     className={`flex-row items-center rounded-full px-4 py-2 border ${selectedServices.includes(service.id)
-                                            ? 'border-transparent'
-                                            : 'bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700'
+                                        ? 'border-transparent'
+                                        : 'bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700'
                                         }`}
                                     style={selectedServices.includes(service.id) ? {
                                         backgroundColor: GRADIENT_START,
@@ -409,8 +396,8 @@ export default function EditProfile() {
                                         className={selectedServices.includes(service.id) ? 'text-white' : 'text-neutral-600 dark:text-white'}
                                     />
                                     <StyledText className={`ml-2 ${selectedServices.includes(service.id)
-                                            ? 'text-white'
-                                            : 'text-neutral-600 dark:text-white'
+                                        ? 'text-white'
+                                        : 'text-neutral-600 dark:text-white'
                                         }`}>
                                         {service.name}
                                     </StyledText>
