@@ -448,7 +448,7 @@ export default function Chat() {
                 style={{ flex: 1 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
-                <StyledView className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[60px]"} justify-center border-b-[1px] pt-3 border-gray-200 dark:border-neutral-800`}>
+                <StyledView className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[60px]"} justify-center border-b-[1px] pt-3 border-gray-200 dark:border-neutral-800 mt-2`}>
                     <TouchableOpacity onPress={() => navigation.navigate("MessageTab", {})} className="absolute ml-4">
                         <StyledIcon name="chevron-back" size={24} className="text-black dark:text-white" />
                     </TouchableOpacity>

@@ -97,16 +97,11 @@ export default function Message() {
     }, [userData, isCustomer]);
 
     useEffect(() => {
-        if(userData && loading){
-            (async() => {
-                await fetchUserData();
-            })
-        }
-
         (async() => {
+            await fetchUserData();
             fetchChannelsForUser();
         })()
-    }, [isFocused, userData]);
+    }, [isFocused,]);
 
     const handleChannelPress = (item: Channel) => {
         const receiver = receiverData[item.channel_id];
