@@ -64,12 +64,17 @@ export default function ProfileTab() {
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
     const [distance, setDistance] = useState<number>(0);
-    const [joblist, setJobList] = useState<any[]>([]);
+    const [joblist, setJobList] = useState<{
+        label: string;
+        value: string;
+    }[]>([]);
     const [geoLocation, setGeoLocation] = useState<{
         latitude: number,
         longitude: number,
         locationName: string
     }[]>([])
+
+    const [showSelectJobs, setShowSelectJob] = useState(false);
 
     const [searchFocus, setSearchFocus] = useState<boolean>(false);
 
@@ -158,6 +163,14 @@ export default function ProfileTab() {
         setTimePickerVisibility(false);
     };
 
+    const showSelectJob = () => {
+        setShowSelectJob(true);
+    }
+
+    const hideSelectJob = () => {
+        setShowSelectJob(false);
+    }
+
 
     const searchMapGeoLocation = async (location: string) => {
         const config = {
@@ -218,6 +231,8 @@ export default function ProfileTab() {
                         value: job.id,
 
                     })))
+
+                    console.log(resdata.data.data)
                 } else {
                     console.log(resdata.data)
                 }
@@ -265,12 +280,15 @@ export default function ProfileTab() {
     }, [profileId, navigation]);
 
     useEffect(() => {
-        fetchUserData();
-        requestLocationPermission();
-        if (userProfile?.profile.type === "member") {
-            loadJobsList();
+        if (loading === false) {
+            if (userProfile?.profile.type === "member" && loading === false) {
+                loadJobsList();
+            }
+        } else {
+            fetchUserData();
+            requestLocationPermission();
         }
-    }, [isFoucs]);
+    }, [isFoucs, loading, userProfile]);
 
     const [theme, setTheme] = useState(Appearance.getColorScheme());
 
@@ -320,15 +338,15 @@ export default function ProfileTab() {
         const [hour, minute] = scheduleTime.split(":").map(Number);
 
 
-        const scheduleDateTime = new Date(year, month - 1, day, hour, minute); 
+        const scheduleDateTime = new Date(year, month - 1, day, hour, minute);
         if (isNaN(scheduleDateTime.getTime())) {
             return Alert.alert('ผิดพลาด', 'ข้อมูลเวลาไม่ถูกต้องโปรดระบุใหม่อีกครั้ง')
         }
 
         const now: Date = new Date();
 
-        const diffInMilliseconds = scheduleDateTime.getTime() - now.getTime(); 
-        const diffInHours = diffInMilliseconds / (1000 * 60 * 60); 
+        const diffInMilliseconds = scheduleDateTime.getTime() - now.getTime();
+        const diffInHours = diffInMilliseconds / (1000 * 60 * 60);
 
         if (diffInHours < 2) {
             return Alert.alert('ผิดพลาด', 'โปรดระบุเวลานัดหมายล่วงหน้า 2 ชั่วโมงขึ้นไป')
@@ -435,8 +453,8 @@ export default function ProfileTab() {
                                 ></Carousel>
                                 <StyledView className="absolute bottom-2 flex-row items-center left-2">
                                     <StyledIonIcon name="heart" color={'red'} size={40} />
-                                    <StyledText className="text-[30px] text-white font-custom">4.1</StyledText>
-                                    <StyledText className="text-[25px] text-gray-200 font-custom">(1,502)</StyledText>
+                                    <StyledText className="text-[30px] text-white font-custom">{userProfile?.profile.rating}</StyledText>
+                                    <StyledText className="text-[25px] text-gray-200 font-custom">({userProfile?.profile.reviews})</StyledText>
                                 </StyledView>
                             </StyledView>
 
@@ -460,17 +478,28 @@ export default function ProfileTab() {
 
                                 {
                                     userProfile?.profile.type === "member" && (
-                                        <StyledText className="font-custom text-black dark:text-white">
-                                            {Number(distance.toFixed(0)) / 1000 > 1 ? `${Number(distance.toFixed(0)) / 1000} Km` : `${Number(distance.toFixed(0))} M`}
+                                        <StyledText className="font-custom text-black dark:text-white text-lg">
+                                            {Number(distance.toFixed(0)) / 1000 > 10 ? `${Number(distance.toFixed(0)) / 1000} Km.` : `10 Km.`}
                                         </StyledText>
                                     )
                                 }
 
                             </StyledView>
+                            
+                            <StyledText className="px-2 text-lg text-gray-700 dark:text-gray-200 font-custom">{userProfile?.profile.province[0]}</StyledText>
 
-                            <StyledView className="left-2">
-                                <StyledText className="text-[25px] text-black dark:text-white font-custom">Bio</StyledText>
+                            <StyledView className="px-2">
                                 <StyledText className="text-lg text-gray-700 dark:text-gray-200 font-custom">{userProfile?.profile.bio}</StyledText>
+                            </StyledView>
+
+
+
+                            <StyledView className="flex-row items-center flex-wrap">
+                                {
+                                    joblist.map((job, index) => (
+                                        <StyledText key={index} className="font-custom px-2 bg-red-500 mx-1 my-1 rounded-full py-1 text-white">{job.label}</StyledText>
+                                    ))
+                                }
                             </StyledView>
                         </StyledView>
                     </StyledScrollView>
@@ -578,6 +607,37 @@ export default function ProfileTab() {
 
 
                                 </>
+                            ) : showSelectJobs ? (
+                                <>
+                                    <StyledView className="flex-row items-center px-6 py-2">
+                                        <StyledView className="w-full px-1">
+                                            <StyledView className="flex-row gap-1 items-center w-full mb-2">
+
+                                                <StyledIonIcon name="chevron-back" size={24}
+                                                    onPress={() => hideSelectJob()}
+                                                    className="text-black dark:text-neutral-200"
+
+                                                />
+
+                                            </StyledView>
+                                            {
+                                                joblist.map((jobs, index) => (
+                                                    <TouchableOpacity
+                                                        key={index}
+                                                        className="flex-row items-center"
+                                                        onPress={() => {
+                                                            setScheduleJobs(jobs.value)
+                                                            hideSelectJob();
+                                                        }}
+                                                    >
+                                                        <StyledText className="text-lg text-black font-custom dark:text-neutral-200 flex-wrap pr-2 border-gray-200 max-w-[95%] bg-gray-300 dark:bg-neutral-600 px-2 py-2 rounded-xl my-2 ">{jobs.label}</StyledText>
+                                                    </TouchableOpacity>
+                                                ))
+                                            }
+                                        </StyledView>
+
+                                    </StyledView>
+                                </>
                             ) : (
                                 <>
                                     <StyledView className="flex-row items-center px-6 py-2">
@@ -586,13 +646,11 @@ export default function ProfileTab() {
 
                                             <TouchableOpacity
                                                 onPress={showDatePicker}>
-                                                <StyledTextInput
-                                                    placeholder="03/10/2567"
+                                                <StyledView
                                                     className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
-                                                    value={scheduleDate}
-                                                    placeholderTextColor="#d1d5db"
-                                                    editable={false}
-                                                />
+                                                >
+                                                    <StyledText className={`font-custom ${scheduleDate ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleDate ? scheduleDate : "03/10/2567"}</StyledText>
+                                                </StyledView>
                                             </TouchableOpacity>
                                         </StyledView>
 
@@ -601,13 +659,11 @@ export default function ProfileTab() {
 
                                             <TouchableOpacity
                                                 onPress={showTimePicker}>
-                                                <StyledTextInput
-                                                    placeholder="10:10"
+                                                <StyledView
                                                     className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
-                                                    value={scheduleTime}
-                                                    placeholderTextColor="#d1d5db"
-                                                    editable={false}
-                                                />
+                                                >
+                                                    <StyledText className={`font-custom ${scheduleTime ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleTime ? scheduleTime : "10:10"}</StyledText>
+                                                </StyledView>
                                             </TouchableOpacity>
                                         </StyledView>
                                     </StyledView>
@@ -617,7 +673,16 @@ export default function ProfileTab() {
                                                 ประเภทงาน
                                             </StyledText>
 
-                                            <RNPickerSelect
+
+                                            <TouchableOpacity
+                                                onPress={showSelectJob}>
+                                                <StyledView
+                                                    className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                                                >
+                                                    <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? joblist.find((j) => j.value == scheduleJobs)?.label : "เลือกประเภทงาน"}</StyledText>
+                                                </StyledView>
+                                            </TouchableOpacity>
+                                            {/* <RNPickerSelect
                                                 items={joblist}
                                                 onValueChange={setScheduleJobs}
                                                 value={scheduleJobs}
@@ -643,8 +708,7 @@ export default function ProfileTab() {
                                                         borderRadius: 16,
                                                     },
                                                 }}
-                                                useNativeAndroidPickerStyle={false}
-                                            />
+                                            /> */}
                                         </StyledView>
                                     </StyledView>
 
@@ -749,6 +813,7 @@ export default function ProfileTab() {
                 onCancel={hideDatePicker}
                 locale="th-TH"
                 minimumDate={new Date(Date.now())}
+                shouldRasterizeIOS
             />
 
             <DateTimePickerModal
@@ -757,7 +822,7 @@ export default function ProfileTab() {
                 onConfirm={handleTimeConfirm}
                 onCancel={hideTimePicker}
                 locale="th-TH"
-
+                shouldRasterizeIOS
                 minimumDate={
                     scheduleDate
                         ?
@@ -767,8 +832,6 @@ export default function ProfileTab() {
                         : new Date(Date.now() + 60 * 60 * 1000)
                 }
             />
-
-
         </StyledView>
     );
 }

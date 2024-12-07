@@ -36,6 +36,11 @@ export default function Chat() {
             endTime: string;
             date: string;
             location: string;
+            pin : {
+                latitude: number;
+                longtitude: number;
+            };
+            jobsType: string;
         }
     }
 
