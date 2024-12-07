@@ -5,6 +5,7 @@ import { useNavigation } from 'expo-router';
 import { styled } from 'nativewind';
 import React, { useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as ImagePicker from 'expo-image-picker';
 import {
     Animated,
     Text,
@@ -15,114 +16,221 @@ import {
     TouchableWithoutFeedback,
     Keyboard,
     Platform,
+    Image,
+    ScrollView,
 } from 'react-native';
 
 const { width } = Dimensions.get('screen');
+const GRADIENT_COLORS = ['#ec4899', '#f97316'];
 
+interface FormStepProps {
+    currentStep: number;
+    totalSteps: number;
+    title: string;
+}
+
+// Styled Components
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
-const StyledTouchableWithoutFeedback = styled(TouchableWithoutFeedback);
+const StyledScrollView = styled(ScrollView);
+const StyledTouchableOpacity = styled(TouchableOpacity);
 
-interface InputFieldProps {
-  label: string;
-  placeholder: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  inputMode?: 'text' | 'tel' | 'email';
-  secureTextEntry?: boolean;
-  editable?: boolean;
-  wrong?: boolean;
-  onBlur?: () => void;
-}
-
-const InputField: React.FC<InputFieldProps> = ({
-  label,
-  placeholder,
-  value,
-  onChangeText,
-  inputMode = 'text',
-  secureTextEntry = false,
-  editable = true,
-  wrong = false,
-  onBlur
-}) => (
-  <StyledView className="w-full mb-7">
-    <StyledText className={`font-custom text-sm ${wrong ? 'text-red-500' : 'text-gray-600 dark:text-gray-300'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-neutral-900 z-50 px-2`}>
-      {label}
-    </StyledText>
-    <StyledView className="font-custom w-full relative">
-      <StyledTextInput
-        placeholder={placeholder}
-        value={value}
-        onChangeText={onChangeText}
-        inputMode={inputMode}
-        secureTextEntry={secureTextEntry}
-        editable={editable}
-        onBlur={onBlur}
-        className={`font-custom border ${wrong ? 'border-red-500' : 'border-gray-300'} rounded-full py-4 px-4 ${wrong ? 'text-red-500' : 'text-gray-600 dark:text-gray-300'} w-full`}
-        placeholderTextColor="#9CA3AF"
-      />
+// Form Step Header Component
+const FormStep: React.FC<FormStepProps> = ({ currentStep, totalSteps, title }) => (
+    <StyledView className="items-center my-6">
+        {/* Progress Steps */}
+        <StyledView className="flex-row space-x-2 mb-4">
+            {Array.from({ length: totalSteps }, (_, i) => (
+                <LinearGradient
+                    key={i}
+                    colors={i < currentStep ? GRADIENT_COLORS : ['#e5e7eb', '#e5e7eb']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    className="w-20 h-1 rounded-full"
+                />
+            ))}
+        </StyledView>
+        {/* Step Title */}
+        <StyledText className="font-custom text-2xl font-bold text-gray-800 dark:text-white">
+            {title}
+        </StyledText>
     </StyledView>
-  </StyledView>
 );
 
-export default function RegisterMember() {
+// Input Field Component
+const InputField = ({
+    label,
+    placeholder,
+    value,
+    onChangeText,
+    inputMode = 'text',
+    secureTextEntry = false,
+    editable = true,
+    multiline = false,
+    error = ''
+}: {
+    label: string;
+    placeholder: string;
+    value: string;
+    onChangeText: (text: string) => void;
+    inputMode?: 'text' | 'tel' | 'email' | 'numeric';
+    secureTextEntry?: boolean;
+    editable?: boolean;
+    multiline?: boolean;
+    error?: string;
+}) => (
+    <StyledView className="mb-4">
+        <StyledText className="font-custom text-sm text-gray-700 dark:text-gray-300 mb-2">
+            {label}
+        </StyledText>
+        <StyledTextInput
+            value={value}
+            onChangeText={onChangeText}
+            placeholder={placeholder}
+            placeholderTextColor="#9ca3af"
+            inputMode={inputMode}
+            secureTextEntry={secureTextEntry}
+            editable={editable}
+            multiline={multiline}
+            numberOfLines={multiline ? 4 : 1}
+            className={`font-custom bg-white dark:bg-neutral-800 border ${
+                error ? 'border-red-500' : 'border-gray-200 dark:border-neutral-700'
+            } rounded-xl py-4 px-4 text-gray-800 dark:text-white ${
+                multiline ? 'h-32' : 'h-[52px]'
+            }`}
+        />
+        {error ? (
+            <StyledText className="text-red-500 text-sm mt-1 font-custom">
+                {error}
+            </StyledText>
+        ) : null}
+    </StyledView>
+);
+
+// Selection Button Component
+const SelectionButton = ({
+    label,
+    selected,
+    onPress
+}: {
+    label: string;
+    selected: boolean;
+    onPress: () => void;
+}) => (
+    <StyledTouchableOpacity
+        onPress={onPress}
+        className="mb-2"
+    >
+        <LinearGradient
+            colors={selected ? GRADIENT_COLORS : ['transparent', 'transparent']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            className={`rounded-xl ${
+                !selected ? 'bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700' : ''
+            }`}
+        >
+            <StyledText className={`font-custom py-4 px-4 ${
+                selected ? 'text-white' : 'text-gray-800 dark:text-white'
+            }`}>
+                {label}
+            </StyledText>
+        </LinearGradient>
+    </StyledTouchableOpacity>
+);
+
+// Image Upload Component
+const ImageUpload = ({
+    title,
+    image,
+    onUpload,
+    onDelete,
+    icon,
+}: {
+    title: string;
+    image: string | null;
+    onUpload: () => void;
+    onDelete: () => void;
+    icon: keyof typeof Ionicons.glyphMap;
+}) => (
+    <StyledView className="mb-6">
+        <StyledText className="font-custom text-base text-gray-800 dark:text-white mb-2">
+            {title}
+        </StyledText>
+        {image ? (
+            <StyledView className="relative">
+                <Image
+                    source={{ uri: image }}
+                    className="w-full h-48 rounded-xl"
+                    resizeMode="cover"
+                />
+                <StyledTouchableOpacity
+                    onPress={onDelete}
+                    className="absolute top-2 right-2 bg-red-500 rounded-full p-2"
+                >
+                    <Ionicons name="close" size={20} color="white" />
+                </StyledTouchableOpacity>
+            </StyledView>
+        ) : (
+            <StyledTouchableOpacity
+                onPress={onUpload}
+                className="border-2 border-dashed border-gray-300 dark:border-neutral-700 rounded-xl p-6 items-center bg-gray-50 dark:bg-neutral-800"
+            >
+                <Ionicons 
+                    name={icon} 
+                    size={40} 
+                    color={Platform.OS === 'ios' ? '#9ca3af' : '#fff'} 
+                />
+                <StyledText className="text-gray-500 dark:text-gray-400 font-custom mt-2 text-center">
+                    {title}
+                </StyledText>
+            </StyledTouchableOpacity>
+        )}
+    </StyledView>
+);
+
+// Main Component
+export default function MemberRegistration() {
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [step, setStep] = useState(1);
     const slideAnim = useRef(new Animated.Value(0)).current;
-    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-    // Step 1 data
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [otp, setOtp] = useState('');
-    const [phoneVerify, setPhoneVerify] = useState(false);
-    const [getOtp, setGetOtp] = useState(false);
-    const [isUsernameValid, setIsUsernameValid] = useState(false as boolean | null);
-
-    // Step 2 data
+    // Personal Information
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [emergencyContact, setEmergencyContact] = useState('');
-    const [birthDate, setBirthDate] = useState('');
+    const [age, setAge] = useState('');
+    const [address, setAddress] = useState('');
+    const [gender, setGender] = useState('');
+    const [emergencyPhone, setEmergencyPhone] = useState('');
 
+    // Identity Verification
+    const [selfieImage, setSelfieImage] = useState<string | null>(null);
+    const [idCardImage, setIdCardImage] = useState<string | null>(null);
+
+    // Banking Information
+    const [bankName, setBankName] = useState('');
+    const [accountNumber, setAccountNumber] = useState('');
+    const [accountName, setAccountName] = useState('');
+
+    // Constants
+    const banks = [
+        'ธนาคารกสิกรไทย',
+        'ธนาคารไทยพาณิชย์',
+        'ธนาคารกรุงเทพ',
+        'ธนาคารกรุงไทย',
+        'ธนาคารกรุงศรีอยุธยา'
+    ];
+
+    // Animation Handlers
     const handleNext = () => {
-        if (step === 1) {
-            if (!username || !password || !email || !phone || !phoneVerify) {
-                Animated.sequence([
-                    ...Array(3).fill(null).map(() => (
-                        Animated.sequence([
-                            Animated.timing(slideAnim, {
-                                toValue: -10,
-                                duration: 50,
-                                useNativeDriver: true
-                            }),
-                            Animated.timing(slideAnim, {
-                                toValue: 10,
-                                duration: 50,
-                                useNativeDriver: true
-                            })
-                        ])
-                    )),
-                    Animated.timing(slideAnim, {
-                        toValue: 0,
-                        duration: 50,
-                        useNativeDriver: true
-                    })
-                ]).start();
-                return;
-            }
-        }
-
-        if (step < 2) {
+        if (step < 3) {
             Animated.timing(slideAnim, {
                 toValue: -width,
                 duration: 300,
                 useNativeDriver: true
             }).start(() => {
-                setStep(step + 1);
+                setStep(prev => prev + 1);
+                slideAnim.setValue(0);
             });
         }
     };
@@ -130,176 +238,243 @@ export default function RegisterMember() {
     const handleBack = () => {
         if (step > 1) {
             Animated.timing(slideAnim, {
-                toValue: 0,
+                toValue: width,
                 duration: 300,
                 useNativeDriver: true
             }).start(() => {
-                setStep(step - 1);
+                setStep(prev => prev - 1);
+                slideAnim.setValue(0);
             });
         } else {
             navigation.goBack();
         }
     };
 
-    const onCheckUsername = (value: string) => {
-        const englishRegex = /^[A-Za-z0-9_]*$/;
-        setIsUsernameValid(null);
-        if (!englishRegex.test(value)) {
-            setUsername(value.slice(0, -1));
-            return;
-        } else {
-            setUsername(value);
+    // Image Picker
+    const pickImage = async (setImage: (value: string | null) => void) => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!result.canceled && result.assets[0]) {
+            setImage(result.assets[0].uri);
         }
     };
 
-    return (
-        <StyledTouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <StyledView className="flex-1 bg-white dark:bg-neutral-900 h-full pt-[20%]">
-                <StyledView className="flex-1 px-6">
-                    <TouchableOpacity onPress={handleBack} className="mt-6">
-                        <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
-                    </TouchableOpacity>
+    // Step Content Renderers
+    const renderPersonalInfo = () => (
+        <StyledScrollView 
+            showsVerticalScrollIndicator={false}
+            className="flex-1"
+        >
+            <StyledView className="space-y-2">
+                <InputField
+                    label="ชื่อจริง"
+                    placeholder="กรอกชื่อจริง"
+                    value={firstName}
+                    onChangeText={setFirstName}
+                />
+                <InputField
+                    label="นามสกุล"
+                    placeholder="กรอกนามสกุล"
+                    value={lastName}
+                    onChangeText={setLastName}
+                />
+                <InputField
+                    label="อายุ"
+                    placeholder="กรอกอายุ"
+                    value={age}
+                    onChangeText={setAge}
+                    inputMode="numeric"
+                />
+                <InputField
+                    label="ที่อยู่"
+                    placeholder="กรอกที่อยู่"
+                    value={address}
+                    onChangeText={setAddress}
+                    multiline
+                />
 
-                    <StyledView className="flex items-center">
-                        <StyledText className="font-custom text-3xl font-bold text-[#1e3a8a] mt-6 mb-2">
-                            สร้างบัญชี
-                        </StyledText>
-                        <StyledText className="font-custom text-base text-gray-400">
-                            {step === 1 ? 'สร้างบัญชีของคุณเพื่อเริ่มต้นการใช้งาน' : 'ข้อมูลส่วนตัวของสมาชิก'}
-                        </StyledText>
+                <StyledView className="mb-4">
+                    <StyledText className="font-custom text-sm text-gray-700 dark:text-gray-300 mb-2">
+                        เพศ
+                    </StyledText>
+                    <StyledView className="flex-row space-x-4">
+                        {['ชาย', 'หญิง'].map((option) => (
+                            <SelectionButton
+                                key={option}
+                                label={option}
+                                selected={gender === option}
+                                onPress={() => setGender(option)}
+                            />
+                        ))}
                     </StyledView>
+                </StyledView>
 
+                <InputField
+                    label="เบอร์โทรฉุกเฉิน"
+                    placeholder="กรอกเบอร์โทรศัพท์"
+                    value={emergencyPhone}
+                    onChangeText={setEmergencyPhone}
+                    inputMode="tel"
+                />
+            </StyledView>
+        </StyledScrollView>
+    );
+
+    const renderIdentityVerification = () => (
+        <StyledScrollView 
+            showsVerticalScrollIndicator={false}
+            className="flex-1"
+        >
+            <ImageUpload
+                title="อัพโหลดรูปภาพหน้าตรง"
+                image={selfieImage}
+                onUpload={() => pickImage(setSelfieImage)}
+                onDelete={() => setSelfieImage(null)}
+                icon="camera-outline"
+            />
+            <ImageUpload
+                title="อัพโหลดรูปภาพบัตรประชาชน"
+                image={idCardImage}
+                onUpload={() => pickImage(setIdCardImage)}
+                onDelete={() => setIdCardImage(null)}
+                icon="card-outline"
+            />
+        </StyledScrollView>
+    );
+
+    const renderBankingInfo = () => (
+        <StyledScrollView 
+            showsVerticalScrollIndicator={false}
+            className="flex-1"
+        >
+            <StyledView className="mb-6">
+                <StyledText className="font-custom text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    ธนาคาร
+                </StyledText>
+                {banks.map((bank) => (
+                    <SelectionButton
+                        key={bank}
+                        label={bank}
+                        selected={bankName === bank}
+                        onPress={() => setBankName(bank)}
+                    />
+                ))}
+            </StyledView>
+
+            <InputField
+                label="เลขบัญชีธนาคาร"
+                placeholder="กรอกเลขบัญชี"
+                value={accountNumber}
+                onChangeText={setAccountNumber}
+                inputMode="numeric"
+            />
+
+            <InputField
+                label="ชื่อบัญชี"
+                placeholder="กรอกชื่อบัญชี"
+                value={accountName}
+                onChangeText={setAccountName}
+            />
+        </StyledScrollView>
+    );
+
+    return (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <StyledView className="flex-1 bg-white dark:bg-neutral-900">
+                <StyledView className="flex-1 px-6 pt-12">
+                    {/* Header Back Button */}
+                    <StyledTouchableOpacity 
+                        onPress={handleBack} 
+                        className="mt-6"
+                    >
+                        <LinearGradient
+                            colors={GRADIENT_COLORS}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            className="w-10 h-10 rounded-full items-center justify-center"
+                        >
+                            <Ionicons name="chevron-back" size={24} color="white" />
+                        </LinearGradient>
+                    </StyledTouchableOpacity>
+
+                    {/* Step Indicator and Title */}
+                    <FormStep
+                        currentStep={step}
+                        totalSteps={3}
+                        title={
+                            step === 1 ? 'ข้อมูลส่วนตัว' :
+                            step === 2 ? 'ยืนยันตัวตน' :
+                            'ข้อมูลการเงิน'
+                        }
+                    />
+
+                    {/* Form Content */}
                     <Animated.View 
                         style={{
                             transform: [{ translateX: slideAnim }],
                             flex: 1,
-                            marginTop: 32
+                            transform: [{ translateX: slideAnim }],
+                            flex: 1,
+                            marginBottom: 16
                         }}
                     >
-                        {step === 1 ? (
-                            <StyledView className="space-y-6">
-                                <InputField
-                                    label="ชื่อผู้ใช้"
-                                    placeholder="ชื่อผู้ใช้ของคุณ"
-                                    value={username}
-                                    onChangeText={onCheckUsername}
-                                    wrong={isUsernameValid !== null && isUsernameValid}
-                                />
-                                <InputField
-                                    label="รหัสผ่าน"
-                                    placeholder="รหัสผ่าน"
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    secureTextEntry
-                                />
-                                <InputField
-                                    label="อีเมล"
-                                    placeholder="อีเมล"
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    inputMode="email"
-                                />
-                                <InputField
-                                    label="เบอร์โทรศัพท์"
-                                    placeholder="เบอร์โทรศัพท์"
-                                    value={phone}
-                                    onChangeText={setPhone}
-                                    inputMode="tel"
-                                />
+                        {/* Render Different Steps */}
+                        {step === 1 ? renderPersonalInfo() :
+                         step === 2 ? renderIdentityVerification() :
+                         renderBankingInfo()}
+                    </Animated.View>
 
-                                {phone.length === 10 && !phoneVerify && (
-                                    <StyledView className="mt-4">
-                                        {getOtp ? (
-                                            <StyledView className="flex-row space-x-2">
-                                                <StyledView className="flex-1">
-                                                    <InputField
-                                                        label="รหัส OTP"
-                                                        placeholder="กรอกรหัส OTP"
-                                                        value={otp}
-                                                        onChangeText={setOtp}
-                                                        inputMode="numeric"
-                                                    />
-                                                </StyledView>
-                                                <TouchableOpacity
-                                                    onPress={() => setPhoneVerify(true)}
-                                                    className="bg-[#1e3a8a] h-12 px-4 rounded-xl self-end"
-                                                >
-                                                    <StyledText className="text-white font-custom text-center my-auto">
-                                                        ยืนยัน
-                                                    </StyledText>
-                                                </TouchableOpacity>
-                                            </StyledView>
-                                        ) : (
-                                            <TouchableOpacity
-                                                onPress={() => setGetOtp(true)}
-                                                className="bg-[#1e3a8a] py-3 rounded-xl"
-                                            >
-                                                <StyledText className="text-white font-custom text-center">
-                                                    ยืนยันเบอร์โทรศัพท์
-                                                </StyledText>
-                                            </TouchableOpacity>
-                                        )}
-                                    </StyledView>
-                                )}
-                            </StyledView>
-                        ) : (
-                            <StyledView className="space-y-6">
-                                <StyledView className="flex-row space-x-4">
-                                    <StyledView className="flex-1">
-                                        <InputField
-                                            label="ชื่อจริง"
-                                            placeholder="ชื่อจริง"
-                                            value={firstName}
-                                            onChangeText={setFirstName}
-                                        />
-                                    </StyledView>
-                                    <StyledView className="flex-1">
-                                        <InputField
-                                            label="นามสกุล"
-                                            placeholder="นามสกุล"
-                                            value={lastName}
-                                            onChangeText={setLastName}
-                                        />
-                                    </StyledView>
-                                </StyledView>
-                                <InputField
-                                    label="การติดต่อฉุกเฉิน"
-                                    placeholder="เบอร์โทรศัพท์"
-                                    value={emergencyContact}
-                                    onChangeText={setEmergencyContact}
-                                    inputMode="tel"
-                                />
-                                <InputField
-                                    label="วันเกิด"
-                                    placeholder="เลือกวันเกิด"
-                                    value={birthDate}
-                                    onChangeText={setBirthDate}
-                                    editable={false}
-                                />
-                            </StyledView>
-                        )}
-
-                        <TouchableOpacity 
-                            onPress={handleNext}
-                            disabled={step === 1 && (!username || !password || !email || !phone || !phoneVerify)}
-                            className="w-full mt-6"
+                    {/* Bottom Button */}
+                    <StyledView className="py-4">
+                        <StyledTouchableOpacity
+                            onPress={() => {
+                                if (step === 3) {
+                                    // Handle final submission
+                                    const formData = {
+                                        personalInfo: {
+                                            firstName,
+                                            lastName,
+                                            age,
+                                            address,
+                                            gender,
+                                            emergencyPhone
+                                        },
+                                        identityVerification: {
+                                            selfieImage,
+                                            idCardImage
+                                        },
+                                        bankingInfo: {
+                                            bankName,
+                                            accountNumber,
+                                            accountName
+                                        }
+                                    };
+                                    console.log('Submit form data:', formData);
+                                    // Add your submission logic here
+                                } else {
+                                    handleNext();
+                                }
+                            }}
                         >
                             <LinearGradient
-                                colors={step === 1 && (!username || !password || !email || !phone || !phoneVerify) 
-                                    ? ['#ccc', '#ccc'] 
-                                    : ['#ec4899', '#f97316']}
+                                colors={GRADIENT_COLORS}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 0 }}
-                                className="rounded-full py-3 shadow-sm"
+                                className="rounded-full py-4 shadow-sm"
                             >
-                                <StyledText className="font-custom text-center text-white text-lg font-semibold">
-                                    {step === 1 ? 'ถัดไป' : 'สร้างบัญชี'}
+                                <StyledText className="text-white text-center font-custom text-lg font-semibold">
+                                    {step === 3 ? 'ยืนยันข้อมูล' : 'ถัดไป'}
                                 </StyledText>
                             </LinearGradient>
-                        </TouchableOpacity>
-                    </Animated.View>
+                        </StyledTouchableOpacity>
+                    </StyledView>
                 </StyledView>
             </StyledView>
-        </StyledTouchableWithoutFeedback>
+        </TouchableWithoutFeedback>
     );
 }
