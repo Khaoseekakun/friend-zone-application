@@ -423,34 +423,35 @@ export default function ProfileTab() {
             {
                 loading ? (
                     <StyledView className="flex-1 justify-center items-center bg-white dark:bg-neutral-900">
-                        <ActivityIndicator size="large" color="#EB3834" />
+                        <ActivityIndicator size="large" color="#999" />
                     </StyledView>
                 ) : (
                     <StyledScrollView>
-                        <StyledView className="flex-1">
+                        <StyledView className="flex-1 mb-10">
                             <StyledView style={{
                                 width: SCREEN_WIDTH,
                             }}>
                                 <Carousel
-                                    style={
-                                        {
-                                            flexDirection: 'row',
-                                        }
-                                    }
-                                    data={images}
+                                    loop
                                     width={SCREEN_WIDTH}
-                                    height={SCREEN_WIDTH}
+                                    height={SCREEN_WIDTH * 1.5}
+                                    data={images}
                                     renderItem={({ item }) => (
-                                        <StyledImage
-                                            source={{ uri: item }}
-                                            className="w-full h-full"
-                                            resizeMode="cover"
-                                        />
+                                        <StyledView className="w-full h-full">
+                                            <StyledImage
+                                                source={{ uri: item }}
+                                                className="w-full h-full"
+                                                resizeMode="cover"
+                                            />
+                                        </StyledView>
                                     )}
-                                    onSnapToItem={(number) => {
-                                        setIsActive(number);
-                                    }}
-                                ></Carousel>
+                                    onSnapToItem={setIsActive}
+                                />
+                                <LinearGradient
+                                    colors={['transparent', 'rgba(0,0,0,0.8)']}
+                                    className="absolute bottom-0 left-0 right-0 h-40"
+                                />
+
                                 <StyledView className="absolute bottom-2 flex-row items-center left-2">
                                     <StyledIonIcon name="heart" color={'red'} size={40} />
                                     <StyledText className="text-[30px] text-white font-custom">{userProfile?.profile.rating}</StyledText>
@@ -467,39 +468,99 @@ export default function ProfileTab() {
                                 ))}
                             </StyledView>
 
-                            <StyledView className="flex-row items-center left-2">
-                                <StyledText className="text-[30px] text-black dark:text-white font-custom">{userProfile?.profile.username} {getAge(userProfile?.profile.birthday)}</StyledText>
+                            <StyledView className="px-5 py-4">
+                                {/* ส่วนชื่อและข้อมูลพื้นฐาน */}
+                                <StyledView className="flex-row items-center justify-between mb-3">
+                                    <StyledView className="flex-row items-center">
+                                        <StyledText className="text-[28px] text-black dark:text-white font-custom font-semibold">
+                                            {userProfile?.profile.username}
+                                        </StyledText>
+                                        <StyledView className="bg-gray-100 dark:bg-neutral-800 rounded-full px-3 py-1 ml-3">
+                                            <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-lg">
+                                                {getAge(userProfile?.profile.birthday)}
+                                            </StyledText>
+                                        </StyledView>
+                                        <StyledView className="ml-2">
+                                            {userProfile?.profile.gender == "ชาย" ? (
+                                                <LinearGradient
+                                                    colors={['#4facfe', '#00f2fe']}
+                                                    start={{ x: 0, y: 0 }}
+                                                    end={{ x: 1, y: 0 }}
+                                                    className="rounded-full p-2"
+                                                >
+                                                    <StyledIonIcon name="female" color={'white'} size={22} />
+                                                </LinearGradient>
+                                            ) : (
+                                                <LinearGradient
+                                                    colors={['#ff8df6', '#ff6b9c']}
+                                                    start={{ x: 0, y: 0 }}
+                                                    end={{ x: 1, y: 0 }}
+                                                    className="rounded-full p-2"
+                                                >
+                                                    <StyledIonIcon name="male" color={'white'} size={22} />
+                                                </LinearGradient>
+                                            )}
+                                        </StyledView>
+                                    </StyledView>
 
-                                {userProfile?.profile.gender == "ชาย" ? (
-                                    <StyledIonIcon className="mt-1" name="female" color={'#69ddff'} size={30} />
-                                ) : (
-                                    <StyledIonIcon className="mt-1" name="male" color={'#ff8df6'} size={30} />
+                                    {userProfile?.profile.type === "member" && (
+                                        <StyledView className="flex-row items-center bg-gray-100 dark:bg-neutral-800 rounded-full px-4 py-2">
+                                            <StyledIonIcon
+                                                name="location-outline"
+                                                size={20}
+                                                className="text-gray-600 dark:text-gray-300 mr-2"
+                                            />
+                                            <StyledText className="font-custom text-gray-600 dark:text-gray-300 text-base">
+                                                {Number(distance.toFixed(0)) / 1000 > 10
+                                                    ? `${(distance / 1000).toFixed(1)} กม.`
+                                                    : `10 กม.`}
+                                            </StyledText>
+                                        </StyledView>
+                                    )}
+                                </StyledView>
+
+                                {/* ที่อยู่ */}
+                                <StyledView className="flex-row items-center mb-4">
+                                    <StyledIonIcon
+                                        name="location"
+                                        size={20}
+                                        className="text-gray-500 dark:text-gray-400 mr-2"
+                                    />
+                                    <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom">
+                                        {userProfile?.profile.province[0]}
+                                    </StyledText>
+                                </StyledView>
+
+                                {/* Bio */}
+                                {userProfile?.profile.bio && (
+                                    <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4 mb-4">
+                                        <StyledText className="text-base text-gray-700 dark:text-gray-200 font-custom leading-6">
+                                            {userProfile.profile.bio}
+                                        </StyledText>
+                                    </StyledView>
                                 )}
 
-                                {
-                                    userProfile?.profile.type === "member" && (
-                                        <StyledText className="font-custom text-black dark:text-white text-lg">
-                                            {Number(distance.toFixed(0)) / 1000 > 10 ? `${Number(distance.toFixed(0)) / 1000} Km.` : `10 Km.`}
-                                        </StyledText>
-                                    )
-                                }
-
-                            </StyledView>
-                            
-                            <StyledText className="px-2 text-lg text-gray-700 dark:text-gray-200 font-custom">{userProfile?.profile.province[0]}</StyledText>
-
-                            <StyledView className="px-2">
-                                <StyledText className="text-lg text-gray-700 dark:text-gray-200 font-custom">{userProfile?.profile.bio}</StyledText>
-                            </StyledView>
-
-
-
-                            <StyledView className="flex-row items-center flex-wrap">
-                                {
-                                    joblist.map((job, index) => (
-                                        <StyledText key={index} className="font-custom px-2 bg-red-500 mx-1 my-1 rounded-full py-1 text-white">{job.label}</StyledText>
-                                    ))
-                                }
+                                {/* บริการ */}
+                                <StyledView className="mt-2">
+                                    <StyledText className="text-base font-semibold text-gray-500 dark:text-gray-400 font-custom mb-3">
+                                        บริการ
+                                    </StyledText>
+                                    <StyledView className="flex-row flex-wrap">
+                                        {joblist.map((job, index) => (
+                                            <LinearGradient
+                                                key={index}
+                                                colors={['#ec4899', '#f97316']}
+                                                start={{ x: 0, y: 0 }}
+                                                end={{ x: 1, y: 0 }}
+                                                className="rounded-full px-4 py-2 mr-2 mb-2"
+                                            >
+                                                <StyledText className="font-custom text-white text-base">
+                                                    {job.label}
+                                                </StyledText>
+                                            </LinearGradient>
+                                        ))}
+                                    </StyledView>
+                                </StyledView>
                             </StyledView>
                         </StyledView>
                     </StyledScrollView>
