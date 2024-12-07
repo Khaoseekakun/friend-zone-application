@@ -36,7 +36,7 @@ export default function Chat() {
             endTime: string;
             date: string;
             location: string;
-            pin : {
+            pin: {
                 latitude: number;
                 longtitude: number;
             };
@@ -367,7 +367,7 @@ export default function Chat() {
                     <StyledView className={`flex-row justify-center`}>
                         <StyledView className={`${isMyMessage ? 'bg-[#EB3834]' : ''} rounded-xl px-3 py-2 max-w-[80%] mb-3 border-neutral-500 border-dashed border-[1px] w-full`}>
                             <StyledText className={`${isMyMessage ? 'text-white' : 'text-black dark:text-white'} font-custom text-2xl text-center`}>
-                                ฿ {item.details.billingPrice.toLocaleString()}
+                                ฿ {(item.details.billingPrice / 100).toLocaleString()}
                             </StyledText>
                             <StyledView className="my-1 border-t-[1px] border-neutral-700 pt-3">
                                 <StyledView className="flex-row justify-between items-center">
