@@ -29,12 +29,17 @@ export default function ScheduleList() {
     const [userData, setUserData] = useState<any>({});
     const database = getDatabase(FireBaseApp, 'https://friendszone-d1e20-default-rtdb.asia-southeast1.firebasedatabase.app');
     const [paymentLoading, setPaymentLoading] = useState(false);
+    const [jobsList, setJobList] = useState<{
+        id: string;
+        jobName: string;
+        jobCategoryId: string;
+    }[]>([]);
     const getStatusColor = (status: string) => {
         switch (status) {
             case "wait_approve":
-                return "text-yellow-400";  
+                return "text-yellow-400";
             case "wait_payment":
-                return "text-orange-400";  
+                return "text-orange-400";
             case "payment_success":
                 return "text-green-500";
             case "wait_working":
@@ -53,8 +58,27 @@ export default function ScheduleList() {
     useEffect(() => {
         (async () => {
             await fetchUserData();
+            await loadJobsList();
         })();
     }, []);
+
+    const loadJobsList = async () => {
+        try {
+            const response = await axios.get('http://49.231.43.37:3000/api/jobs/all', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `All ${userData?.token}`
+                }
+            });
+
+
+            if (response.data.status === 200) {
+                setJobList(response.data.data);
+            }
+        } catch (error) {
+            console.error('Jobs list error:', error);
+        }
+    }
 
     useEffect(() => {
         if (userData.id) {
@@ -86,7 +110,7 @@ export default function ScheduleList() {
         memberId: string;
         date: string;
         location: string;
-        jobs: string[];
+        jobs: string;
         latitude: number;
         longitude: number;
         status: string;
@@ -181,21 +205,18 @@ export default function ScheduleList() {
                                             <StyledText className="font-custom text-gray-500">{DateFromat(item.date)}</StyledText>
                                             <StyledText className="font-custom text-gray-500">สถานที่ {item.location}</StyledText>
                                             <StyledView className="w-full h-[1px] bg-gray-600 my-2"></StyledView>
-                                            <StyledText className="font-custom text-gray-500">รูปแบบงาน</StyledText>
 
-                                            <StyledText className="flex-row gap-2 py-2">
-                                                {
-                                                    item.jobs
-                                                }
+                                            <StyledText className="font-custom text-gray-600 dark:text-gray-300 mt-2">
+                                                รูปแบบงาน: {jobsList.find(j => j.id === item.jobs)?.jobName}
                                             </StyledText>
 
                                             <StyledView className="flex-row py-2 justify-between mt-5">
-                                                <StyledText className="font-custom text-gray-500 text-xl">ทำเนียมการนัดหมาย (Moo)</StyledText>
+                                                <StyledText className="font-custom text-gray-500 text-xl">ทำเนียมการนัดหมาย</StyledText>
                                                 <StyledText className="font-custom text-gray-500 text-xl">{item.price?.toLocaleString()}</StyledText>
                                             </StyledView>
 
                                             {
-                                                 item.status === "wait_approve" && userData.role === "member" ? (
+                                                item.status === "wait_approve" && userData.role === "member" ? (
                                                     <StyledView className="flex-row py-2 justify-end gap-2 items-center">
                                                         <StyledTouchableOpacity onPress={() => updateScheduleStatus(item.id, 'schedule_cancel', "ยืนยันการยกเลิกการนัดหมาย")}>
                                                             <StyledText className="font-custom text-gray-500 text-xl">ยกเลิก</StyledText>
@@ -234,11 +255,10 @@ export default function ScheduleList() {
                                                                         userData.role === "customer" ? "กำลังทำงาน" : "กำลังทำงาน" :
                                                                         item.status === "schedule_end_success" ?
                                                                             userData.role === "customer" ? "การนัดหมายสิ้นสุด (สำเร็จ)" : "การนัดหมายสิ้นสุด (สำเร็จ)" :
-                                                                            "สถานะไม่รู้จัก" 
+                                                                            item.status === "schedule_cancel_after_payment" ?
+                                                                                userData.role === "customer" ? "การนัดหมายถูกยกเลิก" : "การนัดหมายถูกยกเลิกจากลูกค้า" : null
                                             }
                                         </StyledText>
-
-
                                     </StyledView>
                                 ))
                             }
