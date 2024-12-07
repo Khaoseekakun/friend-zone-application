@@ -4,425 +4,302 @@ import { NavigationProp } from '@react-navigation/native';
 import { useNavigation } from 'expo-router';
 import { styled } from 'nativewind';
 import React, { useRef, useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
     Animated,
-    SafeAreaView,
-    ScrollView,
     Text,
     TextInput,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     View,
     Dimensions,
-    KeyboardAvoidingView,
+    TouchableWithoutFeedback,
+    Keyboard,
     Platform,
 } from 'react-native';
 
-const { width, height } = Dimensions.get('screen'); // Get screen width for sliding
+const { width } = Dimensions.get('screen');
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
-const StyledSafeAreaView = styled(SafeAreaView);
 const StyledTouchableWithoutFeedback = styled(TouchableWithoutFeedback);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledIonicons = styled(Ionicons);
-const StyledKeyboardAvoidingView = styled(KeyboardAvoidingView);
-const StyledScrollView = styled(ScrollView);
+
+interface InputFieldProps {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  inputMode?: 'text' | 'tel' | 'email';
+  secureTextEntry?: boolean;
+  editable?: boolean;
+  wrong?: boolean;
+  onBlur?: () => void;
+}
+
+const InputField: React.FC<InputFieldProps> = ({
+  label,
+  placeholder,
+  value,
+  onChangeText,
+  inputMode = 'text',
+  secureTextEntry = false,
+  editable = true,
+  wrong = false,
+  onBlur
+}) => (
+  <StyledView className="w-full mb-7">
+    <StyledText className={`font-custom text-sm ${wrong ? 'text-red-500' : 'text-gray-600 dark:text-gray-300'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-neutral-900 z-50 px-2`}>
+      {label}
+    </StyledText>
+    <StyledView className="font-custom w-full relative">
+      <StyledTextInput
+        placeholder={placeholder}
+        value={value}
+        onChangeText={onChangeText}
+        inputMode={inputMode}
+        secureTextEntry={secureTextEntry}
+        editable={editable}
+        onBlur={onBlur}
+        className={`font-custom border ${wrong ? 'border-red-500' : 'border-gray-300'} rounded-full py-4 px-4 ${wrong ? 'text-red-500' : 'text-gray-600 dark:text-gray-300'} w-full`}
+        placeholderTextColor="#9CA3AF"
+      />
+    </StyledView>
+  </StyledView>
+);
+
 export default function RegisterMember() {
-    const [step, setStep] = useState(1); // Current step
-    const animationValue = useRef(new Animated.Value(0)).current; // Animation value for sliding
+    const [step, setStep] = useState(1);
+    const slideAnim = useRef(new Animated.Value(0)).current;
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-    //data 1 
+    // Step 1 data
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
     const [phoneVerify, setPhoneVerify] = useState(false);
-    const [registerType, setRegisterType] = useState('');
     const [getOtp, setGetOtp] = useState(false);
+    const [isUsernameValid, setIsUsernameValid] = useState(false as boolean | null);
 
-    //data 2
+    // Step 2 data
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [emergencyContact, setEmergencyContact] = useState('');
     const [birthDate, setBirthDate] = useState('');
-    const [addredd, setAddress] = useState('');
 
-
-    const nextStep = () => {
-        if (step < 3) { // Assuming 3 steps
-            if (step === 1) {
-                if (phoneVerify != true || phone.length != 10 || otp.length != 6 || registerType == '' || username == '' || password == '' || email == '') {
-                    //shake animation
-                    Animated.sequence([
-                        Animated.timing(animationValue, {
-                            toValue: (step - 1) * width - 2,
-                            duration: 100,
-                            useNativeDriver: false,
-                        }),
-                        Animated.timing(animationValue, {
-                            toValue: (step - 1) * width + 2,
-                            duration: 100,
-                            useNativeDriver: false,
-                        }),
-                        Animated.timing(animationValue, {
-                            toValue: (step - 1) * width - 2,
-                            duration: 100,
-                            useNativeDriver: false,
-                        }),
-                        Animated.timing(animationValue, {
-                            toValue: (step - 1) * width + 2,
-                            duration: 100,
-                            useNativeDriver: false,
-                        }),
-                        Animated.timing(animationValue, {
-                            toValue: (step - 1) * width,
-                            duration: 100,
-                            useNativeDriver: false,
-                        }),
-                    ]).start();
-                } else {
-                    Animated.timing(animationValue, {
-                        toValue: step * width,
-                        duration: 300,
-                        useNativeDriver: false,
-                    }).start();
-
-                    setStep(step + 1);
-                }
-            }
-            else if (step === 2) {
-                if (firstName == '' || lastName == '' || emergencyContact == '' || birthDate == '' || addredd == '') {
-                    //shake animation
-                    Animated.sequence([
-                        Animated.timing(animationValue, {
-                            toValue: (step - 1) * width - 2,
-                            duration: 100,
-                            useNativeDriver: false,
-                        }),
-                        Animated.timing(animationValue, {
-                            toValue: (step - 1) * width + 2,
-                            duration: 100,
-                            useNativeDriver: false,
-                        }),
-                        Animated.timing(animationValue, {
-                            toValue: (step - 1) * width - 2,
-                            duration: 100,
-                            useNativeDriver: false,
-                        }),
-                        Animated.timing(animationValue, {
-                            toValue: (step - 1) * width + 2,
-                            duration: 100,
-                            useNativeDriver: false,
-                        }),
-                        Animated.timing(animationValue, {
-                            toValue: (step - 1) * width,
-                            duration: 100,
-                            useNativeDriver: false,
-                        }),
-                    ]).start();
-                } else {
-                    Animated.timing(animationValue, {
-                        toValue: step * width,
-                        duration: 300,
-                        useNativeDriver: false,
-                    }).start();
-                    setStep(step + 1);
-                }
-            }
-            else {
-                Animated.timing(animationValue, {
-                    toValue: step * width,
-                    duration: 300,
-                    useNativeDriver: false,
-                }).start();
-                setStep(step + 1);
+    const handleNext = () => {
+        if (step === 1) {
+            if (!username || !password || !email || !phone || !phoneVerify) {
+                Animated.sequence([
+                    ...Array(3).fill(null).map(() => (
+                        Animated.sequence([
+                            Animated.timing(slideAnim, {
+                                toValue: -10,
+                                duration: 50,
+                                useNativeDriver: true
+                            }),
+                            Animated.timing(slideAnim, {
+                                toValue: 10,
+                                duration: 50,
+                                useNativeDriver: true
+                            })
+                        ])
+                    )),
+                    Animated.timing(slideAnim, {
+                        toValue: 0,
+                        duration: 50,
+                        useNativeDriver: true
+                    })
+                ]).start();
+                return;
             }
         }
 
-
+        if (step < 2) {
+            Animated.timing(slideAnim, {
+                toValue: -width,
+                duration: 300,
+                useNativeDriver: true
+            }).start(() => {
+                setStep(step + 1);
+            });
+        }
     };
 
-
-    const prevStep = () => {
+    const handleBack = () => {
         if (step > 1) {
-            Animated.timing(animationValue, {
-                toValue: (step - 2) * width, // Slide to the previous step
+            Animated.timing(slideAnim, {
+                toValue: 0,
                 duration: 300,
-                useNativeDriver: false,
-            }).start();
-            setStep(step - 1);
+                useNativeDriver: true
+            }).start(() => {
+                setStep(step - 1);
+            });
+        } else {
+            navigation.goBack();
+        }
+    };
+
+    const onCheckUsername = (value: string) => {
+        const englishRegex = /^[A-Za-z0-9_]*$/;
+        setIsUsernameValid(null);
+        if (!englishRegex.test(value)) {
+            setUsername(value.slice(0, -1));
+            return;
+        } else {
+            setUsername(value);
         }
     };
 
     return (
-        <StyledView className="bg-gray-200 w-full h-screen flex-1 justify-center">
-            <StyledView className="w-full">
-                <Animated.View
-                    style={{
-                        flexDirection: 'row',
-                        width: width * 3, // Total width for 3 steps
-                        transform: [{ translateX: Animated.multiply(animationValue, -1) }],
-                    }}
-                >
-                    {/* Step 1 */}
+        <StyledTouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <StyledView className="flex-1 bg-white dark:bg-neutral-900 h-full pt-[20%]">
+                <StyledView className="flex-1 px-6">
+                    <TouchableOpacity onPress={handleBack} className="mt-6">
+                        <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
+                    </TouchableOpacity>
 
-                    <StyledView
-                        style={{
-                            width: width,
-                            height: height * 0.87,
-                            paddingLeft: 10, paddingRight: 10
-                        }}
-                    >
-                        <StyledKeyboardAvoidingView
-                            behavior={Platform.OS === "ios" ? "padding" : "height"}
-                            style={{ flex: 1 }}
-                            className='h-full w-full items-center bg-white justify-center rounded-xl'
-                        >
-                            <StyledScrollView style={{
-                                width: width * 0.97,
-                            }} className='px-3'>
-                                <StyledView className="flex items-center mt-[10%]">
-                                    <StyledText className="font-custom text-3xl text-[#1e3a8a] mt-6">สร้างบัญชี</StyledText>
-                                    <StyledText className="font-custom text-base text-gray-400">
-                                        สร้างบัญชีของคุณเพื่อเริ่มต้นการใช้งาน
-                                    </StyledText>
-                                </StyledView>
-
-                                <StyledView className="w-full mt-4">
-                                    <StyledView className='my-2'>
-                                        <StyledText className='font-custom text-gray-800 mb-1 pl-2'>
-                                            ชื่อผู้ใช้
-                                        </StyledText>
-                                        <StyledTextInput
-                                            placeholder="ชื่อผู้ใช้"
-                                            className="font-custom bg-slate-200 rounded-xl py-3 p-3 text-gray-900 placeholder-gray-700"
-                                            value={username}
-                                            onChangeText={setUsername}
-                                        />
-                                    </StyledView>
-
-                                    <StyledView className='my-2'>
-                                        <StyledText className='font-custom text-gray-800 mb-1 pl-2'>
-                                            รหัสผ่าน
-                                        </StyledText>
-                                        <StyledTextInput
-                                            placeholder="รหัสผ่าน"
-                                            className="font-custom bg-slate-200 rounded-xl py-3 p-3 text-gray-900 placeholder-gray-700"
-                                            value={password}
-                                            onChangeText={setPassword}
-                                            inputMode='text'
-                                            secureTextEntry
-                                        />
-                                    </StyledView>
-
-                                    <StyledView className='my-2'>
-                                        <StyledText className='font-custom text-gray-800 mb-1 pl-2'>
-                                            อีเมล
-                                        </StyledText>
-                                        <StyledTextInput
-                                            placeholder="อีเมล"
-                                            className="font-custom bg-slate-200 rounded-xl py-3 p-3 text-gray-900 placeholder-gray-700"
-                                            value={email}
-                                            onChangeText={setEmail}
-                                            inputMode='email'
-                                        />
-                                    </StyledView>
-
-                                    <StyledView className='my-2'>
-                                        <StyledText className='font-custom text-gray-800 mb-1 pl-2'>
-                                            เบอร์โทรศัพท์
-                                        </StyledText>
-                                        <StyledTextInput
-                                            placeholder="เบอร์โทรศัพท์"
-                                            className="font-custom bg-slate-200 rounded-xl py-3 p-3 text-gray-900 placeholder-gray-700"
-                                            value={phone}
-                                            onChangeText={setPhone}
-                                            inputMode='tel'
-                                            enterKeyHint='done'
-                                            autoCapitalize='none'
-                                        />
-                                    </StyledView>
-
-                                    {
-                                        phone.length === 10 && !phoneVerify ? (
-                                            <>
-                                                {
-                                                    getOtp ? (
-                                                        <StyledView className='flex-row items-end my-2'>
-                                                            <StyledView className='w-9/12 pr-2'>
-
-
-                                                                <StyledText className='font-custom text-gray-800 mb-1 pl-2'>
-                                                                    ยืนยันรหัส OTP
-                                                                </StyledText>
-                                                                <StyledTextInput
-                                                                    placeholder="กรอกรหัส OTP"
-                                                                    className="font-custom bg-slate-200 rounded-xl py-3 p-3 text-gray-900 placeholder-gray-700"
-                                                                    value={otp}
-                                                                    onChangeText={setOtp}
-                                                                    enterKeyHint='done'
-                                                                    inputMode='numeric'
-                                                                    autoComplete='sms-otp'
-
-                                                                />
-                                                            </StyledView>
-
-
-                                                            <StyledView className='w-3/12'>
-                                                                <StyledTouchableOpacity
-                                                                    onPress={
-                                                                        () => {
-                                                                            setGetOtp(true);
-                                                                        }
-                                                                    }
-                                                                    className="bg-[#1e3a8a] rounded-lg py-3 px-2"
-                                                                >
-                                                                    <StyledText className="text-white font-custom text-center">ยืนยัน</StyledText>
-                                                                </StyledTouchableOpacity>
-                                                            </StyledView>
-
-                                                        </StyledView>
-                                                    ) : (
-                                                        <StyledTouchableOpacity
-                                                            onPress={
-                                                                () => {
-                                                                    setGetOtp(true);
-                                                                }
-                                                            }
-                                                            className="bg-[#1e3a8a] rounded-lg py-2 mt-6 px-8"
-                                                        >
-                                                            <StyledText className="text-white font-custom text-center">ยืนยันเบอร์โทรศัพท์</StyledText>
-                                                        </StyledTouchableOpacity>
-                                                    )
-                                                }
-                                            </>
-                                        ) : null
-                                    }
-
-                                    <StyledTouchableOpacity
-                                        onPress={nextStep}
-                                        className="bg-[#1e3a8a] rounded-full py-3 mt-4 "
-                                    >
-                                        <StyledText className="text-white font-custom text-center">ถัดไป</StyledText>
-                                    </StyledTouchableOpacity>
-                                </StyledView>
-
-                                <StyledTouchableOpacity
-                                    onPress={() => navigation.navigate('SelectRegisterPage', {})}
-                                    className="absolute top-0 left-0 mt-4"
-                                >
-                                    <StyledIonicons name="chevron-back" size={24} color="#1e3a8a" />
-                                </StyledTouchableOpacity>
-                            </StyledScrollView>
-                        </StyledKeyboardAvoidingView>
-
+                    <StyledView className="flex items-center">
+                        <StyledText className="font-custom text-3xl font-bold text-[#1e3a8a] mt-6 mb-2">
+                            สร้างบัญชี
+                        </StyledText>
+                        <StyledText className="font-custom text-base text-gray-400">
+                            {step === 1 ? 'สร้างบัญชีของคุณเพื่อเริ่มต้นการใช้งาน' : 'ข้อมูลส่วนตัวของสมาชิก'}
+                        </StyledText>
                     </StyledView>
 
-                    {/* Step 2 */}
-
-                    <StyledView
+                    <Animated.View 
                         style={{
-                            width: width,
-                            height: height * 0.87,
-                            paddingLeft: 10, paddingRight: 10
+                            transform: [{ translateX: slideAnim }],
+                            flex: 1,
+                            marginTop: 32
                         }}
                     >
-                        <StyledKeyboardAvoidingView
-                            behavior={Platform.OS === "ios" ? "padding" : "height"}
-                            style={{ flex: 1 }}
-                            className='h-full w-full items-center bg-white justify-center rounded-xl'
+                        {step === 1 ? (
+                            <StyledView className="space-y-6">
+                                <InputField
+                                    label="ชื่อผู้ใช้"
+                                    placeholder="ชื่อผู้ใช้ของคุณ"
+                                    value={username}
+                                    onChangeText={onCheckUsername}
+                                    wrong={isUsernameValid !== null && isUsernameValid}
+                                />
+                                <InputField
+                                    label="รหัสผ่าน"
+                                    placeholder="รหัสผ่าน"
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    secureTextEntry
+                                />
+                                <InputField
+                                    label="อีเมล"
+                                    placeholder="อีเมล"
+                                    value={email}
+                                    onChangeText={setEmail}
+                                    inputMode="email"
+                                />
+                                <InputField
+                                    label="เบอร์โทรศัพท์"
+                                    placeholder="เบอร์โทรศัพท์"
+                                    value={phone}
+                                    onChangeText={setPhone}
+                                    inputMode="tel"
+                                />
+
+                                {phone.length === 10 && !phoneVerify && (
+                                    <StyledView className="mt-4">
+                                        {getOtp ? (
+                                            <StyledView className="flex-row space-x-2">
+                                                <StyledView className="flex-1">
+                                                    <InputField
+                                                        label="รหัส OTP"
+                                                        placeholder="กรอกรหัส OTP"
+                                                        value={otp}
+                                                        onChangeText={setOtp}
+                                                        inputMode="numeric"
+                                                    />
+                                                </StyledView>
+                                                <TouchableOpacity
+                                                    onPress={() => setPhoneVerify(true)}
+                                                    className="bg-[#1e3a8a] h-12 px-4 rounded-xl self-end"
+                                                >
+                                                    <StyledText className="text-white font-custom text-center my-auto">
+                                                        ยืนยัน
+                                                    </StyledText>
+                                                </TouchableOpacity>
+                                            </StyledView>
+                                        ) : (
+                                            <TouchableOpacity
+                                                onPress={() => setGetOtp(true)}
+                                                className="bg-[#1e3a8a] py-3 rounded-xl"
+                                            >
+                                                <StyledText className="text-white font-custom text-center">
+                                                    ยืนยันเบอร์โทรศัพท์
+                                                </StyledText>
+                                            </TouchableOpacity>
+                                        )}
+                                    </StyledView>
+                                )}
+                            </StyledView>
+                        ) : (
+                            <StyledView className="space-y-6">
+                                <StyledView className="flex-row space-x-4">
+                                    <StyledView className="flex-1">
+                                        <InputField
+                                            label="ชื่อจริง"
+                                            placeholder="ชื่อจริง"
+                                            value={firstName}
+                                            onChangeText={setFirstName}
+                                        />
+                                    </StyledView>
+                                    <StyledView className="flex-1">
+                                        <InputField
+                                            label="นามสกุล"
+                                            placeholder="นามสกุล"
+                                            value={lastName}
+                                            onChangeText={setLastName}
+                                        />
+                                    </StyledView>
+                                </StyledView>
+                                <InputField
+                                    label="การติดต่อฉุกเฉิน"
+                                    placeholder="เบอร์โทรศัพท์"
+                                    value={emergencyContact}
+                                    onChangeText={setEmergencyContact}
+                                    inputMode="tel"
+                                />
+                                <InputField
+                                    label="วันเกิด"
+                                    placeholder="เลือกวันเกิด"
+                                    value={birthDate}
+                                    onChangeText={setBirthDate}
+                                    editable={false}
+                                />
+                            </StyledView>
+                        )}
+
+                        <TouchableOpacity 
+                            onPress={handleNext}
+                            disabled={step === 1 && (!username || !password || !email || !phone || !phoneVerify)}
+                            className="w-full mt-6"
                         >
-                            <StyledScrollView style={{
-                                width: width * 0.97,
-                            }} className='px-3'>
-                                <StyledView className="flex items-center mt-[10%]">
-                                    <StyledText className="font-custom text-3xl text-[#1e3a8a] mt-6">สร้างบัญชี</StyledText>
-                                    <StyledText className="font-custom text-base text-gray-400">
-                                        ข้อมูลส่วนตัวของสมาชิก
-                                    </StyledText>
-                                </StyledView>
-
-                                <StyledView className="w-full mt-4">
-                                    <StyledView className='my-2 flex-row items-center'>
-                                        <StyledView className='w-6/12 pr-2'>
-                                            <StyledText className='font-custom text-gray-800 mb-1 pl-2'>
-                                                ชื่อจริง
-                                            </StyledText>
-                                            <StyledTextInput
-                                                placeholder="ชื่อผู้ใช้"
-                                                className="font-custom bg-slate-200 rounded-xl py-3 p-3 text-gray-900 placeholder-gray-700"
-                                                value={firstName}
-                                                onChangeText={setFirstName}
-                                            />
-                                        </StyledView>
-
-                                        <StyledView className='w-6/12 pl-2'>
-                                            <StyledText className='font-custom text-gray-800 mb-1 pl-2'>
-                                                นามสกุล
-                                            </StyledText>
-                                            <StyledTextInput
-                                                placeholder="รหัสผ่าน"
-                                                className="font-custom bg-slate-200 rounded-xl py-3 p-3 text-gray-900 placeholder-gray-700"
-                                                value={lastName}
-                                                onChangeText={setLastName}
-                                                inputMode='text'
-                                            />
-                                        </StyledView>
-
-                                    </StyledView>
-
-                                    <StyledView className='my-2'>
-                                        <StyledText className='font-custom text-gray-800 mb-1 pl-2'>
-                                            การติดต่อฉุกเฉิน - เบอร์โทรศัพท์
-                                        </StyledText>
-                                        <StyledTextInput
-                                            placeholder="เบอร์โทรศัพท์"
-                                            className="font-custom bg-slate-200 rounded-xl py-3 p-3 text-gray-900 placeholder-gray-700"
-                                            value={emergencyContact}
-                                            onChangeText={setEmergencyContact}
-                                            inputMode='tel'
-                                            enterKeyHint='done'
-                                        />
-                                    </StyledView>
-
-                                    <StyledView className='my-2'>
-                                        <StyledText className='font-custom text-gray-800 mb-1 pl-2'>
-                                            วันเกิด
-                                        </StyledText>
-                                        <StyledTextInput
-                                            placeholder="วันเกิด"
-                                            className="font-custom bg-slate-200 rounded-xl py-3 p-3 text-gray-900 placeholder-gray-700"
-                                            value={birthDate}
-                                            onChangeText={setBirthDate}
-                                            inputMode='text'
-                                            editable={false}
-                                        />
-                                    </StyledView>
-
-                                    <StyledTouchableOpacity
-                                        onPress={nextStep}
-                                        className="bg-[#1e3a8a] rounded-full py-3 mt-4 "
-                                    >
-                                        <StyledText className="text-white font-custom text-center">ถัดไป</StyledText>
-                                    </StyledTouchableOpacity>
-                                </StyledView>
-
-                                <StyledTouchableOpacity
-                                    onPress={() => prevStep()}
-                                    className="absolute top-0 left-0 mt-4"
-                                >
-                                    <StyledIonicons name="chevron-back" size={24} color="#1e3a8a" />
-                                </StyledTouchableOpacity>
-                            </StyledScrollView>
-                        </StyledKeyboardAvoidingView>
-
-                    </StyledView>
-                </Animated.View >
-            </StyledView >
-        </StyledView >
+                            <LinearGradient
+                                colors={step === 1 && (!username || !password || !email || !phone || !phoneVerify) 
+                                    ? ['#ccc', '#ccc'] 
+                                    : ['#ec4899', '#f97316']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                className="rounded-full py-3 shadow-sm"
+                            >
+                                <StyledText className="font-custom text-center text-white text-lg font-semibold">
+                                    {step === 1 ? 'ถัดไป' : 'สร้างบัญชี'}
+                                </StyledText>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    </Animated.View>
+                </StyledView>
+            </StyledView>
+        </StyledTouchableWithoutFeedback>
     );
 }
