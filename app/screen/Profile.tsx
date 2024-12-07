@@ -44,10 +44,10 @@ export default function ProfileTab() {
     const route = useRoute<ProfileParam>();
     const { profileId, jobCategory, backPage, searchType } = route.params;
     const isFoucs = useIsFocused()
+
     const convertJobs = {
         "Friend": "เพื่อนท่องเที่ยว"
     }
-
 
     const translateX = useSharedValue(0);
     const currentIndex = useSharedValue(0);
@@ -79,6 +79,23 @@ export default function ProfileTab() {
     const [searchFocus, setSearchFocus] = useState<boolean>(false);
 
     const [locationSearch, setLocationSearch] = useState<string>("");
+
+    const [serviceRate, setServiceRate] = useState<{
+        id: string;
+        start: number;
+        start_per_hour: number;
+        off_time: number;
+        off_time_per_hour: number;
+        jobCategoryId: string;
+    }[]>()
+
+    const [price, setPrice] = useState<number>(0)
+
+    const [distanceRate, setDistanceRate] = useState<{
+        id: string;
+        distance: number;
+        price: number;
+    }[]>()
 
 
     const [pin, setPin] = useState<{
@@ -200,7 +217,7 @@ export default function ProfileTab() {
         try {
             if (!jobCategory) {
                 if (userProfile.profile.JobMembers.length > 0) {
-                    const resdata = await axios.get(`https://friendszone.app/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
+                    const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
                         headers: {
                             "Content-Type": "application/json",
                             "Authorization": `All ${userData.token}`
@@ -208,17 +225,20 @@ export default function ProfileTab() {
                     })
 
                     if (resdata.data.status == 200) {
-                        setJobList(resdata.data.data.map((job: any) => ({
+
+                        setJobList(resdata.data.data.JobsList.map((job: any) => ({
                             label: job.jobName,
                             value: job.id,
-
                         })))
+                        setServiceRate(resdata.data.data.serviceRate)
+                        setDistanceRate(resdata.data.data.distanceRate)
+
                     } else {
                         console.log(resdata.data)
                     }
                 }
             } else {
-                const resdata = await axios.get(`https://friendszone.app/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
+                const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `All ${userData.token}`
@@ -226,13 +246,16 @@ export default function ProfileTab() {
                 })
 
                 if (resdata.data.status == 200) {
-                    setJobList(resdata.data.data.map((job: any) => ({
+
+                    setJobList(resdata.data.data.JobsList.map((job: any) => ({
                         label: job.jobName,
                         value: job.id,
 
                     })))
 
-                    console.log(resdata.data.data)
+                    setServiceRate(resdata.data.data.serviceRate)
+                    setDistanceRate(resdata.data.data.distanceRate)
+
                 } else {
                     console.log(resdata.data)
                 }
@@ -300,6 +323,31 @@ export default function ProfileTab() {
         return () => listener.remove();
     }, [])
 
+    useEffect(() => {
+        if(!pin || !scheduleLocation) return
+        const distance = Number((getDistanceMemberToPinLocation({ latitude: pin?.latitude as number, longitude: pin?.longitude as number }, {
+            latitude: userProfile?.profile.pinLocation[0],
+            longitude: userProfile?.profile.pinLocation[1]
+        }) / 1000).toFixed(0))
+
+        const jobsPrice = serviceRate ? serviceRate[0] : null;
+        if(jobsPrice){
+            //check distance
+            console.log(distance)
+            if (distance < 30) {
+                setPrice(jobsPrice.start + 0);
+            } else if (distance >= 30 && distance < 60) {
+                setPrice(jobsPrice.start + 500);
+            } else if (distance >= 60 && distance < 120) {
+                setPrice(jobsPrice.start + 1000);
+            } else if (distance >= 120) {
+                setPrice(jobsPrice.start + (distance * 2) * 7);
+            }
+        }else{
+            Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถคำนวณราคาได้', [{ text: 'OK' }])
+        }
+    }, [pin])
+
     /**
     * @param {LatLng} point1 
     * @param {LatLng} point2 
@@ -354,7 +402,7 @@ export default function ProfileTab() {
 
 
         try {
-            const response = await axios.post('https://friendszone.app/api/schedule', {
+            const response = await axios.post('http://49.231.43.37:3000/api/schedule', {
                 customerId: userData.id,
                 memberId: userProfile?.profile.id,
                 date: scheduleDateTime,
@@ -362,6 +410,7 @@ export default function ProfileTab() {
                 jobs: scheduleJobs,
                 latitude: pin?.latitude,
                 longtitude: pin?.longitude,
+                price : price
             }, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -485,7 +534,7 @@ export default function ProfileTab() {
                                 }
 
                             </StyledView>
-                            
+
                             <StyledText className="px-2 text-lg text-gray-700 dark:text-gray-200 font-custom">{userProfile?.profile.province[0]}</StyledText>
 
                             <StyledView className="px-2">
@@ -552,6 +601,9 @@ export default function ProfileTab() {
                 }}
             >
                 <BottomSheetView style={{ height: "80%" }}>
+
+
+
                     <StyledView className="flex-1">
                         {
                             searchFocus ? (
@@ -679,7 +731,7 @@ export default function ProfileTab() {
                                                 <StyledView
                                                     className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
                                                 >
-                                                    <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? joblist.find((j) => j.value == scheduleJobs)?.label : "เลือกประเภทงาน"}</StyledText>
+                                                    <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? `${joblist.find((j) => j.value == scheduleJobs)?.label } ${serviceRate ? `(${serviceRate[0].start_per_hour}Hr.)` : ''} `  : "เลือกประเภทงาน"}</StyledText>
                                                 </StyledView>
                                             </TouchableOpacity>
                                             {/* <RNPickerSelect
@@ -795,7 +847,9 @@ export default function ProfileTab() {
                                             {loading ? (
                                                 <ActivityIndicator size="small" color="#fff" />
                                             ) : (
-                                                <StyledText className="font-custom text-center text-white text-lg font-semibold">ส่ง</StyledText>
+                                                <StyledText className="font-custom text-center text-white text-lg font-semibold">นัดหมาย ฿ {
+                                                    price.toLocaleString()
+                                                }</StyledText>
                                             )}
                                         </LinearGradient>
                                     </TouchableOpacity>

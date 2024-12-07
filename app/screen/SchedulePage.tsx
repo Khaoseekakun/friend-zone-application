@@ -26,7 +26,7 @@ interface Schedule {
   latitude: number;
   longitude: number;
   status: string;
-  price?: number;
+  price: number;
   paymentId?: string;
 }
 
@@ -188,7 +188,7 @@ export default function SchedulePage() {
         const response = await axios.post(
           'https://friendszone.app/api/stripe/create-payment-intent',
           {
-            amount: (schedule.price || 200) * 100,
+            amount: (schedule.price) * 100,
             customerId: schedule.customerId,
             memberId: schedule.memberId,
             scheduleId: schedule.id
@@ -242,7 +242,7 @@ export default function SchedulePage() {
               ค่าธรรมเนียม
             </StyledText>
             <StyledText className="font-custom text-xl text-gray-800 dark:text-gray-200">
-              ฿{(schedule.price || 200).toFixed(2)}
+              ฿{(schedule.price)?.toLocaleString()}
             </StyledText>
           </StyledView>
 

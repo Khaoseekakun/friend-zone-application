@@ -191,7 +191,7 @@ export default function ScheduleList() {
 
                                             <StyledView className="flex-row py-2 justify-between mt-5">
                                                 <StyledText className="font-custom text-gray-500 text-xl">ทำเนียมการนัดหมาย (Moo)</StyledText>
-                                                <StyledText className="font-custom text-gray-500 text-xl">200.00 ฿</StyledText>
+                                                <StyledText className="font-custom text-gray-500 text-xl">{item.price?.toLocaleString()}</StyledText>
                                             </StyledView>
 
                                             {
