@@ -366,7 +366,7 @@ export default function MemberRegistration() {
                 ))}
             </StyledView>
 
-            <InputField
+            <InputFiel
                 label="เลขบัญชีธนาคาร"
                 placeholder="กรอกเลขบัญชี"
                 value={accountNumber}
@@ -374,7 +374,7 @@ export default function MemberRegistration() {
                 inputMode="numeric"
             />
 
-            <InputField
+            <InputFiel
                 label="ชื่อบัญชี"
                 placeholder="กรอกชื่อบัญชี"
                 value={accountName}

@@ -44,10 +44,10 @@ export default function ProfileTab() {
     const route = useRoute<ProfileParam>();
     const { profileId, jobCategory, backPage, searchType } = route.params;
     const isFoucs = useIsFocused()
-
     const convertJobs = {
         "Friend": "เพื่อนท่องเที่ยว"
     }
+
 
     const translateX = useSharedValue(0);
     const currentIndex = useSharedValue(0);
@@ -79,23 +79,6 @@ export default function ProfileTab() {
     const [searchFocus, setSearchFocus] = useState<boolean>(false);
 
     const [locationSearch, setLocationSearch] = useState<string>("");
-
-    const [serviceRate, setServiceRate] = useState<{
-        id: string;
-        start: number;
-        start_per_hour: number;
-        off_time: number;
-        off_time_per_hour: number;
-        jobCategoryId: string;
-    }[]>()
-
-    const [price, setPrice] = useState<number>(0)
-
-    const [distanceRate, setDistanceRate] = useState<{
-        id: string;
-        distance: number;
-        price: number;
-    }[]>()
 
 
     const [pin, setPin] = useState<{
@@ -217,7 +200,7 @@ export default function ProfileTab() {
         try {
             if (!jobCategory) {
                 if (userProfile.profile.JobMembers.length > 0) {
-                    const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
+                    const resdata = await axios.get(`https://friendszone.app/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
                         headers: {
                             "Content-Type": "application/json",
                             "Authorization": `All ${userData.token}`
@@ -225,20 +208,17 @@ export default function ProfileTab() {
                     })
 
                     if (resdata.data.status == 200) {
-
-                        setJobList(resdata.data.data.JobsList.map((job: any) => ({
+                        setJobList(resdata.data.data.map((job: any) => ({
                             label: job.jobName,
                             value: job.id,
-                        })))
-                        setServiceRate(resdata.data.data.serviceRate)
-                        setDistanceRate(resdata.data.data.distanceRate)
 
+                        })))
                     } else {
                         console.log(resdata.data)
                     }
                 }
             } else {
-                const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
+                const resdata = await axios.get(`https://friendszone.app/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `All ${userData.token}`
@@ -246,16 +226,13 @@ export default function ProfileTab() {
                 })
 
                 if (resdata.data.status == 200) {
-
-                    setJobList(resdata.data.data.JobsList.map((job: any) => ({
+                    setJobList(resdata.data.data.map((job: any) => ({
                         label: job.jobName,
                         value: job.id,
 
                     })))
 
-                    setServiceRate(resdata.data.data.serviceRate)
-                    setDistanceRate(resdata.data.data.distanceRate)
-
+                    console.log(resdata.data.data)
                 } else {
                     console.log(resdata.data)
                 }
@@ -323,31 +300,6 @@ export default function ProfileTab() {
         return () => listener.remove();
     }, [])
 
-    useEffect(() => {
-        if(!pin || !scheduleLocation) return
-        const distance = Number((getDistanceMemberToPinLocation({ latitude: pin?.latitude as number, longitude: pin?.longitude as number }, {
-            latitude: userProfile?.profile.pinLocation[0],
-            longitude: userProfile?.profile.pinLocation[1]
-        }) / 1000).toFixed(0))
-
-        const jobsPrice = serviceRate ? serviceRate[0] : null;
-        if(jobsPrice){
-            //check distance
-            console.log(distance)
-            if (distance < 30) {
-                setPrice(jobsPrice.start + 0);
-            } else if (distance >= 30 && distance < 60) {
-                setPrice(jobsPrice.start + 500);
-            } else if (distance >= 60 && distance < 120) {
-                setPrice(jobsPrice.start + 1000);
-            } else if (distance >= 120) {
-                setPrice(jobsPrice.start + (distance * 2) * 7);
-            }
-        }else{
-            Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถคำนวณราคาได้', [{ text: 'OK' }])
-        }
-    }, [pin])
-
     /**
     * @param {LatLng} point1 
     * @param {LatLng} point2 
@@ -402,7 +354,7 @@ export default function ProfileTab() {
 
 
         try {
-            const response = await axios.post('http://49.231.43.37:3000/api/schedule', {
+            const response = await axios.post('https://friendszone.app/api/schedule', {
                 customerId: userData.id,
                 memberId: userProfile?.profile.id,
                 date: scheduleDateTime,
@@ -410,7 +362,6 @@ export default function ProfileTab() {
                 jobs: scheduleJobs,
                 latitude: pin?.latitude,
                 longtitude: pin?.longitude,
-                price : price
             }, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -517,40 +468,100 @@ export default function ProfileTab() {
                                 ))}
                             </StyledView>
 
-                            <StyledView className="flex-row items-center left-2">
-                                <StyledText className="text-[30px] text-black dark:text-white font-custom">{userProfile?.profile.username} {getAge(userProfile?.profile.birthday)}</StyledText>
+                            <StyledView className="px-5 py-4">
+    {/* ส่วนชื่อและข้อมูลพื้นฐาน */}
+    <StyledView className="flex-row items-center justify-between mb-3">
+        <StyledView className="flex-row items-center">
+            <StyledText className="text-[28px] text-black dark:text-white font-custom font-semibold">
+                {userProfile?.profile.username}
+            </StyledText>
+            <StyledView className="bg-gray-100 dark:bg-neutral-800 rounded-full px-3 py-1 ml-3">
+                <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-lg">
+                    {getAge(userProfile?.profile.birthday)}
+                </StyledText>
+            </StyledView>
+            <StyledView className="ml-2">
+                {userProfile?.profile.gender == "ชาย" ? (
+                    <LinearGradient
+                        colors={['#4facfe', '#00f2fe']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        className="rounded-full p-2"
+                    >
+                        <StyledIonIcon name="female" color={'white'} size={22} />
+                    </LinearGradient>
+                ) : (
+                    <LinearGradient
+                        colors={['#ff8df6', '#ff6b9c']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        className="rounded-full p-2"
+                    >
+                        <StyledIonIcon name="male" color={'white'} size={22} />
+                    </LinearGradient>
+                )}
+            </StyledView>
+        </StyledView>
 
-                                {userProfile?.profile.gender == "ชาย" ? (
-                                    <StyledIonIcon className="mt-1" name="female" color={'#69ddff'} size={30} />
-                                ) : (
-                                    <StyledIonIcon className="mt-1" name="male" color={'#ff8df6'} size={30} />
-                                )}
+        {userProfile?.profile.type === "member" && (
+            <StyledView className="flex-row items-center bg-gray-100 dark:bg-neutral-800 rounded-full px-4 py-2">
+                <StyledIonIcon 
+                    name="location-outline" 
+                    size={20} 
+                    className="text-gray-600 dark:text-gray-300 mr-2" 
+                />
+                <StyledText className="font-custom text-gray-600 dark:text-gray-300 text-base">
+                    {Number(distance.toFixed(0)) / 1000 > 10 
+                        ? `${(distance / 1000).toFixed(1)} กม.` 
+                        : `10 กม.`}
+                </StyledText>
+            </StyledView>
+        )}
+    </StyledView>
 
-                                {
-                                    userProfile?.profile.type === "member" && (
-                                        <StyledText className="font-custom text-black dark:text-white text-lg">
-                                            {Number(distance.toFixed(0)) / 1000 > 10 ? `${Number(distance.toFixed(0)) / 1000} Km.` : `10 Km.`}
-                                        </StyledText>
-                                    )
-                                }
+    {/* ที่อยู่ */}
+    <StyledView className="flex-row items-center mb-4">
+        <StyledIonIcon 
+            name="location" 
+            size={20} 
+            className="text-gray-500 dark:text-gray-400 mr-2" 
+        />
+        <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom">
+            {userProfile?.profile.province[0]}
+        </StyledText>
+    </StyledView>
 
-                            </StyledView>
-                            
-                            <StyledText className="px-2 text-lg text-gray-700 dark:text-gray-200 font-custom">{userProfile?.profile.province[0]}</StyledText>
+    {/* Bio */}
+    {userProfile?.profile.bio && (
+        <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4 mb-4">
+            <StyledText className="text-base text-gray-700 dark:text-gray-200 font-custom leading-6">
+                {userProfile.profile.bio}
+            </StyledText>
+        </StyledView>
+    )}
 
-                            <StyledView className="px-2">
-                                <StyledText className="text-lg text-gray-700 dark:text-gray-200 font-custom">{userProfile?.profile.bio}</StyledText>
-                            </StyledView>
-
-
-
-                            <StyledView className="flex-row items-center flex-wrap">
-                                {
-                                    joblist.map((job, index) => (
-                                        <StyledText key={index} className="font-custom px-2 bg-red-500 mx-1 my-1 rounded-full py-1 text-white">{job.label}</StyledText>
-                                    ))
-                                }
-                            </StyledView>
+    {/* บริการ */}
+    <StyledView className="mt-2">
+        <StyledText className="text-base font-semibold text-gray-500 dark:text-gray-400 font-custom mb-3">
+            บริการ
+        </StyledText>
+        <StyledView className="flex-row flex-wrap">
+            {joblist.map((job, index) => (
+                <LinearGradient
+                    key={index}
+                    colors={['#ec4899', '#f97316']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    className="rounded-full px-4 py-2 mr-2 mb-2"
+                >
+                    <StyledText className="font-custom text-white text-base">
+                        {job.label}
+                    </StyledText>
+                </LinearGradient>
+            ))}
+        </StyledView>
+    </StyledView>
+</StyledView>
                         </StyledView>
                     </StyledScrollView>
                 )
@@ -602,9 +613,6 @@ export default function ProfileTab() {
                 }}
             >
                 <BottomSheetView style={{ height: "80%" }}>
-
-
-
                     <StyledView className="flex-1">
                         {
                             searchFocus ? (
@@ -732,7 +740,7 @@ export default function ProfileTab() {
                                                 <StyledView
                                                     className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
                                                 >
-                                                    <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? `${joblist.find((j) => j.value == scheduleJobs)?.label } ${serviceRate ? `(${serviceRate[0].start_per_hour}Hr.)` : ''} `  : "เลือกประเภทงาน"}</StyledText>
+                                                    <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? joblist.find((j) => j.value == scheduleJobs)?.label : "เลือกประเภทงาน"}</StyledText>
                                                 </StyledView>
                                             </TouchableOpacity>
                                             {/* <RNPickerSelect
@@ -848,9 +856,7 @@ export default function ProfileTab() {
                                             {loading ? (
                                                 <ActivityIndicator size="small" color="#fff" />
                                             ) : (
-                                                <StyledText className="font-custom text-center text-white text-lg font-semibold">นัดหมาย ฿ {
-                                                    price.toLocaleString()
-                                                }</StyledText>
+                                                <StyledText className="font-custom text-center text-white text-lg font-semibold">ส่ง</StyledText>
                                             )}
                                         </LinearGradient>
                                     </TouchableOpacity>

@@ -229,18 +229,6 @@ export default function EditProfile() {
                             className="flex-row items-center justify-between bg-neutral-800 px-4 py-3 rounded-xl"
                         >
                             <StyledView className="flex-row items-center">
-                                <Ionicons name="school-outline" size={22} color="#fff" />
-                                <StyledText className="text-white ml-3">การศึกษา</StyledText>
-                            </StyledView>
-                            <StyledText className="text-neutral-500">
-                                {education || "เพิ่ม"}
-                            </StyledText>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            className="flex-row items-center justify-between bg-neutral-800 px-4 py-3 rounded-xl"
-                        >
-                            <StyledView className="flex-row items-center">
                                 <Ionicons name="location-outline" size={22} color="#fff" />
                                 <StyledText className="text-white ml-3">ที่อยู่</StyledText>
                             </StyledView>
