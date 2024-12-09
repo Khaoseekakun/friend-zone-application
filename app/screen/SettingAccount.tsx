@@ -235,7 +235,7 @@ export default function EditProfile() {
     if (loading) {
         return (
             <StyledView className="flex-1 bg-gray-100 dark:bg-neutral-950 items-center justify-center">
-                <ActivityIndicator size="large" color="#FF3366" />
+                <ActivityIndicator size="large" color="#999" />
             </StyledView>
         );
     }
@@ -324,50 +324,92 @@ export default function EditProfile() {
                     </StyledView>
 
                     <StyledView className="space-y-3">
-                        <TouchableOpacity className="flex-row items-center justify-between bg-white dark:bg-neutral-800 px-4 py-1 rounded-xl">
-                            <StyledView className="flex-row items-center">
-                                <StyledIonicons name="location-outline" size={22} className="font-custom text-black dark:text-white" />
-                                <StyledText className="dark:text-white ml-3 font-custom ">ที่อยู่</StyledText>
-                            </StyledView>
-                            <StyledInput
-                                className="flex-1 text-right dark:text-white font-custom "
-                                value={location}
-                                onChangeText={setLocation}
-                                placeholder="เพิ่มที่อยู่"
-                                placeholderTextColor="#666"
-                            />
-                        </TouchableOpacity>
+                        <StyledView className="space-y-2">
+                            <StyledText className="font-custom text-neutral-400 text-sm ml-1">
+                                ที่อยู่ปัจจุบัน
+                            </StyledText>
 
-                        <StyledView className="flex-row space-x-2">
-                            <StyledView className="flex-1">
-                                <StyledText className="font-custom text-neutral-400 text-sm mb-1">
-                                    ส่วนสูง (ซม.)
-                                </StyledText>
-                                <StyledView className="bg-white dark:bg-neutral-800 rounded-xl px-4 py-1">
-                                    <StyledInput
-                                        className="dark:text-white text-right font-custom "
-                                        value={height}
-                                        onChangeText={setHeight}
-                                        placeholder="0"
-                                        placeholderTextColor="#666"
-                                        keyboardType="numeric"
+                            <TouchableOpacity className="bg-white dark:bg-neutral-800 rounded-xl overflow-hidden">
+                                <StyledView className="flex-row items-center p-3 border-l-4 border-pink-500">
+                                    <StyledView className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-full items-center justify-center">
+                                        <StyledIonicons
+                                            name="location-outline"
+                                            size={24}
+                                            className="text-pink-500"
+                                        />
+                                    </StyledView>
+
+                                    <StyledView className="flex-1 ml-3">
+                                        <StyledInput
+                                            className="dark:text-white font-custom text-base"
+                                            value={location}
+                                            onChangeText={setLocation}
+                                            placeholder="กรุณาระบุที่อยู่ของคุณ"
+                                            placeholderTextColor="#666"
+                                        />
+                                    </StyledView>
+
+                                    <StyledIonicons
+                                        name="chevron-forward"
+                                        size={20}
+                                        className="text-neutral-400"
                                     />
                                 </StyledView>
-                            </StyledView>
-                            <StyledView className="flex-1">
+                            </TouchableOpacity>
+                        </StyledView>
 
-                                <StyledText className="font-custom text-neutral-400 text-sm mb-1">
-                                    น้ำหนัก (กก.)
-                                </StyledText>
-                                <StyledView className="bg-white dark:bg-neutral-800 rounded-xl px-4 py-1">
-                                    <StyledInput
-                                        className="dark:text-white text-right font-custom "
-                                        value={weight}
-                                        onChangeText={setWeight}
-                                        placeholder="0"
-                                        placeholderTextColor="#666"
-                                        keyboardType="numeric"
-                                    />
+                        <StyledView className="space-y-4">
+                            <StyledView className="flex-row space-x-3">
+                                <StyledView className="flex-1">
+                                    <StyledText className="font-custom text-neutral-400 text-sm mb-2">
+                                        ส่วนสูง
+                                    </StyledText>
+                                    <StyledView className="bg-white dark:bg-neutral-800 rounded-xl p-3 flex-row items-center justify-between">
+                                        <StyledView className="flex-row items-center space-x-2">
+                                            <StyledIonicons
+                                                name="body-outline"
+                                                size={20}
+                                                className="text-neutral-400"
+                                            />
+                                            <StyledInput
+                                                className="flex-1 dark:text-white font-custom text-base"
+                                                value={height}
+                                                onChangeText={setHeight}
+                                                placeholder="0"
+                                                placeholderTextColor="#666"
+                                                keyboardType="numeric"
+                                            />
+                                        </StyledView>
+                                        <StyledText className="text-neutral-400 font-custom -ml-14">
+                                            ซม.
+                                        </StyledText>
+                                    </StyledView>
+                                </StyledView>
+
+                                <StyledView className="flex-1">
+                                    <StyledText className="font-custom text-neutral-400 text-sm mb-2">
+                                        น้ำหนัก
+                                    </StyledText>
+                                    <StyledView className="bg-white dark:bg-neutral-800 rounded-xl p-3 flex-row items-center justify-between">
+                                        <StyledView className="flex-row items-center space-x-2">
+                                            <StyledIonicons
+                                                name="scale-outline"
+                                                size={20}
+                                                className="text-neutral-400"
+                                            />
+                                            <StyledInput
+                                                className="flex-1 dark:text-white font-custom text-base"
+                                                value={weight}
+                                                onChangeText={setWeight}
+                                                placeholder="0"
+                                                placeholderTextColor="#666"
+                                                keyboardType="numeric"
+                                            />
+                                        </StyledView>
+                                        <StyledText className="text-neutral-400 font-custom -ml-14">
+                                            กก.
+                                        </StyledText>
+                                    </StyledView>
                                 </StyledView>
                             </StyledView>
                         </StyledView>

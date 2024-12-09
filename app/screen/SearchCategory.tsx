@@ -1,17 +1,24 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, Dimensions } from "react-native";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { RootStackParamList } from "@/types";
+import Animated, { 
+  FadeInDown,
+  FadeInUp,
+  withSpring
+} from "react-native-reanimated";
 import { ScrollView } from "react-native-gesture-handler";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledImage = styled(Image);
 const StyledScrollView = styled(ScrollView);
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
+// Import your icons here
 const iconFriend1 = require("../../assets/icon/A1.png");
 const iconFriend2 = require("../../assets/icon/A3.png");
 const iconDJ1 = require("../../assets/icon/A2.png");
@@ -25,141 +32,187 @@ const iconCar2 = require("../../assets/icon/A9.png");
 
 type CategorySearch = RouteProp<RootStackParamList, 'SearchCategory'>;
 
-export default function SearchCategory() {
-    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const router = useRoute<CategorySearch>();
-    const { backPage } = router.params;
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = (width - 32) / 2; // ปรับขนาดการ์ดให้พอดีกับ 2 แถว
+const CARD_HEIGHT = CARD_WIDTH * 1.4; // ปรับความสูงให้รับกับการวางไอคอนใหม่
 
-    return (
-        <LinearGradient
-            colors={['#EB3834', '#69140F']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            className="flex-1"
-        >
-            <StyledScrollView className="flex-1 ">
-                {/* Header */}
+interface CategoryCardProps {
+  title: string;
+  icon1: any;
+  icon2?: any;
+  isDisabled?: boolean;
+  onPress: () => void;
+  index: number;
+}
 
-                <StyledView className="w-full px-8 items-center mt-5">
-                    <StyledView className="flex-row">
-                        <TouchableOpacity
-                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }}
-                            className="w-6/12 rounded-2xl h-[230px] justify-center m-2"
-                        >
-                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-20 h-full" />
-                            <StyledView className="absolute flex-row w-full items-center">
-                                <StyledImage source={iconFriend1} className="absolute w-[130px] h-[130px] right-[28%]" />
-                                <StyledImage source={iconFriend2} className="absolute w-[130px] h-[130px] left-[28%]" />
-                            </StyledView>
-                            <StyledText className="absolute self-center font-custom text-white text-xl bottom-4">
-                                เพื่อนเที่ยว
-                            </StyledText>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            disabled
-                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }}
-                            className="w-6/12 rounded-2xl h-[230px] justify-center m-2"
-                        >
-                            <StyledView className="absolute flex-row w-full items-center">
-                                <StyledImage source={iconDJ1} className="absolute w-[130px] h-[130px] right-[20%]" />
-                                <StyledImage source={iconDJ2} className="absolute w-[130px] h-[130px] left-[37%]" />
-                            </StyledView>
-                            <StyledText className="absolute self-center font-custom text-white text-xl bottom-4">
-                                MC/DJ/พิธีกร
-                            </StyledText>
-                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-[0.50] h-[230px]" />
-                            <StyledText className="self-center text-center font-custom text-white text-2xl">
-                                SOON
-                            </StyledText>
-                        </TouchableOpacity>
-                    </StyledView>
-
-                    <StyledView className="flex-row">
-                        <TouchableOpacity
-                            disabled
-                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }}
-                            className="w-6/12 rounded-2xl h-[230px] justify-center m-2"
-                        >
-                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-20 h-full" />
-                            <StyledView className="absolute flex-row w-full items-center">
-                                <StyledImage source={iconMusic1} className="absolute w-[180px] h-[180px] bottom-[-75px]" />
-                                <StyledImage source={iconMusic2} className="absolute w-[130px] h-[130px] bottom-[-50px] left-[40%] rotate-12" />
-                            </StyledView>
-                            <StyledText className="absolute self-center font-custom text-white text-xl bottom-4">
-                                วงดนตรี/นักร้อง
-                            </StyledText>
-                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-[0.50] h-[230px]" />
-                            <StyledText className="self-center text-center font-custom text-white text-2xl">
-                                SOON
-                            </StyledText>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            disabled
-                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }}
-                            className="w-6/12 rounded-2xl h-[230px] justify-center m-2"
-                        >
-                            <StyledView className="absolute w-full justify-center items-center">
-                                <StyledImage source={iconTable1} className="absolute w-[230px] h-[230px] bottom-[-95px]" />
-                            </StyledView>
-                            <StyledText className="absolute self-center font-custom text-white text-xl bottom-4">
-                                จองโต๊ะ
-                            </StyledText>
-                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-[0.50] h-[230px]" />
-                            <StyledText className="self-center text-center font-custom text-white text-2xl">
-                                SOON
-                            </StyledText>
-                        </TouchableOpacity>
-                    </StyledView>
-
-                    <StyledView className="flex-row">
-                        <TouchableOpacity
-                            disabled
-                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }}
-                            className="w-6/12 rounded-2xl h-[230px] justify-center m-2"
-                        >
-                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-20 h-full" />
-                            <StyledView className="absolute justify-center w-full items-center">
-                                <StyledImage source={iconTicket1} className="w-[130px] h-[130px] right-1.5" />
-                            </StyledView>
-                            <StyledText className="absolute self-center font-custom text-white text-xl bottom-4">
-                                Concert
-                            </StyledText>
-                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-[0.50] h-[230px]" />
-                            <StyledText className="self-center text-center font-custom text-white text-2xl">
-                                SOON
-                            </StyledText>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            disabled
-                            onPress={() => { navigation.navigate('Search', { searchType: "Friend" }) }}
-                            className="w-6/12 rounded-2xl h-[230px] justify-center m-2"
-                        >
-                            <StyledView className="absolute justify-center w-full">
-                                <StyledImage source={iconCar1} className="absolute self-center w-[200px] h-[200px] right-[-5%]" />
-                                <StyledImage source={iconCar2} className="absolute self-center w-[90px] h-[90px] bottom-2 left-[15%]" />
-                            </StyledView>
-                            <StyledText className="absolute self-center font-custom text-white text-xl bottom-4">
-                                FDrive
-                            </StyledText>
-                            <StyledView className="absolute w-full bg-black rounded-2xl opacity-[0.50] h-[230px]" />
-                            <StyledText className="self-center text-center font-custom text-white text-2xl">
-                                SOON
-                            </StyledText>
-                        </TouchableOpacity>
-                    </StyledView>
-                </StyledView>
-
-                
-                <TouchableOpacity
-                    onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()}
-                    className="w-10 h-10 rounded-full bg-white/50 items-center justify-center absolute top-6 left-6"
+const CategoryCard = ({ title, icon1, icon2, isDisabled = false, onPress, index }: CategoryCardProps) => {
+  return (
+    <AnimatedTouchable
+      entering={FadeInUp.delay(index * 100).springify()}
+      onPress={onPress}
+      disabled={isDisabled}
+      className="mb-4"
+      style={{
+        width: CARD_WIDTH - 16,
+        height: CARD_HEIGHT,
+      }}
+    >
+      <LinearGradient
+        colors={isDisabled ? ['#666', '#333'] : ['#FF6B6B', '#FF8E53']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        className="w-full h-full rounded-3xl overflow-hidden shadow-lg"
+      >
+        <StyledView className="flex-1 justify-center items-center p-4">
+          <StyledView className="w-full h-[65%] relative justify-center items-center">
+            {icon2 ? (
+              // ถ้ามีไอคอน 2 อัน จะวางแบบซ้อนทแยง
+              <>
+                <Animated.View 
+                  entering={FadeInDown.delay(index * 150)}
+                  className="absolute"
+                  style={{
+                    transform: [
+                      { translateX: -25 },
+                      { translateY: -5 },
+                      { scale: 0.85 },
+                      { rotate: '-10deg' }
+                    ]
+                  }}
                 >
-                    <Ionicons name="chevron-back" size={24} color="#fff" />
-                </TouchableOpacity>
-            </StyledScrollView>
-        </LinearGradient>
-    );
+                  <StyledImage 
+                    source={icon1}
+                    className="w-[90px] h-[90px]"
+                  />
+                </Animated.View>
+                <Animated.View 
+                  entering={FadeInDown.delay(index * 200)}
+                  className="absolute"
+                  style={{
+                    transform: [
+                      { translateX: 25 },
+                      { translateY: 5 },
+                      { scale: 0.85 },
+                      { rotate: '15deg' }
+                    ]
+                  }}
+                >
+                  <StyledImage 
+                    source={icon2} 
+                    className="w-[100px] h-[100px]"
+                  />
+                </Animated.View>
+              </>
+            ) : (
+              // ถ้ามีไอคอนเดียว จะวางตรงกลาง
+              <Animated.View 
+                entering={FadeInDown.delay(index * 150)}
+                style={{ transform: [{ scale: 1 }] }}
+              >
+                <StyledImage 
+                  source={icon1} 
+                  className="w-[120px] h-[120px]"
+                />
+              </Animated.View>
+            )}
+          </StyledView>
+          
+          <StyledText className="font-custom text-white text-lg text-center mt-2 px-2">
+            {title}
+          </StyledText>
+          
+          {isDisabled && (
+            <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+              <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+            </StyledView>
+          )}
+        </StyledView>
+      </LinearGradient>
+    </AnimatedTouchable>
+  );
+};
+
+export default function SearchCategory() {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const router = useRoute<CategorySearch>();
+  const { backPage } = router.params;
+
+  const categories = [
+    {
+      title: "เพื่อนเที่ยว",
+      icon1: iconFriend1,
+      icon2: iconFriend2,
+      isDisabled: false
+    },
+    {
+      title: "MC/DJ/พิธีกร",
+      icon1: iconDJ1,
+      icon2: iconDJ2,
+      isDisabled: true
+    },
+    {
+      title: "วงดนตรี/นักร้อง",
+      icon1: iconMusic1,
+      icon2: iconMusic2,
+      isDisabled: true
+    },
+    {
+      title: "จองโต๊ะ",
+      icon1: iconTable1,
+      isDisabled: true
+    },
+    {
+      title: "Concert",
+      icon1: iconTicket1,
+      isDisabled: true
+    },
+    {
+      title: "FDrive",
+      icon1: iconCar1,
+      icon2: iconCar2,
+      isDisabled: true
+    }
+  ];
+
+  return (
+    <LinearGradient
+      colors={['#1A1A1A', '#000000']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      className="flex-1"
+    >
+      <StyledScrollView className="flex-1 pt-20">
+        <Animated.View 
+          entering={FadeInDown.springify()}
+          className="px-3 pb-6"
+        >
+          <StyledText className="font-custom text-white text-3xl mb-8 text-center">
+            เลือกหมวดหมู่
+          </StyledText>
+          
+          <StyledView className="flex-row flex-wrap justify-between px-2">
+            {categories.map((category, index) => (
+              <CategoryCard
+                key={category.title}
+                title={category.title}
+                icon1={category.icon1}
+                icon2={category.icon2}
+                isDisabled={category.isDisabled}
+                onPress={() => navigation.navigate('Search', { searchType: "Friend" })}
+                index={index}
+              />
+            ))}
+          </StyledView>
+        </Animated.View>
+      </StyledScrollView>
+
+      <AnimatedTouchable
+        entering={FadeInDown.delay(400).springify()}
+        onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()}
+        className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute top-6 left-6 mt-14"
+      >
+        <Ionicons name="chevron-back" size={24} color="#fff" />
+      </AnimatedTouchable>
+    </LinearGradient>
+  );
 }
