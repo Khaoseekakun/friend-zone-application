@@ -64,6 +64,7 @@ export default function ProfileTab() {
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
     const [distance, setDistance] = useState<number>(0);
+    const [scheduleNote, setScheduleNote] = useState('');
     const [joblist, setJobList] = useState<{
         label: string;
         value: string;
@@ -770,6 +771,32 @@ export default function ProfileTab() {
                                                     },
                                                 }}
                                             /> */}
+                                        </StyledView>
+                                    </StyledView>
+
+                                    <StyledView className="flex-row items-center px-6 py-2">
+                                        <StyledView className="w-full px-1">
+                                            <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
+                                                หมายเหตุ
+                                            </StyledText>
+
+                                            <StyledView
+                                                className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                                            >
+                                                <TextInput
+                                                    placeholder="กรอกหมายเหตุ (ถ้ามี)"
+                                                    value={scheduleNote}
+                                                    onChangeText={setScheduleNote}
+                                                    multiline={true}
+                                                    numberOfLines={3}
+                                                    className="font-custom text-gray-700 dark:text-white"
+                                                    placeholderTextColor="#d1d5db"
+                                                    style={{
+                                                        textAlignVertical: 'top',
+                                                        minHeight: 80,
+                                                    }}
+                                                />
+                                            </StyledView>
                                         </StyledView>
                                     </StyledView>
 

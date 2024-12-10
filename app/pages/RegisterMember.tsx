@@ -1,3 +1,4 @@
+import { SelectList } from 'react-native-dropdown-select-list';
 import { RootStackParamList } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationProp } from '@react-navigation/native';
@@ -139,7 +140,6 @@ const SelectionButton = ({
     </StyledTouchableOpacity>
 );
 
-// Image Upload Component
 const ImageUpload = ({
     title,
     image,
@@ -273,26 +273,26 @@ export default function MemberRegistration() {
             <StyledView className="space-y-2">
                 <InputField
                     label="ชื่อจริง"
-                    placeholder="กรอกชื่อจริง"
+                    placeholder="ชื่อจริง"
                     value={firstName}
                     onChangeText={setFirstName}
                 />
                 <InputField
                     label="นามสกุล"
-                    placeholder="กรอกนามสกุล"
+                    placeholder="นามสกุล"
                     value={lastName}
                     onChangeText={setLastName}
                 />
                 <InputField
                     label="อายุ"
-                    placeholder="กรอกอายุ"
+                    placeholder="อายุ"
                     value={age}
                     onChangeText={setAge}
                     inputMode="numeric"
                 />
                 <InputField
                     label="ที่อยู่"
-                    placeholder="กรอกที่อยู่"
+                    placeholder="ที่อยู่"
                     value={address}
                     onChangeText={setAddress}
                     multiline
@@ -302,21 +302,28 @@ export default function MemberRegistration() {
                     <StyledText className="font-custom text-sm text-gray-700 dark:text-gray-300 mb-2">
                         เพศ
                     </StyledText>
-                    <StyledView className="flex-row space-x-4">
-                        {['ชาย', 'หญิง'].map((option) => (
-                            <SelectionButton
-                                key={option}
-                                label={option}
-                                selected={gender === option}
-                                onPress={() => setGender(option)}
-                            />
-                        ))}
-                    </StyledView>
+                    <SelectList
+                        setSelected={setGender}
+                        data={[
+                            {key: 'ชาย', value: 'ชาย'},
+                            {key: 'หญิง', value: 'หญิง'},
+                            {key: 'ไม่ระบุเพศ', value: 'ไม่ระบุเพศ'}
+                        ]}
+                        placeholder="เลือกเพศ"
+                        boxStyles={{
+                            backgroundColor: Platform.OS === 'ios' ? '#FFFFFF' : '#1f1f1f',
+                            borderRadius: 12,
+                            borderColor: Platform.OS === 'ios' ? '#e5e7eb' : '#404040',
+                        }}
+                        inputStyles={{
+                            color: Platform.OS === 'ios' ? '#1f2937' : '#ffffff',
+                        }}
+                    />
                 </StyledView>
 
                 <InputField
                     label="เบอร์โทรฉุกเฉิน"
-                    placeholder="กรอกเบอร์โทรศัพท์"
+                    placeholder="เบอร์โทรศัพท์"
                     value={emergencyPhone}
                     onChangeText={setEmergencyPhone}
                     inputMode="tel"
@@ -368,7 +375,7 @@ export default function MemberRegistration() {
 
             <InputFiel
                 label="เลขบัญชีธนาคาร"
-                placeholder="กรอกเลขบัญชี"
+                placeholder="เลขบัญชี"
                 value={accountNumber}
                 onChangeText={setAccountNumber}
                 inputMode="numeric"
@@ -376,7 +383,7 @@ export default function MemberRegistration() {
 
             <InputFiel
                 label="ชื่อบัญชี"
-                placeholder="กรอกชื่อบัญชี"
+                placeholder="ชื่อบัญชี"
                 value={accountName}
                 onChangeText={setAccountName}
             />

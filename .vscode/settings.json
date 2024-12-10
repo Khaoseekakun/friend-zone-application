@@ -1,3 +1,5 @@
 {
-    "liveServer.settings.port": 5501
+    "liveServer.settings.port": 5501,
+    "terminal.integrated.scrollback": 10000000,
+    "terminal.integrated.tabs.description": "${task}${separator}${local}${separator}${cwdFolder}"
 }
