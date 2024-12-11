@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { View, Text, Alert, ActivityIndicator, ScrollView, Dimensions, Image, Linking, Appearance, Platform } from "react-native";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { styled } from "nativewind";
 import { HeaderApp } from "@/components/Header";
 import { NavigationProp, RouteProp, useIsFocused, useRoute } from "@react-navigation/native";
@@ -21,11 +22,22 @@ import Carousel from 'react-native-reanimated-carousel';
 import RNPickerSelect from 'react-native-picker-select';
 import { sendPushNotification } from "@/utils/Notification";
 import DateTimePicker from 'react-native-ui-datepicker';
+import { Modal, Animated } from 'react-native';
 
 configureReanimatedLogger({
     level: ReanimatedLogLevel.warn,
     strict: false,
 });
+
+interface Review {
+    id: string;
+    userId: string;
+    username: string;
+    profileUrl: string;
+    rating: number;
+    comment: string;
+    createdAt: Date;
+}
 
 const StyledMapView = styled(MapView);
 const StyledView = styled(View);
@@ -51,6 +63,8 @@ export default function ProfileTab() {
 
     const translateX = useSharedValue(0);
     const currentIndex = useSharedValue(0);
+
+
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ["85%"], []);
     const [loading, setLoading] = useState(true);
@@ -118,6 +132,228 @@ export default function ProfileTab() {
                 longitude: parseFloat(userProfile?.profile.pinLocation[1])
             }));
         }
+    };
+
+
+    const [loadingReviews, setLoadingReviews] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [reviewRating, setReviewRating] = useState(5);
+    const [reviewText, setReviewText] = useState('');
+    const bottomSheetReviewRef = useRef<BottomSheet>(null);
+    const snapPointsReview = useMemo(() => ["75%"], []);
+
+
+    const ReviewForm = () => {
+        // State สำหรับ animation
+        const [modalVisible, setModalVisible] = useState(false);
+        const slideAnim = useRef(new Animated.Value(0)).current;
+
+        // Function สำหรับ animation
+        const showModal = () => {
+            setModalVisible(true);
+            Animated.spring(slideAnim, {
+                toValue: 1,
+                useNativeDriver: true,
+            }).start();
+        };
+
+        const hideModal = () => {
+            Animated.timing(slideAnim, {
+                toValue: 0,
+                duration: 250,
+                useNativeDriver: true,
+            }).start(() => setModalVisible(false));
+        };
+
+        return (
+            <>
+                {/* ปุ่มเปิด Modal */}
+                <TouchableOpacity 
+            onPress={showModal}
+            className="flex-row items-center"
+        >
+            <StyledIonIcon 
+                name="create-outline" 
+                size={20} 
+                className="text-red-500 mr-1" 
+            />
+            <StyledText className="text-red-500 font-custom">
+                เขียนรีวิว
+            </StyledText>
+        </TouchableOpacity>
+
+                {/* Modal Review Form */}
+                <Modal
+                    visible={modalVisible}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={hideModal}
+                >
+                    <StyledView className="flex-1 bg-black/50 justify-end">
+                        <Animated.View
+                            style={{
+                                transform: [{
+                                    translateY: slideAnim.interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: [600, 0]
+                                    })
+                                }]
+                            }}
+                        >
+                            <StyledView className="bg-white dark:bg-neutral-900 rounded-t-3xl p-6">
+                                {/* หัวข้อ */}
+                                <StyledView className="flex-row items-center justify-between mb-6">
+                                    <StyledText className="text-2xl font-bold text-black dark:text-white font-custom">
+                                        เขียนรีวิว
+                                    </StyledText>
+                                    <TouchableOpacity onPress={hideModal}>
+                                        <StyledIonIcon
+                                            name="close"
+                                            size={24}
+                                            className="text-gray-400"
+                                        />
+                                    </TouchableOpacity>
+                                </StyledView>
+
+                                {/* ให้คะแนนดาว */}
+                                <StyledView className="items-center mb-8">
+                                    <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-4">
+                                        ให้คะแนนประสบการณ์ของคุณ
+                                    </StyledText>
+                                    <StyledView className="flex-row">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <TouchableOpacity
+                                                key={star}
+                                                onPress={() => setReviewRating(star)}
+                                                className="mx-2"
+                                            >
+                                                <LinearGradient
+                                                    colors={star <= reviewRating ? ['#EB3834', '#69140F'] : ['#E5E7EB', '#D1D5DB']}
+                                                    start={{ x: 0, y: 0 }}
+                                                    end={{ x: 1, y: 0 }}
+                                                    className="rounded-full p-3"
+                                                >
+                                                    <StyledIonIcon
+                                                        name="star"
+                                                        size={32}
+                                                        color="white"
+                                                    />
+                                                </LinearGradient>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </StyledView>
+                                </StyledView>
+
+                                {/* กล่องข้อความรีวิว */}
+                                <StyledView className="mb-8">
+                                    <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
+                                        เขียนความคิดเห็นของคุณ
+                                    </StyledText>
+                                    <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4">
+                                        <TextInput
+                                            multiline
+                                            numberOfLines={5}
+                                            value={reviewText}
+                                            onChangeText={setReviewText}
+                                            placeholder="แชร์ประสบการณ์ของคุณ..."
+                                            placeholderTextColor="#9CA3AF"
+                                            className="font-custom text-gray-700 dark:text-gray-200 min-h-[120px]"
+                                            textAlignVertical="top"
+                                        />
+                                    </StyledView>
+                                </StyledView>
+
+                                {/* รูปภาพ */}
+                                <StyledView className="mb-8">
+                                    <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
+                                        เพิ่มรูปภาพ (ไม่บังคับ)
+                                    </StyledText>
+                                    <TouchableOpacity>
+                                        <StyledView className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 items-center">
+                                            <StyledIonIcon
+                                                name="images-outline"
+                                                size={32}
+                                                className="text-gray-400 mb-2"
+                                            />
+                                            <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-center">
+                                                แตะเพื่อเพิ่มรูปภาพ
+                                            </StyledText>
+                                        </StyledView>
+                                    </TouchableOpacity>
+                                </StyledView>
+
+                                {/* ปุ่มส่งรีวิว */}
+                                <TouchableOpacity>
+                                    <LinearGradient
+                                        colors={['#EB3834', '#69140F']}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 0 }}
+                                        className="rounded-full py-4"
+                                    >
+                                        <StyledText className="text-white text-center font-bold text-lg font-custom">
+                                            โพสต์รีวิว
+                                        </StyledText>
+                                    </LinearGradient>
+                                </TouchableOpacity>
+                            </StyledView>
+                        </Animated.View>
+                    </StyledView>
+                </Modal>
+            </>
+        );
+    };
+
+
+    const [reviews, setReviews] = useState([
+        {
+            id: 1,
+            username: "User1",
+            avatar: "https://placeholder.com/150",
+            rating: 5,
+            comment: "บริการดีมาก เป็นกันเอง แนะนำสถานที่ได้ดี",
+            date: "10 ธ.ค. 2024"
+        },
+        {
+            id: 2,
+            username: "User2",
+            avatar: "https://placeholder.com/150",
+            rating: 4,
+            comment: "ไกด์น่ารัก พาเที่ยวสนุก รู้จักที่กินอร่อยๆ",
+            date: "9 ธ.ค. 2024"
+        }
+    ]);
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const slideAnim = useRef(new Animated.Value(0)).current;
+    const showModal = () => {
+        setModalVisible(true);
+        Animated.spring(slideAnim, {
+            toValue: 1,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const hideModal = () => {
+        Animated.timing(slideAnim, {
+            toValue: 0,
+            duration: 250,
+            useNativeDriver: true,
+        }).start(() => setModalVisible(false));
+    };
+
+    const renderStars = (rating: number) => {
+        return (
+            <StyledView className="flex-row">
+                {[1, 2, 3, 4, 5].map((star) => (
+                    <StyledIonIcon
+                        key={star}
+                        name={star <= rating ? "star" : "star-outline"}
+                        size={16}
+                        className={star <= rating ? "text-yellow-400" : "text-gray-300"}
+                    />
+                ))}
+            </StyledView>
+        );
     };
 
     const getCurrentLocation = async () => {
@@ -427,144 +663,354 @@ export default function ProfileTab() {
                         <ActivityIndicator size="large" color="#999" />
                     </StyledView>
                 ) : (
-                    <StyledScrollView>
-                        <StyledView className="flex-1 mb-10">
-                            <StyledView style={{
-                                width: SCREEN_WIDTH,
-                            }}>
-                                <Carousel
-                                    loop
-                                    width={SCREEN_WIDTH}
-                                    height={SCREEN_WIDTH * 1.5}
-                                    data={images}
-                                    renderItem={({ item }) => (
-                                        <StyledView className="w-full h-full">
-                                            <StyledImage
-                                                source={{ uri: item }}
-                                                className="w-full h-full"
-                                                resizeMode="cover"
-                                            />
+                    <>
+                        <StyledScrollView>
+                            <StyledView className="flex-1 mb-10">
+                                <StyledView style={{
+                                    width: SCREEN_WIDTH,
+                                }}>
+                                    <Carousel
+                                        loop
+                                        width={SCREEN_WIDTH}
+                                        height={SCREEN_WIDTH * 1.5}
+                                        data={images}
+                                        renderItem={({ item }) => (
+                                            <StyledView className="w-full h-full">
+                                                <StyledImage
+                                                    source={{ uri: item }}
+                                                    className="w-full h-full"
+                                                    resizeMode="cover"
+                                                />
+                                            </StyledView>
+                                        )}
+                                        onSnapToItem={setIsActive}
+                                    />
+                                    <LinearGradient
+                                        colors={['transparent', 'rgba(0,0,0,0.8)']}
+                                        className="absolute bottom-0 left-0 right-0 h-40"
+                                    />
+
+                                    <StyledView className="absolute bottom-2 flex-row items-center left-2">
+                                        <StyledIonIcon name="heart" color={'red'} size={40} />
+                                        <StyledText className="text-[30px] text-white font-custom">{userProfile?.profile.rating}</StyledText>
+                                        <StyledText className="text-[25px] text-gray-200 font-custom">({userProfile?.profile.reviews})</StyledText>
+                                    </StyledView>
+                                </StyledView>
+
+                                <StyledView id="Image Dot" className="absolute top-2 w-full flex-row justify-between px-2 gap-1">
+                                    {images.map((_, index) => (
+                                        <StyledView
+                                            key={index}
+                                            className={`${isActive === index ? "bg-gray-300" : "bg-gray-700"} opacity-70 rounded-full h-1 flex-1`}
+                                        />
+                                    ))}
+                                </StyledView>
+
+                                <StyledView className="px-5 py-4">
+                                    {/* ส่วนชื่อและข้อมูลพื้นฐาน */}
+                                    <StyledView className="flex-row items-center justify-between mb-3">
+                                        <StyledView className="flex-row items-center">
+                                            <StyledText className="text-[28px] text-black dark:text-white font-custom font-semibold">
+                                                {userProfile?.profile.username}
+                                            </StyledText>
+                                            <StyledView className="bg-gray-100 dark:bg-neutral-800 rounded-full px-3 py-1 ml-3">
+                                                <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-lg">
+                                                    {getAge(userProfile?.profile.birthday)}
+                                                </StyledText>
+                                            </StyledView>
+                                            <StyledView className="ml-2">
+                                                {userProfile?.profile.gender == "ชาย" ? (
+                                                    <LinearGradient
+                                                        colors={['#4facfe', '#00f2fe']}
+                                                        start={{ x: 0, y: 0 }}
+                                                        end={{ x: 1, y: 0 }}
+                                                        className="rounded-full p-2"
+                                                    >
+                                                        <StyledIonIcon name="female" color={'white'} size={22} />
+                                                    </LinearGradient>
+                                                ) : (
+                                                    <LinearGradient
+                                                        colors={['#ff8df6', '#ff6b9c']}
+                                                        start={{ x: 0, y: 0 }}
+                                                        end={{ x: 1, y: 0 }}
+                                                        className="rounded-full p-2"
+                                                    >
+                                                        <StyledIonIcon name="male" color={'white'} size={22} />
+                                                    </LinearGradient>
+                                                )}
+                                            </StyledView>
+                                        </StyledView>
+
+                                        {userProfile?.profile.type === "member" && (
+                                            <StyledView className="flex-row items-center bg-gray-100 dark:bg-neutral-800 rounded-full px-4 py-2">
+                                                <StyledIonIcon
+                                                    name="location-outline"
+                                                    size={20}
+                                                    className="text-gray-600 dark:text-gray-300 mr-2"
+                                                />
+                                                <StyledText className="font-custom text-gray-600 dark:text-gray-300 text-base">
+                                                    {Number(distance.toFixed(0)) / 1000 > 10
+                                                        ? `${(distance / 1000).toFixed(1)} กม.`
+                                                        : `10 กม.`}
+                                                </StyledText>
+                                            </StyledView>
+                                        )}
+                                    </StyledView>
+
+                                    {/* ที่อยู่ */}
+                                    <StyledView className="flex-row items-center mb-4">
+                                        <StyledIonIcon
+                                            name="location"
+                                            size={20}
+                                            className="text-gray-500 dark:text-gray-400 mr-2"
+                                        />
+                                        <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom">
+                                            {userProfile?.profile.province[0]}
+                                        </StyledText>
+                                    </StyledView>
+
+                                    {/* Bio */}
+                                    {userProfile?.profile.bio && (
+                                        <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4 mb-4">
+                                            <StyledText className="text-base text-gray-700 dark:text-gray-200 font-custom leading-6">
+                                                {userProfile.profile.bio}
+                                            </StyledText>
                                         </StyledView>
                                     )}
-                                    onSnapToItem={setIsActive}
-                                />
-                                <LinearGradient
-                                    colors={['transparent', 'rgba(0,0,0,0.8)']}
-                                    className="absolute bottom-0 left-0 right-0 h-40"
-                                />
 
-                                <StyledView className="absolute bottom-2 flex-row items-center left-2">
-                                    <StyledIonIcon name="heart" color={'red'} size={40} />
-                                    <StyledText className="text-[30px] text-white font-custom">{userProfile?.profile.rating}</StyledText>
-                                    <StyledText className="text-[25px] text-gray-200 font-custom">({userProfile?.profile.reviews})</StyledText>
+                                    {/* บริการ */}
+                                    <StyledView className="mt-2">
+                                        <StyledText className="text-base font-semibold text-gray-500 dark:text-gray-400 font-custom mb-3">
+                                            บริการ
+                                        </StyledText>
+                                        <StyledView className="flex-row flex-wrap">
+                                            {joblist.map((job, index) => (
+                                                <LinearGradient
+                                                    key={index}
+                                                    colors={['#ec4899', '#f97316']}
+                                                    start={{ x: 0, y: 0 }}
+                                                    end={{ x: 1, y: 0 }}
+                                                    className="rounded-full px-4 py-2 mr-2 mb-2"
+                                                >
+                                                    <StyledText className="font-custom text-white text-base">
+                                                        {job.label}
+                                                    </StyledText>
+                                                </LinearGradient>
+                                            ))}
+                                        </StyledView>
+                                    </StyledView>
+                                    <StyledView className="px-5 py-4">
+                                        {/* หัวข้อรีวิว */}
+                                        <StyledView className="flex-row items-center justify-between mb-6">
+                                            <StyledView className="flex-row items-center">
+                                                <StyledText className="text-xl font-semibold text-black dark:text-white font-custom">
+                                                    รีวิวทั้งหมด 
+                                                </StyledText>
+                                                <StyledView className="bg-red-50 dark:bg-red-900/30 rounded-full px-3 py-1 ml-2">
+                                                    <StyledText className="text-red-500 dark:text-red-400 font-custom">
+                                                        {reviews.length}
+                                                    </StyledText>
+                                                </StyledView>
+                                            </StyledView>
+                                            <TouchableOpacity 
+                                                onPress={showModal}
+                                                className="flex-row items-center"
+                                            >
+                                                <StyledIonIcon 
+                                                    name="create-outline" 
+                                                    size={20} 
+                                                    className="text-red-500 mr-1" 
+                                                />
+                                                <StyledText className="text-red-500 font-custom">
+                                                    เขียนรีวิว
+                                                </StyledText>
+                                            </TouchableOpacity>
+                                        </StyledView>
+
+                                        {/* สรุปคะแนนรีวิว */}
+                                        <StyledView className="bg-red-50/50 dark:bg-red-900/10 rounded-2xl p-4 mb-6">
+                                            <StyledView className="flex-row items-center justify-between">
+                                                <StyledView>
+                                                    <StyledText className="text-4xl font-bold text-red-600 dark:text-red-500 font-custom">
+                                                        4.8
+                                                    </StyledText>
+                                                    <StyledView className="flex-row mt-1">
+                                                        {[1, 2, 3, 4, 5].map((star) => (
+                                                            <StyledIonIcon
+                                                                key={star}
+                                                                name="star"
+                                                                size={16}
+                                                                className="text-red-500 mr-0.5"
+                                                            />
+                                                        ))}
+                                                    </StyledView>
+                                                </StyledView>
+                                            </StyledView>
+                                        </StyledView>
+
+                                        {/* รายการรีวิว */}
+                                        {reviews.map((review) => (
+                                            <StyledView
+                                                key={review.id}
+                                                className="border-b border-gray-100 dark:border-neutral-800 py-4"
+                                            >
+                                                <StyledView className="flex-row justify-between items-start mb-3">
+                                                    <StyledView className="flex-row items-center">
+                                                        <StyledImage
+                                                            source={{ uri: review.avatar }}
+                                                            className="w-12 h-12 rounded-full mr-3"
+                                                        />
+                                                        <StyledView>
+                                                            <StyledText className="font-bold text-base text-black dark:text-white font-custom mb-1">
+                                                                {review.username}
+                                                            </StyledText>
+                                                            <StyledView className="flex-row items-center">
+                                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                                    <StyledIonIcon
+                                                                        key={star}
+                                                                        name={star <= review.rating ? "star" : "star-outline"}
+                                                                        size={14}
+                                                                        className={star <= review.rating ? "text-red-500 mr-0.5" : "text-gray-300 mr-0.5"}
+                                                                    />
+                                                                ))}
+                                                                <StyledText className="text-gray-400 text-sm font-custom ml-2">
+                                                                    {review.date}
+                                                                </StyledText>
+                                                            </StyledView>
+                                                        </StyledView>
+                                                    </StyledView>
+                                                </StyledView>
+
+                                                <StyledText className="text-gray-600 dark:text-gray-300 font-custom leading-6 ml-15">
+                                                    {review.comment}
+                                                </StyledText>
+                                            </StyledView>
+                                        ))}
+
+                                        {/* เพิ่ม Modal Component */}
+
+                                        {/* Review Modal */}
+                                        <Modal
+                                            visible={modalVisible}
+                                            transparent={true}
+                                            animationType="fade"
+                                            onRequestClose={hideModal}
+                                        >
+                                            <StyledView className="flex-1 bg-black/50 justify-end">
+                                                <Animated.View
+                                                    style={{
+                                                        transform: [{
+                                                            translateY: slideAnim.interpolate({
+                                                                inputRange: [0, 1],
+                                                                outputRange: [600, 0]
+                                                            })
+                                                        }]
+                                                    }}
+                                                >
+                                                    <StyledView className="bg-white dark:bg-neutral-900 rounded-t-3xl p-6">
+                                                        {/* หัวข้อ */}
+                                                        <StyledView className="flex-row items-center justify-between mb-6">
+                                                            <StyledText className="text-2xl font-bold text-black dark:text-white font-custom">
+                                                                เขียนรีวิว
+                                                            </StyledText>
+                                                            <TouchableOpacity onPress={hideModal}>
+                                                                <StyledIonIcon
+                                                                    name="close"
+                                                                    size={24}
+                                                                    className="text-gray-400"
+                                                                />
+                                                            </TouchableOpacity>
+                                                        </StyledView>
+
+                                                        {/* ให้คะแนนดาว */}
+                                                        <StyledView className="items-center mb-8">
+                                                            <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-4">
+                                                                ให้คะแนนประสบการณ์ของคุณ
+                                                            </StyledText>
+                                                            <StyledView className="flex-row">
+                                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                                    <TouchableOpacity
+                                                                        key={star}
+                                                                        onPress={() => setReviewRating(star)}
+                                                                        className="mx-2"
+                                                                    >
+                                                                        <LinearGradient
+                                                                            colors={star <= reviewRating ? ['#EB3834', '#69140F'] : ['#E5E7EB', '#D1D5DB']}
+                                                                            start={{ x: 0, y: 0 }}
+                                                                            end={{ x: 1, y: 0 }}
+                                                                            className="rounded-full p-3"
+                                                                        >
+                                                                            <StyledIonIcon
+                                                                                name="star"
+                                                                                size={32}
+                                                                                color="white"
+                                                                            />
+                                                                        </LinearGradient>
+                                                                    </TouchableOpacity>
+                                                                ))}
+                                                            </StyledView>
+                                                        </StyledView>
+
+                                                        {/* กล่องข้อความรีวิว */}
+                                                        <StyledView className="mb-8">
+                                                            <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
+                                                                เขียนความคิดเห็นของคุณ
+                                                            </StyledText>
+                                                            <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4">
+                                                                <TextInput
+                                                                    multiline
+                                                                    numberOfLines={5}
+                                                                    value={reviewText}
+                                                                    onChangeText={setReviewText}
+                                                                    placeholder="แชร์ประสบการณ์ของคุณ..."
+                                                                    placeholderTextColor="#9CA3AF"
+                                                                    className="font-custom text-gray-700 dark:text-gray-200 min-h-[120px]"
+                                                                    textAlignVertical="top"
+                                                                />
+                                                            </StyledView>
+                                                        </StyledView>
+
+                                                        {/* ส่วนรูปภาพ */}
+                                                        <StyledView className="mb-8">
+                                                            <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
+                                                                เพิ่มรูปภาพ (ไม่บังคับ)
+                                                            </StyledText>
+                                                            <TouchableOpacity>
+                                                                <StyledView className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 items-center">
+                                                                    <StyledIonIcon
+                                                                        name="images-outline"
+                                                                        size={32}
+                                                                        className="text-gray-400 mb-2"
+                                                                    />
+                                                                    <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-center">
+                                                                        แตะเพื่อเพิ่มรูปภาพ
+                                                                    </StyledText>
+                                                                </StyledView>
+                                                            </TouchableOpacity>
+                                                        </StyledView>
+
+                                                        {/* ปุ่มส่งรีวิว */}
+                                                        <TouchableOpacity>
+                                                            <LinearGradient
+                                                                colors={['#EB3834', '#69140F']}
+                                                                start={{ x: 0, y: 0 }}
+                                                                end={{ x: 1, y: 0 }}
+                                                                className="rounded-full py-4"
+                                                            >
+                                                                <StyledText className="text-white text-center font-bold text-lg font-custom">
+                                                                    โพสต์รีวิว
+                                                                </StyledText>
+                                                            </LinearGradient>
+                                                        </TouchableOpacity>
+                                                    </StyledView>
+                                                </Animated.View>
+                                            </StyledView>
+                                        </Modal>
+                                    </StyledView>
                                 </StyledView>
                             </StyledView>
-
-                            <StyledView id="Image Dot" className="absolute top-2 w-full flex-row justify-between px-2 gap-1">
-                                {images.map((_, index) => (
-                                    <StyledView
-                                        key={index}
-                                        className={`${isActive === index ? "bg-gray-300" : "bg-gray-700"} opacity-70 rounded-full h-1 flex-1`}
-                                    />
-                                ))}
-                            </StyledView>
-
-                            <StyledView className="px-5 py-4">
-    {/* ส่วนชื่อและข้อมูลพื้นฐาน */}
-    <StyledView className="flex-row items-center justify-between mb-3">
-        <StyledView className="flex-row items-center">
-            <StyledText className="text-[28px] text-black dark:text-white font-custom font-semibold">
-                {userProfile?.profile.username}
-            </StyledText>
-            <StyledView className="bg-gray-100 dark:bg-neutral-800 rounded-full px-3 py-1 ml-3">
-                <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-lg">
-                    {getAge(userProfile?.profile.birthday)}
-                </StyledText>
-            </StyledView>
-            <StyledView className="ml-2">
-                {userProfile?.profile.gender == "ชาย" ? (
-                    <LinearGradient
-                        colors={['#4facfe', '#00f2fe']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        className="rounded-full p-2"
-                    >
-                        <StyledIonIcon name="female" color={'white'} size={22} />
-                    </LinearGradient>
-                ) : (
-                    <LinearGradient
-                        colors={['#ff8df6', '#ff6b9c']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        className="rounded-full p-2"
-                    >
-                        <StyledIonIcon name="male" color={'white'} size={22} />
-                    </LinearGradient>
-                )}
-            </StyledView>
-        </StyledView>
-
-        {userProfile?.profile.type === "member" && (
-            <StyledView className="flex-row items-center bg-gray-100 dark:bg-neutral-800 rounded-full px-4 py-2">
-                <StyledIonIcon 
-                    name="location-outline" 
-                    size={20} 
-                    className="text-gray-600 dark:text-gray-300 mr-2" 
-                />
-                <StyledText className="font-custom text-gray-600 dark:text-gray-300 text-base">
-                    {Number(distance.toFixed(0)) / 1000 > 10 
-                        ? `${(distance / 1000).toFixed(1)} กม.` 
-                        : `10 กม.`}
-                </StyledText>
-            </StyledView>
-        )}
-    </StyledView>
-
-    {/* ที่อยู่ */}
-    <StyledView className="flex-row items-center mb-4">
-        <StyledIonIcon 
-            name="location" 
-            size={20} 
-            className="text-gray-500 dark:text-gray-400 mr-2" 
-        />
-        <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom">
-            {userProfile?.profile.province[0]}
-        </StyledText>
-    </StyledView>
-
-    {/* Bio */}
-    {userProfile?.profile.bio && (
-        <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4 mb-4">
-            <StyledText className="text-base text-gray-700 dark:text-gray-200 font-custom leading-6">
-                {userProfile.profile.bio}
-            </StyledText>
-        </StyledView>
-    )}
-
-    {/* บริการ */}
-    <StyledView className="mt-2">
-        <StyledText className="text-base font-semibold text-gray-500 dark:text-gray-400 font-custom mb-3">
-            บริการ
-        </StyledText>
-        <StyledView className="flex-row flex-wrap">
-            {joblist.map((job, index) => (
-                <LinearGradient
-                    key={index}
-                    colors={['#ec4899', '#f97316']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    className="rounded-full px-4 py-2 mr-2 mb-2"
-                >
-                    <StyledText className="font-custom text-white text-base">
-                        {job.label}
-                    </StyledText>
-                </LinearGradient>
-            ))}
-        </StyledView>
-    </StyledView>
-</StyledView>
-                        </StyledView>
-                    </StyledScrollView>
+                        </StyledScrollView>
+                    </>
                 )
             }
 

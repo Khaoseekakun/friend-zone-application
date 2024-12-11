@@ -278,8 +278,7 @@ export default function Post() {
                             colors={['#EB3834', '#69140F']}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
-                            className="w-full top-0 h-[106px]"
-                        >
+                            className="w-full top-0 h-[106px]">
                             <StyledView className="px-3 text-center pt-[60px] pb-3">
                                 <TouchableOpacity onPress={() => navigation.goBack()} className="absolute pt-[60] ml-4">
                                     <Ionicons name="chevron-back" size={24} color="#fff" />
