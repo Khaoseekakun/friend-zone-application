@@ -168,19 +168,19 @@ export default function ProfileTab() {
         return (
             <>
                 {/* ปุ่มเปิด Modal */}
-                <TouchableOpacity 
-            onPress={showModal}
-            className="flex-row items-center"
-        >
-            <StyledIonIcon 
-                name="create-outline" 
-                size={20} 
-                className="text-red-500 mr-1" 
-            />
-            <StyledText className="text-red-500 font-custom">
-                เขียนรีวิว
-            </StyledText>
-        </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={showModal}
+                    className="flex-row items-center"
+                >
+                    <StyledIonIcon
+                        name="create-outline"
+                        size={20}
+                        className="text-red-500 mr-1"
+                    />
+                    <StyledText className="text-red-500 font-custom">
+                        เขียนรีวิว
+                    </StyledText>
+                </TouchableOpacity>
 
                 {/* Modal Review Form */}
                 <Modal
@@ -706,70 +706,99 @@ export default function ProfileTab() {
                                     ))}
                                 </StyledView>
 
+
                                 <StyledView className="px-5 py-4">
-                                    {/* ส่วนชื่อและข้อมูลพื้นฐาน */}
-                                    <StyledView className="flex-row items-center justify-between mb-3">
-                                        <StyledView className="flex-row items-center">
-                                            <StyledText className="text-[28px] text-black dark:text-white font-custom font-semibold">
-                                                {userProfile?.profile.username}
-                                            </StyledText>
-                                            <StyledView className="bg-gray-100 dark:bg-neutral-800 rounded-full px-3 py-1 ml-3">
-                                                <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-lg">
-                                                    {getAge(userProfile?.profile.birthday)}
+
+                                    <StyledText className="text-[28px] text-black dark:text-white font-custom font-semibold mb-3">
+                                        {userProfile?.profile.username}
+                                    </StyledText>
+                                    <StyledView className="mb-3">
+                                        <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm mb-2">
+                                            ข้อมูลพื้นฐาน
+                                        </StyledText>
+
+                                        <StyledView className="flex-row items-center justify-between mb-3">
+                                            <StyledView className="flex-row items-center">
+                                                <StyledIonIcon
+                                                    name={userProfile?.profile.gender === "ชาย" ? "male" : "female"}
+                                                    size={20}
+                                                    className={userProfile?.profile.gender === "ชาย" ? "text-blue-500" : "text-pink-500"}
+                                                    style={{ marginRight: 8 }}
+                                                />
+                                                <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-base">
+                                                    {userProfile?.profile.gender}
                                                 </StyledText>
                                             </StyledView>
-                                            <StyledView className="ml-2">
-                                                {userProfile?.profile.gender == "ชาย" ? (
-                                                    <LinearGradient
-                                                        colors={['#4facfe', '#00f2fe']}
-                                                        start={{ x: 0, y: 0 }}
-                                                        end={{ x: 1, y: 0 }}
-                                                        className="rounded-full p-2"
-                                                    >
-                                                        <StyledIonIcon name="female" color={'white'} size={22} />
-                                                    </LinearGradient>
-                                                ) : (
-                                                    <LinearGradient
-                                                        colors={['#ff8df6', '#ff6b9c']}
-                                                        start={{ x: 0, y: 0 }}
-                                                        end={{ x: 1, y: 0 }}
-                                                        className="rounded-full p-2"
-                                                    >
-                                                        <StyledIonIcon name="male" color={'white'} size={22} />
-                                                    </LinearGradient>
-                                                )}
-                                            </StyledView>
-                                        </StyledView>
 
-                                        {userProfile?.profile.type === "member" && (
-                                            <StyledView className="flex-row items-center bg-gray-100 dark:bg-neutral-800 rounded-full px-4 py-2">
+                                            <StyledView className="flex-row items-center">
+                                                <StyledIonIcon
+                                                    name="calendar-outline"
+                                                    size={20}
+                                                    className="text-gray-500 dark:text-gray-400 mr-2"
+                                                />
+                                                <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-base">
+                                                    {getAge(userProfile?.profile.birthday)} ปี
+                                                </StyledText>
+                                            </StyledView>
+
+                                            <StyledView className="flex-row items-center">
                                                 <StyledIonIcon
                                                     name="location-outline"
                                                     size={20}
-                                                    className="text-gray-600 dark:text-gray-300 mr-2"
+                                                    className="text-gray-500 dark:text-gray-400 mr-2"
                                                 />
-                                                <StyledText className="font-custom text-gray-600 dark:text-gray-300 text-base">
+                                                <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-base">
+                                                    {userProfile?.profile.province[0]}
+                                                </StyledText>
+                                            </StyledView>
+                                        </StyledView>
+
+                                        <StyledView className="flex-row justify-around bg-gray-100 dark:bg-neutral-700 rounded-xl p-3">
+                                            <StyledView className="items-center">
+                                                <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm mb-1">
+                                                    ส่วนสูง
+                                                </StyledText>
+                                                <StyledView className="flex-row items-center">
+                                                    <StyledText className="text-gray-700 dark:text-gray-200 font-custom text-base font-semibold">
+                                                        {userProfile?.profile.height || 170}
+                                                    </StyledText>
+                                                    <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm ml-1">
+                                                        ซม.
+                                                    </StyledText>
+                                                </StyledView>
+                                            </StyledView>
+
+                                            <StyledView className="items-center">
+                                                <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm mb-1">
+                                                    น้ำหนัก
+                                                </StyledText>
+                                                <StyledView className="flex-row items-center">
+                                                    <StyledText className="text-gray-700 dark:text-gray-200 font-custom text-base font-semibold">
+                                                        {userProfile?.profile.weight || 60}
+                                                    </StyledText>
+                                                    <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm ml-1">
+                                                        กก.
+                                                    </StyledText>
+                                                </StyledView>
+                                            </StyledView>
+                                        </StyledView>
+                                    </StyledView>
+
+                                    {userProfile?.profile.type === "member" && (
+                                        <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4 mb-4">
+                                            <StyledView className="flex-row items-center justify-between">
+                                                <StyledText className="text-gray-600 dark:text-gray-400 font-custom text-base">
+                                                    ระยะห่างจากคุณ
+                                                </StyledText>
+                                                <StyledText className="text-black dark:text-white font-custom text-lg font-semibold">
                                                     {Number(distance.toFixed(0)) / 1000 > 10
                                                         ? `${(distance / 1000).toFixed(1)} กม.`
                                                         : `10 กม.`}
                                                 </StyledText>
                                             </StyledView>
-                                        )}
-                                    </StyledView>
+                                        </StyledView>
+                                    )}
 
-                                    {/* ที่อยู่ */}
-                                    <StyledView className="flex-row items-center mb-4">
-                                        <StyledIonIcon
-                                            name="location"
-                                            size={20}
-                                            className="text-gray-500 dark:text-gray-400 mr-2"
-                                        />
-                                        <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom">
-                                            {userProfile?.profile.province[0]}
-                                        </StyledText>
-                                    </StyledView>
-
-                                    {/* Bio */}
                                     {userProfile?.profile.bio && (
                                         <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4 mb-4">
                                             <StyledText className="text-base text-gray-700 dark:text-gray-200 font-custom leading-6">
@@ -778,7 +807,6 @@ export default function ProfileTab() {
                                         </StyledView>
                                     )}
 
-                                    {/* บริการ */}
                                     <StyledView className="mt-2">
                                         <StyledText className="text-base font-semibold text-gray-500 dark:text-gray-400 font-custom mb-3">
                                             บริการ
@@ -804,7 +832,7 @@ export default function ProfileTab() {
                                         <StyledView className="flex-row items-center justify-between mb-6">
                                             <StyledView className="flex-row items-center">
                                                 <StyledText className="text-xl font-semibold text-black dark:text-white font-custom">
-                                                    รีวิวทั้งหมด 
+                                                    รีวิวทั้งหมด
                                                 </StyledText>
                                                 <StyledView className="bg-red-50 dark:bg-red-900/30 rounded-full px-3 py-1 ml-2">
                                                     <StyledText className="text-red-500 dark:text-red-400 font-custom">
@@ -812,14 +840,14 @@ export default function ProfileTab() {
                                                     </StyledText>
                                                 </StyledView>
                                             </StyledView>
-                                            <TouchableOpacity 
+                                            <TouchableOpacity
                                                 onPress={showModal}
                                                 className="flex-row items-center"
                                             >
-                                                <StyledIonIcon 
-                                                    name="create-outline" 
-                                                    size={20} 
-                                                    className="text-red-500 mr-1" 
+                                                <StyledIonIcon
+                                                    name="create-outline"
+                                                    size={20}
+                                                    className="text-red-500 mr-1"
                                                 />
                                                 <StyledText className="text-red-500 font-custom">
                                                     เขียนรีวิว
@@ -968,25 +996,6 @@ export default function ProfileTab() {
                                                                     textAlignVertical="top"
                                                                 />
                                                             </StyledView>
-                                                        </StyledView>
-
-                                                        {/* ส่วนรูปภาพ */}
-                                                        <StyledView className="mb-8">
-                                                            <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
-                                                                เพิ่มรูปภาพ (ไม่บังคับ)
-                                                            </StyledText>
-                                                            <TouchableOpacity>
-                                                                <StyledView className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 items-center">
-                                                                    <StyledIonIcon
-                                                                        name="images-outline"
-                                                                        size={32}
-                                                                        className="text-gray-400 mb-2"
-                                                                    />
-                                                                    <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-center">
-                                                                        แตะเพื่อเพิ่มรูปภาพ
-                                                                    </StyledText>
-                                                                </StyledView>
-                                                            </TouchableOpacity>
                                                         </StyledView>
 
                                                         {/* ปุ่มส่งรีวิว */}
