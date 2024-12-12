@@ -360,17 +360,31 @@ export default function MemberRegistration() {
             className="flex-1"
         >
             <StyledView className="mb-6">
-                <StyledText className="font-custom text-sm text-gray-700 dark:text-gray-300 mb-2">
-                    ธนาคาร
-                </StyledText>
-                {banks.map((bank) => (
-                    <SelectionButton
-                        key={bank}
-                        label={bank}
-                        selected={bankName === bank}
-                        onPress={() => setBankName(bank)}
+
+                <StyledView className="mb-4">
+                    <StyledText className="font-custom text-sm text-gray-700 dark:text-gray-300 mb-2">
+                        ธนาคาร
+                    </StyledText>
+                    <SelectList
+                        setSelected={setGender}
+                        data={[
+                            { key: 'ธนาคารกสิกรไทย', value: 'ธนาคารกสิกรไทย' },
+                            { key: 'ธนาคารไทยพาณิชย์', value: 'ธนาคารไทยพาณิชย์' },
+                            { key: 'ธนาคารกรุงเทพ', value: 'ธนาคารกรุงเทพ' },
+                            { key: 'ธนาคารกรุงไทย', value: 'ธนาคารกรุงไทย' },
+                            { key: 'ธนาคารกรุงศรีอยุธยา', value: 'ธนาคารกรุงศรีอยุธยา' },
+                        ]}                        
+                        placeholder="เลือกธนาคาร"
+                        boxStyles={{
+                            backgroundColor: Platform.OS === 'ios' ? '#FFFFFF' : '#1f1f1f',
+                            borderRadius: 12,
+                            borderColor: Platform.OS === 'ios' ? '#e5e7eb' : '#404040',
+                        }}
+                        inputStyles={{
+                            color: Platform.OS === 'ios' ? '#1f2937' : '#ffffff',
+                        }}
                     />
-                ))}
+                </StyledView>
             </StyledView>
 
             <InputField
