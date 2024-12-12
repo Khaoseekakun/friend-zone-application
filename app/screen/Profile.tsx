@@ -445,7 +445,7 @@ export default function ProfileTab() {
                     })
 
                     if (resdata.data.status == 200) {
-                        setJobList(resdata.data.data.map((job: any) => ({
+                        setJobList(resdata.data.data.JobsList.map((job: any) => ({
                             label: job.jobName,
                             value: job.id,
 
@@ -463,7 +463,7 @@ export default function ProfileTab() {
                 })
 
                 if (resdata.data.status == 200) {
-                    setJobList(resdata.data.data.map((job: any) => ({
+                    setJobList(resdata.data.data.JobsList.map((job: any) => ({
                         label: job.jobName,
                         value: job.id,
 
@@ -625,28 +625,6 @@ export default function ProfileTab() {
             Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
         }
     }
-
-    const ImageSlide: React.FC<{ image: string }> = ({ image }) => {
-        const [loading, setLoading] = useState(true);
-
-        return (
-            <StyledView className="w-screen bg-gray-400 justify-center items-center">
-                {loading && (
-                    <ActivityIndicator
-                        size="large"
-                        color="#FFFFFF"
-                        style={{ position: 'absolute', zIndex: 1 }}
-                    />
-                )}
-                <Image
-                    source={{ uri: image }}
-                    style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }}
-                    resizeMode="cover"
-                    onLoad={() => setLoading(false)}
-                />
-            </StyledView>
-        );
-    };
 
 
     return (
@@ -827,7 +805,7 @@ export default function ProfileTab() {
                                             ))}
                                         </StyledView>
                                     </StyledView>
-                                    <StyledView className="px-5 py-4">
+                                    <StyledView className="px-2 py-4 border-t-[1px] border-neutral-300 mt-2">
                                         {/* หัวข้อรีวิว */}
                                         <StyledView className="flex-row items-center justify-between mb-6">
                                             <StyledView className="flex-row items-center">
@@ -856,7 +834,7 @@ export default function ProfileTab() {
                                         </StyledView>
 
                                         {/* สรุปคะแนนรีวิว */}
-                                        <StyledView className="bg-red-50/50 dark:bg-red-900/10 rounded-2xl p-4 mb-6">
+                                        <StyledView className="bg-red-100/80 dark:bg-red-900/10 rounded-2xl p-4 mb-6">
                                             <StyledView className="flex-row items-center justify-between">
                                                 <StyledView>
                                                     <StyledText className="text-4xl font-bold text-red-600 dark:text-red-500 font-custom">
@@ -886,7 +864,7 @@ export default function ProfileTab() {
                                                     <StyledView className="flex-row items-center">
                                                         <StyledImage
                                                             source={{ uri: review.avatar }}
-                                                            className="w-12 h-12 rounded-full mr-3"
+                                                            className="w-10 h-10 rounded-full mr-3"
                                                         />
                                                         <StyledView>
                                                             <StyledText className="font-bold text-base text-black dark:text-white font-custom mb-1">

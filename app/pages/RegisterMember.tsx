@@ -45,7 +45,7 @@ const FormStep: React.FC<FormStepProps> = ({ currentStep, totalSteps, title }) =
             {Array.from({ length: totalSteps }, (_, i) => (
                 <LinearGradient
                     key={i}
-                    colors={i < currentStep ? GRADIENT_COLORS : ['#e5e7eb', '#e5e7eb']}
+                    colors={['#e5e7eb', '#e5e7eb']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     className="w-20 h-1 rounded-full"
@@ -124,7 +124,7 @@ const SelectionButton = ({
         className="mb-2"
     >
         <LinearGradient
-            colors={selected ? GRADIENT_COLORS : ['transparent', 'transparent']}
+            colors={['#FFFFFF', '#FFFFFF']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             className={`rounded-xl ${
@@ -373,7 +373,7 @@ export default function MemberRegistration() {
                 ))}
             </StyledView>
 
-            <InputFiel
+            <InputField
                 label="เลขบัญชีธนาคาร"
                 placeholder="เลขบัญชี"
                 value={accountNumber}
@@ -381,7 +381,7 @@ export default function MemberRegistration() {
                 inputMode="numeric"
             />
 
-            <InputFiel
+            <InputField
                 label="ชื่อบัญชี"
                 placeholder="ชื่อบัญชี"
                 value={accountName}
@@ -400,7 +400,7 @@ export default function MemberRegistration() {
                         className="mt-6"
                     >
                         <LinearGradient
-                            colors={GRADIENT_COLORS}
+                            colors={GRADIENT_COLORS as ['#ec4899', '#f97316']}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
                             className="w-10 h-10 rounded-full items-center justify-center"
@@ -423,8 +423,6 @@ export default function MemberRegistration() {
                     {/* Form Content */}
                     <Animated.View 
                         style={{
-                            transform: [{ translateX: slideAnim }],
-                            flex: 1,
                             transform: [{ translateX: slideAnim }],
                             flex: 1,
                             marginBottom: 16
@@ -469,7 +467,7 @@ export default function MemberRegistration() {
                             }}
                         >
                             <LinearGradient
-                                colors={GRADIENT_COLORS}
+                                colors={GRADIENT_COLORS as ['#ec4899', '#f97316']}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 0 }}
                                 className="rounded-full py-4 shadow-sm"
