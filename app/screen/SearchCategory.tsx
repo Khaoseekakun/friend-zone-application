@@ -5,7 +5,7 @@ import { styled } from "nativewind";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { RootStackParamList } from "@/types";
-import Animated, { 
+import Animated, {
   FadeInDown,
   FadeInUp,
   withSpring
@@ -21,10 +21,10 @@ const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 // Import your icons here
 const iconFriend1 = require("../../assets/icon/A1.png");
 const iconFriend2 = require("../../assets/icon/A3.png");
-const iconDJ1 = require("../../assets/icon/A2.png");
-const iconDJ2 = require("../../assets/icon/A5.png");
-const iconMusic1 = require("../../assets/icon/A7.png");
-const iconMusic2 = require("../../assets/icon/A6.png");
+const iconDJ2 = require("../../assets/icon/A2.png");
+const iconDJ1 = require("../../assets/icon/A5.png");
+const iconMusic2 = require("../../assets/icon/A7.png");
+const iconMusic1 = require("../../assets/icon/A6.png");
 const iconTable1 = require("../../assets/icon/A4.png");
 const iconTicket1 = require("../../assets/icon/A10.png");
 const iconCar1 = require("../../assets/icon/A8.png");
@@ -33,8 +33,8 @@ const iconCar2 = require("../../assets/icon/A9.png");
 type CategorySearch = RouteProp<RootStackParamList, 'SearchCategory'>;
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 32) / 2; // ปรับขนาดการ์ดให้พอดีกับ 2 แถว
-const CARD_HEIGHT = CARD_WIDTH * 1.4; // ปรับความสูงให้รับกับการวางไอคอนใหม่
+const CARD_WIDTH = (width - 32) / 2;
+const CARD_HEIGHT = CARD_WIDTH * 1.4;
 
 interface CategoryCardProps {
   title: string;
@@ -58,69 +58,45 @@ const CategoryCard = ({ title, icon1, icon2, isDisabled = false, onPress, index 
       }}
     >
       <LinearGradient
-        colors={isDisabled ? ['#666', '#333'] : ['#FF6B6B', '#FF8E53']}
+        colors={isDisabled ? ['#666', '#333'] : ['#EB3834', '#69140F']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         className="w-full h-full rounded-3xl overflow-hidden shadow-lg"
       >
         <StyledView className="flex-1 justify-center items-center p-4">
-          <StyledView className="w-full h-[65%] relative justify-center items-center">
+          <StyledView className="flex-1">
             {icon2 ? (
-              // ถ้ามีไอคอน 2 อัน จะวางแบบซ้อนทแยง
-              <>
-                <Animated.View 
-                  entering={FadeInDown.delay(index * 150)}
-                  className="absolute"
-                  style={{
-                    transform: [
-                      { translateX: -25 },
-                      { translateY: -5 },
-                      { scale: 0.85 },
-                      { rotate: '-10deg' }
-                    ]
-                  }}
-                >
+              <StyledView className="w-full h-[120px] relative">
+                <StyledView className="absolute -left-9 top-14">
                   <StyledImage 
                     source={icon1}
-                    className="w-[90px] h-[90px]"
-                  />
-                </Animated.View>
-                <Animated.View 
-                  entering={FadeInDown.delay(index * 200)}
-                  className="absolute"
-                  style={{
-                    transform: [
-                      { translateX: 25 },
-                      { translateY: 5 },
-                      { scale: 0.85 },
-                      { rotate: '15deg' }
-                    ]
-                  }}
-                >
-                  <StyledImage 
-                    source={icon2} 
                     className="w-[100px] h-[100px]"
+                    resizeMode="contain"
                   />
-                </Animated.View>
-              </>
+                </StyledView>
+                <StyledView className="absolute -right-9 top-12">
+                  <StyledImage 
+                    source={icon2}
+                    className="w-[100px] h-[100px]"
+                    resizeMode="contain"
+                  />
+                </StyledView>
+              </StyledView>
             ) : (
-              // ถ้ามีไอคอนเดียว จะวางตรงกลาง
-              <Animated.View 
-                entering={FadeInDown.delay(index * 150)}
-                style={{ transform: [{ scale: 1 }] }}
-              >
+              <StyledView className="w-full h-[120px] items-center justify-center top-13">
                 <StyledImage 
-                  source={icon1} 
-                  className="w-[120px] h-[120px]"
+                  source={icon1}
+                  className="w-[80px] h-[80px]"
+                  resizeMode="contain"
                 />
-              </Animated.View>
+              </StyledView>
             )}
           </StyledView>
-          
-          <StyledText className="font-custom text-white text-lg text-center mt-2 px-2">
+
+          <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
             {title}
           </StyledText>
-          
+
           {isDisabled && (
             <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
               <StyledText className="font-custom text-white text-xl">SOON</StyledText>
@@ -182,14 +158,14 @@ export default function SearchCategory() {
       className="flex-1"
     >
       <StyledScrollView className="flex-1 pt-20">
-        <Animated.View 
+        <Animated.View
           entering={FadeInDown.springify()}
           className="px-3 pb-6"
         >
           <StyledText className="font-custom text-white text-3xl mb-8 text-center">
             เลือกหมวดหมู่
           </StyledText>
-          
+
           <StyledView className="flex-row flex-wrap justify-between px-2">
             {categories.map((category, index) => (
               <CategoryCard
