@@ -21,8 +21,8 @@ const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 // Import your icons here
 const iconFriend1 = require("../../assets/icon/A1.png");
 const iconFriend2 = require("../../assets/icon/A3.png");
-const iconDJ2 = require("../../assets/icon/A2.png");
-const iconDJ1 = require("../../assets/icon/A5.png");
+const iconDJ1 = require("../../assets/icon/A2.png");
+const iconDJ2 = require("../../assets/icon/A5.png");
 const iconMusic2 = require("../../assets/icon/A7.png");
 const iconMusic1 = require("../../assets/icon/A6.png");
 const iconTable1 = require("../../assets/icon/A4.png");
@@ -33,7 +33,7 @@ const iconCar2 = require("../../assets/icon/A9.png");
 type CategorySearch = RouteProp<RootStackParamList, 'SearchCategory'>;
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 32) / 2;
+const CARD_WIDTH = (width - 34) / 2;
 const CARD_HEIGHT = CARD_WIDTH * 1.4;
 
 interface CategoryCardProps {
@@ -41,6 +41,7 @@ interface CategoryCardProps {
   icon1: any;
   icon2?: any;
   isDisabled?: boolean;
+  size: string;
   onPress: () => void;
   index: number;
 }
@@ -51,42 +52,42 @@ const CategoryCard = ({ title, icon1, icon2, isDisabled = false, onPress, index 
       entering={FadeInUp.delay(index * 100).springify()}
       onPress={onPress}
       disabled={isDisabled}
-      className="mb-4"
+      className="mb-3"
       style={{
         width: CARD_WIDTH - 16,
         height: CARD_HEIGHT,
       }}
     >
       <LinearGradient
-        colors={isDisabled ? ['#666', '#333'] : ['#EB3834', '#69140F']}
+        colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        className="w-full h-full rounded-3xl overflow-hidden shadow-lg"
+        className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
       >
         <StyledView className="flex-1 justify-center items-center p-4">
           <StyledView className="flex-1">
             {icon2 ? (
               <StyledView className="w-full h-[120px] relative">
                 <StyledView className="absolute -left-9 top-14">
-                  <StyledImage 
-                    source={icon1}
-                    className="w-[100px] h-[100px]"
+                  <StyledImage
+                    source={icon2}
+                    className="w-[143px] h-[143px]"
                     resizeMode="contain"
                   />
                 </StyledView>
-                <StyledView className="absolute -right-9 top-12">
-                  <StyledImage 
-                    source={icon2}
-                    className="w-[100px] h-[100px]"
+                <StyledView className="absolute -right-9 top-14">
+                  <StyledImage
+                    source={icon1}
+                    className="w-[143px] h-[143px]"
                     resizeMode="contain"
                   />
                 </StyledView>
               </StyledView>
             ) : (
               <StyledView className="w-full h-[120px] items-center justify-center top-13">
-                <StyledImage 
+                <StyledImage
                   source={icon1}
-                  className="w-[80px] h-[80px]"
+                  className="w-[100px] h-[100px]"
                   resizeMode="contain"
                 />
               </StyledView>
@@ -152,7 +153,7 @@ export default function SearchCategory() {
 
   return (
     <LinearGradient
-      colors={['#1A1A1A', '#000000']}
+      colors={['#8B0000', '#4A0404']}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
       className="flex-1"
@@ -162,22 +163,258 @@ export default function SearchCategory() {
           entering={FadeInDown.springify()}
           className="px-3 pb-6"
         >
-          <StyledText className="font-custom text-white text-3xl mb-8 text-center">
+          <StyledText className="font-custom text-white text-3xl mb-3 text-center">
             เลือกหมวดหมู่
           </StyledText>
 
           <StyledView className="flex-row flex-wrap justify-between px-2">
-            {categories.map((category, index) => (
-              <CategoryCard
-                key={category.title}
-                title={category.title}
-                icon1={category.icon1}
-                icon2={category.icon2}
-                isDisabled={category.isDisabled}
-                onPress={() => navigation.navigate('Search', { searchType: "Friend" })}
-                index={index}
-              />
-            ))}
+            <AnimatedTouchable
+              entering={FadeInUp.delay(1 * 100).springify()}
+              className="mb-3"
+              style={{
+                width: CARD_WIDTH - 16,
+                height: CARD_HEIGHT,
+              }}
+            >
+              <LinearGradient
+                colors={['#FF4B48', '#AB1815']}
+                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+              >
+                <StyledView className="flex-1 justify-center items-center p-4">
+                  <StyledView className="flex-1">
+                    <StyledView className="w-full h-[120px] relative">
+                      <StyledView className="absolute -left-9 top-10">
+                        <StyledImage
+                          source={iconFriend2}
+                          className="w-[143px] h-[143px]"
+                          resizeMode="contain"
+                        />
+                      </StyledView>
+                      <StyledView className="absolute -right-9 top-10">
+                        <StyledImage
+                          source={iconFriend1}
+                          className="w-[143px] h-[143px]"
+                          resizeMode="contain"
+                        />
+                      </StyledView>
+                    </StyledView>
+                  </StyledView>
+
+                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                    เพื่อนเที่ยว
+                  </StyledText>
+                  {/* <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                  </StyledView> */}
+                </StyledView>
+              </LinearGradient>
+            </AnimatedTouchable>
+            <AnimatedTouchable
+              entering={FadeInUp.delay(2 * 100).springify()}
+              className="mb-3"
+              style={{
+                width: CARD_WIDTH - 16,
+                height: CARD_HEIGHT,
+              }}
+            >
+              <LinearGradient
+                colors={['#8B0000', '#4A0404']}
+                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+              >
+                <StyledView className="flex-1 justify-center items-center p-4">
+                  <StyledView className="flex-1">
+                    <StyledView className="w-full h-[120px] relative">
+                      <StyledView className="absolute -left-6 top-10">
+                        <StyledImage
+                          source={iconDJ2}
+                          className="w-[143px] h-[143px]"
+                          resizeMode="contain"
+                        />
+                      </StyledView>
+                      <StyledView className="absolute -right-12 top-10">
+                        <StyledImage
+                          source={iconDJ1}
+                          className="w-[143px] h-[143px]"
+                          resizeMode="contain"
+                        />
+                      </StyledView>
+                    </StyledView>
+                  </StyledView>
+
+                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                    MC/DJ/พิธีกร
+                  </StyledText>
+                  <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                  </StyledView>
+                </StyledView>
+              </LinearGradient>
+            </AnimatedTouchable>
+            <AnimatedTouchable
+              entering={FadeInUp.delay(3 * 100).springify()}
+              className="mb-3"
+              style={{
+                width: CARD_WIDTH - 16,
+                height: CARD_HEIGHT,
+              }}
+            >
+              <LinearGradient
+                colors={['#8B0000', '#4A0404']}
+                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+              >
+                <StyledView className="flex-1 justify-center items-center p-4">
+                  <StyledView className="flex-1">
+                    <StyledView className="w-full h-[120px] relative">
+                      <StyledView className="absolute -left-7 top-7">
+                        <StyledImage
+                          source={iconMusic1}
+                          className="w-[150px] h-[150px]"
+                          resizeMode="contain"
+                        />
+                      </StyledView>
+                      <StyledView className="absolute -right-[100px] top-4">
+                        <StyledImage
+                          source={iconMusic2}
+                          className="w-[180px] h-[180px]"
+                          resizeMode="contain"
+                        />
+                      </StyledView>
+                    </StyledView>
+                  </StyledView>
+
+                  <StyledText className="font-custom text-white text-base text-center -mt-5 px-2">
+                    วงดนตรี/นักร้อง
+                  </StyledText>
+                  <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                  </StyledView>
+                </StyledView>
+              </LinearGradient>
+            </AnimatedTouchable>
+            <AnimatedTouchable
+              entering={FadeInUp.delay(4 * 100).springify()}
+              className="mb-3"
+              style={{
+                width: CARD_WIDTH - 16,
+                height: CARD_HEIGHT,
+              }}
+            >
+              <LinearGradient
+                colors={['#8B0000', '#4A0404']}
+                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+              >
+                <StyledView className="flex-1 justify-center items-center p-4">
+                  <StyledView className="flex-1">
+                    <StyledView className="w-full h-[120px] items-center justify-center top-7">
+                        <StyledImage
+                          source={iconTable1}
+                          className="w-[250px] h-[250px]"
+                          resizeMode="contain"
+                        />
+                      </StyledView>
+                  </StyledView>
+
+                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                    จองโต๊ะ
+                  </StyledText>
+                  <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                  </StyledView>
+                </StyledView>
+              </LinearGradient>
+            </AnimatedTouchable>
+            <AnimatedTouchable
+              entering={FadeInUp.delay(5 * 100).springify()}
+              className="mb-3"
+              style={{
+                width: CARD_WIDTH - 16,
+                height: CARD_HEIGHT,
+              }}
+            >
+              <LinearGradient
+                colors={['#8B0000', '#4A0404']}
+                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+              >
+                <StyledView className="flex-1 justify-center items-center p-4">
+                  <StyledView className="flex-1">
+                    <StyledView className="w-full h-[120px] items-center justify-center right-1 top-[55px]">
+                        <StyledImage
+                          source={iconTicket1}
+                          className="w-[130px] h-[130px]"
+                          resizeMode="contain"
+                        />
+                      </StyledView>
+                  </StyledView>
+
+                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                    Concert
+                  </StyledText>
+                  <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                  </StyledView>
+                </StyledView>
+              </LinearGradient>
+            </AnimatedTouchable>
+            <AnimatedTouchable
+              entering={FadeInUp.delay(6 * 100).springify()}
+              className="mb-3"
+              style={{
+                width: CARD_WIDTH - 16,
+                height: CARD_HEIGHT,
+              }}
+            >
+              <LinearGradient
+                colors={['#8B0000', '#4A0404']}
+                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+              >
+                <StyledView className="flex-1 justify-center items-center p-4">
+                  <StyledView className="flex-1">
+                    <StyledView className="w-full h-[120px] relative">
+                      <StyledView className="absolute -right-[90px] top-2">
+                        <StyledImage
+                          source={iconCar1}
+                          className="w-[215px] h-[215px]"
+                          resizeMode="contain"
+                        />
+                      </StyledView>
+                      <StyledView className="absolute -right-7 top-[10px]">
+                        <StyledImage
+                          source={iconCar2}
+                          className="w-[90px] h-[90px]"
+                          resizeMode="contain"
+                        />
+                      </StyledView>
+                    </StyledView>
+                  </StyledView>
+
+                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                    FDrive
+                  </StyledText>
+                  <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                  </StyledView>
+                </StyledView>
+              </LinearGradient>
+            </AnimatedTouchable>
+
           </StyledView>
         </Animated.View>
       </StyledScrollView>
