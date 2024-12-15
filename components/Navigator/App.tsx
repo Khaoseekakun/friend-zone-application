@@ -5,26 +5,16 @@ import Register from '../../app/pages/Register';
 import RegisterStepTwo from '../../app/pages/RegisterStepTwo';
 import PolicyFirst from '../../app/pages/PolicyFirst';
 import HomeScreen from '../../app/pages/HomeScreen';
-import { useAuth } from '@/utils/context/AuthContext';
 import React from 'react';
 import SelectRegisterPage from '@/app/pages/SelectRegisterPage';
 import RegisterMember from '@/app/pages/RegisterMember';
 
 const Stack = createStackNavigator();
 export function AppNavigator() {
-    const { userToken, isLoading } = useAuth();
-
-    if (isLoading) {
-        return (
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="SplashScreen" component={SplashScreen} />
-            </Stack.Navigator>
-        );
-    }
-
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <>
+                <Stack.Screen name="SplashScreen" component={SplashScreen} />
                 <Stack.Screen name="Login" component={Login} />
                 <Stack.Screen name="HomeScreen" component={HomeScreen} />
                 <Stack.Screen name="Register" component={Register} />
