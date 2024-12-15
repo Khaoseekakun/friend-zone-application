@@ -353,13 +353,13 @@ export default function RegisterStepTwo() {
                     <StyledTouchableOpacity onPress={() => navigation.goBack()} className="mt-14">
                         <StyledIcon name="chevron-back" size={24} className='text-[#1e3a8a] dark:text-white' />
                     </StyledTouchableOpacity>
+
+                    <StyledView className="self-center flex items-center mb-5 mt-5">
+                        <StyledText className="font-custom text-3xl text-[#1e3a8a] dark:text-white mb-2">ข้อมูลส่วนตัว</StyledText>
+                        <StyledText className="font-custom text-base text-gray-400">กรอกเบอร์มือถือและยืนยันเบอร์มือถือของคุณ</StyledText>
+                    </StyledView>
+                    
                     <StyledView className='flex-1'>
-
-                        <StyledView className="self-center flex items-center mb-5 mt-5">
-                            <StyledText className="font-custom text-3xl font-bold text-[#1e3a8a] dark:text-white mb-2">ข้อมูลส่วนตัว</StyledText>
-                            <StyledText className="font-custom text-base text-gray-400">กรอกเบอร์มือถือและยืนยันเบอร์มือถือของคุณ</StyledText>
-                        </StyledView>
-
                         <InputField
                             theme={theme ?? "light"}
                             label="เพศ"

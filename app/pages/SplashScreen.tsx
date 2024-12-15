@@ -16,21 +16,26 @@ interface Props {
 }
 
 function SplashScreen({ navigation }: Props) {
-  const fadeAnim = useRef(new Animated.Value(1)).current; 
+  const fadeAnim = useRef(new Animated.Value(1)).current;
   const colorScheme = useColorScheme();
-  
+
   const fadeOut = useCallback(() => {
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 1000,
       useNativeDriver: true,
     }).start(() => {
-    });
+      setTimeout(() => {
+        navigation.navigate('Login');
+      }, 1000)
+    })
   }, [fadeAnim, navigation]);
 
   useEffect(() => {
-    const timer = setTimeout(fadeOut, 2000);
-    return () => clearTimeout(timer);
+    const timer = setTimeout(fadeOut, 3000);
+    return () => {
+      clearTimeout(timer);
+    }
   }, [fadeOut]);
 
   return (
@@ -59,8 +64,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 75,
-    height: 75,
+    width: 120,
+    height: 120,
     resizeMode: 'contain',
   },
 });

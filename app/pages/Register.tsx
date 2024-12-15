@@ -207,7 +207,7 @@ export default function Register() {
           </TouchableOpacity>
 
           <StyledView className="flex items-center">
-            <StyledText className="font-custom text-3xl font-bold text-[#1e3a8a] mt-6 mb-2">สร้างบัญชี</StyledText>
+            <StyledText className="font-custom text-3xl text-[#1e3a8a] mt-6 mb-2">สร้างบัญชี</StyledText>
             <StyledText className="font-custom text-base text-gray-400">สร้างบัญชีของคุณเพื่อเริ่มต้นการใช้งาน</StyledText>
           </StyledView>
 
