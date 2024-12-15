@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import RNPickerSelect from 'react-native-picker-select';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const API_SYSTEM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzeXN0ZW0iOnRydWUsInBlcm1pc3Npb25zIjp7Ik1hbmFnZU90cCI6dHJ1ZSwiTm90aWZpY2F0aW9ucyI6dHJ1ZSwiTWFuYWdlQWRtaW5zIjp0cnVlLCJNYW5hZ2VQYXltZW50cyI6dHJ1ZSwiTWFuYWdlQ3VzdG9tZXIiOnRydWUsIk1hbmFnZU1lbWJlcnMiOnRydWUsIk1hbmFnZVBvc3RzIjp0cnVlLCJNYW5hZ2VTY2hlZHVsZSI6dHJ1ZSwiTWFuYWdlU2V0dGluZ3MiOnRydWV9LCJpYXQiOjE3MjY5NTIxODN9.LZqnLm_8qvrL191MV7OIpUSczeFgGupOb5Pp2UOvyTE';
+import { API_SYSTEM_KEY } from '@/components/config';
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
@@ -139,8 +139,6 @@ export default function Register() {
   }
 
   const handleCheckUsername = async () => {
-
-
     try {
       const userChecker = await axios.get(`https://friendszone.app/api/customer?username=${username}`, {
         headers: {
@@ -148,7 +146,19 @@ export default function Register() {
           Authorization: `System ${API_SYSTEM_KEY}`,
         },
       });
-      setIsUsernameValid(userChecker.data.status == 200);
+
+      const memberChecker = await axios.get(`https://friendszone.app/api/member?username=${username}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `System ${API_SYSTEM_KEY}`,
+        },
+      });;
+
+      if (memberChecker.data.status !== 404 || userChecker.data.status !== 404) {
+        setIsUsernameValid(true);
+      } else {
+        setIsUsernameValid(false);
+      }
     } catch (error: any) {
       console.log(error);
       setError(error.message);
@@ -191,60 +201,60 @@ export default function Register() {
       Keyboard.dismiss();
     }}>
       <StyledView className='flex-1 bg-white dark:bg-neutral-900 h-full pt-[20%]'>
-      <StyledView className="flex-1 px-6">
-        <TouchableOpacity onPress={() => navigation.navigate('SelectRegisterPage', {})} className="mt-6">
-          <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
-        </TouchableOpacity>
+        <StyledView className="flex-1 px-6">
+          <TouchableOpacity onPress={() => navigation.navigate('SelectRegisterPage', {})} className="mt-6">
+            <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
+          </TouchableOpacity>
 
-        <StyledView className="flex items-center">
-          <StyledText className="font-custom text-3xl font-bold text-[#1e3a8a] mt-6 mb-2">สร้างบัญชี</StyledText>
-          <StyledText className="font-custom text-base text-gray-400">สร้างบัญชีของคุณเพื่อเริ่มต้นการใช้งาน</StyledText>
-        </StyledView>
-
-        <StyledView className="flex-1 top-8">
-
-          <StyledView className="space-y-6 ">
-            <InputField
-              label={(username.length <= 2 && username.length !== 0) ? 'ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร' : isUsernameValid ? 'ชื่อผู้ใช้นี้ถูกใช้งานแล้ว' : 'ชื่อผู้ใช้'}
-              placeholder="ชื่อผู้ใช้ของคุณ"
-              value={username}
-              onChangeText={onCheckUsername}
-              onBlur={handleCheckUsername}
-              wrong={isUsernameValid !== null && isUsernameValid}
-            />
-
-            <InputField
-              label={(password.length <= 5 && password.length !== 0) ? 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' : 'รหัสผ่าน'}
-              placeholder="รหัสผ่าน"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!isPasswordVisible}
-              togglePasswordVisibility={togglePasswordVisibility}
-            />
-
-            <InputField
-              label={isPasswordMatch ? 'ยืนยันรหัสผ่าน' : 'รหัสผ่านไม่ตรงกัน'}
-              placeholder="ยืนยันรหัสผ่าน"
-              value={confirmPassword}
-              onChangeText={handleCheckPassword}
-              secureTextEntry={!isPasswordVisible}
-              togglePasswordVisibility={togglePasswordVisibility}
-              wrong={!isPasswordMatch}
-            />
+          <StyledView className="flex items-center">
+            <StyledText className="font-custom text-3xl font-bold text-[#1e3a8a] mt-6 mb-2">สร้างบัญชี</StyledText>
+            <StyledText className="font-custom text-base text-gray-400">สร้างบัญชีของคุณเพื่อเริ่มต้นการใช้งาน</StyledText>
           </StyledView>
 
-          <TouchableOpacity className="w-full " onPress={handleRegister} disabled={!isPasswordMatch || isUsernameValid || isUsernameValid == null}>
-            <LinearGradient
-              colors={!isPasswordMatch || isUsernameValid || isUsernameValid == null ? ['#ccc', '#ccc'] : ['#ec4899', '#f97316']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              className="rounded-full py-3 shadow-sm"
-            >
-              <StyledText className="font-custom text-center text-white text-lg font-semibold">ถัดไป</StyledText>
-            </LinearGradient>
-          </TouchableOpacity>
+          <StyledView className="flex-1 top-8">
+
+            <StyledView className="space-y-6 ">
+              <InputField
+                label={(username.length <= 2 && username.length !== 0) ? 'ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร' : isUsernameValid ? 'ชื่อผู้ใช้นี้ถูกใช้งานแล้ว' : 'ชื่อผู้ใช้'}
+                placeholder="ชื่อผู้ใช้ของคุณ"
+                value={username}
+                onChangeText={onCheckUsername}
+                onBlur={handleCheckUsername}
+                wrong={isUsernameValid !== null && isUsernameValid}
+              />
+
+              <InputField
+                label={(password.length <= 5 && password.length !== 0) ? 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' : 'รหัสผ่าน'}
+                placeholder="รหัสผ่าน"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!isPasswordVisible}
+                togglePasswordVisibility={togglePasswordVisibility}
+              />
+
+              <InputField
+                label={isPasswordMatch ? 'ยืนยันรหัสผ่าน' : 'รหัสผ่านไม่ตรงกัน'}
+                placeholder="ยืนยันรหัสผ่าน"
+                value={confirmPassword}
+                onChangeText={handleCheckPassword}
+                secureTextEntry={!isPasswordVisible}
+                togglePasswordVisibility={togglePasswordVisibility}
+                wrong={!isPasswordMatch}
+              />
+            </StyledView>
+
+            <TouchableOpacity className="w-full " onPress={handleRegister} disabled={!isPasswordMatch || isUsernameValid || isUsernameValid == null}>
+              <LinearGradient
+                colors={!isPasswordMatch || isUsernameValid || isUsernameValid == null ? ['#ccc', '#ccc'] : ['#ec4899', '#f97316']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                className="rounded-full py-3 shadow-sm"
+              >
+                <StyledText className="font-custom text-center text-white text-lg font-semibold">ถัดไป</StyledText>
+              </LinearGradient>
+            </TouchableOpacity>
+          </StyledView>
         </StyledView>
-      </StyledView>
       </StyledView>
     </StyledTouchableWithoutFeedback >
   );

@@ -12,7 +12,10 @@ import {
     Keyboard,
     ScrollView,
     Dimensions,
-    StatusBar
+    StatusBar,
+    Image,
+    Alert,
+    Appearance
 } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -21,37 +24,69 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import RNPickerSelect from 'react-native-picker-select';
 import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { API_SYSTEM_KEY } from '@/components/config';
+import { set } from 'firebase/database';
+import { ImageManipulator } from 'expo-image-manipulator';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
-const StyledSafeAreaView = styled(SafeAreaView);
+const StyledTouchableOpacity = styled(TouchableOpacity);
 
 interface InputFieldProps {
     label: string;
     placeholder: string;
     value: string;
     onChangeText: (text: string) => void;
+    inputMode?: 'text' | 'numeric' | 'email';
+    buttonText?: string;
     onBlur?: () => void;
+    onButtonPress?: () => void;
     wrong?: boolean;
     secureTextEntry?: boolean;
     isPicker?: boolean;
     pickerItems?: { label: string; value: string }[];
     icon?: any;
+    disable?: boolean;
+    maxLength?: number;
+    theme?: string;
 }
+
+const optimizeImage = async (uri: string) => {
+    try {
+        const manipResult = await ImageManipulator.manipulateAsync(
+            uri,
+            [{ resize: { width: 800 } }],
+            {
+                compress: 0.7,
+                format: ImageManipulator.SaveFormat.JPEG,
+            }
+        );
+        return manipResult.uri;
+    } catch (error) {
+        console.error("Error optimizing image: ", error);
+        return uri;
+    }
+};
 
 const InputField: React.FC<InputFieldProps> = ({
     label,
     placeholder,
     value,
     onChangeText,
+    inputMode,
+    buttonText,
     onBlur,
+    onButtonPress,
     wrong,
     secureTextEntry,
     isPicker,
     pickerItems,
-    icon
+    icon,
+    disable,
+    maxLength,
+    theme
 }) => (
     <StyledView className="w-full mb-7">
         <StyledText
@@ -74,6 +109,7 @@ const InputField: React.FC<InputFieldProps> = ({
                         placeholder={{ label: placeholder, value: null }}
                         style={{
                             inputIOS: {
+                                fontFamily: 'Kanit',
                                 fontSize: 16,
                                 paddingVertical: 16,
                                 paddingHorizontal: 16,
@@ -81,10 +117,11 @@ const InputField: React.FC<InputFieldProps> = ({
                                 borderWidth: 1,
                                 borderRadius: 25,
                                 borderColor: wrong ? '#EF4444' : '#E5E7EB',
-                                color: '#1F2937',
+                                color: theme == "dark" ? "#FFF" : "#1F2937",
                                 width: '100%',
                             },
                             inputAndroid: {
+                                fontFamily: 'Kanit',
                                 fontSize: 16,
                                 paddingHorizontal: 16,
                                 paddingVertical: 16,
@@ -92,7 +129,7 @@ const InputField: React.FC<InputFieldProps> = ({
                                 borderWidth: 1,
                                 borderRadius: 25,
                                 borderColor: wrong ? '#EF4444' : '#E5E7EB',
-                                color: '#1F2937',
+                                color: theme == "dark" ? "#FFF" : "#1F2937",
                                 width: '100%',
                             },
                             iconContainer: {
@@ -116,9 +153,27 @@ const InputField: React.FC<InputFieldProps> = ({
                         value={value}
                         onChangeText={onChangeText}
                         onBlur={onBlur}
+                        inputMode={inputMode ?? 'text'}
                         placeholderTextColor="#9CA3AF"
                         secureTextEntry={secureTextEntry}
+                        maxLength={maxLength}
                     />
+                    {buttonText && (
+                        <StyledTouchableOpacity
+                            onPress={onButtonPress}
+                            disabled={disable}
+                            className='mt-3'
+                        >
+                            <LinearGradient
+                                colors={disable ? ['#ccc', '#ccc'] : ['#EB3834', '#69140F']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                className="rounded-full py-4 px-4">
+
+                                <StyledText className="text-white text-center font-custom">{buttonText}</StyledText>
+                            </LinearGradient>
+                        </StyledTouchableOpacity>
+                    )}
                 </StyledView>
             )}
         </StyledView>
@@ -128,7 +183,16 @@ const InputField: React.FC<InputFieldProps> = ({
 export default function RegisterMember() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [currentStep, setCurrentStep] = useState(1);
-    const [pageLoading, setPageLoading] = useState(false);
+
+    const [theme, setTheme] = useState(Appearance.getColorScheme());
+    useEffect(() => {
+        const listener = Appearance.addChangeListener(({ colorScheme }) => {
+            setTheme(colorScheme);
+        });
+
+
+        return () => listener.remove();
+    }, []);
 
     // Step 1: Account Info
     const [username, setUsername] = useState('');
@@ -138,7 +202,6 @@ export default function RegisterMember() {
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
-    const [acceptTerms, setAcceptTerms] = useState(false);
 
     // Step 2: Personal Info
     const [fullName, setFullName] = useState('');
@@ -148,11 +211,25 @@ export default function RegisterMember() {
     const [emergencyName, setEmergencyName] = useState('');
     const [emergencyPhone, setEmergencyPhone] = useState('');
 
+    // Step 3: Identity Verification
     const [selfieImage, setSelfieImage] = useState<string | null>(null);
     const [idCardImage, setIdCardImage] = useState<string | null>(null);
+
+    // Step 4: Bank Info
     const [bankAccount, setBankAccount] = useState('');
     const [bankName, setBankName] = useState('');
-    
+
+    //otp
+    const [showOTP, setShowOTP] = useState(false);
+    const [otpButtonDisabled, setOtpButtonDisabled] = useState(false);
+    const [cooldown, setCooldown] = useState(120);
+    const [cooldownTime, setCooldownTime] = useState(120);
+    const [loading, setLoading] = useState(false);
+    const [verifyPhone, setVerifyPhone] = useState(false);
+    const [cooldownMessage, setCooldownMessage] = useState('');
+    const [isPhoneValid, setIsPhoneValid] = useState<boolean | null>(false);
+
+
     const banks = [
         { label: 'ธนาคารกสิกรไทย', value: 'kbank' },
         { label: 'ธนาคารไทยพาณิชย์', value: 'scb' },
@@ -162,19 +239,13 @@ export default function RegisterMember() {
     ];
 
     const services = [
-        { label: 'เพื่อนเที่ยว', value: 'travel_buddy' },
-        { label: 'วงดนตรี', value: 'band' },
-        { label: 'นักร้อง', value: 'singer' },
-        { label: 'MC', value: 'mc' },
-        { label: 'DJ', value: 'dj' },
-        { label: 'พิธีกร', value: 'host' }
+        { label: 'เพื่อนเที่ยว', value: '673080a432edea568b2a6554' }
     ];
 
     const genders = [
         { label: 'ชาย', value: 'male' },
         { label: 'หญิง', value: 'female' },
-        { label: 'ไม่ระบุ', value: 'not_specified' },
-        { label: 'อื่นๆ', value: 'other' }
+        { label: 'lqbtq+', value: 'lgbtq' }
     ];
 
     const handleBack = () => {
@@ -194,17 +265,112 @@ export default function RegisterMember() {
 
         const result = await ImagePicker.launchCameraAsync({
             allowsEditing: true,
-            aspect: [4, 3],
+            aspect: [4, 4],
             quality: 1,
+            base64: true,
         });
 
         if (!result.canceled) {
             if (type === 'selfie') {
-                setSelfieImage(result.assets[0].uri);
+                if (result.assets[0].base64) {
+                    setSelfieImage(result.assets[0].base64);
+                }
             } else {
-                setIdCardImage(result.assets[0].uri);
+                if (result.assets[0].base64) {
+                    setIdCardImage(result.assets[0].base64);
+                }
             }
         }
+    };
+
+    const handlePhoneVerification = async () => {
+        if (!phone) return Alert.alert("เตือน", "กรุณากรอกหมายเลขมือถือ", [{ text: "ตกลง" }]);
+        if (!phone.match(/^0[0-9]{9}$/)) return Alert.alert("เตือน", "หมายเลขมือถือต้องขึ้นต้นด้วย 0 และมี 10 หลัก", [{ text: "ตกลง" }]);
+        if (!phone.startsWith('0')) return Alert.alert("เตือน", "หมายเลขมือถือต้องขึ้นต้นด้วย 0", [{ text: "ตกลง" }]);
+        if (phone.length !== 10) return Alert.alert("เตือน", "หมายเลขมือถือต้องมี 10 หลัก", [{ text: "ตกลง" }]);
+
+        try {
+            const response = await axios.post(
+                'http://49.231.43.37:3000/api/otp',
+                { phone: phone },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `System ${API_SYSTEM_KEY}`
+                    }
+                }
+            );
+            if (response.data.status !== 200) return Alert.alert("เตือน", "ไม่สามารถส่ง OTP ได้", [{ text: "ตกลง" }]);
+
+            setOtpButtonDisabled(true);
+            setCooldown(120)
+
+            const cooldown = setInterval(() => {
+                setOtpButtonDisabled(false);
+                setCooldownMessage(`${cooldownTime}s`) // 120s 
+                if (cooldownTime <= 0) {
+                    clearInterval(cooldown);
+                    setCooldownMessage('')
+                } else {
+                    setCooldown(cooldownTime - 1)
+                }
+            }, 1000);
+            setShowOTP(true);
+        } catch (error) {
+            Alert.alert("เตือน", "ไม่สามารถส่ง OTP ได้", [{ text: "ตกลง" }]);
+            console.error(error);
+        }
+    };
+
+    const handleVerifyOTP = async () => {
+        setLoading(true);
+        try {
+            if (otp == '') return Alert.alert("เตือน", "กรุณากรอกรหัสยืนยัน", [{ text: "ตกลง" }]);
+            if (verifyPhone == false) {
+                const validationError = validateOTP(otp);
+                if (validationError) return Alert.alert("เตือน", validationError, [{ text: "ตกลง" }]);
+
+                try {
+                    const verificationResponse = await verifyOTP(phone, otp);
+                    if (verificationResponse.status !== 200) return Alert.alert("เตือน", "รหัสยืนยันไม่ถูกต้อง", [{ text: "ตกลง" }]);
+                    if (verificationResponse.data.data.status !== 'approved' || !verificationResponse.data.data.valid) {
+                        return Alert.alert("เตือน", "รหัสยืนยันไม่ถูกต้อง", [{ text: "ตกลง" }]);
+                    } else {
+                        setVerifyPhone(true);
+                        handleNext(true);
+                    }
+                } catch (error) {
+                    Alert.alert("เตือน", "ไม่สามารถยืนยัน OTP ได้", [{ text: "ตกลง" }]);
+                }
+            } else {
+                try {
+                    setVerifyPhone(true);
+                    handleNext();
+                } catch (error) {
+                    Alert.alert("เตือน", "ไม่สามารถยืนยัน OTP ได้", [{ text: "ตกลง" }]);
+                }
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const validateOTP = (otp: string) => {
+        if (!otp) return 'กรุณากรอกรหัสยืนยัน';
+        if (otp.length !== 6) return 'รหัสยืนยันต้องมี 6 หลัก';
+        return null;
+    };
+
+    const verifyOTP = async (phone: string, otp: string) => {
+        return await axios.put('http://49.231.43.37:3000/api/otp', {
+            phone: phone,
+            code: otp,
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `System ${API_SYSTEM_KEY}`,
+            },
+        });
     };
 
     const renderStepOne = () => (
@@ -214,15 +380,16 @@ export default function RegisterMember() {
             keyboardShouldPersistTaps="handled"
         >
             <StyledView className="mb-8 mt-4">
-                <StyledText className="text-3xl font-bold text-[#1e3a8a] dark:text-white mb-2">
+                <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-white ">
                     ข้อมูลการติดต่อ
                 </StyledText>
-                <StyledText className="text-gray-500 dark:text-gray-400">
+                <StyledText className="text-gray-500 font-custom dark:text-gray-400">
                     กรุณากรอกข้อมูลให้ครบถ้วน
                 </StyledText>
             </StyledView>
 
             <InputField
+                theme={theme ?? 'light'}
                 label="ชื่อผู้ใช้"
                 placeholder="น้องเพื่อนกัน"
                 value={username}
@@ -231,38 +398,69 @@ export default function RegisterMember() {
             />
 
             <InputField
+                theme={theme ?? 'light'}
                 label="รหัสผ่าน"
                 placeholder="รหัสผ่าน"
                 value={password}
                 onChangeText={setPassword}
                 icon="lock-closed-outline"
+                secureTextEntry={true}
             />
 
             <InputField
+                theme={theme ?? 'light'}
                 label="ยืนยันรหัสผ่าน"
                 placeholder="ยืนยันรหัสผ่าน"
                 value={confirmpassword}
                 onChangeText={setConfirmPassword}
                 icon="lock-closed-outline"
+                secureTextEntry={true}
             />
 
             <InputField
+                theme={theme ?? 'light'}
                 label="อีเมล"
                 placeholder="example@email.com"
                 value={email}
                 onChangeText={setEmail}
                 icon="mail-outline"
+                inputMode='email'
             />
 
             <InputField
-                label="เบอร์โทรศัพท์"
+                theme={theme ?? 'light'}
+                label={isPhoneValid == null && phone.length == 10 ? 'กำลังตรวจสอบ' : isPhoneValid == true && phone.length == 10 ? 'เบอร์โทรนี้ถูกใช้งานแล้ว' : 'เบอร์โทรศัพท์'}
                 placeholder="0xxxxxxxxx"
                 value={phone}
-                onChangeText={setPhone}
+                onChangeText={((text) => {
+                    setIsPhoneValid(null)
+                    setPhone(text);
+                    setVerifyPhone(false);
+                    setOtp('')
+                    setShowOTP(false);
+                })}
                 icon="call-outline"
+                inputMode='numeric'
+                buttonText={`รับ OTP`}
+                disable={isPhoneValid != false || phone.length != 10 || otpButtonDisabled == true || phone.startsWith('0') == false}
+                maxLength={10}
+                onButtonPress={handlePhoneVerification}
+                onBlur={verifyPhoneInvild}
             />
 
+            {showOTP && (
+                <InputField
+                    theme={theme ?? 'light'}
+                    label="OTP"
+                    placeholder="รหัสยืนยัน"
+                    inputMode="numeric"
+                    value={otp}
+                    onChangeText={setOtp}
+                />
+            )}
+
             <InputField
+                theme={theme ?? 'light'}
                 label="บริการที่สนใจ"
                 placeholder="เลือกบริการ"
                 value={selectedServices[0]}
@@ -271,23 +469,7 @@ export default function RegisterMember() {
                 pickerItems={services}
                 icon="apps-outline"
             />
-
-            <TouchableOpacity
-                className="flex-row items-center mb-8 mt-4"
-                onPress={() => setAcceptTerms(!acceptTerms)}
-            >
-                <StyledView
-                    className={`w-6 h-6 rounded-full border-2 mr-3 items-center justify-center
-            ${acceptTerms ? 'bg-[#EB3834] border-[#EB3834]' : 'border-gray-300'}`}
-                >
-                    {acceptTerms && <Ionicons name="checkmark" size={18} color="white" />}
-                </StyledView>
-                <StyledText className="flex-1 text-gray-600 dark:text-gray-300">
-                    ยอมรับข้อกำหนดและเงื่อนไขการใช้งาน
-                </StyledText>
-            </TouchableOpacity>
-
-            <StyledView className="h-32" /> {/* Spacer for keyboard */}
+            <StyledView className="h-32" />
         </ScrollView>
     );
 
@@ -298,15 +480,16 @@ export default function RegisterMember() {
             keyboardShouldPersistTaps="handled"
         >
             <StyledView className="mb-8 mt-4">
-                <StyledText className="text-3xl font-bold text-[#1e3a8a] dark:text-white mb-2">
+                <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-white mb-2">
                     ข้อมูลส่วนตัว
                 </StyledText>
-                <StyledText className="text-gray-500 dark:text-gray-400">
+                <StyledText className="text-gray-500 font-custom dark:text-gray-400">
                     กรุณากรอกข้อมูลให้ครบถ้วน
                 </StyledText>
             </StyledView>
 
             <InputField
+                theme={theme ?? 'light'}
                 label="ชื่อ-นามสกุล"
                 placeholder="ชื่อ-นามสกุล"
                 value={fullName}
@@ -315,14 +498,17 @@ export default function RegisterMember() {
             />
 
             <InputField
+                theme={theme ?? 'light'}
                 label="อายุ"
                 placeholder="อายุ"
                 value={age}
                 onChangeText={setAge}
+                inputMode='numeric'
                 icon="calendar-outline"
             />
 
             <InputField
+                theme={theme ?? 'light'}
                 label="เพศ"
                 placeholder="เลือกเพศ"
                 value={gender}
@@ -333,6 +519,7 @@ export default function RegisterMember() {
             />
 
             <InputField
+                theme={theme ?? 'light'}
                 label="ที่อยู่"
                 placeholder="ที่อยู่ปัจจุบัน"
                 value={address}
@@ -340,11 +527,12 @@ export default function RegisterMember() {
                 icon="location-outline"
             />
 
-            <StyledText className="text-lg font-semibold text-[#1e3a8a] mb-4 mt-6">
+            <StyledText className="text-lg font-custom text-[#1e3a8a] mb-4 mt-6">
                 ข้อมูลติดต่อฉุกเฉิน
             </StyledText>
 
             <InputField
+                theme={theme ?? 'light'}
                 label="ชื่อผู้ติดต่อ"
                 placeholder="ชื่อผู้ติดต่อฉุกเฉิน"
                 value={emergencyName}
@@ -353,8 +541,10 @@ export default function RegisterMember() {
             />
 
             <InputField
+                theme={theme ?? 'light'}
                 label="เบอร์โทรศัพท์"
                 placeholder="เบอร์โทรศัพท์ผู้ติดต่อฉุกเฉิน"
+                inputMode='numeric'
                 value={emergencyPhone}
                 onChangeText={setEmergencyPhone}
                 icon="call-outline"
@@ -371,64 +561,66 @@ export default function RegisterMember() {
             keyboardShouldPersistTaps="handled"
         >
             <StyledView className="mb-8 mt-4">
-                <StyledText className="text-3xl font-bold text-[#1e3a8a] dark:text-white mb-2">
+                <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-white  mb-2">
                     ยืนยันตัวตน
                 </StyledText>
-                <StyledText className="text-gray-500 dark:text-gray-400">
+                <StyledText className="text-gray-500 font-custom dark:text-gray-400">
                     กรุณาถ่ายภาพเพื่อยืนยันตัวตน
                 </StyledText>
             </StyledView>
-    
+
             {/* ภาพถ่ายหน้าตรง */}
             <StyledView className="mb-8">
-                <StyledText className="text-lg font-semibold text-[#1e3a8a] mb-4">
+                <StyledText className="text-lg font-custom text-[#1e3a8a] dark:text-white mb-4">
                     ภาพถ่ายหน้าตรง
                 </StyledText>
                 <TouchableOpacity
                     onPress={() => handleTakePhoto('selfie')}
-                    className="bg-gray-100 p-6 rounded-2xl items-center border-2 border-dashed border-gray-300"
+                    className="bg-gray-100 dark:bg-neutral-800 p-6 rounded-2xl items-center border-2 border-dashed border-gray-300 dark:border-neutral-700"
                 >
                     {selfieImage ? (
                         <Image
-                            source={{ uri: selfieImage }}
-                            className="w-40 h-40 rounded-xl"
+                            // base64
+                            source={selfieImage ? { uri: `data:image/jpeg;base64,${selfieImage}` } : undefined}
+                            style={{ width: 160, height: 160, borderRadius: 14 }}
                         />
                     ) : (
                         <>
                             <Ionicons name="camera" size={40} color="#EB3834" />
-                            <StyledText className="text-gray-500 mt-2">
+                            <StyledText className="text-gray-500 mt-2 font-custom">
                                 แตะเพื่อถ่ายภาพหน้าตรง
                             </StyledText>
                         </>
-                    )}
+                    )
+                    }
                 </TouchableOpacity>
             </StyledView>
-    
+
             {/* ภาพบัตรประชาชน */}
             <StyledView className="mb-8">
-                <StyledText className="text-lg font-semibold text-[#1e3a8a] mb-4">
+                <StyledText className="text-lg font-custom text-[#1e3a8a] dark:text-white mb-4">
                     ภาพบัตรประชาชน
                 </StyledText>
                 <TouchableOpacity
                     onPress={() => handleTakePhoto('idCard')}
-                    className="bg-gray-100 p-6 rounded-2xl items-center border-2 border-dashed border-gray-300"
+                    className="bg-gray-100 dark:bg-neutral-800 p-6 rounded-2xl items-center border-2 border-dashed border-gray-300 dark:border-neutral-700"
                 >
                     {idCardImage ? (
                         <Image
-                            source={{ uri: idCardImage }}
+                            source={idCardImage ? { uri: `data:image/jpeg;base64,${idCardImage}` } : undefined}
                             className="w-40 h-40 rounded-xl"
                         />
                     ) : (
                         <>
                             <Ionicons name="card" size={40} color="#EB3834" />
-                            <StyledText className="text-gray-500 mt-2">
+                            <StyledText className="text-gray-500 mt-2 font-custom">
                                 แตะเพื่อถ่ายภาพบัตรประชาชน
                             </StyledText>
                         </>
                     )}
                 </TouchableOpacity>
             </StyledView>
-    
+
             <StyledView className="h-32" />
         </ScrollView>
     );
@@ -440,15 +632,16 @@ export default function RegisterMember() {
             keyboardShouldPersistTaps="handled"
         >
             <StyledView className="mb-8 mt-4">
-                <StyledText className="text-3xl font-bold text-[#1e3a8a] dark:text-white mb-2">
+                <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-white mb-2">
                     ข้อมูลการเงิน
                 </StyledText>
-                <StyledText className="text-gray-500 dark:text-gray-400">
+                <StyledText className="text-gray-500 font-custom dark:text-gray-400">
                     กรุณากรอกข้อมูลบัญชีธนาคารของคุณ
                 </StyledText>
             </StyledView>
-    
+
             <InputField
+                theme={theme ?? 'light'}
                 label="ธนาคาร"
                 placeholder="เลือกธนาคาร"
                 value={bankName}
@@ -457,22 +650,22 @@ export default function RegisterMember() {
                 pickerItems={banks}
                 icon="business-outline"
             />
-    
+
             <InputField
+                theme={theme ?? 'light'}
                 label="เลขบัญชี"
                 placeholder="กรอกเลขบัญชีธนาคาร"
                 value={bankAccount}
                 onChangeText={setBankAccount}
                 icon="card-outline"
             />
-    
-            <StyledView className="bg-blue-50 p-4 rounded-xl mt-4">
-                <StyledText className="text-sm text-gray-600">
-                    <Ionicons name="information-circle" size={16} color="#1e3a8a" /> 
+
+            <StyledView className="bg-blue-50 dark:bg-neutral-800 p-4 rounded-xl mt-4">
+                <StyledText className="text-sm text-gray-600 dark:text-white font-custom">
                     กรุณาตรวจสอบข้อมูลให้ถูกต้อง เพื่อการรับเงินที่รวดเร็ว
                 </StyledText>
             </StyledView>
-    
+
             <StyledView className="h-32" />
         </ScrollView>
     );
@@ -484,16 +677,12 @@ export default function RegisterMember() {
             contentContainerStyle={{ flexGrow: 1 }}
         >
             {/* Background Design */}
-            <LinearGradient
-                colors={['rgba(235, 56, 52, 0.1)', 'rgba(105, 20, 15, 0.05)']}
-                className="absolute top-0 left-0 right-0 h-60 rounded-b-[40px]"
-            />
-    
+
             {/* Content */}
             <StyledView className="px-6 pt-8">
                 {/* Success Animation */}
-                <StyledView className="items-center mb-8">
-                    <StyledView className="w-24 h-24 bg-white rounded-full shadow-lg items-center justify-center mb-4">
+                <StyledView className="items-center">
+                    <StyledView className="w-24 h-24 bg-white dark:bg-neutral-800 rounded-full shadow-lg items-center justify-center mb-4 p-2">
                         <LinearGradient
                             colors={['#EB3834', '#69140F']}
                             className="w-20 h-20 rounded-full items-center justify-center"
@@ -501,46 +690,46 @@ export default function RegisterMember() {
                             <Ionicons name="checkmark-sharp" size={40} color="white" />
                         </LinearGradient>
                     </StyledView>
-                    
-                    <StyledText className="text-3xl font-bold text-[#1e3a8a]">
+
+                    <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-white">
                         ยินดีต้อนรับ!
                     </StyledText>
-                    <StyledText className="text-gray-500 text-lg mt-2 text-center">
+                    <StyledText className="text-gray-500 text-lg font-custom mt-2 text-center">
                         คุณได้เป็นส่วนหนึ่งของครอบครัว FriendsZone แล้ว
                     </StyledText>
                 </StyledView>
-    
+
                 {/* Status Card */}
-                <StyledView className="bg-white rounded-3xl p-6 shadow-md mb-6">
+                <StyledView className="bg-white dark:bg-neutral-800 rounded-3xl p-6 shadow-md mb-6 mt-3">
                     <StyledView className="flex-row items-center mb-4">
                         <StyledView className="w-2 h-2 rounded-full bg-[#EB3834] mr-2" />
-                        <StyledText className="text-lg font-semibold text-[#1e3a8a]">
+                        <StyledText className="text-lg font-custom text-[#1e3a8a] dark:text-white">
                             สถานะการลงทะเบียน
                         </StyledText>
                     </StyledView>
-                    
-                    <StyledView className="flex-row items-center justify-between bg-gray-50 p-4 rounded-xl">
+
+                    <StyledView className="flex-row items-center justify-between bg-gray-50 dark:bg-neutral-900/25 p-4 rounded-xl">
                         <StyledView className="flex-row items-center">
                             <Ionicons name="time-outline" size={24} color="#EB3834" />
-                            <StyledText className="ml-2 text-gray-600">
+                            <StyledText className="ml-2 text-gray-600 dark:text-white">
                                 อยู่ระหว่างการตรวจสอบ
                             </StyledText>
                         </StyledView>
-                        <StyledText className="text-[#EB3834] font-semibold">
+                        <StyledText className="text-[#EB3834] font-custom">
                             3-7 วัน
                         </StyledText>
                     </StyledView>
                 </StyledView>
-    
+
                 {/* What's Next Section */}
-                <StyledView className="bg-white rounded-3xl p-6 shadow-md mb-6">
+                {/* <StyledView className="bg-white rounded-3xl p-6 shadow-md mb-6">
                     <StyledView className="flex-row items-center mb-4">
                         <StyledView className="w-2 h-2 rounded-full bg-[#EB3834] mr-2" />
-                        <StyledText className="text-lg font-semibold text-[#1e3a8a]">
+                        <StyledText className="text-lg font-custom text-[#1e3a8a]">
                             สิ่งที่คุณทำได้ตอนนี้
                         </StyledText>
                     </StyledView>
-    
+
                     {[
                         {
                             icon: 'person-outline',
@@ -558,15 +747,15 @@ export default function RegisterMember() {
                             description: 'รับแจ้งเตือนเมื่อได้รับการอนุมัติ'
                         }
                     ].map((item, index) => (
-                        <StyledView 
+                        <StyledView
                             key={index}
                             className="flex-row items-start p-4 bg-gray-50 rounded-xl mb-2"
                         >
                             <StyledView className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-sm">
-                                <Ionicons name={item.icon} size={20} color="#EB3834" />
+                                <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={20} color="#EB3834" />
                             </StyledView>
                             <StyledView className="flex-1 ml-4">
-                                <StyledText className="font-semibold text-gray-800">
+                                <StyledText className="font-custom text-gray-800">
                                     {item.title}
                                 </StyledText>
                                 <StyledText className="text-gray-500">
@@ -575,15 +764,15 @@ export default function RegisterMember() {
                             </StyledView>
                         </StyledView>
                     ))}
-                </StyledView>
-    
+                </StyledView> */}
+
                 {/* Slogan */}
                 <StyledView className="items-center mb-8">
                     <LinearGradient
                         colors={['#EB3834', '#69140F']}
                         className="px-6 py-4 rounded-2xl"
                     >
-                        <StyledText className="text-white text-lg font-semibold text-center">
+                        <StyledText className="text-white text-lg font-custom text-center">
                             "เพราะคำว่าเพื่อน สำคัญที่สุด"
                         </StyledText>
                     </LinearGradient>
@@ -592,37 +781,135 @@ export default function RegisterMember() {
         </ScrollView>
     );
 
-    const renderFooterButton = () => (
-        <StyledView className="px-6 py-4">
-            <TouchableOpacity
-                onPress={() => {
-                    if (currentStep === 5) {
-                        navigation.reset({
-                            index: 0,
-                            routes: [{ name: 'HomeScreen' }],
-                        });
-                    } else {
-                        handleNext();
-                    }
-                }}
-                className="rounded-full overflow-hidden"
-            >
-                <LinearGradient
-                    colors={['#EB3834', '#69140F']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    className="py-4"
-                >
-                    <StyledText className="text-white text-center text-lg font-semibold">
-                        {currentStep === 5 ? 'เริ่มต้นใช้งาน' : 'ถัดไป'}
-                    </StyledText>
-                </LinearGradient>
-            </TouchableOpacity>
-        </StyledView>
-    );
+    const verifyPhoneInvild = async () => {
+        try {
+            const userPhoneChecker = await axios.get(`http://49.231.43.37:3000/api/customer?phone=${phone}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `System ${API_SYSTEM_KEY}`,
+                },
+            });
 
-    const handleNext = () => {
+            const memberPhoneChecker = await axios.get(`http://49.231.43.37:3000/api/member?phone=${phone}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `System ${API_SYSTEM_KEY}`,
+                },
+            });
+
+            if (userPhoneChecker.data.status != 404 || memberPhoneChecker.data.status != 404) {
+                return setIsPhoneValid(true);
+            } else {
+                return setIsPhoneValid(false);
+            }
+        } catch (error) {
+            console.error(error);
+            return Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถตรวจสอบเบอร์โทรศัพท์ได้');
+        }
+    }
+
+    const handleNext = async (bypass?: boolean) => {
         if (currentStep < 5) {
+            if (currentStep === 1) {
+                //check data is empty
+                if (!username || !password || !confirmpassword || !email || !phone || !selectedServices.length) {
+                    Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลให้ครบถ้วน');
+                    return
+                }
+
+                if (password !== confirmpassword) {
+                    Alert.alert('รหัสผ่านไม่ตรงกัน', 'กรุณากรอกรหัสผ่านให้ตรงกัน');
+                    return;
+                }
+
+                try {
+                    const userChecker = await axios.get(`http://49.231.43.37:3000/api/customer?username=${username}`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `System ${API_SYSTEM_KEY}`,
+                        },
+                    });
+
+                    const memberChecker = await axios.get(`http://49.231.43.37:3000/api/member?username=${username}`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `System ${API_SYSTEM_KEY}`,
+                        },
+                    });
+
+                    if (memberChecker.data.status != 404 || userChecker.data.status != 404) {
+                        return Alert.alert('เกิดข้อผิดพลาด', 'ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว กรุณาเลือกชื่อผู้ใช้อื่น');
+                    }
+
+                } catch (error: any) {
+                    console.error(error);
+                    return Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถตรวจสอบชื่อผู้ใช้ได้');
+                }
+
+            }
+
+            if (currentStep === 2) {
+                if (!fullName || !age || !gender || !address || !emergencyName || !emergencyPhone) {
+                    Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลให้ครบถ้วน');
+                    return;
+                }
+            }
+
+            if (currentStep === 3) {
+                if (!selfieImage || !idCardImage) {
+                    Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณาถ่ายภาพเพื่อยืนยันตัวตน');
+                    return;
+                }
+            }
+
+            if (currentStep === 4) {
+                if (!bankAccount || !bankName) {
+                    Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลบัญชีธนาคารของคุณ');
+                    return;
+                } else {
+                    try {
+                        setLoading(true)
+
+                        const registerResponse = await axios.post('http://49.231.43.37:3000/api/member/register', {
+                            username: username,
+                            password: password,
+                            email: email,
+                            phone: phone,
+                            service: selectedServices[0],
+                            fullname: fullName,
+                            age: Number(age),
+                            gender: gender,
+                            address: address,
+                            emergencyName: emergencyName,
+                            emergencyPhone: emergencyPhone,
+                            selfieImage: selfieImage,
+                            idCardImage: idCardImage,
+                            bankAccount: bankAccount,
+                            bankName: bankName
+                        }, {
+                            headers: {
+                                Authorization: `System ${API_SYSTEM_KEY}`,
+                                'Content-Type': 'application/json'
+                            }
+                        })
+
+
+                        console.log('Registering...');
+                        setLoading(false)
+                        if (registerResponse.data.status === 200) {
+                            return setCurrentStep(currentStep + 1);
+                        } else {
+                            console.log(registerResponse.data)
+                            return Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถลงทะเบียนได้ โปรดตรวจสอบข้อมูลให้ถูกต้อง');
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        setLoading(false)
+                        return Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถลงทะเบียนได้ โปรดตรวจสอบข้อมูลให้ถูกต้อง');
+                    }
+
+                }
+            }
             setCurrentStep(currentStep + 1);
         }
     };
@@ -636,18 +923,24 @@ export default function RegisterMember() {
             <StatusBar barStyle="dark-content" />
             <SafeAreaView className="flex-1">
                 <StyledView className="flex-row items-center px-6 py-4">
-                    <TouchableOpacity
-                        onPress={handleBack}
-                        className="w-10 h-10 items-center justify-center rounded-full bg-gray-100"
-                    >
-                        <Ionicons name="arrow-back" size={24} color="#EB3834" />
-                    </TouchableOpacity>
+                    {currentStep != 5 && (
+                        <TouchableOpacity
+                            onPress={handleBack}
+                            className="w-10 h-10 items-center justify-center rounded-full bg-gray-100 dark:bg-neutral-800 mr-2"
+                        >
+                            <Ionicons name="arrow-back" size={24} color="#EB3834" />
+                        </TouchableOpacity>
+                    )}
                     <StyledView className="flex-1 items-center">
-                        <StyledText className="text-gray-500">
+                        <StyledText className="text-gray-500 dark:text-gray-200 font-custom">
                             ขั้นตอนที่ {currentStep}/5
                         </StyledText>
                     </StyledView>
-                    <StyledView className="w-10" />
+                    {
+                        currentStep != 5 && (
+                            <StyledView className="w-10" />
+                        )
+                    }
                 </StyledView>
 
                 {/* Step Indicators */}
@@ -673,9 +966,19 @@ export default function RegisterMember() {
                 {/* Footer */}
                 <StyledView className="px-6 py-4">
                     <TouchableOpacity
-                        onPress={handleNext}
-                        disabled={!acceptTerms}
-                        className={`rounded-full overflow-hidden ${!acceptTerms ? 'opacity-50' : ''}`}
+                        onPress={() => {
+                            if (currentStep === 1) {
+                                // handleVerifyOTP();
+                                handleNext();
+                            } else {
+                                if (currentStep === 5) {
+                                    navigation.navigate('Login', {});
+                                } else {
+                                    handleNext()
+                                }
+                            }
+                        }}
+                        className={`rounded-full overflow-hidden `}
                     >
                         <LinearGradient
                             colors={['#EB3834', '#69140F']}
@@ -683,7 +986,7 @@ export default function RegisterMember() {
                             end={{ x: 1, y: 0 }}
                             className="py-4"
                         >
-                            <StyledText className="text-white text-center text-lg font-semibold">
+                            <StyledText className="text-white text-center text-lg font-custom">
                                 {currentStep === 5 ? 'เสร็จสิ้น' : 'ถัดไป'}
                             </StyledText>
                         </LinearGradient>

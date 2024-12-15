@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { View, Text, Alert, ActivityIndicator, ScrollView, Dimensions, Image, Linking, Appearance, Platform } from "react-native";
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { styled } from "nativewind";
 import { HeaderApp } from "@/components/Header";
 import { NavigationProp, RouteProp, useIsFocused, useRoute } from "@react-navigation/native";
@@ -29,15 +28,6 @@ configureReanimatedLogger({
     strict: false,
 });
 
-interface Review {
-    id: string;
-    userId: string;
-    username: string;
-    profileUrl: string;
-    rating: number;
-    comment: string;
-    createdAt: Date;
-}
 
 const StyledMapView = styled(MapView);
 const StyledView = styled(View);
@@ -45,10 +35,8 @@ const StyledText = styled(Text);
 const StyledScrollView = styled(ScrollView);
 const StyledIonIcon = styled(Ionicons);
 const StyledTextInput = styled(TextInput);
-const StyledGooglePlacesAutocomplete = styled(GooglePlacesAutocomplete);
 const StyledImage = styled(Image);
 const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledDatePicker = styled(DateTimePicker);
 type ProfileParam = RouteProp<RootStackParamList, 'ProfileTab'>;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export default function ProfileTab() {
@@ -60,12 +48,9 @@ export default function ProfileTab() {
         "Friend": "เพื่อนท่องเที่ยว"
     }
 
-
-    const translateX = useSharedValue(0);
-    const currentIndex = useSharedValue(0);
-
-
     const bottomSheetRef = useRef<BottomSheet>(null);
+    const bottomSheetRefReview = useRef<BottomSheet>(null);
+
     const snapPoints = useMemo(() => ["85%"], []);
     const [loading, setLoading] = useState(true);
     const [userProfile, setUserProfile] = useState<any>(null);
@@ -137,171 +122,9 @@ export default function ProfileTab() {
 
     const [loadingReviews, setLoadingReviews] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
-    const [reviewRating, setReviewRating] = useState(5);
+
     const [reviewText, setReviewText] = useState('');
-    const bottomSheetReviewRef = useRef<BottomSheet>(null);
-    const snapPointsReview = useMemo(() => ["75%"], []);
-
-
-    const ReviewForm = () => {
-        // State สำหรับ animation
-        const [modalVisible, setModalVisible] = useState(false);
-        const slideAnim = useRef(new Animated.Value(0)).current;
-
-        // Function สำหรับ animation
-        const showModal = () => {
-            setModalVisible(true);
-            Animated.spring(slideAnim, {
-                toValue: 1,
-                useNativeDriver: true,
-            }).start();
-        };
-
-        const hideModal = () => {
-            Animated.timing(slideAnim, {
-                toValue: 0,
-                duration: 250,
-                useNativeDriver: true,
-            }).start(() => setModalVisible(false));
-        };
-
-        return (
-            <>
-                {/* ปุ่มเปิด Modal */}
-                <TouchableOpacity
-                    onPress={showModal}
-                    className="flex-row items-center"
-                >
-                    <StyledIonIcon
-                        name="create-outline"
-                        size={20}
-                        className="text-red-500 mr-1"
-                    />
-                    <StyledText className="text-red-500 font-custom">
-                        เขียนรีวิว
-                    </StyledText>
-                </TouchableOpacity>
-
-                {/* Modal Review Form */}
-                <Modal
-                    visible={modalVisible}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={hideModal}
-                >
-                    <StyledView className="flex-1 bg-black/50 justify-end">
-                        <Animated.View
-                            style={{
-                                transform: [{
-                                    translateY: slideAnim.interpolate({
-                                        inputRange: [0, 1],
-                                        outputRange: [600, 0]
-                                    })
-                                }]
-                            }}
-                        >
-                            <StyledView className="bg-white dark:bg-neutral-900 rounded-t-3xl p-6">
-                                {/* หัวข้อ */}
-                                <StyledView className="flex-row items-center justify-between mb-6">
-                                    <StyledText className="text-2xl font-bold text-black dark:text-white font-custom">
-                                        เขียนรีวิว
-                                    </StyledText>
-                                    <TouchableOpacity onPress={hideModal}>
-                                        <StyledIonIcon
-                                            name="close"
-                                            size={24}
-                                            className="text-gray-400"
-                                        />
-                                    </TouchableOpacity>
-                                </StyledView>
-
-                                {/* ให้คะแนนดาว */}
-                                <StyledView className="items-center mb-8">
-                                    <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-4">
-                                        ให้คะแนนประสบการณ์ของคุณ
-                                    </StyledText>
-                                    <StyledView className="flex-row">
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                            <TouchableOpacity
-                                                key={star}
-                                                onPress={() => setReviewRating(star)}
-                                                className="mx-2"
-                                            >
-                                                <LinearGradient
-                                                    colors={star <= reviewRating ? ['#EB3834', '#69140F'] : ['#E5E7EB', '#D1D5DB']}
-                                                    start={{ x: 0, y: 0 }}
-                                                    end={{ x: 1, y: 0 }}
-                                                    className="rounded-full p-3"
-                                                >
-                                                    <StyledIonIcon
-                                                        name="star"
-                                                        size={32}
-                                                        color="white"
-                                                    />
-                                                </LinearGradient>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </StyledView>
-                                </StyledView>
-
-                                {/* กล่องข้อความรีวิว */}
-                                <StyledView className="mb-8">
-                                    <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
-                                        เขียนความคิดเห็นของคุณ
-                                    </StyledText>
-                                    <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4">
-                                        <TextInput
-                                            multiline
-                                            numberOfLines={5}
-                                            value={reviewText}
-                                            onChangeText={setReviewText}
-                                            placeholder="แชร์ประสบการณ์ของคุณ..."
-                                            placeholderTextColor="#9CA3AF"
-                                            className="font-custom text-gray-700 dark:text-gray-200 min-h-[120px]"
-                                            textAlignVertical="top"
-                                        />
-                                    </StyledView>
-                                </StyledView>
-
-                                {/* รูปภาพ */}
-                                <StyledView className="mb-8">
-                                    <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
-                                        เพิ่มรูปภาพ (ไม่บังคับ)
-                                    </StyledText>
-                                    <TouchableOpacity>
-                                        <StyledView className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 items-center">
-                                            <StyledIonIcon
-                                                name="images-outline"
-                                                size={32}
-                                                className="text-gray-400 mb-2"
-                                            />
-                                            <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-center">
-                                                แตะเพื่อเพิ่มรูปภาพ
-                                            </StyledText>
-                                        </StyledView>
-                                    </TouchableOpacity>
-                                </StyledView>
-
-                                {/* ปุ่มส่งรีวิว */}
-                                <TouchableOpacity>
-                                    <LinearGradient
-                                        colors={['#EB3834', '#69140F']}
-                                        start={{ x: 0, y: 0 }}
-                                        end={{ x: 1, y: 0 }}
-                                        className="rounded-full py-4"
-                                    >
-                                        <StyledText className="text-white text-center font-bold text-lg font-custom">
-                                            โพสต์รีวิว
-                                        </StyledText>
-                                    </LinearGradient>
-                                </TouchableOpacity>
-                            </StyledView>
-                        </Animated.View>
-                    </StyledView>
-                </Modal>
-            </>
-        );
-    };
+    const [reviewStars, setReviewStars] = useState(0);
 
 
     const [reviews, setReviews] = useState([
@@ -339,21 +162,6 @@ export default function ProfileTab() {
             duration: 250,
             useNativeDriver: true,
         }).start(() => setModalVisible(false));
-    };
-
-    const renderStars = (rating: number) => {
-        return (
-            <StyledView className="flex-row">
-                {[1, 2, 3, 4, 5].map((star) => (
-                    <StyledIonIcon
-                        key={star}
-                        name={star <= rating ? "star" : "star-outline"}
-                        size={16}
-                        className={star <= rating ? "text-yellow-400" : "text-gray-300"}
-                    />
-                ))}
-            </StyledView>
-        );
     };
 
     const getCurrentLocation = async () => {
@@ -437,7 +245,7 @@ export default function ProfileTab() {
         try {
             if (!jobCategory) {
                 if (userProfile.profile.JobMembers.length > 0) {
-                    const resdata = await axios.get(`https://friendszone.app/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
+                    const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
                         headers: {
                             "Content-Type": "application/json",
                             "Authorization": `All ${userData.token}`
@@ -455,7 +263,7 @@ export default function ProfileTab() {
                     }
                 }
             } else {
-                const resdata = await axios.get(`https://friendszone.app/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
+                const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `All ${userData.token}`
@@ -498,7 +306,7 @@ export default function ProfileTab() {
                 return;
             }
 
-            const user = await axios.get(`https://friendszone.app/api/profile/${profileId}`, {
+            const user = await axios.get(`http://49.231.43.37:3000/api/profile/${profileId}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `All ${parsedData?.token}`
@@ -525,6 +333,8 @@ export default function ProfileTab() {
             fetchUserData();
             requestLocationPermission();
         }
+
+        console.log(userProfile)
     }, [isFoucs, loading, userProfile]);
 
     const [theme, setTheme] = useState(Appearance.getColorScheme());
@@ -565,7 +375,6 @@ export default function ProfileTab() {
         return getDistance(locationPin, memberPin);
     }
 
-
     const createSchedule = async () => {
         if (!scheduleDate || !scheduleTime) {
             return Alert.alert('ข้อมูลไม่ครบ', 'โปรดกรอกข้อมูลให้ครบถ้วน', [{ text: 'OK' }]);
@@ -591,7 +400,7 @@ export default function ProfileTab() {
 
 
         try {
-            const response = await axios.post('https://friendszone.app/api/schedule', {
+            const response = await axios.post('http://49.231.43.37:3000/api/schedule', {
                 customerId: userData.id,
                 memberId: userProfile?.profile.id,
                 date: scheduleDateTime,
@@ -623,6 +432,38 @@ export default function ProfileTab() {
             }
         } catch (error) {
             Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
+        }
+    }
+
+    const sendReview = async () => {
+        if (!reviewText) {
+            return Alert.alert('ข้อมูลไม่ครบ', 'โปรดกรอกข้อมูลให้ครบถ้วน', [{ text: 'OK' }]);
+        }
+
+        try {
+            setLoadingReviews(true);
+            const response = await axios.post(`http://49.231.43.37:3000/api/profile/${userProfile?.profile.id}/review`, {
+                userId: userData.id,
+                star: reviewStars,
+                text: reviewText
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `All ${userData.token}`
+                }
+            });
+
+            if (response.data.status != 200) {
+                Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถสร้างรีวิวได้', [{ text: 'OK' }]);
+            } else {
+                Alert.alert('สำเร็จ', 'สร้างรีวิวสำเร็จ', [{ text: 'OK' }]);
+                fetchUserData();
+                setShowReviewModal(false);
+            }
+        } catch (error) {
+            Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถสร้างรีวิวได้', [{ text: 'OK' }]);
+        } finally {
+            setLoadingReviews(false);
         }
     }
 
@@ -669,7 +510,7 @@ export default function ProfileTab() {
                                     />
 
                                     <StyledView className="absolute bottom-2 flex-row items-center left-2">
-                                        <StyledIonIcon name="heart" color={'red'} size={40} />
+                                        <StyledIonIcon name="heart" color={'#ad2722'} size={40} />
                                         <StyledText className="text-[30px] text-white font-custom">{userProfile?.profile.rating}</StyledText>
                                         <StyledText className="text-[25px] text-gray-200 font-custom">({userProfile?.profile.reviews})</StyledText>
                                     </StyledView>
@@ -766,12 +607,12 @@ export default function ProfileTab() {
                                         <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4 mb-4">
                                             <StyledView className="flex-row items-center justify-between">
                                                 <StyledText className="text-gray-600 dark:text-gray-400 font-custom text-base">
-                                                    ระยะห่างจากคุณ
+                                                    ระยะห่าง
                                                 </StyledText>
                                                 <StyledText className="text-black dark:text-white font-custom text-lg font-semibold">
                                                     {Number(distance.toFixed(0)) / 1000 > 10
                                                         ? `${(distance / 1000).toFixed(1)} กม.`
-                                                        : `10 กม.`}
+                                                        : `${(distance / 1000).toFixed(1)} กม.`}
                                                 </StyledText>
                                             </StyledView>
                                         </StyledView>
@@ -819,7 +660,9 @@ export default function ProfileTab() {
                                                 </StyledView>
                                             </StyledView>
                                             <TouchableOpacity
-                                                onPress={showModal}
+                                                onPress={() => {
+                                                    bottomSheetRefReview.current?.expand()
+                                                }}
                                                 className="flex-row items-center"
                                             >
                                                 <StyledIonIcon
@@ -827,9 +670,6 @@ export default function ProfileTab() {
                                                     size={20}
                                                     className="text-red-500 mr-1"
                                                 />
-                                                <StyledText className="text-red-500 font-custom">
-                                                    เขียนรีวิว
-                                                </StyledText>
                                             </TouchableOpacity>
                                         </StyledView>
 
@@ -838,7 +678,9 @@ export default function ProfileTab() {
                                             <StyledView className="flex-row items-center justify-between">
                                                 <StyledView>
                                                     <StyledText className="text-4xl font-bold text-red-600 dark:text-red-500 font-custom">
-                                                        4.8
+                                                        {
+                                                            userProfile?.profile?.Review.length 
+                                                        }
                                                     </StyledText>
                                                     <StyledView className="flex-row mt-1">
                                                         {[1, 2, 3, 4, 5].map((star) => (
@@ -846,7 +688,7 @@ export default function ProfileTab() {
                                                                 key={star}
                                                                 name="star"
                                                                 size={16}
-                                                                className="text-red-500 mr-0.5"
+                                                                className={`text-red-500 ${star <= (userProfile?.profile?.Review.length > 0 ? Number(userProfile?.profile?.Review.reduce((prev: number, current: any) => prev + current.star, 0)) / userProfile?.profile?.Review.length : 0) ? "text-red-500" : "text-gray-300"} mr-0.5`}
                                                             />
                                                         ))}
                                                     </StyledView>
@@ -895,104 +737,6 @@ export default function ProfileTab() {
 
                                         {/* เพิ่ม Modal Component */}
 
-                                        {/* Review Modal */}
-                                        <Modal
-                                            visible={modalVisible}
-                                            transparent={true}
-                                            animationType="fade"
-                                            onRequestClose={hideModal}
-                                        >
-                                            <StyledView className="flex-1 bg-black/50 justify-end">
-                                                <Animated.View
-                                                    style={{
-                                                        transform: [{
-                                                            translateY: slideAnim.interpolate({
-                                                                inputRange: [0, 1],
-                                                                outputRange: [600, 0]
-                                                            })
-                                                        }]
-                                                    }}
-                                                >
-                                                    <StyledView className="bg-white dark:bg-neutral-900 rounded-t-3xl p-6">
-                                                        {/* หัวข้อ */}
-                                                        <StyledView className="flex-row items-center justify-between mb-6">
-                                                            <StyledText className="text-2xl font-bold text-black dark:text-white font-custom">
-                                                                เขียนรีวิว
-                                                            </StyledText>
-                                                            <TouchableOpacity onPress={hideModal}>
-                                                                <StyledIonIcon
-                                                                    name="close"
-                                                                    size={24}
-                                                                    className="text-gray-400"
-                                                                />
-                                                            </TouchableOpacity>
-                                                        </StyledView>
-
-                                                        {/* ให้คะแนนดาว */}
-                                                        <StyledView className="items-center mb-8">
-                                                            <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-4">
-                                                                ให้คะแนนประสบการณ์ของคุณ
-                                                            </StyledText>
-                                                            <StyledView className="flex-row">
-                                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                                    <TouchableOpacity
-                                                                        key={star}
-                                                                        onPress={() => setReviewRating(star)}
-                                                                        className="mx-2"
-                                                                    >
-                                                                        <LinearGradient
-                                                                            colors={star <= reviewRating ? ['#EB3834', '#69140F'] : ['#E5E7EB', '#D1D5DB']}
-                                                                            start={{ x: 0, y: 0 }}
-                                                                            end={{ x: 1, y: 0 }}
-                                                                            className="rounded-full p-3"
-                                                                        >
-                                                                            <StyledIonIcon
-                                                                                name="star"
-                                                                                size={32}
-                                                                                color="white"
-                                                                            />
-                                                                        </LinearGradient>
-                                                                    </TouchableOpacity>
-                                                                ))}
-                                                            </StyledView>
-                                                        </StyledView>
-
-                                                        {/* กล่องข้อความรีวิว */}
-                                                        <StyledView className="mb-8">
-                                                            <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
-                                                                เขียนความคิดเห็นของคุณ
-                                                            </StyledText>
-                                                            <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4">
-                                                                <TextInput
-                                                                    multiline
-                                                                    numberOfLines={5}
-                                                                    value={reviewText}
-                                                                    onChangeText={setReviewText}
-                                                                    placeholder="แชร์ประสบการณ์ของคุณ..."
-                                                                    placeholderTextColor="#9CA3AF"
-                                                                    className="font-custom text-gray-700 dark:text-gray-200 min-h-[120px]"
-                                                                    textAlignVertical="top"
-                                                                />
-                                                            </StyledView>
-                                                        </StyledView>
-
-                                                        {/* ปุ่มส่งรีวิว */}
-                                                        <TouchableOpacity>
-                                                            <LinearGradient
-                                                                colors={['#EB3834', '#69140F']}
-                                                                start={{ x: 0, y: 0 }}
-                                                                end={{ x: 1, y: 0 }}
-                                                                className="rounded-full py-4"
-                                                            >
-                                                                <StyledText className="text-white text-center font-bold text-lg font-custom">
-                                                                    โพสต์รีวิว
-                                                                </StyledText>
-                                                            </LinearGradient>
-                                                        </TouchableOpacity>
-                                                    </StyledView>
-                                                </Animated.View>
-                                            </StyledView>
-                                        </Modal>
                                     </StyledView>
                                 </StyledView>
                             </StyledView>
@@ -1323,6 +1067,102 @@ export default function ProfileTab() {
                                 </>
                             )
                         }
+                    </StyledView>
+                </BottomSheetView>
+            </BottomSheet>
+
+
+            <BottomSheet
+                ref={bottomSheetRefReview}
+                snapPoints={["80%"]}
+                enablePanDownToClose={true}
+                index={-1}
+                backgroundStyle={{
+                    borderRadius: 10,
+                    backgroundColor: theme == "dark" ? "#404040" : "#fff"
+                }}
+            >
+                <BottomSheetView style={{ height: "80%" }}>
+                    <StyledView className="flex-1justify-end">
+                        <StyledView className="bg-white dark:bg-neutral-900 rounded-t-3xl p-6">
+                            <StyledView className="flex-row items-center justify-between mb-6">
+                                <StyledText className="text-2xl text-black dark:text-white font-custom">
+                                    เขียนรีวิว
+                                </StyledText>
+                                <TouchableOpacity onPress={
+                                    () => bottomSheetRefReview.current?.close()
+                                }>
+                                    <StyledIonIcon
+                                        name="close"
+                                        size={24}
+                                        className="text-gray-400"
+                                    />
+                                </TouchableOpacity>
+                            </StyledView>
+
+                            <StyledView className="items-center mb-8">
+                                <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-4">
+                                    ให้คะแนนประสบการณ์ของคุณ
+                                </StyledText>
+                                <StyledView className="flex-row">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <TouchableOpacity
+                                            key={star}
+                                            onPress={() => setReviewStars(star)}
+                                            className="mx-2"
+                                        >
+                                            <StyledIonIcon
+                                                name="star"
+                                                size={32}
+                                                color={
+                                                    reviewStars >= star ? "#FFD700" : "#D3D3D3"
+                                                }
+                                            />
+                                        </TouchableOpacity>
+                                    ))}
+                                </StyledView>
+                            </StyledView>
+
+                            <StyledView className="mb-8">
+                                <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
+                                    เขียนความคิดเห็นของคุณ
+                                </StyledText>
+                                <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4">
+                                    <TextInput
+                                        multiline
+                                        numberOfLines={5}
+                                        value={reviewText}
+                                        onChangeText={setReviewText}
+                                        placeholder="แชร์ประสบการณ์ของคุณ..."
+                                        placeholderTextColor="#9CA3AF"
+                                        className="font-custom text-gray-700 dark:text-gray-200 min-h-[120px]"
+                                        textAlignVertical="top"
+                                    />
+                                </StyledView>
+                            </StyledView>
+
+                            {/* ปุ่มส่งรีวิว */}
+                            <TouchableOpacity
+                            onPress={() => {
+                                if (reviewStars && reviewText) {
+                                    sendReview();
+                                } else {
+                                    Alert.alert("ข้อมูลไม่ครบ", "โปรดกรอกข้อมูลให้ครบถ้วน", [{ text: "OK" }]);
+                                }
+                            }}
+                            >
+                                <LinearGradient
+                                    colors={['#EB3834', '#69140F']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    className="rounded-full py-4"
+                                >
+                                    <StyledText className="text-white text-center text-lg font-custom">
+                                        โพสต์รีวิว
+                                    </StyledText>
+                                </LinearGradient>
+                            </TouchableOpacity>
+                        </StyledView>
                     </StyledView>
                 </BottomSheetView>
             </BottomSheet>

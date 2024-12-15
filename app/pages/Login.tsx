@@ -80,7 +80,12 @@ export default function Login() {
 
             }
 
+            if(loginData.data.data.data.status === 'pending') {
+                return Alert.alert("ไม่สำเร็จ", "บัญชีนี้ยังไม่ได้รับการอนุมัติจากผู้ดูแลระบบ", [{ text: "ลองอีกครั้ง" }]);
+            }
+
             const token = loginData?.data?.data.data.token;
+
 
             if (token) {
                 try {

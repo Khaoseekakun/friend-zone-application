@@ -140,10 +140,10 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
                 bottom: index === pageNumber[current] ? 100 : 60,
               }}
 
-              className="text-[#EB5177] dark:text-white"
+              className="text-[#ad2722] dark:text-white"
 
             />
-            <StyledText className="relative font-bold font-custom bottom-[55] text-[#EB5177] dark:text-white">
+            <StyledText className="relative font-bold font-custom bottom-[55] text-[#ad2722] dark:text-white">
               {`${iconNames[index]}`}
             </StyledText>
           </StyledView>

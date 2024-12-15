@@ -11,7 +11,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import DateTimePicker from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
 import { set } from 'firebase/database';
-const API_SYSTEM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzeXN0ZW0iOnRydWUsInBlcm1pc3Npb25zIjp7Ik1hbmFnZU90cCI6dHJ1ZSwiTm90aWZpY2F0aW9ucyI6dHJ1ZSwiTWFuYWdlQWRtaW5zIjp0cnVlLCJNYW5hZ2VQYXltZW50cyI6dHJ1ZSwiTWFuYWdlQ3VzdG9tZXIiOnRydWUsIk1hbmFnZU1lbWJlcnMiOnRydWUsIk1hbmFnZVBvc3RzIjp0cnVlLCJNYW5hZ2VTY2hlZHVsZSI6dHJ1ZSwiTWFuYWdlU2V0dGluZ3MiOnRydWV9LCJpYXQiOjE3MjY5NTIxODN9.LZqnLm_8qvrL191MV7OIpUSczeFgGupOb5Pp2UOvyTE';
+import { API_SYSTEM_KEY } from '@/components/config';
 
 
 const StyledTouchableOpacity = styled(TouchableOpacity);
@@ -38,9 +38,102 @@ interface InputFieldProps {
     disable?: boolean;
     onBlur?: () => void;
     wrong?: boolean;
+    theme?: string;
 }
 
 type RegisterStepTwoRouteProp = RouteProp<RootStackParamList, 'RegisterStepTwo'>;
+const InputField: React.FC<InputFieldProps> = ({
+    label,
+    placeholder,
+    value,
+    inputMode,
+    onChangeText,
+    onPress,
+    editable = true,
+    buttonText,
+    onButtonPress,
+    isPicker,
+    pickerItems,
+    maxLength,
+    disable,
+    onBlur,
+    wrong,
+    theme
+}) => (
+    <StyledView className="w-full mb-7">
+        <StyledText className={`font-custom text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-200'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-neutral-900 z-50 px-2`}>{label}</StyledText>
+        <StyledView className="flex-row items-center">
+            {isPicker && pickerItems && (
+                <StyledView className="w-full border-[1px] border-gray-300 rounded-full">
+                    <RNPickerSelect
+                        onValueChange={onChangeText}
+                        items={pickerItems}
+                        value={value}
+                        placeholder={{ label: placeholder, value: null }}
+                        darkTheme={theme == "dark" ? true : false}
+                        style={
+                            {
+                                inputIOS: {
+                                    fontFamily: 'Kanit',
+                                    borderColor: theme == "dark" ? '#d1d5db' : '#d1d5db',
+                                    width: '100%',
+                                    color: theme == "dark" ? '#fff' : '#000',
+                                    padding: 16,
+                                },
+                                inputAndroid: {
+                                    fontFamily: 'Kanit',
+                                    borderWidth: 1,
+                                    borderRadius: 25,
+                                    borderColor: theme == "dark" ? '#d1d5db' : '#d1d5db',
+                                    width: '100%',
+                                },
+                                placeholder: {
+                                    fontFamily: 'Kanit',
+                                },
+
+                            }
+                        }
+
+                    />
+                </StyledView>
+            )}
+
+            {!isPicker && (
+                <>
+                    <StyledTextInput
+                        placeholder={placeholder}
+                        className={`font-custom border ${wrong == true ? 'border-red-500' : 'border-gray-300'} rounded-full py-4 px-4 ${wrong == true ? 'text-red-500' : 'text-gray-700 dark:text-gray-200'} ${buttonText ? 'flex-1 mr-2' : 'w-full'}`}
+                        value={value}
+                        onChangeText={onChangeText}
+                        placeholderTextColor="#d1d5db"
+                        editable={editable}
+                        onPress={onPress}
+                        inputMode={inputMode}
+                        maxLength={maxLength}
+                        onBlur={onBlur}
+                        enterKeyHint='done'
+                    />
+                    {buttonText && (
+                        <TouchableOpacity
+                            onPress={onButtonPress}
+                            disabled={disable}
+                        >
+                            <LinearGradient
+                                colors={disable ? ['#ccc', '#ccc'] : ['#EB3834', '#69140F']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                className="rounded-full py-4 px-4">
+
+                                <StyledText className="text-white text-center font-custom">{buttonText}</StyledText>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    )}
+                </>
+            )}
+
+        </StyledView>
+    </StyledView>
+);
 
 export default function RegisterStepTwo() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -61,7 +154,7 @@ export default function RegisterStepTwo() {
     const [loading, setLoading] = useState(false);
     const scaleValue = useRef(new Animated.Value(1)).current;
 
-    const [theme, setTheme] = useState(Appearance.getColorScheme());
+
 
     const today = new Date();
     const maxDate = new Date(today.setFullYear(today.getFullYear() - 18));
@@ -70,7 +163,7 @@ export default function RegisterStepTwo() {
 
     const handleFocus = () => setIsTextInputFocused(true);
     const handleBlur = () => setIsTextInputFocused(false);
-
+    const [theme, setTheme] = useState(Appearance.getColorScheme());
     useEffect(() => {
         const listener = Appearance.addChangeListener(({ colorScheme }) => {
             setTheme(colorScheme);
@@ -86,98 +179,6 @@ export default function RegisterStepTwo() {
 
     const showDatePicker = () => setDatePickerVisibility(true);
     const hideDatePicker = () => setDatePickerVisibility(false);
-
-    const InputField: React.FC<InputFieldProps> = ({
-        label,
-        placeholder,
-        value,
-        inputMode,
-        onChangeText,
-        onPress,
-        editable = true,
-        buttonText,
-        onButtonPress,
-        isPicker,
-        pickerItems,
-        maxLength,
-        disable,
-        onBlur,
-        wrong
-    }) => (
-        <StyledView className="w-full mb-7">
-            <StyledText className={`font-custom text-sm ${wrong == true ? 'text-red-500' : 'text-gray-600 dark:text-gray-200'} mb-2 ml-4 absolute -mt-3 bg-white dark:bg-neutral-900 z-50 px-2`}>{label}</StyledText>
-            <StyledView className="flex-row items-center">
-                {isPicker && pickerItems && (
-                    <StyledView className="w-full border-[1px] border-gray-300 rounded-full">
-                        <RNPickerSelect
-                            onValueChange={onChangeText}
-                            items={pickerItems}
-                            value={value}
-                            placeholder={{ label: placeholder, value: null }}
-                            darkTheme={theme == "dark" ? true : false}
-                            style={
-                                {
-                                    inputIOS: {
-                                        fontFamily: 'Kanit',
-                                        borderColor: theme == "dark" ? '#d1d5db' : '#d1d5db',
-                                        width: '100%',
-                                        color: theme == "dark" ? '#fff' : '#000',
-                                        padding: 16,
-                                    },
-                                    inputAndroid: {
-                                        fontFamily: 'Kanit',
-                                        borderWidth: 1,
-                                        borderRadius: 25,
-                                        borderColor: theme == "dark" ? '#d1d5db' : '#d1d5db',
-                                        width: '100%',
-                                    },
-                                    placeholder: {
-                                        fontFamily: 'Kanit',
-                                    },
-
-                                }
-                            }
-
-                        />
-                    </StyledView>
-                )}
-
-                {!isPicker && (
-                    <>
-                        <StyledTextInput
-                            placeholder={placeholder}
-                            className={`font-custom border ${wrong == true ? 'border-red-500' : 'border-gray-300'} rounded-full py-4 px-4 ${wrong == true ? 'text-red-500' : 'text-gray-700 dark:text-gray-200'} ${buttonText ? 'flex-1 mr-2' : 'w-full'}`}
-                            value={value}
-                            onChangeText={onChangeText}
-                            placeholderTextColor="#d1d5db"
-                            editable={editable}
-                            onPress={onPress}
-                            inputMode={inputMode}
-                            maxLength={maxLength}
-                            onBlur={onBlur}
-                            enterKeyHint='done'
-                        />
-                        {buttonText && (
-                            <TouchableOpacity
-                                onPress={onButtonPress}
-                                disabled={disable}
-                            >
-                                <LinearGradient
-                                    colors={disable ? ['#ccc', '#ccc'] : ['#EB3834', '#69140F']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 0 }}
-                                    className="rounded-full py-4 px-4">
-
-                                    <StyledText className="text-white text-center font-custom">{buttonText}</StyledText>
-                                </LinearGradient>
-                            </TouchableOpacity>
-                        )}
-                    </>
-                )}
-
-            </StyledView>
-        </StyledView>
-    );
 
     const handleConfirm = (date: Date) => {
         setShowBirthdate(date);
@@ -227,6 +228,7 @@ export default function RegisterStepTwo() {
     const provinceOptions = [
         { label: 'Nakhon Ratchasima', value: 'Nakhon Ratchasima' }
     ];
+
     const handlePhoneVerification = async () => {
         if (!phone) return Alert.alert("เตือน", "กรุณากรอกหมายเลขมือถือ", [{ text: "ตกลง" }]);
         if (!phone.match(/^0[0-9]{9}$/)) return Alert.alert("เตือน", "หมายเลขมือถือต้องขึ้นต้นด้วย 0 และมี 10 หลัก", [{ text: "ตกลง" }]);
@@ -234,7 +236,6 @@ export default function RegisterStepTwo() {
         if (phone.length !== 10) return Alert.alert("เตือน", "หมายเลขมือถือต้องมี 10 หลัก", [{ text: "ตกลง" }]);
 
         try {
-            // Adjusted GET request to send phone as query parameter
             const response = await axios.post(
                 'https://friendszone.app/api/otp',
                 { phone: phone },
@@ -248,7 +249,6 @@ export default function RegisterStepTwo() {
             if (response.data.status !== 200) return Alert.alert("เตือน", "ไม่สามารถส่ง OTP ได้", [{ text: "ตกลง" }]);
 
             setOtpButtonDisabled(true);
-            //message otp cooldown
             setCooldown(120)
 
             const cooldown = setInterval(() => {
@@ -261,9 +261,6 @@ export default function RegisterStepTwo() {
                     setCooldown(cooldownTime - 1)
                 }
             }, 1000);
-
-
-
             setShowOTP(true);
         } catch (error) {
             Alert.alert("เตือน", "ไม่สามารถส่ง OTP ได้", [{ text: "ตกลง" }]);
@@ -311,7 +308,6 @@ export default function RegisterStepTwo() {
         return null;
     };
 
-    // Verify the OTP with the backend
     const verifyOTP = async (phone: string, otp: string) => {
         return await axios.put('https://friendszone.app/api/otp', {
             phone: phone,
@@ -324,7 +320,6 @@ export default function RegisterStepTwo() {
         });
     };
 
-    // Create the customer account
     const createCustomerAccount = async () => {
         const response = await axios.post('https://friendszone.app/api/customer', {
             username,
@@ -344,7 +339,6 @@ export default function RegisterStepTwo() {
         if (response.data.status !== 200) throw new Error('ไม่สามารถสร้างบัญชีได้');
     };
 
-    // Handle errors and provide an alert
     const handleError = (error: any, fallbackMessage: string) => {
         alert(fallbackMessage);
     };
@@ -367,6 +361,7 @@ export default function RegisterStepTwo() {
                         </StyledView>
 
                         <InputField
+                            theme={theme ?? "light"}
                             label="เพศ"
                             placeholder="เลือกเพศของคุณ"
                             value={gender}
@@ -376,6 +371,7 @@ export default function RegisterStepTwo() {
                         />
 
                         <InputField
+                            theme={theme ?? "light"}
                             label="วันเกิด"
                             placeholder="เลือกวันเกิดของคุณ"
                             value={birthdate}
@@ -384,6 +380,7 @@ export default function RegisterStepTwo() {
                         />
 
                         <InputField
+                            theme={theme ?? "light"}
                             label="จังหวัด"
                             placeholder="เลือกจังหวัดของคุณ"
                             value={province}
@@ -392,31 +389,32 @@ export default function RegisterStepTwo() {
                             pickerItems={provinceOptions}
                         />
 
+                        <InputField
+                            theme={theme ?? "light"}
+                            label={`${isPhoneValid ? 'เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว' : 'เบอร์โทรศัพท์'}`}
+                            placeholder="+66"
+                            inputMode="numeric"
+                            value={phone}
+                            onChangeText={handlePhoneChange}
+                            buttonText={`${cooldownTime > 0 ? `${cooldownMessage}` : 'รับ OTP'}`}
+                            maxLength={10}
+                            onButtonPress={handlePhoneVerification}
+                            onBlur={handleCheckPhone}
+                            disable={isPhoneValid != false || phone.length != 10 || otpButtonDisabled == true}
+                            wrong={(isPhoneValid != null) && (isPhoneValid && phone.length == 10)}
+
+                        />
+
+                        {showOTP && (
                             <InputField
-                                label={`${isPhoneValid ? 'เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว' : 'เบอร์โทรศัพท์'}`}
-                                placeholder="+66"
-                                inputMode="numeric"
-                                value={phone}
-                                onChangeText={handlePhoneChange}
-                                buttonText={`${cooldownTime > 0 ? `${cooldownMessage}` : 'รับ OTP'}`}
-                                maxLength={10}
-                                onButtonPress={handlePhoneVerification}
-                                onBlur={handleCheckPhone}
-                                disable={isPhoneValid != false || phone.length != 10 || otpButtonDisabled == true}
-                                wrong={(isPhoneValid != null) && (isPhoneValid && phone.length == 10)}
-
+                                theme={theme ?? "light"}
+                                label="OTP"
+                                placeholder="รหัสยืนยัน"
+                                inputMode="tel"
+                                value={otp}
+                                onChangeText={setOtp}
                             />
-
-                            {showOTP && (
-                                <InputField
-                                    label="OTP"
-                                    placeholder="รหัสยืนยัน"
-                                    inputMode="tel"
-                                    value={otp} // Use separate state for OTP
-                                    onChangeText={setOtp}
-
-                                />
-                            )}
+                        )}
 
                         <TouchableOpacity className="w-full mt-8" onPress={() => handleVerifyOTP()}>
                             <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
