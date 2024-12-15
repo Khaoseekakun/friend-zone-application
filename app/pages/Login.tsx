@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Animated, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Animated, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, useColorScheme } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp, StackActions } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
@@ -16,6 +16,7 @@ const StyledSafeAreaView = styled(SafeAreaView);
 const API_SYSTEM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiTG9naW4iLCJzeXN0ZW0iOmZhbHNlLCJwZXJtaXNzaW9ucyI6eyJMb2dpbiI6dHJ1ZX19.K2u_ZzJF_uekLqbmAiuMWZgmisGepYjATVrF-Ks8OX0';
 
 export default function Login() {
+    const colorScheme = useColorScheme();
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
@@ -194,7 +195,7 @@ export default function Login() {
                     >
                         <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
                             <LinearGradient
-                                colors={['#EB3834', '#69140F']}
+                                colors={colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316']}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 0 }}
                                 className="rounded-full py-3 shadow-sm"

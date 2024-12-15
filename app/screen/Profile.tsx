@@ -245,7 +245,7 @@ export default function ProfileTab() {
         try {
             if (!jobCategory) {
                 if (userProfile.profile.JobMembers.length > 0) {
-                    const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
+                    const resdata = await axios.get(`https://friendszone.app/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
                         headers: {
                             "Content-Type": "application/json",
                             "Authorization": `All ${userData.token}`
@@ -263,7 +263,7 @@ export default function ProfileTab() {
                     }
                 }
             } else {
-                const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
+                const resdata = await axios.get(`https://friendszone.app/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `All ${userData.token}`
@@ -306,7 +306,7 @@ export default function ProfileTab() {
                 return;
             }
 
-            const user = await axios.get(`http://49.231.43.37:3000/api/profile/${profileId}`, {
+            const user = await axios.get(`https://friendszone.app/api/profile/${profileId}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `All ${parsedData?.token}`
@@ -400,7 +400,7 @@ export default function ProfileTab() {
 
 
         try {
-            const response = await axios.post('http://49.231.43.37:3000/api/schedule', {
+            const response = await axios.post('https://friendszone.app/api/schedule', {
                 customerId: userData.id,
                 memberId: userProfile?.profile.id,
                 date: scheduleDateTime,
@@ -442,7 +442,7 @@ export default function ProfileTab() {
 
         try {
             setLoadingReviews(true);
-            const response = await axios.post(`http://49.231.43.37:3000/api/profile/${userProfile?.profile.id}/review`, {
+            const response = await axios.post(`https://friendszone.app/api/profile/${userProfile?.profile.id}/review`, {
                 userId: userData.id,
                 star: reviewStars,
                 text: reviewText

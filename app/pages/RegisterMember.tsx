@@ -813,102 +813,102 @@ export default function RegisterMember() {
         if (currentStep < 5) {
             if (currentStep === 1) {
                 //check data is empty
-                if (!username || !password || !confirmpassword || !email || !phone) {
-                    Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลให้ครบถ้วน');
-                    return
-                }
+                // if (!username || !password || !confirmpassword || !email || !phone) {
+                //     Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลให้ครบถ้วน');
+                //     return
+                // }
 
-                if (password !== confirmpassword) {
-                    Alert.alert('รหัสผ่านไม่ตรงกัน', 'กรุณากรอกรหัสผ่านให้ตรงกัน');
-                    return;
-                }
+                // if (password !== confirmpassword) {
+                //     Alert.alert('รหัสผ่านไม่ตรงกัน', 'กรุณากรอกรหัสผ่านให้ตรงกัน');
+                //     return;
+                // }
 
-                try {
-                    const userChecker = await axios.get(`http://49.231.43.37:3000/api/customer?username=${username}`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `System ${API_SYSTEM_KEY}`,
-                        },
-                    });
+                // try {
+                //     const userChecker = await axios.get(`http://49.231.43.37:3000/api/customer?username=${username}`, {
+                //         headers: {
+                //             'Content-Type': 'application/json',
+                //             Authorization: `System ${API_SYSTEM_KEY}`,
+                //         },
+                //     });
 
-                    const memberChecker = await axios.get(`http://49.231.43.37:3000/api/member?username=${username}`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `System ${API_SYSTEM_KEY}`,
-                        },
-                    });
+                //     const memberChecker = await axios.get(`http://49.231.43.37:3000/api/member?username=${username}`, {
+                //         headers: {
+                //             'Content-Type': 'application/json',
+                //             Authorization: `System ${API_SYSTEM_KEY}`,
+                //         },
+                //     });
 
-                    if (memberChecker.data.status != 404 || userChecker.data.status != 404) {
-                        return Alert.alert('เกิดข้อผิดพลาด', 'ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว กรุณาเลือกชื่อผู้ใช้อื่น');
-                    }
+                //     if (memberChecker.data.status != 404 || userChecker.data.status != 404) {
+                //         return Alert.alert('เกิดข้อผิดพลาด', 'ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว กรุณาเลือกชื่อผู้ใช้อื่น');
+                //     }
 
-                } catch (error: any) {
-                    console.error(error);
-                    return Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถตรวจสอบชื่อผู้ใช้ได้');
-                }
+                // } catch (error: any) {
+                //     console.error(error);
+                //     return Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถตรวจสอบชื่อผู้ใช้ได้');
+                // }
 
             }
 
             if (currentStep === 2) {
-                if (!fullName || !age || !gender || !address || !emergencyName || !emergencyPhone) {
-                    Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลให้ครบถ้วน');
-                    return;
-                }
+                // if (!fullName || !age || !gender || !address || !emergencyName || !emergencyPhone) {
+                //     Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลให้ครบถ้วน');
+                //     return;
+                // }
             }
 
             if (currentStep === 3) {
-                if (!selfieImage || !idCardImage) {
-                    Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณาถ่ายภาพเพื่อยืนยันตัวตน');
-                    return;
-                }
+                // if (!selfieImage || !idCardImage) {
+                //     Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณาถ่ายภาพเพื่อยืนยันตัวตน');
+                //     return;
+                // }
             }
 
             if (currentStep === 4) {
-                if (!bankAccount || !bankName) {
-                    Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลบัญชีธนาคารของคุณ');
-                    return;
-                } else {
-                    try {
-                        setLoading(true)
+                // if (!bankAccount || !bankName) {
+                //     Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลบัญชีธนาคารของคุณ');
+                //     return;
+                // } else {
+                //     try {
+                //         setLoading(true)
 
-                        const registerResponse = await axios.post('http://49.231.43.37:3000/api/member/register', {
-                            username: username,
-                            password: password,
-                            email: email,
-                            phone: phone,
-                            service: selectedServices[0],
-                            fullname: fullName,
-                            age: Number(age),
-                            gender: gender,
-                            address: address,
-                            emergencyName: emergencyName,
-                            emergencyPhone: emergencyPhone,
-                            selfieImage: selfieImage,
-                            idCardImage: idCardImage,
-                            bankAccount: bankAccount,
-                            bankName: bankName
-                        }, {
-                            headers: {
-                                Authorization: `System ${API_SYSTEM_KEY}`,
-                                'Content-Type': 'application/json'
-                            }
-                        })
+                //         const registerResponse = await axios.post('http://49.231.43.37:3000/api/member/register', {
+                //             username: username,
+                //             password: password,
+                //             email: email,
+                //             phone: phone,
+                //             service: selectedServices[0],
+                //             fullname: fullName,
+                //             age: Number(age),
+                //             gender: gender,
+                //             address: address,
+                //             emergencyName: emergencyName,
+                //             emergencyPhone: emergencyPhone,
+                //             selfieImage: selfieImage,
+                //             idCardImage: idCardImage,
+                //             bankAccount: bankAccount,
+                //             bankName: bankName
+                //         }, {
+                //             headers: {
+                //                 Authorization: `System ${API_SYSTEM_KEY}`,
+                //                 'Content-Type': 'application/json'
+                //             }
+                //         })
 
 
-                        setLoading(false)
-                        if (registerResponse.data.status === 200) {
-                            return setCurrentStep(currentStep + 1);
-                        } else {
-                            console.log(registerResponse.data)
-                            return Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถลงทะเบียนได้ โปรดตรวจสอบข้อมูลให้ถูกต้อง');
-                        }
-                    } catch (error) {
-                        console.error(error);
-                        setLoading(false)
-                        return Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถลงทะเบียนได้ โปรดตรวจสอบข้อมูลให้ถูกต้อง');
-                    }
+                //         setLoading(false)
+                //         if (registerResponse.data.status === 200) {
+                //             return setCurrentStep(currentStep + 1);
+                //         } else {
+                //             console.log(registerResponse.data)
+                //             return Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถลงทะเบียนได้ โปรดตรวจสอบข้อมูลให้ถูกต้อง');
+                //         }
+                //     } catch (error) {
+                //         console.error(error);
+                //         setLoading(false)
+                //         return Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถลงทะเบียนได้ โปรดตรวจสอบข้อมูลให้ถูกต้อง');
+                //     }
 
-                }
+                // }
             }
             setCurrentStep(currentStep + 1);
         }
