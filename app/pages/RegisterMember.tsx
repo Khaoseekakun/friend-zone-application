@@ -838,14 +838,14 @@ export default function RegisterMember() {
                         },
                     });
 
-                //     if (memberChecker.data.status != 404 || userChecker.data.status != 404) {
-                //         return Alert.alert('เกิดข้อผิดพลาด', 'ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว กรุณาเลือกชื่อผู้ใช้อื่น');
-                //     }
+                    if (memberChecker.data.status != 404 || userChecker.data.status != 404) {
+                        return Alert.alert('เกิดข้อผิดพลาด', 'ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว กรุณาเลือกชื่อผู้ใช้อื่น');
+                    }
 
-                // } catch (error: any) {
-                //     console.error(error);
-                //     return Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถตรวจสอบชื่อผู้ใช้ได้');
-                // }
+                } catch (error: any) {
+                    console.error(error);
+                    return Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถตรวจสอบชื่อผู้ใช้ได้');
+                }
 
             }
 
