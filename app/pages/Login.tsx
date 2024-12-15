@@ -174,7 +174,9 @@ export default function Login() {
 
                     {/* Create Account */}
                     <StyledView className="flex-row justify-between w-full mb-10">
-                        <StyledTouchableOpacity>
+                        <StyledTouchableOpacity
+                        onPress={() => navigation.navigate('ForgotPassword', {})}
+                        >
                             <StyledText className="font-custom text-blue-600">ลืมรหัสผ่าน?</StyledText>
                         </StyledTouchableOpacity>
                         <StyledView className="flex-row items-center">

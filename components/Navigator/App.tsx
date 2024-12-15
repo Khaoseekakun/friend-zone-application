@@ -8,6 +8,7 @@ import HomeScreen from '../../app/pages/HomeScreen';
 import React from 'react';
 import SelectRegisterPage from '@/app/pages/SelectRegisterPage';
 import RegisterMember from '@/app/pages/RegisterMember';
+import ForgotPassword from '@/app/screen/ForgotPassword';
 
 const Stack = createStackNavigator();
 export function AppNavigator() {
@@ -15,6 +16,7 @@ export function AppNavigator() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <>
                 <Stack.Screen name="SplashScreen" component={SplashScreen} />
+                <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
                 <Stack.Screen name="Login" component={Login} />
                 <Stack.Screen name="HomeScreen" component={HomeScreen} />
                 <Stack.Screen name="Register" component={Register} />
