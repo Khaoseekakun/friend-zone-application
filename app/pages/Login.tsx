@@ -174,7 +174,7 @@ export default function Login() {
                     </StyledView>
 
                     {/* Create Account */}
-                    <StyledView className="flex-row justify-between w-full mb-10">
+                    <StyledView className="flex-row justify-between w-full mb-1">
                         <StyledTouchableOpacity>
                             <StyledText className="font-custom text-blue-600">ลืมรหัสผ่าน?</StyledText>
                         </StyledTouchableOpacity>
@@ -183,6 +183,20 @@ export default function Login() {
                             <StyledTouchableOpacity onPress={() => navigation.navigate('Agreement', { nextScreen: 'Register' })}>
                                 <StyledText className='font-custom text-blue-600'>สร้างบัญชี</StyledText>
                             </StyledTouchableOpacity>
+                        </StyledView>
+                    </StyledView>
+                    
+                    <StyledView className="flex-row justify-between w-full mb-10">
+                        <StyledView className="flex-row items-center">
+                            <StyledText className='font-custom text-gray-500'>ยอมรับ</StyledText>
+                            <StyledTouchableOpacity onPress={() => navigation.navigate('Agreement', { nextScreen: 'Register' })}>
+                                <StyledText className='font-custom text-blue-500'>ข้อกำหนด</StyledText>
+                            </StyledTouchableOpacity>
+                            <StyledText className='font-custom text-gray-500'>และ</StyledText>
+                            <StyledTouchableOpacity onPress={() => navigation.navigate('Agreement', { nextScreen: 'Register' })}>
+                                <StyledText className='font-custom text-blue-500'>ข้อตกลง</StyledText>
+                            </StyledTouchableOpacity>
+                            <StyledText className='font-custom text-gray-500'>ของเรา</StyledText>
                         </StyledView>
                     </StyledView>
 
