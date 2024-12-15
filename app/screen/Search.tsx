@@ -325,7 +325,7 @@ export default function Search() {
     return (
         <>
             <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-                <StyledView className="flex-1 bg-gray-100">
+                <StyledView className="flex-1 bg-gray-200 dark:bg-neutral-900">
 
                     <HeaderApp />
                     {

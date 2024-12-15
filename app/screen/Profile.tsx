@@ -10,7 +10,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { TextInput, TouchableOpacity } from "react-native-gesture-handler";
 import { LinearGradient } from "expo-linear-gradient";
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import { useSharedValue, configureReanimatedLogger, ReanimatedLogLevel } from "react-native-reanimated";
 import { getAge } from "@/utils/Date";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -454,6 +454,7 @@ export default function ProfileTab() {
             });
 
             if (response.data.status != 200) {
+                console.log(response.data);
                 Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถสร้างรีวิวได้', [{ text: 'OK' }]);
             } else {
                 Alert.alert('สำเร็จ', 'สร้างรีวิวสำเร็จ', [{ text: 'OK' }]);
@@ -461,6 +462,7 @@ export default function ProfileTab() {
                 setShowReviewModal(false);
             }
         } catch (error) {
+            console.log(error)
             Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถสร้างรีวิวได้', [{ text: 'OK' }]);
         } finally {
             setLoadingReviews(false);
@@ -655,7 +657,7 @@ export default function ProfileTab() {
                                                 </StyledText>
                                                 <StyledView className="bg-red-50 dark:bg-red-900/30 rounded-full px-3 py-1 ml-2">
                                                     <StyledText className="text-red-500 dark:text-red-400 font-custom">
-                                                        {reviews.length}
+                                                        {userProfile?.profile?.Review.length}
                                                     </StyledText>
                                                 </StyledView>
                                             </StyledView>
@@ -679,7 +681,7 @@ export default function ProfileTab() {
                                                 <StyledView>
                                                     <StyledText className="text-4xl font-bold text-red-600 dark:text-red-500 font-custom">
                                                         {
-                                                            userProfile?.profile?.Review.length 
+                                                            userProfile?.profile?.Review.length
                                                         }
                                                     </StyledText>
                                                     <StyledView className="flex-row mt-1">
@@ -787,15 +789,15 @@ export default function ProfileTab() {
                 index={-1}
                 backgroundStyle={{
                     borderRadius: 10,
-                    backgroundColor: theme == "dark" ? "#404040" : "#fff"
+                    backgroundColor: theme == "dark" ? "#262626" : "#fff"
                 }}
             >
-                <BottomSheetView style={{ height: "80%" }}>
-                    <StyledView className="flex-1">
+                <BottomSheetScrollView>
+                    <StyledView className="flex-1 mb-20">
                         {
                             searchFocus ? (
                                 <>
-                                    <StyledView className="flex-row items-center px-6 py-2">
+                                    <StyledView className="flex-row items-center px-6 py-1 ">
                                         <StyledView className="w-full px-1">
                                             <StyledView className="flex-row gap-1 items-center w-full mb-2">
 
@@ -848,7 +850,7 @@ export default function ProfileTab() {
                                 </>
                             ) : showSelectJobs ? (
                                 <>
-                                    <StyledView className="flex-row items-center px-6 py-2">
+                                    <StyledView className="flex-row items-center px-6 py-1">
                                         <StyledView className="w-full px-1">
                                             <StyledView className="flex-row gap-1 items-center w-full mb-2">
 
@@ -879,7 +881,7 @@ export default function ProfileTab() {
                                 </>
                             ) : (
                                 <>
-                                    <StyledView className="flex-row items-center px-6 py-2">
+                                    <StyledView className="flex-row items-center px-6 py-1">
                                         <StyledView className="w-6/12 px-1">
                                             <StyledText className="text-lg text-black font-custom dark:text-neutral-200">วัน/เดือน/ปี</StyledText>
 
@@ -906,7 +908,7 @@ export default function ProfileTab() {
                                             </TouchableOpacity>
                                         </StyledView>
                                     </StyledView>
-                                    <StyledView className="flex-row items-center px-6 py-2">
+                                    <StyledView className="flex-row items-center px-6 py-1">
                                         <StyledView className="w-full px-1">
                                             <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
                                                 ประเภทงาน
@@ -951,14 +953,14 @@ export default function ProfileTab() {
                                         </StyledView>
                                     </StyledView>
 
-                                    <StyledView className="flex-row items-center px-6 py-2">
+                                    <StyledView className="flex-row items-center px-6 py-1">
                                         <StyledView className="w-full px-1">
                                             <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
                                                 หมายเหตุ
                                             </StyledText>
 
                                             <StyledView
-                                                className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                                                className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
                                             >
                                                 <TextInput
                                                     placeholder="กรอกหมายเหตุ (ถ้ามี)"
@@ -970,14 +972,14 @@ export default function ProfileTab() {
                                                     placeholderTextColor="#d1d5db"
                                                     style={{
                                                         textAlignVertical: 'top',
-                                                        minHeight: 80,
+                                                        minHeight: 40,
                                                     }}
                                                 />
                                             </StyledView>
                                         </StyledView>
                                     </StyledView>
 
-                                    <StyledView className="items-center px-6 py-2">
+                                    <StyledView className="items-center px-6 py-1">
                                         <StyledView className="w-full px-1">
                                             <StyledText className="text-lg text-black font-custom dark:text-neutral-200">จุดนัดหมาย</StyledText>
 
@@ -994,7 +996,7 @@ export default function ProfileTab() {
                                         </StyledView>
                                     </StyledView>
 
-                                    <StyledView className="px-6 py-2 rounded-2xl my-2 mt-5 h-[50%]">
+                                    <StyledView className="px-6 py-1 rounded-2xl my-2 mt-5 h-[50%]">
                                         <StyledMapView
                                             initialRegion={{
                                                 latitude: pin ? pin.latitude : 37.78825,
@@ -1068,23 +1070,23 @@ export default function ProfileTab() {
                             )
                         }
                     </StyledView>
-                </BottomSheetView>
+                </BottomSheetScrollView>
             </BottomSheet>
 
 
             <BottomSheet
                 ref={bottomSheetRefReview}
-                snapPoints={["80%"]}
+                snapPoints={["70%"]}
                 enablePanDownToClose={true}
                 index={-1}
                 backgroundStyle={{
                     borderRadius: 10,
-                    backgroundColor: theme == "dark" ? "#404040" : "#fff"
+                    backgroundColor: theme == "dark" ? "#262626" : "#fff"
                 }}
             >
                 <BottomSheetView style={{ height: "80%" }}>
                     <StyledView className="flex-1justify-end">
-                        <StyledView className="bg-white dark:bg-neutral-900 rounded-t-3xl p-6">
+                        <StyledView className=" rounded-t-3xl px-6">
                             <StyledView className="flex-row items-center justify-between mb-6">
                                 <StyledText className="text-2xl text-black dark:text-white font-custom">
                                     เขียนรีวิว
@@ -1127,7 +1129,7 @@ export default function ProfileTab() {
                                 <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
                                     เขียนความคิดเห็นของคุณ
                                 </StyledText>
-                                <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4">
+                                <StyledView className="bg-gray-50 dark:bg-neutral-700 rounded-2xl p-4">
                                     <TextInput
                                         multiline
                                         numberOfLines={5}

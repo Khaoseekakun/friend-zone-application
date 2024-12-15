@@ -160,8 +160,7 @@ export default function SearchCategory() {
     >
       <StyledScrollView className="flex-1 pt-20">
         <Animated.View
-          entering={FadeInDown.springify()}
-          className="px-3 pb-6"
+          className="px-3 pb-20"
         >
           <StyledText className="font-custom text-white text-3xl mb-3 text-center">
             เลือกหมวดหมู่
@@ -169,12 +168,14 @@ export default function SearchCategory() {
 
           <StyledView className="flex-row flex-wrap justify-between px-2">
             <AnimatedTouchable
-              entering={FadeInUp.delay(1 * 100).springify()}
               className="mb-3"
               style={{
                 width: CARD_WIDTH - 16,
                 height: CARD_HEIGHT,
               }}
+              onPress={() => navigation.navigate('Search', {
+                searchType: 'Friend'
+              })}
             >
               <LinearGradient
                 colors={['#FF4B48', '#AB1815']}
@@ -213,7 +214,6 @@ export default function SearchCategory() {
               </LinearGradient>
             </AnimatedTouchable>
             <AnimatedTouchable
-              entering={FadeInUp.delay(2 * 100).springify()}
               className="mb-3"
               style={{
                 width: CARD_WIDTH - 16,
@@ -257,7 +257,6 @@ export default function SearchCategory() {
               </LinearGradient>
             </AnimatedTouchable>
             <AnimatedTouchable
-              entering={FadeInUp.delay(3 * 100).springify()}
               className="mb-3"
               style={{
                 width: CARD_WIDTH - 16,
@@ -301,7 +300,6 @@ export default function SearchCategory() {
               </LinearGradient>
             </AnimatedTouchable>
             <AnimatedTouchable
-              entering={FadeInUp.delay(4 * 100).springify()}
               className="mb-3"
               style={{
                 width: CARD_WIDTH - 16,
@@ -336,7 +334,6 @@ export default function SearchCategory() {
               </LinearGradient>
             </AnimatedTouchable>
             <AnimatedTouchable
-              entering={FadeInUp.delay(5 * 100).springify()}
               className="mb-3"
               style={{
                 width: CARD_WIDTH - 16,
@@ -371,7 +368,6 @@ export default function SearchCategory() {
               </LinearGradient>
             </AnimatedTouchable>
             <AnimatedTouchable
-              entering={FadeInUp.delay(6 * 100).springify()}
               className="mb-3"
               style={{
                 width: CARD_WIDTH - 16,
@@ -420,7 +416,6 @@ export default function SearchCategory() {
       </StyledScrollView>
 
       <AnimatedTouchable
-        entering={FadeInDown.delay(400).springify()}
         onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()}
         className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute top-6 left-6 mt-14"
       >

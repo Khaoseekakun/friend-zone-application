@@ -35,7 +35,7 @@ const pageNumber = {
 type TypeParams = "FeedsTab" | "SearchCategory" | "FastTab" | "SchedulePage" | "MessageTab";
 
 const icons = ["home", "search", "flash", "calendar", "chatbubbles"];
-const iconNames = ["Home", "Search", "Flash", "Schedule", "Message"];
+const iconNames = ["Home", "Search", "Fast", "Schedule", "Message"];
 interface NavigationProps {
   current: TypeParams;
 }

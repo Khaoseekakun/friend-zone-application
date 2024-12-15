@@ -46,7 +46,7 @@ interface InputFieldProps {
     wrong?: boolean;
     secureTextEntry?: boolean;
     isPicker?: boolean;
-    pickerItems?: { label: string; value: string }[];
+    pickerItems?: { label: string, value: string }[];
     icon?: any;
     disable?: boolean;
     maxLength?: number;
@@ -104,7 +104,7 @@ const InputField: React.FC<InputFieldProps> = ({
                     <RNPickerSelect
                         onValueChange={onChangeText}
                         items={pickerItems}
-                        value={value}
+                        value={value ?? ''}
                         useNativeAndroidPickerStyle={false}
                         placeholder={{ label: placeholder, value: null }}
                         style={{
@@ -157,6 +157,7 @@ const InputField: React.FC<InputFieldProps> = ({
                         placeholderTextColor="#9CA3AF"
                         secureTextEntry={secureTextEntry}
                         maxLength={maxLength}
+                        
                     />
                     {buttonText && (
                         <StyledTouchableOpacity
@@ -201,7 +202,7 @@ export default function RegisterMember() {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
-    const [selectedServices, setSelectedServices] = useState<string[]>([]);
+    const [selectedServices, setSelectedServices] = useState<string[]>(['']);
 
     // Step 2: Personal Info
     const [fullName, setFullName] = useState('');
@@ -812,7 +813,7 @@ export default function RegisterMember() {
         if (currentStep < 5) {
             if (currentStep === 1) {
                 //check data is empty
-                if (!username || !password || !confirmpassword || !email || !phone || !selectedServices.length) {
+                if (!username || !password || !confirmpassword || !email || !phone) {
                     Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลให้ครบถ้วน');
                     return
                 }
@@ -894,7 +895,6 @@ export default function RegisterMember() {
                         })
 
 
-                        console.log('Registering...');
                         setLoading(false)
                         if (registerResponse.data.status === 200) {
                             return setCurrentStep(currentStep + 1);

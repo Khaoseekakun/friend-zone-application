@@ -134,8 +134,8 @@ export default function Login() {
         >
             <StyledSafeAreaView className="flex-1 bg-white dark:bg-black">
                 <StyledView className="flex-1 px-6 justify-center items-center -top-10">
-                    <StyledText className="text-3xl font-bold font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">Friend Zone</StyledText>
-                    <StyledText className="text-lg text-gray-400 mb-8">ยินดีต้อนรับกลับ</StyledText>
+                    <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">Friend Zone</StyledText>
+                    <StyledText className="text-lg text-gray-400 mb-8 font-custom">ยินดีต้อนรับกลับ</StyledText>
 
                     <StyledView className="w-full mb-7">
                         <StyledText className="font-custom text-sm text-gray-600 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black dark:text-white z-50 left-2">เบอร์โทรศัพท์</StyledText>

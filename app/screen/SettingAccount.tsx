@@ -272,6 +272,25 @@ export default function EditProfile() {
 
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
                 <StyledView className="px-4 py-4 space-y-6 mb-16">
+                    <StyledView className="self-center ">
+                        <TouchableOpacity
+                            onPress={() => handleImagePick(false)}
+                            className=""
+                        >
+                            <StyledView className="w-[100px] h-[100px] rounded-full bg-gray-200 dark:bg-neutral-800 border-[1px] border-neutral-300 dark:border-neutral-700 border-dashed items-center justify-center">
+                                <StyledIonicons
+                                    name={
+                                        'camera-outline'
+                                    }
+                                    size={40}
+                                    className="text-gray-500">
+                                </StyledIonicons>
+                            </StyledView>
+
+                            <StyledText className="mt-2 font-custom text-gray-600">อัปโหลดรูปภาพ</StyledText>
+                        </TouchableOpacity>
+                    </StyledView >
+                    <StyledView className="border-b-[1px] border-gray-200"></StyledView>
                     <StyledView>
                         <StyledText className="font-custom text-neutral-400 text-base mb-2">
                             รูปภาพน่าสนใจ
@@ -309,6 +328,16 @@ export default function EditProfile() {
                     </StyledView>
 
                     <StyledView>
+                        <StyledText className="font-custom text-neutral-400 text-base mb-2">
+                            ชื่อผู้ใช้
+                        </StyledText>
+                        <StyledInput
+                            className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-2 "
+                            placeholder="ชื่อผู้ใช้"
+                            placeholderTextColor="#666"
+                            value={username}
+                            onChangeText={setUsername}
+                        />
                         <StyledText className="font-custom text-neutral-400 text-base mb-2">
                             เกี่ยวกับฉัน
                         </StyledText>

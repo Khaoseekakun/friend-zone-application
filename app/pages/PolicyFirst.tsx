@@ -65,7 +65,7 @@ export default function AgreementScreen() {
                 <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
             </TouchableOpacity>
 
-            <ScrollView className="flex-1 w-10/12 mt-6 p-2 rounded-xl self-center dark:bg-neutral-800">
+            <ScrollView className="flex-1 w-10/12 mt-6 p-2 rounded-xl self-center bg-gray-200 dark:bg-neutral-800">
                 {policyContent.map((item, index) => (
                     <StyledView key={`${index}`}>
                         {item.split('\n').map((line, lineIndex) => (
