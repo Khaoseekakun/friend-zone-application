@@ -174,7 +174,7 @@ export default function Login() {
                     </StyledView>
 
                     {/* Create Account */}
-                    <StyledView className="flex-row justify-between w-full mb-10">
+                    <StyledView className="flex-row justify-between w-full mb-1">
                         <StyledTouchableOpacity>
                             <StyledText className="font-custom text-blue-600">ลืมรหัสผ่าน?</StyledText>
                         </StyledTouchableOpacity>
