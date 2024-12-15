@@ -5,6 +5,12 @@ export type RootStackParamList = {
   Login: {
     backPage?: string;
   },
+  ForgotPassword: {
+    backPage?: string;
+  },
+  SettingPassword: {
+    backPage?: string;
+  },
   Register: {
     backPage?: string;
   },
