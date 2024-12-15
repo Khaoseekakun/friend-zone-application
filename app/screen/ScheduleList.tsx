@@ -64,7 +64,7 @@ export default function ScheduleList() {
 
     const loadJobsList = async () => {
         try {
-            const response = await axios.get('http://49.231.43.37:3000/api/jobs/all', {
+            const response = await axios.get('https://friendszone.app/api/jobs/all', {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `All ${userData?.token}`

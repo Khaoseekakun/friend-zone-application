@@ -292,7 +292,7 @@ export default function RegisterMember() {
 
         try {
             const response = await axios.post(
-                'http://49.231.43.37:3000/api/otp',
+                'https://friendszone.app/api/otp',
                 { phone: phone },
                 {
                     headers: {
@@ -363,7 +363,7 @@ export default function RegisterMember() {
     };
 
     const verifyOTP = async (phone: string, otp: string) => {
-        return await axios.put('http://49.231.43.37:3000/api/otp', {
+        return await axios.put('https://friendszone.app/api/otp', {
             phone: phone,
             code: otp,
         }, {
@@ -784,14 +784,14 @@ export default function RegisterMember() {
 
     const verifyPhoneInvild = async () => {
         try {
-            const userPhoneChecker = await axios.get(`http://49.231.43.37:3000/api/customer?phone=${phone}`, {
+            const userPhoneChecker = await axios.get(`https://friendszone.app/api/customer?phone=${phone}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `System ${API_SYSTEM_KEY}`,
                 },
             });
 
-            const memberPhoneChecker = await axios.get(`http://49.231.43.37:3000/api/member?phone=${phone}`, {
+            const memberPhoneChecker = await axios.get(`https://friendszone.app/api/member?phone=${phone}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `System ${API_SYSTEM_KEY}`,
@@ -824,14 +824,14 @@ export default function RegisterMember() {
                 }
 
                 try {
-                    const userChecker = await axios.get(`http://49.231.43.37:3000/api/customer?username=${username}`, {
+                    const userChecker = await axios.get(`https://friendszone.app/api/customer?username=${username}`, {
                         headers: {
                             'Content-Type': 'application/json',
                             Authorization: `System ${API_SYSTEM_KEY}`,
                         },
                     });
 
-                    const memberChecker = await axios.get(`http://49.231.43.37:3000/api/member?username=${username}`, {
+                    const memberChecker = await axios.get(`https://friendszone.app/api/member?username=${username}`, {
                         headers: {
                             'Content-Type': 'application/json',
                             Authorization: `System ${API_SYSTEM_KEY}`,
@@ -871,7 +871,7 @@ export default function RegisterMember() {
                     try {
                         setLoading(true)
 
-                        const registerResponse = await axios.post('http://49.231.43.37:3000/api/member/register', {
+                        const registerResponse = await axios.post('https://friendszone.app/api/member/register', {
                             username: username,
                             password: password,
                             email: email,
