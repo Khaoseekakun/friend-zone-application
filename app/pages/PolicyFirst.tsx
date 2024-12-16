@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, useColorScheme } from 'react-native';
 import { styled } from 'nativewind';
 import axios from 'axios';
 import { useNavigation } from "expo-router";
@@ -13,6 +13,7 @@ const StyledText = styled(Text);
 const StyledIcon = styled(Ionicons);
 
 export default function AgreementScreen() {
+    const colorScheme = useColorScheme();
     const [policyContent, setPolicyContent] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -101,7 +102,7 @@ export default function AgreementScreen() {
             >
                 <LinearGradient
 
-                    colors={agree ? ['#EB3834', '#69140F'] : ['#7f7f7f', '#505050']}
+                    colors={agree ? colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316'] : ['#7f7f7f', '#505050']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     className="rounded-full py-3 shadow-sm"

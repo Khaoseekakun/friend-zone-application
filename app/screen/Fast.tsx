@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { LinearGradient } from "expo-linear-gradient";
@@ -9,7 +9,19 @@ import axios from "axios";
 import { HeaderApp } from "@/components/Header";
 import { Navigation } from "@/components/Navigation";
 import MapView, { Marker, Circle } from 'react-native-maps';
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withRepeat,
+  withSequence,
+  interpolate,
+  withDelay,
+  withSpring,
+  FadeInUp,
+  FadeInDown,
+  Easing,
+} from 'react-native-reanimated';
 import { RootStackParamList } from "@/types";
 
 const StyledView = styled(View);
@@ -51,8 +63,266 @@ export default function Fast() {
   const [pin, setPin] = useState<{ latitude: number; longitude: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [searchFocus, setSearchFocus] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(15);
+  const [dots, setDots] = useState('');
   const router = useRoute<CategorySearch>();
   const { backPage } = router.params;
+
+  const backgroundAnim = useSharedValue(0);
+
+  useEffect(() => {
+  // ควรย้าย timer ไปไว้ในเงื่อนไข step === 3 เพื่อป้องกันการทำงานที่ไม่จำเป็น
+  if (step === 3) {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 60000);
+
+    const dotsTimer = setInterval(() => {
+      setDots(prev => prev.length < 3 ? prev + '.' : '');
+    }, 500);
+
+    return () => {
+      clearInterval(timer);
+      clearInterval(dotsTimer);
+    };
+  }
+}, [step]); // เพิ่ม step เป็น dependency
+
+  const animatedGradientStyle = useAnimatedStyle(() => ({
+    transform: [{ 
+      translateY: interpolate(
+        backgroundAnim.value,
+        [0, 1],
+        [0, 30]
+      )
+    }]
+  }));
+
+  const AnimatedCircles = () => {
+    const scale1 = useSharedValue(1);
+    const scale2 = useSharedValue(1);
+    const scale3 = useSharedValue(1);
+    const centerScale = useSharedValue(1);
+    const rotation = useSharedValue(0);
+    const pulseScale = useSharedValue(1);
+    
+    useEffect(() => {
+      // คอนฟิกการเด้งแบบวุ้นๆ
+      const jellyConfig = {
+        damping: 12,
+        stiffness: 60,
+        mass: 0.5,
+        restDisplacementThreshold: 0.01
+      };
+  
+      // วงนอกสุด - หมุนและขยาย
+      scale1.value = withRepeat(
+        withSequence(
+          withSpring(1.3, jellyConfig),
+          withSpring(1, jellyConfig)
+        ),
+        -1,
+        true
+      );
+  
+      // วงกลาง - หมุนในทิศทางตรงข้าม
+      scale2.value = withDelay(
+        200,
+        withRepeat(
+          withSequence(
+            withSpring(1.25, {
+              ...jellyConfig,
+              stiffness: 60
+            }),
+            withSpring(0.9, jellyConfig)
+          ),
+          -1,
+          true
+        )
+      );
+  
+      // วงใน - พัลส์เป็นจังหวะ
+      scale3.value = withDelay(
+        4000,
+        withRepeat(
+          withSequence(
+            withSpring(1.2, {
+              ...jellyConfig,
+              stiffness: 35
+            }),
+            withSpring(0.95, jellyConfig)
+          ),
+          -1,
+          true
+        )
+      );
+  
+      // การหมุนต่อเนื่อง
+      rotation.value = withRepeat(
+        withTiming(360, {
+          duration: 8000,
+          easing: Easing.linear
+        }),
+        -1
+      );
+  
+      // เอฟเฟกต์การเต้นตรงกลาง
+      centerScale.value = withRepeat(
+        withSequence(
+          withSpring(0.85, {
+            damping: 10,
+            stiffness: 80,
+            mass: 0.5,
+          }),
+          withSpring(1.1, {
+            damping: 10,
+            stiffness: 80,
+            mass: 0.5,
+          })
+        ),
+        -1,
+        true
+      );
+  
+      // เอฟเฟกต์พัลส์เพิ่มเติม
+      pulseScale.value = withRepeat(
+        withSequence(
+          withTiming(1.1, { 
+            duration: 4000,
+            easing: Easing.bezier(0.25, 0.1, 0.25, 1) 
+          }),
+          withTiming(1, { 
+            duration: 4000,
+            easing: Easing.bezier(0.25, 0.1, 0.25, 1) 
+          }),
+        ),
+        -1,
+        true
+      );
+    }, []);
+  
+    const circle1Style = useAnimatedStyle(() => ({
+      transform: [
+        { scale: scale1.value },
+        { rotate: `${rotation.value}deg` }
+      ],
+      opacity: interpolate(scale1.value, [1, 1.3], [0.2, 0.1])
+    }));
+  
+    const circle2Style = useAnimatedStyle(() => ({
+      transform: [
+        { scale: scale2.value },
+        { rotate: `${-rotation.value * 0.8}deg` }
+      ],
+      opacity: interpolate(scale2.value, [0.9, 1.25], [0.3, 0.2])
+    }));
+  
+    const circle3Style = useAnimatedStyle(() => ({
+      transform: [
+        { scale: scale3.value },
+        { rotate: `${rotation.value * 0.5}deg` }
+      ],
+      opacity: interpolate(scale3.value, [0.95, 1.2], [0.4, 0.3])
+    }));
+  
+    const centerStyle = useAnimatedStyle(() => ({
+      transform: [
+        { scale: centerScale.value },
+        { rotate: `${-rotation.value * 0.3}deg` }
+      ],
+      opacity: interpolate(centerScale.value, [0.85, 1.1], [0.9, 1])
+    }));
+  
+    const pulseStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: pulseScale.value }],
+      opacity: interpolate(pulseScale.value, [1, 1.1], [0.5, 0])
+    }));
+  
+    return (
+      <StyledView className="relative w-48 h-48 items-center justify-center">
+        {/* Pulse effect */}
+        {/* <Animated.View
+          style={[{
+            position: 'absolute',
+            width: 200,
+            height: 200,
+            borderRadius: 100,
+            borderWidth: 2,
+            borderColor: '#EB3834',
+          }, pulseStyle]}
+        /> */}
+  
+        {/* Outer circle */}
+        <Animated.View
+          style={[{
+            position: 'absolute',
+            width: 192,
+            height: 192,
+            borderRadius: 96,
+            backgroundColor: '#EB3834',
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.1)',
+          }, circle1Style]}
+        />
+  
+        {/* Middle circle */}
+        <Animated.View
+          style={[{
+            position: 'absolute',
+            width: 144,
+            height: 144,
+            borderRadius: 72,
+            backgroundColor: '#EB3834',
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.15)',
+          }, circle2Style]}
+        />
+  
+        {/* Inner circle */}
+        <Animated.View
+          style={[{
+            position: 'absolute',
+            width: 96,
+            height: 96,
+            borderRadius: 48,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.2)',
+          }, circle3Style]}
+        />
+  
+        {/* Center animated circle */}
+        <Animated.View
+          style={[{
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderWidth: 2,
+            borderColor: 'rgba(255,255,255,0.3)',
+          }, centerStyle]}
+        >
+          {/* <ActivityIndicator size="large" color="#fff" /> */}
+        </Animated.View>
+      </StyledView>
+    );
+  };
+  
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 60000);
+
+    const dotsTimer = setInterval(() => {
+      setDots(prev => prev.length < 3 ? prev + '.' : '');
+    }, 500);
+
+    return () => {
+      clearInterval(timer);
+      clearInterval(dotsTimer);
+    };
+  }, []);
 
   const categories = [
     {
@@ -98,26 +368,30 @@ export default function Fast() {
   ];
 
   const handleCreateSchedule = async () => {
-    if (!scheduleDate || !scheduleTime || !scheduleJobs || !scheduleLocation || !pin) {
-      Alert.alert("กรุณากรอกข้อมูลให้ครบ");
-      return;
-    }
+    // if (!scheduleDate || !scheduleTime || !scheduleJobs || !scheduleLocation || !pin) {
+    //   Alert.alert("กรุณากรอกข้อมูลให้ครบ");
+    //   return;
+    // }
 
+    // setLoading(true);
+    // try {
+    //   await axios.post("https://friendszone.app/api/schedule", {
+    //     date: scheduleDate,
+    //     time: scheduleTime,
+    //     job: scheduleJobs,
+    //     location: scheduleLocation,
+    //     pin: pin
+    //   });
+    //   setStep(3);
+    // } catch (error) {
+    //   Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
+    // } finally {
+    //   setLoading(false);
+    // }
     setLoading(true);
-    try {
-      await axios.post("https://friendszone.app/api/schedule", {
-        date: scheduleDate,
-        time: scheduleTime,
-        job: scheduleJobs,
-        location: scheduleLocation,
-        pin: pin
-      });
-      setStep(3);
-    } catch (error) {
-      Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
-    } finally {
-      setLoading(false);
-    }
+    console.log('create!')
+    setStep(3);
+    setLoading(false);
   };
 
   const renderCategorySelection = () => (
@@ -132,7 +406,7 @@ export default function Fast() {
           className="px-3 pb-20"
         >
           <StyledText className="font-custom text-white text-3xl mb-3 text-center">
-            เลือกหมวดหมู่
+            เลือกหมวดหมู่ค้นหาด่วน
           </StyledText>
 
           <StyledView className="flex-row flex-wrap justify-between px-2">
@@ -381,23 +655,16 @@ export default function Fast() {
           </StyledView>
         </Animated.View>
       </StyledScrollView>
-
-      <AnimatedTouchable
-        onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()}
-        className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute top-6 left-6 mt-3"
-      >
-        <Ionicons name="chevron-back" size={24} color="#fff" />
-      </AnimatedTouchable>
     </LinearGradient>
   );
 
   const renderAppointmentForm = () => (
-    <StyledScrollView className="flex-1">
+    <StyledScrollView className="flex-1 mb-14">
       <AnimatedTouchable
-        onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()}
-        className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute top-6 left-6 mt-3"
+        onPress={() => setStep(1)}
+        className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute -top-1 left-6 mt-3"
       >
-        <Ionicons name="chevron-back" size={24} color="#fff" />
+        <Ionicons name="chevron-back" size={24} color="#EB3834" />
       </AnimatedTouchable>
       <StyledView className="flex-row items-center px-6 py-2 mt-10">
         <StyledView className="w-6/12 px-1">
@@ -498,7 +765,7 @@ export default function Fast() {
             <ActivityIndicator size="small" color="#fff" />
           ) : (
             <StyledText className="font-custom text-center text-white text-lg font-semibold">
-              ส่งคำขอนัดหมาย
+              นัดหมายแบบเร่งด่วน
             </StyledText>
           )}
         </LinearGradient>
@@ -506,14 +773,77 @@ export default function Fast() {
     </StyledScrollView>
   );
 
-  const renderWaitingScreen = () => (
-    <StyledView className="flex-1 justify-center items-center">
-      <StyledText className="text-2xl font-semibold mb-4 dark:text-white">
-        กำลังรอการตอบรับ
-      </StyledText>
-      <ActivityIndicator size="large" color="#EB3834" />
-    </StyledView>
-  );
+  const renderWaitingScreen = () => {
+    return (
+      <LinearGradient
+        colors={['#8B0000', '#4A0404']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        className="flex-1 justify-center items-center px-6"
+      >
+        <Animated.View 
+          entering={FadeInUp.delay(300).duration(1000)}
+          className="items-center"
+        >
+          <AnimatedCircles />
+  
+          <StyledText className="font-custom text-white text-3xl mb-3 text-center mt-8">
+            กำลังรอการตอบรับ{dots}
+          </StyledText>
+          
+          <StyledText className="font-custom text-white/80 text-lg mb-8 text-center">
+            โปรดรอสักครู่{'\n'}ระบบกำลังค้นหาเพื่อนที่ว่างให้คุณ
+          </StyledText>
+  
+          <LinearGradient
+            colors={['#FF4B48', '#AB1815']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            className="w-full h-2 rounded-full mb-4 overflow-hidden"
+          >
+            <Animated.View 
+              className="h-full bg-white/90"
+              style={{
+                width: `${(timeLeft / 15) * 100}%`,
+              }}
+            />
+          </LinearGradient>
+  
+          <StyledView className="flex-row items-center">
+            <StyledIonIcon name="time-outline" size={24} color="white" style={{ opacity: 0.6 }} />
+            <StyledText className="font-custom text-white/60 text-base text-center ml-2">
+              เหลือเวลาอีก {timeLeft} นาที
+            </StyledText>
+          </StyledView>
+  
+          <TouchableOpacity
+            className="mt-8"
+            onPress={() => setStep(1)}
+          >
+            <LinearGradient
+              colors={['#ffffff30', '#ffffff10']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              className="px-8 py-3 rounded-full"
+            >
+              <StyledText className="font-custom text-white text-base">
+                ยกเลิกการค้นหา
+              </StyledText>
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
+  
+        <Animated.View 
+          entering={FadeInDown.delay(300).duration(1000)}
+          className="absolute bottom-10 left-6 right-6"
+        >
+          <StyledText className="font-custom text-white/40 text-sm text-center">
+            ระบบจะค้นหาเพื่อนที่ใกล้เคียงและว่างในเวลาที่คุณต้องการ
+          </StyledText>
+        </Animated.View>
+      </LinearGradient>
+    );
+  };
 
   return (
     <StyledView className="flex-1">

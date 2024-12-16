@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, InputModeOptions, Alert, Animated, ActivityIndicator, Appearance, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, InputModeOptions, Alert, Animated, ActivityIndicator, Appearance, TouchableWithoutFeedback, Keyboard, useColorScheme  } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
@@ -136,6 +136,8 @@ const InputField: React.FC<InputFieldProps> = ({
 );
 
 export default function RegisterStepTwo() {
+    const colorScheme = useColorScheme();
+
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
@@ -419,7 +421,7 @@ export default function RegisterStepTwo() {
                         <TouchableOpacity className="w-full mt-8" onPress={() => handleVerifyOTP()}>
                             <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
                                 <LinearGradient
-                                    colors={['#EB3834', '#69140F']}
+                                    colors={colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316']}
                                     start={{ x: 0, y: 0 }}
                                     end={{ x: 1, y: 0 }}
                                     className="rounded-full py-3 shadow-sm"

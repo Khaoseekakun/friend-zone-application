@@ -15,7 +15,8 @@ import {
     StatusBar,
     Image,
     Alert,
-    Appearance
+    Appearance, 
+    useColorScheme 
 } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -194,6 +195,8 @@ export default function RegisterMember() {
 
         return () => listener.remove();
     }, []);
+
+    const colorScheme = useColorScheme();
 
     // Step 1: Account Info
     const [username, setUsername] = useState('');
@@ -587,7 +590,7 @@ export default function RegisterMember() {
                         />
                     ) : (
                         <>
-                            <Ionicons name="camera" size={40} color="#EB3834" />
+                            <Ionicons name="camera" size={40} color={colorScheme === 'dark' ? '#EB3834': '#69140F'} />
                             <StyledText className="text-gray-500 mt-2 font-custom">
                                 แตะเพื่อถ่ายภาพหน้าตรง
                             </StyledText>
@@ -613,7 +616,7 @@ export default function RegisterMember() {
                         />
                     ) : (
                         <>
-                            <Ionicons name="card" size={40} color="#EB3834" />
+                            <Ionicons name="card" size={40} color={colorScheme === 'dark' ? '#EB3834': '#69140F'} />
                             <StyledText className="text-gray-500 mt-2 font-custom">
                                 แตะเพื่อถ่ายภาพบัตรประชาชน
                             </StyledText>
@@ -685,7 +688,7 @@ export default function RegisterMember() {
                 <StyledView className="items-center">
                     <StyledView className="w-24 h-24 bg-white dark:bg-neutral-800 rounded-full shadow-lg items-center justify-center mb-4 p-2">
                         <LinearGradient
-                            colors={['#EB3834', '#69140F']}
+                            colors={colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316']}
                             className="w-20 h-20 rounded-full items-center justify-center"
                         >
                             <Ionicons name="checkmark-sharp" size={40} color="white" />
@@ -770,7 +773,7 @@ export default function RegisterMember() {
                 {/* Slogan */}
                 <StyledView className="items-center mb-8">
                     <LinearGradient
-                        colors={['#EB3834', '#69140F']}
+                        colors={colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316']}
                         className="px-6 py-4 rounded-2xl"
                     >
                         <StyledText className="text-white text-lg font-custom text-center">
@@ -948,8 +951,7 @@ export default function RegisterMember() {
                     {[1, 2, 3, 4, 5].map((step) => (
                         <StyledView
                             key={step}
-                            className={`h-1 flex-1 mx-1 rounded-full ${step <= currentStep ? 'bg-[#EB3834]' : 'bg-gray-200'
-                                }`}
+                            className={`h-1 flex-1 mx-1 rounded-full ${step <= currentStep ? 'bg-[#EB3834]' : 'bg-gray-200'}`}
                         />
                     ))}
                 </StyledView>
@@ -981,7 +983,7 @@ export default function RegisterMember() {
                         className={`rounded-full overflow-hidden `}
                     >
                         <LinearGradient
-                            colors={['#EB3834', '#69140F']}
+                            colors={colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316']}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
                             className="py-4"

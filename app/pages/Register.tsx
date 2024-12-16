@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, ActivityIndicator, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, ActivityIndicator, TouchableWithoutFeedback, Keyboard, useColorScheme } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp, useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
@@ -88,6 +88,7 @@ const InputField: React.FC<InputFieldProps> = ({
 );
 
 export default function Register() {
+  const colorScheme = useColorScheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -245,7 +246,7 @@ export default function Register() {
 
             <TouchableOpacity className="w-full " onPress={handleRegister} disabled={!isPasswordMatch || isUsernameValid || isUsernameValid == null}>
               <LinearGradient
-                colors={!isPasswordMatch || isUsernameValid || isUsernameValid == null ? ['#ccc', '#ccc'] : ['#ec4899', '#f97316']}
+                colors={!isPasswordMatch || isUsernameValid || isUsernameValid == null ? ['#ccc', '#ccc'] : colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 className="rounded-full py-3 shadow-sm"
