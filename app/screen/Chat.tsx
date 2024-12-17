@@ -533,10 +533,8 @@ export default function Chat() {
                                         className="flex-1"
                                         onPress={() => {
                                             if (item.notificationState === 'ready_confirm') {
-                                                handleScheduleResponse(item.id, 'ready');
                                                 updateMessageState(item.id, null);
                                             } else if (item.notificationState === 'cancel_confirm') {
-                                                handleScheduleResponse(item.id, 'not_ready');
                                                 updateMessageState(item.id, null);
                                             } else {
                                                 updateMessageState(item.id, 'ready_confirm');
