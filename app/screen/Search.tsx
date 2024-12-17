@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { View, Text, TouchableOpacity, Platform, Dimensions, StyleSheet, Image, ActivityIndicator, KeyboardAvoidingView, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Platform, Dimensions, StyleSheet, Image, ActivityIndicator, KeyboardAvoidingView, Alert, useColorScheme } from "react-native";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from 'expo-location';
 import { getAge } from "@/utils/Date";
 import { LatLng } from 'react-native-maps';
+import { ScrollView } from "react-native-gesture-handler";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -82,7 +83,14 @@ export default function Search() {
     const [hasLocationPermission, setHasLocationPermission] = useState(false);
     const [selfPin, setSelfPin] = useState<LatLng | null>(null);
     const [distance, setDistance] = useState<number>(0);
+    const colorScheme = useColorScheme();
 
+
+
+    const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
+    const [showJobTypeDropdown, setShowJobTypeDropdown] = useState(false);
+    const [selectedProvince, setSelectedProvince] = useState<string>('');
+    const [selectedJobType, setSelectedJobType] = useState<string>('');
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -144,6 +152,30 @@ export default function Search() {
             value: 1
         }
     ]
+    const provinces: string[] = [
+        'กรุงเทพมหานคร',
+        'เชียงใหม่',
+        'นนทบุรี',
+        'ปทุมธานี',
+        'ภูเก็ต',
+        'ขอนแก่น',
+        'เชียงราย',
+        'นครราชสีมา',
+        'อุดรธานี',
+        'สงขลา',
+        // เพิ่มจังหวัดอื่นๆ ตามต้องการ
+    ];
+    const jobTypes: string[] = [
+        'เพื่อนเที่ยว',
+        'เพื่อนทานข้าว',
+        'เพื่อนช้อปปิ้ง',
+        'เพื่อนเล่นเกม',
+        'เพื่อนออกกำลังกาย',
+        'MC/DJ',
+        'นักดนตรี/นักร้อง',
+        'พิธีกร',
+        // เพิ่มประเภทงานอื่นๆ ตามต้องการ
+    ];
 
 
     const jobsCategory = {
@@ -261,10 +293,9 @@ export default function Search() {
                                 </StyledView>
                                 <StyledView>
                                     <StyledText className="font-custom text-gray-300 text-sm ml-1">
-                                        ( 10{distance > 0 && `(${
-                                                distance > 1000
-                                                    ? `${(distance / 1000).toFixed(1)} Km`
-                                                    : `${distance.toFixed(0)} M`
+                                        ( 10{distance > 0 && `(${distance > 1000
+                                                ? `${(distance / 1000).toFixed(1)} Km`
+                                                : `${distance.toFixed(0)} M`
                                             })`} km.)
                                     </StyledText>
                                 </StyledView>
@@ -379,76 +410,197 @@ export default function Search() {
 
                 {isOpen && (
                     <StyledView className="absolute w-full h-full justify-center items-center">
-
-                        <TouchableOpacity className="absolute flex-1 bg-black opacity-25 w-full h-screen justify-center"
-                            onPress={() => setIsOpen(false)}>
+                        <TouchableOpacity
+                            className="absolute flex-1 bg-black opacity-25 w-full h-screen justify-center"
+                            onPress={() => setIsOpen(false)}
+                        >
                         </TouchableOpacity>
 
-                        <StyledView className="absolute flex-1 bg-white w-[90%] h-[40%] rounded-2xl">
-                            <StyledTouchableOpacity className="absolute right-0 m-2"
+                        <StyledView className="absolute flex-1 bg-white dark:bg-neutral-900 border border-white/20 w-[90%] h-[70%] rounded-2xl">
+                            <StyledTouchableOpacity
+                                className="absolute right-0 m-2"
                                 onPress={() => setIsOpen(false)}
                             >
                                 <StyledIonicons
                                     name="close"
                                     size={30}
-                                    color="black"
+                                    color={colorScheme === 'dark' ? "white" : "black"}
                                 />
                             </StyledTouchableOpacity>
-                            <StyledView className="mt-10 h-[1px] bg-gray-200 w-full"></StyledView>
-                            <StyledView className="px-3 py-1">
-                                <StyledText className="font-custom pl-2 pb-1 text-lg">เพศ</StyledText>
-                                <StyledView className="flex-row">
-                                    {genderOptions.map((option, index) => (
-                                        <StyledTouchableOpacity
-                                            key={index}
-                                            className={`px-3 py-1 rounded-full m-1 ${genderFilter.includes(option.value) ? 'bg-red-500' : 'bg-gray-200'}`}
-                                            onPress={() => {
-                                                if (genderFilter.includes(option.value)) {
-                                                    setGenderFilter(genderFilter.filter((item) => item !== option.value));
-                                                }
-                                                else {
-                                                    setGenderFilter([...genderFilter, option.value]);
-                                                }
 
-                                            }}
-                                        >
-                                            <StyledText className={`font-custom text-lg ${genderFilter.includes(option.value) ? 'text-white' : 'text-black'}`}>{option.name}</StyledText>
-                                        </StyledTouchableOpacity>
-                                    ))}
+                            <ScrollView className="flex-1 mt-12">
+                                <StyledView className="px-3 py-1">
+                                    <StyledText className="font-custom dark:text-white pl-2 pb-1 text-lg">จังหวัด</StyledText>
+                                    <TouchableOpacity
+                                        className="flex-row items-center justify-between bg-gray-100 dark:bg-neutral-800 rounded-full py-3 px-4"
+                                        onPress={() => setShowProvinceDropdown(true)}
+                                    >
+                                        <StyledText className="font-custom text-gray-700 dark:text-gray-300">
+                                            {selectedProvince || "เลือกจังหวัด"}
+                                        </StyledText>
+                                        <StyledIonicons
+                                            name="chevron-down"
+                                            size={20}
+                                            color={colorScheme === 'dark' ? "#9CA3AF" : "#4B5563"}
+                                        />
+                                    </TouchableOpacity>
                                 </StyledView>
 
-                            </StyledView>
-                            <StyledView className="px-3 py-1">
-                                <StyledText className="font-custom pl-2 pb-1 text-lg">คะแนน</StyledText>
-                                <StyledView className="flex-row">
-                                    {ratingOptions.map((option, index) => (
-                                        <StyledTouchableOpacity
-                                            key={index}
-                                            className={`px-4 py-1 rounded-full m-1 ${ratingFilter.includes(option.value) ? 'bg-red-500' : 'bg-gray-200'}`}
-                                            onPress={() => {
-                                                if (ratingFilter.includes(option.value)) {
-                                                    setRatingFilter(ratingFilter.filter((item) => item !== option.value));
-                                                }
-                                                else {
-                                                    setRatingFilter([...ratingFilter, option.value]);
-                                                }
-                                            }}
-                                        >
-                                            <StyledText className={`font-custom text-lg mx-2 ${ratingFilter.includes(option.value) ? 'text-white' : 'text-black'}`}>{option.name}</StyledText>
-                                        </StyledTouchableOpacity>
-                                    ))}
+                                <StyledView className="px-3 py-1">
+                                    <StyledText className="font-custom dark:text-white pl-2 pb-1 text-lg">เพศ</StyledText>
+                                    <StyledView className="flex-row flex-wrap">
+                                        {genderOptions.map((option, index) => (
+                                            <StyledTouchableOpacity
+                                                key={index}
+                                                className={`px-3 py-1 rounded-full m-1 ${genderFilter.includes(option.value) ? 'bg-red-500' : 'bg-gray-200 dark:bg-neutral-700'}`}
+                                                onPress={() => {
+                                                    if (genderFilter.includes(option.value)) {
+                                                        setGenderFilter(genderFilter.filter((item) => item !== option.value));
+                                                    } else {
+                                                        setGenderFilter([...genderFilter, option.value]);
+                                                    }
+                                                }}
+                                            >
+                                                <StyledText className={`font-custom text-lg ${genderFilter.includes(option.value) ? 'text-white' : 'text-black dark:text-white'}`}>
+                                                    {option.name}
+                                                </StyledText>
+                                            </StyledTouchableOpacity>
+                                        ))}
+                                    </StyledView>
                                 </StyledView>
-                            </StyledView>
 
-                            <StyledTouchableOpacity className="absolute bg-red-500 rounded-full mb-4 mx-3 py-1 px-2 bottom-0 w-[90%] self-center"
+                                <StyledView className="px-3 py-1">
+                                    <StyledText className="font-custom dark:text-white pl-2 pb-1 text-lg">อายุ</StyledText>
+                                    <StyledView className="flex-row items-center">
+                                        <StyledTextInput
+                                            className="flex-1 font-custom bg-gray-100 dark:bg-neutral-800 rounded-full py-2 px-4 text-base dark:text-white mr-2"
+                                            placeholder="อายุต่ำสุด"
+                                            keyboardType="numeric"
+                                            placeholderTextColor="#9CA3AF"
+                                            maxLength={2}
+                                        />
+                                        <StyledText className="font-custom dark:text-white mx-2">-</StyledText>
+                                        <StyledTextInput
+                                            className="flex-1 font-custom bg-gray-100 dark:bg-neutral-800 rounded-full py-2 px-4 text-base dark:text-white ml-2"
+                                            placeholder="อายุสูงสุด"
+                                            keyboardType="numeric"
+                                            placeholderTextColor="#9CA3AF"
+                                            maxLength={2}
+                                        />
+                                    </StyledView>
+                                </StyledView>
+
+                                <StyledView className="px-3 py-1">
+                                    <StyledText className="font-custom dark:text-white pl-2 pb-1 text-lg">คะแนน</StyledText>
+                                    <StyledView className="flex-row flex-wrap">
+                                        {ratingOptions.map((option, index) => (
+                                            <StyledTouchableOpacity
+                                                key={index}
+                                                className={`px-4 py-1 rounded-full m-1 ${ratingFilter.includes(option.value) ? 'bg-red-500' : 'bg-gray-200 dark:bg-neutral-700'}`}
+                                                onPress={() => {
+                                                    if (ratingFilter.includes(option.value)) {
+                                                        setRatingFilter(ratingFilter.filter((item) => item !== option.value));
+                                                    } else {
+                                                        setRatingFilter([...ratingFilter, option.value]);
+                                                    }
+                                                }}
+                                            >
+                                                <StyledText className={`font-custom text-lg mx-2 ${ratingFilter.includes(option.value) ? 'text-white' : 'text-black dark:text-white'}`}>
+                                                    {option.name}
+                                                </StyledText>
+                                            </StyledTouchableOpacity>
+                                        ))}
+                                    </StyledView>
+                                </StyledView>
+
+                                <StyledView className="px-3 py-1">
+                                    <StyledText className="font-custom dark:text-white pl-2 pb-1 text-lg">ประเภทงาน</StyledText>
+                                    <TouchableOpacity
+                                        className="flex-row items-center justify-between bg-gray-100 dark:bg-neutral-800 rounded-full py-3 px-4"
+                                        onPress={() => setShowJobTypeDropdown(true)}
+                                    >
+                                        <StyledText className="font-custom text-gray-700 dark:text-gray-300">
+                                            {selectedJobType || "เลือกประเภทงาน"}
+                                        </StyledText>
+                                        <StyledIonicons
+                                            name="chevron-down"
+                                            size={20}
+                                            color={colorScheme === 'dark' ? "#9CA3AF" : "#4B5563"}
+                                        />
+                                    </TouchableOpacity>
+                                </StyledView>
+
+                                <StyledView className="h-20" />
+                            </ScrollView>
+
+                            <StyledTouchableOpacity
+                                className="absolute bg-red-500 rounded-full mb-4 mx-3 py-3 px-2 bottom-0 w-[90%] self-center"
                                 onPress={() => {
-                                    handlerSearch
+                                    handlerSearch(true, { searchType });
                                     setIsOpen(false);
                                 }}
                             >
                                 <StyledText className="font-custom text-lg text-white text-center">ค้นหา</StyledText>
                             </StyledTouchableOpacity>
                         </StyledView>
+
+                        {/* Province Dropdown Modal */}
+                        {showProvinceDropdown && (
+                            <StyledView className="absolute w-full h-full bg-black/50">
+                                <TouchableOpacity
+                                    className="absolute w-full h-full"
+                                    onPress={() => setShowProvinceDropdown(false)}
+                                />
+                                <StyledView className="absolute bottom-0 w-full bg-white dark:bg-neutral-900 rounded-t-3xl">
+                                    <StyledView className="w-12 h-1 bg-gray-300 rounded-full self-center my-3" />
+                                    <ScrollView className="max-h-96 px-4">
+                                        {provinces.map((province, index) => (
+                                            <TouchableOpacity
+                                                key={index}
+                                                className="py-4 border-b border-gray-200 dark:border-neutral-800"
+                                                onPress={() => {
+                                                    setSelectedProvince(province);
+                                                    setShowProvinceDropdown(false);
+                                                }}
+                                            >
+                                                <StyledText className="font-custom text-lg text-gray-700 dark:text-gray-300">
+                                                    {province}
+                                                </StyledText>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </ScrollView>
+                                </StyledView>
+                            </StyledView>
+                        )}
+
+                        {/* Job Type Dropdown Modal */}
+                        {showJobTypeDropdown && (
+                            <StyledView className="absolute w-full h-full bg-black/50">
+                                <TouchableOpacity
+                                    className="absolute w-full h-full"
+                                    onPress={() => setShowJobTypeDropdown(false)}
+                                />
+                                <StyledView className="absolute bottom-0 w-full bg-white dark:bg-neutral-900 rounded-t-3xl">
+                                    <StyledView className="w-12 h-1 bg-gray-300 rounded-full self-center my-3" />
+                                    <ScrollView className="max-h-96 px-4">
+                                        {jobTypes.map((jobType, index) => (
+                                            <TouchableOpacity
+                                                key={index}
+                                                className="py-4 border-b border-gray-200 dark:border-neutral-800"
+                                                onPress={() => {
+                                                    setSelectedJobType(jobType);
+                                                    setShowJobTypeDropdown(false);
+                                                }}
+                                            >
+                                                <StyledText className="font-custom text-lg text-gray-700 dark:text-gray-300">
+                                                    {jobType}
+                                                </StyledText>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </ScrollView>
+                                </StyledView>
+                            </StyledView>
+                        )}
                     </StyledView>
 
                 )}
