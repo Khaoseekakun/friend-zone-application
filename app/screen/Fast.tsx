@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, StyleSheet, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, StyleSheet, ActivityIndicator, Alert, Pressable, useAnimatedValue } from "react-native";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { LinearGradient } from "expo-linear-gradient";
@@ -11,18 +11,17 @@ import { Navigation } from "@/components/Navigation";
 import MapView, { Marker, Circle } from 'react-native-maps';
 import Animated, {
   useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  withSequence,
-  interpolate,
-  withDelay,
-  withSpring,
   FadeInUp,
   FadeInDown,
+  withTiming,
   Easing,
+  useAnimatedStyle,
+  withDelay,
+  withRepeat
 } from 'react-native-reanimated';
 import { RootStackParamList } from "@/types";
+import { Feather } from "lucide-react-native";
+const Icon = require('../../assets/icon/search.gif');
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -69,6 +68,8 @@ export default function Fast() {
   const { backPage } = router.params;
 
   const backgroundAnim = useSharedValue(0);
+  const _color = "#AB1815";
+  const _size = 100;
 
   useEffect(() => {
     // ควรย้าย timer ไปไว้ในเงื่อนไข step === 3 เพื่อป้องกันการทำงานที่ไม่จำเป็น
@@ -86,280 +87,16 @@ export default function Fast() {
         clearInterval(dotsTimer);
       };
     }
-  }, [step]); // เพิ่ม step เป็น dependency
+  }, [step]);
 
-  const animatedGradientStyle = useAnimatedStyle(() => ({
-    transform: [{
-      translateY: interpolate(
-        backgroundAnim.value,
-        [0, 1],
-        [0, 30]
-      )
-    }]
-  }));
-
-  const AnimatedCircles = () => {
-    const scale1 = useSharedValue(1);
-    const scale2 = useSharedValue(1);
-    const scale3 = useSharedValue(1);
-    const centerScale = useSharedValue(1);
-    const rotation = useSharedValue(0);
-    const pulseScale = useSharedValue(1);
-
-    useEffect(() => {
-      // คอนฟิกการเด้งแบบวุ้นๆ
-      const jellyConfig = {
-        damping: 12,
-        stiffness: 60,
-        mass: 0.5,
-        restDisplacementThreshold: 0.01
-      };
-
-      // วงนอกสุด - หมุนและขยาย
-      scale1.value = withRepeat(
-        withSequence(
-          withSpring(1.3, jellyConfig),
-          withSpring(1, jellyConfig)
-        ),
-        -1,
-        true
-      );
-
-      // วงกลาง - หมุนในทิศทางตรงข้าม
-      scale2.value = withDelay(
-        200,
-        withRepeat(
-          withSequence(
-            withSpring(1.25, {
-              ...jellyConfig,
-              stiffness: 60
-            }),
-            withSpring(0.9, jellyConfig)
-          ),
-          -1,
-          true
-        )
-      );
-
-      // วงใน - พัลส์เป็นจังหวะ
-      scale3.value = withDelay(
-        4000,
-        withRepeat(
-          withSequence(
-            withSpring(1.2, {
-              ...jellyConfig,
-              stiffness: 35
-            }),
-            withSpring(0.95, jellyConfig)
-          ),
-          -1,
-          true
-        )
-      );
-
-      // การหมุนต่อเนื่อง
-      rotation.value = withRepeat(
-        withTiming(360, {
-          duration: 8000,
-          easing: Easing.linear
-        }),
-        -1
-      );
-
-      // เอฟเฟกต์การเต้นตรงกลาง
-      centerScale.value = withRepeat(
-        withSequence(
-          withSpring(0.85, {
-            damping: 10,
-            stiffness: 80,
-            mass: 0.5,
-          }),
-          withSpring(1.1, {
-            damping: 10,
-            stiffness: 80,
-            mass: 0.5,
-          })
-        ),
-        -1,
-        true
-      );
-
-      // เอฟเฟกต์พัลส์เพิ่มเติม
-      pulseScale.value = withRepeat(
-        withSequence(
-          withTiming(1.1, {
-            duration: 4000,
-            easing: Easing.bezier(0.25, 0.1, 0.25, 1)
-          }),
-          withTiming(1, {
-            duration: 4000,
-            easing: Easing.bezier(0.25, 0.1, 0.25, 1)
-          }),
-        ),
-        -1,
-        true
-      );
-    }, []);
-
-    const circle1Style = useAnimatedStyle(() => ({
-      transform: [
-        { scale: scale1.value },
-        { rotate: `${rotation.value}deg` }
-      ],
-      opacity: interpolate(scale1.value, [1, 1.3], [0.2, 0.1])
-    }));
-
-    const circle2Style = useAnimatedStyle(() => ({
-      transform: [
-        { scale: scale2.value },
-        { rotate: `${-rotation.value * 0.8}deg` }
-      ],
-      opacity: interpolate(scale2.value, [0.9, 1.25], [0.3, 0.2])
-    }));
-
-    const circle3Style = useAnimatedStyle(() => ({
-      transform: [
-        { scale: scale3.value },
-        { rotate: `${rotation.value * 0.5}deg` }
-      ],
-      opacity: interpolate(scale3.value, [0.95, 1.2], [0.4, 0.3])
-    }));
-
-    const centerStyle = useAnimatedStyle(() => ({
-      transform: [
-        { scale: centerScale.value },
-        { rotate: `${-rotation.value * 0.3}deg` }
-      ],
-      opacity: interpolate(centerScale.value, [0.85, 1.1], [0.9, 1])
-    }));
-
-    const pulseStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: pulseScale.value }],
-      opacity: interpolate(pulseScale.value, [1, 1.1], [0.5, 0])
-    }));
-
-    return (
-      <StyledView className="relative w-48 h-48 items-center justify-center">
-        {/* Pulse effect */}
-        {/* <Animated.View
-          style={[{
-            position: 'absolute',
-            width: 200,
-            height: 200,
-            borderRadius: 100,
-            borderWidth: 2,
-            borderColor: '#EB3834',
-          }, pulseStyle]}
-        /> */}
-
-        {/* Outer circle */}
-        <Animated.View
-          style={[{
-            position: 'absolute',
-            width: 192,
-            height: 192,
-            borderRadius: 96,
-            backgroundColor: '#EB3834',
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.1)',
-          }, circle1Style]}
-        />
-
-        {/* Middle circle */}
-        <Animated.View
-          style={[{
-            position: 'absolute',
-            width: 144,
-            height: 144,
-            borderRadius: 72,
-            backgroundColor: '#EB3834',
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.15)',
-          }, circle2Style]}
-        />
-
-        {/* Inner circle */}
-        <Animated.View
-          style={[{
-            position: 'absolute',
-            width: 96,
-            height: 96,
-            borderRadius: 48,
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.2)',
-          }, circle3Style]}
-        />
-
-        {/* Center animated circle */}
-        <Animated.View
-          style={[{
-            width: 80,
-            height: 80,
-            borderRadius: 40,
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderWidth: 2,
-            borderColor: 'rgba(255,255,255,0.3)',
-          }, centerStyle]}
-        >
-          {/* <ActivityIndicator size="large" color="#fff" /> */}
-        </Animated.View>
-      </StyledView>
-    );
-  };
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 60000);
-
-    const dotsTimer = setInterval(() => {
-      setDots(prev => prev.length < 3 ? prev + '.' : '');
-    }, 500);
-
-    return () => {
-      clearInterval(timer);
-      clearInterval(dotsTimer);
-    };
-  }, []);
-
-  const categories = [
-    {
-      title: "เพื่อนเที่ยว",
-      icon1: iconFriend1,
-      icon2: iconFriend2,
-      isDisabled: false
+  const styleRipple = StyleSheet.create({
+    dot: {
+      width: _size,
+      height: _size,
+      borderRadius: _size / 2,
+      backgroundColor: _color,
     },
-    {
-      title: "MC/DJ/พิธีกร",
-      icon1: iconDJ1,
-      icon2: iconDJ2,
-      isDisabled: true
-    },
-    {
-      title: "วงดนตรี/นักร้อง",
-      icon1: iconMusic1,
-      icon2: iconMusic2,
-      isDisabled: true
-    },
-    {
-      title: "จองโต๊ะ",
-      icon1: iconTable1,
-      isDisabled: true
-    },
-    {
-      title: "Concert",
-      icon1: iconTicket1,
-      isDisabled: true
-    },
-    {
-      title: "FDrive",
-      icon1: iconCar1,
-      icon2: iconCar2,
-      isDisabled: true
-    }
-  ];
+  })
 
   const joblist = [
     { label: "นั่งคุย", value: "talk" },
@@ -785,7 +522,9 @@ export default function Fast() {
           entering={FadeInUp.delay(300).duration(1000)}
           className="items-center"
         >
-          <AnimatedCircles />
+          <StyledView className="w-[100px] h-[100px] bg-red-400/20 rounded-full items-center justify-center">
+            <Image source={Icon} style={{ width: 50, height: 50 }} />
+          </StyledView>
 
           <StyledText className="font-custom text-white text-3xl mb-3 text-center mt-8">
             กำลังรอการตอบรับ
@@ -857,7 +596,6 @@ export default function Fast() {
           {step === 3 && renderWaitingScreen()}
         </StyledView>
       </KeyboardAvoidingView>
-      <Navigation current="FastTab" />
     </StyledView>
   );
 }
