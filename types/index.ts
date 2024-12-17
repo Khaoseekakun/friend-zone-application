@@ -23,6 +23,9 @@ export type RootStackParamList = {
   AccountStatus: {
     backPage?: string;
   },
+  AccountSetting: {
+    backPage?: string;
+  },
   Agreement: { nextScreen?: string, backPage?: string },
   RegisterStepTwo: { username: string, password: string, backPage?: string },
   PostUpdate: {

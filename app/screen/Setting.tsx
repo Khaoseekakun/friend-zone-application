@@ -9,12 +9,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScrollView } from "react-native-gesture-handler";
 import axios from "axios";
+import { RootStackParamList } from "@/types";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledIonicons = styled(Ionicons);
 
 export default function Setting() {
-    const navigation = useNavigation<NavigationProp<any>>();
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [isLogout, setIsLogout] = useState(false);
     const [userData, setUserData] = useState<any>();
     const Logout = async () => {
@@ -33,7 +34,7 @@ export default function Setting() {
                 await AsyncStorage.removeItem('userToken');
                 const resetAction = StackActions.replace("Login")
                 navigation.dispatch(resetAction);
-            }else {
+            } else {
                 Alert.alert('ผิดพลาด', 'ไม่สามารถออกจากระบบได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
             }
         } catch (error) {
@@ -62,7 +63,7 @@ export default function Setting() {
                     colors={['#EB3834', '#69140F']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
-                    className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[96px]" } justify-center`}
+                    className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[96px]"} justify-center`}
                 >
                     <StyledView className={`${Platform.OS == "ios" ? "mt-8" : "mt-8"}`}>
                         <TouchableOpacity onPress={() => navigation.goBack()} className="ml-4">
@@ -78,7 +79,9 @@ export default function Setting() {
                         <StyledText className=" text-gray-500 dark:text-gray-200 font-custom">FriendZone</StyledText>
                     </StyledView>
 
-                    <TouchableOpacity onPress={() => navigation.navigate("AccountSetting")}>
+                    <TouchableOpacity onPress={() => navigation.navigate("AccountSetting", {
+                        backPage: "SettingTab"
+                    })}>
                         <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
                             <StyledView className="flex-row">
                                 <StyledIonicons name="person-circle-outline" size={24} className="mt-1 text-black dark:text-white" />
@@ -108,7 +111,7 @@ export default function Setting() {
                         )
                     } */}
 
-                        {/* <TouchableOpacity onPress={() => navigation.navigate("SettingImagePreview")}>
+                    {/* <TouchableOpacity onPress={() => navigation.navigate("SettingImagePreview")}>
 
                             <StyledView className="flex-row items-center justify-between w-full px-3 pb-3">
                                 <StyledView className="flex-row">
@@ -127,18 +130,24 @@ export default function Setting() {
                         <StyledText className=" text-gray-500 dark:text-gray-200 font-custom">ทั่วไป</StyledText>
                     </StyledView>
 
-                    <StyledView className="flex-row items-center justify-between w-full px-3">
-                        <StyledView className="flex-row justify-center">
-                            <StyledIonicons name="alert-circle-outline" size={24} className="mt-1 text-black dark:text-white" />
-                            <StyledView className="ml-2">
-                                <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">สถานะบัญชี</StyledText>
-                                <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">ตรวจสอบสิทธิ์การใช้งาน</StyledText>
+                    <TouchableOpacity onPress={() => navigation.navigate("AccountStatus", {
+                        backPage: "SettingTab"
+                    })}>
+                        <StyledView className="flex-row items-center justify-between w-full px-3">
+                            <StyledView className="flex-row justify-center">
+                                <StyledIonicons name="alert-circle-outline" size={24} className="mt-1 text-black dark:text-white" />
+                                <StyledView className="ml-2">
+                                    <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">สถานะบัญชี</StyledText>
+                                    <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">ตรวจสอบสิทธิ์การใช้งาน</StyledText>
+                                </StyledView>
                             </StyledView>
+                            <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                         </StyledView>
-                        <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
-                    </StyledView>
+                    </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => navigation.navigate("ScheduleList")}>
+                    <TouchableOpacity onPress={() => navigation.navigate("ScheduleList", {
+                        backPage: "SettingTab"
+                    })}>
                         <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
                             <StyledView className="flex-row justify-center">
                                 <StyledIonicons name="calendar-outline" size={24} className="mt-1 text-black dark:text-white" />
@@ -150,27 +159,33 @@ export default function Setting() {
                             <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                         </StyledView>
                     </TouchableOpacity>
-                    <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
-                        <StyledView className="flex-row justify-center">
-                            <StyledIonicons name="analytics-outline" size={24} className="mt-1 text-black dark:text-white" />
-                            <StyledView className="ml-2">
-                                <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">บันทึกประวัติ</StyledText>
-                                <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">การนัดหมาย, ธุรกรรม, อื่นๆ</StyledText>
+                    <TouchableOpacity onPress={() => navigation.navigate("History", {})}>
+                        <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
+                            <StyledView className="flex-row justify-center">
+                                <StyledIonicons name="analytics-outline" size={24} className="mt-1 text-black dark:text-white" />
+                                <StyledView className="ml-2">
+                                    <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">บันทึกประวัติ</StyledText>
+                                    <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">การนัดหมาย, ธุรกรรม, อื่นๆ</StyledText>
+                                </StyledView>
                             </StyledView>
+                            <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                         </StyledView>
-                        <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
-                    </StyledView>
+                    </TouchableOpacity>
 
-                    <StyledView className="flex-row items-center justify-between w-full px-3 pb-2">
-                        <StyledView className="flex-row justify-center">
-                            <StyledIonicons name="notifications-outline" size={24} className="mt-1 text-black dark:text-white" />
-                            <StyledView className="ml-2">
-                                <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">การแจ้งเตือน</StyledText>
-                                <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">เปิด-ปิดการแจ้งเตือน</StyledText>
+                    <TouchableOpacity onPress={() => navigation.navigate("Policy", {
+                        backPage: "SettingTab"
+                    })}>
+                        <StyledView className="flex-row items-center justify-between w-full px-3 pb-2">
+                            <StyledView className="flex-row justify-center">
+                                <StyledIonicons name="shield-checkmark-outline" size={24} className="mt-1 text-black dark:text-white" />
+                                <StyledView className="ml-2">
+                                    <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">นโยบายและความเป็นส่วนตัว</StyledText>
+                                    <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">เงื่อนไขและข้อกำหนดในการใช้บริการ</StyledText>
+                                </StyledView>
                             </StyledView>
+                            <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                         </StyledView>
-                        <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
-                    </StyledView>
+                    </TouchableOpacity>
 
                     <StyledView className="w-full h-1.5 bg-gray-100 dark:bg-neutral-800"></StyledView>
 

@@ -47,7 +47,7 @@ const SERVICE_OPTIONS: ServiceOption[] = [
     { id: 'game_friend', name: 'เพื่อนเล่นเกม', icon: 'game-controller-outline' }
 ];
 
-export default function EditProfile() {
+export default function AccountSetting() {
     const navigation = useNavigation<any>();
 
     // Profile Data States

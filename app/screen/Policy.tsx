@@ -35,10 +35,6 @@ export default function Policy() {
         fetchPolicyContent();
     }, []);
 
-    const handleAgree = () => {
-        navigation.navigate('Register', {});
-    };
-
     if (loading) {
         return (
             <StyledView className="flex-1 justify-center items-center bg-white dark:bg-neutral-900">
