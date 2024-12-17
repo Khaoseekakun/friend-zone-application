@@ -44,13 +44,10 @@ export default function Chat() {
             };
             jobsType: string;
         };
-        scheduleData?: {
-            date: string;
-            description: string;
-            end_date: string;
-            location: string;
-            start_date: string;
-        };
+        date: string;
+        end_date: string;
+        location: string;
+        start_date: string;
     }
 
     interface Channel {
@@ -74,6 +71,36 @@ export default function Chat() {
     const [channels, setChannels] = useState<Channel[]>([]);
     const [channelId, setChatId] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
+    const [notificationStatus, setNotificationStatus] = useState<'initial' | 'ready' | 'cancel'>('initial');
+
+    const handleNotificationAction = (messageId: string, action: 'ready' | 'cancel', confirm: boolean = false) => {
+        if (action === 'ready') {
+            if (confirm) {
+                // Handle final confirmation
+                setNotificationStatus('initial');
+            } else {
+                setNotificationStatus('ready');
+            }
+        } else if (action === 'cancel') {
+            if (confirm) {
+                // Handle final cancellation
+                setNotificationStatus('initial');
+            } else {
+                setNotificationStatus('cancel');
+            }
+        }
+    };
+    const updateMessageState = (messageId: string, state: 'ready_confirm' | 'cancel_confirm' | null) => {
+        setMessages(prevMessages => prevMessages.map(msg => {
+            if (msg.id === messageId) {
+                return {
+                    ...msg,
+                    notificationState: state
+                };
+            }
+            return msg;
+        }));
+    };
 
 
     const [inputFocus, setInputFocus] = useState(false);
@@ -358,6 +385,11 @@ export default function Chat() {
             return (currentMessageTime.getTime() - prevMessageTime.getTime()) > 10 * 60 * 1000;
         })();
 
+
+
+
+        // console.log(item)
+
         return (
             <>
 
@@ -374,7 +406,7 @@ export default function Chat() {
 
                 {item.senderId == "system" ? (
                     <StyledView className={`flex-row justify-center`}>
-                        <StyledView className={`${isMyMessage ? 'bg-[#EB3834]' : ''} rounded-xl px-3 py-2 max-w-[80%] mb-3 border-neutral-500 border-dashed border-[1px] w-full`}>
+                        <StyledView className={`${isMyMessage ? 'bg-[#EB3834]' : ''} rounded-xl px-3 py-2 max-w-[90%] mb-3 border-neutral-500 border-dashed border-[1px] w-full`}>
                             <StyledText className={`${isMyMessage ? 'text-white' : 'text-black dark:text-white'} font-custom text-2xl text-center`}>
                                 ฿ {(item.details.billingPrice / 100).toLocaleString()}
                             </StyledText>
@@ -431,7 +463,7 @@ export default function Chat() {
                 ) : item.senderId == "noti_schedules" ? (
                     <StyledView className="flex-row justify-center my-2">
                         <StyledView className="w-[90%] rounded-xl bg-red-50 dark:bg-neutral-800 border border-red-200 dark:border-neutral-700 overflow-hidden">
-                            {/* Header Section */}
+                            {/* Header Section - Remains constant */}
                             <StyledView className="flex-row items-center p-4 border-b border-red-200 dark:border-neutral-700">
                                 <StyledView className="w-10 h-10 rounded-full bg-red-100 dark:bg-neutral-700 items-center justify-center mr-3">
                                     <StyledIonicons name="notifications-outline" size={24} color="#EB3834" />
@@ -446,50 +478,70 @@ export default function Chat() {
                                 </StyledView>
                             </StyledView>
                 
-                            {/* Details Section */}
+                            {/* Dynamic Content Section */}
                             <StyledView className="p-4">
-                                <StyledText className="font-custom text-base text-gray-800 dark:text-gray-200 mb-3">
-                                    {item.scheduleData?.description}
-                                </StyledText>
-                
-                                <StyledView className="bg-white dark:bg-neutral-900 rounded-lg p-3 mb-4">
-                                    {/* Date */}
-                                    <StyledView className="flex-row items-center mb-2">
-                                        <StyledIonicons name="calendar-outline" size={20} color="#666" />
-                                        <StyledText className="font-custom text-gray-700 dark:text-gray-300 ml-2">
-                                            {new Date(item.scheduleData?.date || '').toLocaleDateString('th-TH')}
+                                {item.notificationState === 'ready_confirm' ? (
+                                    <StyledText className="font-custom text-sm text-gray-800 dark:text-gray-200 text-center mb-4">
+                                        คุณแน่ใจหรือไม่ว่าพร้อมสำหรับการนัดหมายนี้?
+                                    </StyledText>
+                                ) : item.notificationState === 'cancel_confirm' ? (
+                                    <StyledText className="font-custom text-sm text-gray-800 dark:text-gray-200 text-center mb-4">
+                                        คุณต้องการยกเลิกการนัดหมายนี้ใช่หรือไม่?
+                                    </StyledText>
+                                ) : (
+                                    <>
+                                        <StyledText className="font-custom text-base text-gray-800 dark:text-gray-200 mb-3">
+                                            {item.text}
                                         </StyledText>
-                                    </StyledView>
                 
-                                    {/* Time */}
-                                    <StyledView className="flex-row items-center mb-2">
-                                        <StyledIonicons name="time-outline" size={20} color="#666" />
-                                        <StyledText className="font-custom text-gray-700 dark:text-gray-300 ml-2">
-                                            {new Date(item.scheduleData?.start_date || '').toLocaleTimeString('th-TH', {
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
-                                            {' - '}
-                                            {new Date(item.scheduleData?.end_date || '').toLocaleTimeString('th-TH', {
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
-                                        </StyledText>
-                                    </StyledView>
+                                        <StyledView className="bg-white dark:bg-neutral-900 rounded-lg p-3 mb-4">
+                                            <StyledView className="flex-row items-center mb-2">
+                                                <StyledIonicons name="calendar-outline" size={20} color="#666" />
+                                                <StyledText className="font-custom text-gray-700 dark:text-gray-300 ml-2">
+                                                    {new Date(item.date || '').toLocaleDateString('th-TH')}
+                                                </StyledText>
+                                            </StyledView>
                 
-                                    {/* Location */}
-                                    <StyledView className="flex-row items-center">
-                                        <StyledIonicons name="location-outline" size={20} color="#666" />
-                                        <StyledText className="font-custom text-gray-700 dark:text-gray-300 ml-2 flex-1">
-                                            {item.scheduleData?.location}
-                                        </StyledText>
-                                    </StyledView>
-                                </StyledView>
+                                            <StyledView className="flex-row items-center mb-2">
+                                                <StyledIonicons name="time-outline" size={20} color="#666" />
+                                                <StyledText className="font-custom text-gray-700 dark:text-gray-300 ml-2">
+                                                    {new Date(item.start_date || '').toLocaleTimeString('th-TH', {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                    {' - '}
+                                                    {new Date(item.end_date || '').toLocaleTimeString('th-TH', {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </StyledText>
+                                            </StyledView>
+                
+                                            <StyledView className="flex-row items-center">
+                                                <StyledIonicons name="location-outline" size={20} color="#666" />
+                                                <StyledText className="font-custom text-gray-700 dark:text-gray-300 ml-2 flex-1">
+                                                    {item.location}
+                                                </StyledText>
+                                            </StyledView>
+                                        </StyledView>
+                                    </>
+                                )}
                 
                                 {/* Action Buttons */}
                                 <StyledView className="flex-row justify-between space-x-3">
                                     <TouchableOpacity
                                         className="flex-1"
+                                        onPress={() => {
+                                            if (item.notificationState === 'ready_confirm') {
+                                                handleScheduleResponse(item.id, 'ready');
+                                                updateMessageState(item.id, null);
+                                            } else if (item.notificationState === 'cancel_confirm') {
+                                                handleScheduleResponse(item.id, 'not_ready');
+                                                updateMessageState(item.id, null);
+                                            } else {
+                                                updateMessageState(item.id, 'ready_confirm');
+                                            }
+                                        }}
                                     >
                                         <LinearGradient
                                             colors={['#EB3834', '#69140F']}
@@ -498,18 +550,24 @@ export default function Chat() {
                                             className="py-3 rounded-full"
                                         >
                                             <StyledText className="font-custom text-white text-center">
-                                                พร้อมแล้ว
+                                                {item.notificationState ? 'ยืนยัน' : 'พร้อมแล้ว'}
                                             </StyledText>
                                         </LinearGradient>
                                     </TouchableOpacity>
                 
                                     <TouchableOpacity
                                         className="flex-1"
-                                        onPress={() => handleScheduleResponse(item.id, 'not_ready')}
+                                        onPress={() => {
+                                            if (item.notificationState) {
+                                                updateMessageState(item.id, null);
+                                            } else {
+                                                updateMessageState(item.id, 'cancel_confirm');
+                                            }
+                                        }}
                                     >
                                         <StyledView className="bg-gray-200 dark:bg-neutral-700 py-3 rounded-full">
                                             <StyledText className="font-custom text-gray-700 dark:text-gray-300 text-center">
-                                                ยังไม่พร้อม
+                                                {item.notificationState ? 'ย้อนกลับ' : 'ยกเลิก'}
                                             </StyledText>
                                         </StyledView>
                                     </TouchableOpacity>
