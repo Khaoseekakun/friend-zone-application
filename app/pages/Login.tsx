@@ -175,7 +175,11 @@ export default function Login() {
 
                     {/* Create Account */}
                     <StyledView className="flex-row justify-between w-full mb-1">
-                        <StyledTouchableOpacity>
+                        <StyledTouchableOpacity
+                            onPress={() => navigation.navigate('ForgotPassword', {
+                                backPage: 'Login'
+                            })}
+                        >
                             <StyledText className="font-custom text-blue-600">ลืมรหัสผ่าน?</StyledText>
                         </StyledTouchableOpacity>
                         <StyledView className="flex-row items-center">
@@ -188,7 +192,6 @@ export default function Login() {
                     
                     <StyledView className="flex-row justify-between w-full mb-10">
                         <StyledView className="flex-row items-center">
-                            <StyledText className='font-custom text-gray-500'>ยอมรับ</StyledText>
                             <StyledTouchableOpacity onPress={() => navigation.navigate('Agreement', { nextScreen: 'Register' })}>
                                 <StyledText className='font-custom text-blue-500'>ข้อกำหนด</StyledText>
                             </StyledTouchableOpacity>

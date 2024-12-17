@@ -71,25 +71,25 @@ export default function Fast() {
   const backgroundAnim = useSharedValue(0);
 
   useEffect(() => {
-  // ควรย้าย timer ไปไว้ในเงื่อนไข step === 3 เพื่อป้องกันการทำงานที่ไม่จำเป็น
-  if (step === 3) {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 60000);
+    // ควรย้าย timer ไปไว้ในเงื่อนไข step === 3 เพื่อป้องกันการทำงานที่ไม่จำเป็น
+    if (step === 3) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 60000);
 
-    const dotsTimer = setInterval(() => {
-      setDots(prev => prev.length < 3 ? prev + '.' : '');
-    }, 500);
+      const dotsTimer = setInterval(() => {
+        setDots(prev => prev.length < 3 ? prev + '.' : '');
+      }, 500);
 
-    return () => {
-      clearInterval(timer);
-      clearInterval(dotsTimer);
-    };
-  }
-}, [step]); // เพิ่ม step เป็น dependency
+      return () => {
+        clearInterval(timer);
+        clearInterval(dotsTimer);
+      };
+    }
+  }, [step]); // เพิ่ม step เป็น dependency
 
   const animatedGradientStyle = useAnimatedStyle(() => ({
-    transform: [{ 
+    transform: [{
       translateY: interpolate(
         backgroundAnim.value,
         [0, 1],
@@ -105,7 +105,7 @@ export default function Fast() {
     const centerScale = useSharedValue(1);
     const rotation = useSharedValue(0);
     const pulseScale = useSharedValue(1);
-    
+
     useEffect(() => {
       // คอนฟิกการเด้งแบบวุ้นๆ
       const jellyConfig = {
@@ -114,7 +114,7 @@ export default function Fast() {
         mass: 0.5,
         restDisplacementThreshold: 0.01
       };
-  
+
       // วงนอกสุด - หมุนและขยาย
       scale1.value = withRepeat(
         withSequence(
@@ -124,7 +124,7 @@ export default function Fast() {
         -1,
         true
       );
-  
+
       // วงกลาง - หมุนในทิศทางตรงข้าม
       scale2.value = withDelay(
         200,
@@ -140,7 +140,7 @@ export default function Fast() {
           true
         )
       );
-  
+
       // วงใน - พัลส์เป็นจังหวะ
       scale3.value = withDelay(
         4000,
@@ -156,7 +156,7 @@ export default function Fast() {
           true
         )
       );
-  
+
       // การหมุนต่อเนื่อง
       rotation.value = withRepeat(
         withTiming(360, {
@@ -165,7 +165,7 @@ export default function Fast() {
         }),
         -1
       );
-  
+
       // เอฟเฟกต์การเต้นตรงกลาง
       centerScale.value = withRepeat(
         withSequence(
@@ -183,24 +183,24 @@ export default function Fast() {
         -1,
         true
       );
-  
+
       // เอฟเฟกต์พัลส์เพิ่มเติม
       pulseScale.value = withRepeat(
         withSequence(
-          withTiming(1.1, { 
+          withTiming(1.1, {
             duration: 4000,
-            easing: Easing.bezier(0.25, 0.1, 0.25, 1) 
+            easing: Easing.bezier(0.25, 0.1, 0.25, 1)
           }),
-          withTiming(1, { 
+          withTiming(1, {
             duration: 4000,
-            easing: Easing.bezier(0.25, 0.1, 0.25, 1) 
+            easing: Easing.bezier(0.25, 0.1, 0.25, 1)
           }),
         ),
         -1,
         true
       );
     }, []);
-  
+
     const circle1Style = useAnimatedStyle(() => ({
       transform: [
         { scale: scale1.value },
@@ -208,7 +208,7 @@ export default function Fast() {
       ],
       opacity: interpolate(scale1.value, [1, 1.3], [0.2, 0.1])
     }));
-  
+
     const circle2Style = useAnimatedStyle(() => ({
       transform: [
         { scale: scale2.value },
@@ -216,7 +216,7 @@ export default function Fast() {
       ],
       opacity: interpolate(scale2.value, [0.9, 1.25], [0.3, 0.2])
     }));
-  
+
     const circle3Style = useAnimatedStyle(() => ({
       transform: [
         { scale: scale3.value },
@@ -224,7 +224,7 @@ export default function Fast() {
       ],
       opacity: interpolate(scale3.value, [0.95, 1.2], [0.4, 0.3])
     }));
-  
+
     const centerStyle = useAnimatedStyle(() => ({
       transform: [
         { scale: centerScale.value },
@@ -232,83 +232,17 @@ export default function Fast() {
       ],
       opacity: interpolate(centerScale.value, [0.85, 1.1], [0.9, 1])
     }));
-  
+
     const pulseStyle = useAnimatedStyle(() => ({
       transform: [{ scale: pulseScale.value }],
       opacity: interpolate(pulseScale.value, [1, 1.1], [0.5, 0])
     }));
-  
+
     return (
-      <StyledView className="relative w-48 h-48 items-center justify-center">
-        {/* Pulse effect */}
-        {/* <Animated.View
-          style={[{
-            position: 'absolute',
-            width: 200,
-            height: 200,
-            borderRadius: 100,
-            borderWidth: 2,
-            borderColor: '#EB3834',
-          }, pulseStyle]}
-        /> */}
-  
-        {/* Outer circle */}
-        <Animated.View
-          style={[{
-            position: 'absolute',
-            width: 192,
-            height: 192,
-            borderRadius: 96,
-            backgroundColor: '#EB3834',
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.1)',
-          }, circle1Style]}
-        />
-  
-        {/* Middle circle */}
-        <Animated.View
-          style={[{
-            position: 'absolute',
-            width: 144,
-            height: 144,
-            borderRadius: 72,
-            backgroundColor: '#EB3834',
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.15)',
-          }, circle2Style]}
-        />
-  
-        {/* Inner circle */}
-        <Animated.View
-          style={[{
-            position: 'absolute',
-            width: 96,
-            height: 96,
-            borderRadius: 48,
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.2)',
-          }, circle3Style]}
-        />
-  
-        {/* Center animated circle */}
-        <Animated.View
-          style={[{
-            width: 80,
-            height: 80,
-            borderRadius: 40,
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderWidth: 2,
-            borderColor: 'rgba(255,255,255,0.3)',
-          }, centerStyle]}
-        >
-          {/* <ActivityIndicator size="large" color="#fff" /> */}
-        </Animated.View>
-      </StyledView>
+      <></>
     );
   };
-  
+
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
@@ -557,12 +491,12 @@ export default function Fast() {
                 <StyledView className="flex-1 justify-center items-center p-4">
                   <StyledView className="flex-1">
                     <StyledView className="w-full h-[120px] items-center justify-center top-7">
-                        <StyledImage
-                          source={iconTable1}
-                          className="w-[250px] h-[250px]"
-                          resizeMode="contain"
-                        />
-                      </StyledView>
+                      <StyledImage
+                        source={iconTable1}
+                        className="w-[250px] h-[250px]"
+                        resizeMode="contain"
+                      />
+                    </StyledView>
                   </StyledView>
 
                   <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
@@ -591,12 +525,12 @@ export default function Fast() {
                 <StyledView className="flex-1 justify-center items-center p-4">
                   <StyledView className="flex-1">
                     <StyledView className="w-full h-[120px] items-center justify-center right-1 top-[55px]">
-                        <StyledImage
-                          source={iconTicket1}
-                          className="w-[130px] h-[130px]"
-                          resizeMode="contain"
-                        />
-                      </StyledView>
+                      <StyledImage
+                        source={iconTicket1}
+                        className="w-[130px] h-[130px]"
+                        resizeMode="contain"
+                      />
+                    </StyledView>
                   </StyledView>
 
                   <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
@@ -781,41 +715,41 @@ export default function Fast() {
         end={{ x: 0, y: 1 }}
         className="flex-1 justify-center items-center px-6"
       >
-        <Animated.View 
+        <Animated.View
           entering={FadeInUp.delay(300).duration(1000)}
           className="items-center"
         >
           <AnimatedCircles />
-  
+
           <StyledText className="font-custom text-white text-3xl mb-3 text-center mt-8">
-            กำลังรอการตอบรับ{dots}
+            กำลังรอการตอบรับ
           </StyledText>
-          
+
           <StyledText className="font-custom text-white/80 text-lg mb-8 text-center">
             โปรดรอสักครู่{'\n'}ระบบกำลังค้นหาเพื่อนที่ว่างให้คุณ
           </StyledText>
-  
+
           <LinearGradient
             colors={['#FF4B48', '#AB1815']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             className="w-full h-2 rounded-full mb-4 overflow-hidden"
           >
-            <Animated.View 
+            <Animated.View
               className="h-full bg-white/90"
               style={{
                 width: `${(timeLeft / 15) * 100}%`,
               }}
             />
           </LinearGradient>
-  
+
           <StyledView className="flex-row items-center">
             <StyledIonIcon name="time-outline" size={24} color="white" style={{ opacity: 0.6 }} />
             <StyledText className="font-custom text-white/60 text-base text-center ml-2">
               เหลือเวลาอีก {timeLeft} นาที
             </StyledText>
           </StyledView>
-  
+
           <TouchableOpacity
             className="mt-8"
             onPress={() => setStep(1)}
@@ -832,8 +766,8 @@ export default function Fast() {
             </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
-  
-        <Animated.View 
+
+        <Animated.View
           entering={FadeInDown.delay(300).duration(1000)}
           className="absolute bottom-10 left-6 right-6"
         >
@@ -847,18 +781,17 @@ export default function Fast() {
 
   return (
     <StyledView className="flex-1">
-      <HeaderApp />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <StyledView className="flex-1 bg-white dark:bg-black">
-        {step === 1 && renderCategorySelection()}
+          {step === 1 && renderCategorySelection()}
           {step === 2 && renderAppointmentForm()}
           {step === 3 && renderWaitingScreen()}
         </StyledView>
       </KeyboardAvoidingView>
-      <Navigation current="FastTab"/>
+      <Navigation current="FastTab" />
     </StyledView>
   );
 }
