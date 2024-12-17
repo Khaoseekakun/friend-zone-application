@@ -48,6 +48,8 @@ export default function Chat() {
         end_date: string;
         location: string;
         start_date: string;
+        notificationState: 'ready_confirm' | 'cancel_confirm' | null
+        
     }
 
     interface Channel {
@@ -90,6 +92,7 @@ export default function Chat() {
             }
         }
     };
+
     const updateMessageState = (messageId: string, state: 'ready_confirm' | 'cancel_confirm' | null) => {
         setMessages(prevMessages => prevMessages.map(msg => {
             if (msg.id === messageId) {
