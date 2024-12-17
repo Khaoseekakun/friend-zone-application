@@ -206,7 +206,7 @@ export default function ForgotPassword() {
                 className="w-full duration-200"
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
-                onPress={() => navigation.navigate('Login')}
+                onPress={() => navigation.navigate('Login', {})}
                 disabled={loading}
             >
                 <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
