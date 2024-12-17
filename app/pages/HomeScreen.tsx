@@ -16,8 +16,6 @@ import AccountSetting from "../screen/SettingAccount";
 import ProfileMember from "../screen/ProfileMember";
 import ScheduleList from "../screen/ScheduleList";
 import Policy from "../screen/Policy";
-import SettingImagePreview from "../screen/SettingImagePreview";
-import SettingImagePreviewFirst from "../screen/SettingImagePreviewFirst";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
@@ -108,8 +106,6 @@ export default function HomeScreen() {
         <Tab.Screen name="ProfileMember" component={ProfileMember} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="ScheduleList" component={ScheduleList} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="Policy" component={Policy} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="SettingImagePreview" component={SettingImagePreview} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="SettingImagePreviewFirst" component={SettingImagePreviewFirst} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="PostView" component={PostView} options={{ headerShown: false, animation: "fade" }} />
         <Tab.Screen name="Notification" component={NotificationPage} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="SettingPassword" component={SettingPassword} options={{ headerShown: false, animation: "shift" }} />

@@ -35,10 +35,10 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType } ) => {
             colors={['#EB3834', '#69140F']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            className={`w-full top-0 ${Platform.OS == "ios" ? "h-[106px]" : "h-auto"}`}
+            className={`w-full top-0 ${Platform.OS == "ios" ? "h-[106px]" : "h-[106px]"} `}
         >
             <StatusBar barStyle={'light-content'}></StatusBar>
-            <StyledView className={`w-full flex-row items-center justify-between ${Platform.OS == "ios" ? "mt-12" : "my-auto py-2"}`}>
+            <StyledView className={`w-full flex-row items-center justify-between ${Platform.OS == "ios" ? "mt-12" : "mt-12"}`}>
                 {
                     back && (
                         <StyledView className="">

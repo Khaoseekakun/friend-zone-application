@@ -62,9 +62,9 @@ export default function Setting() {
                     colors={['#EB3834', '#69140F']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
-                    className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[60px]" } justify-center`}
+                    className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[96px]" } justify-center`}
                 >
-                    <StyledView className={`${Platform.OS == "ios" ? "mt-8" : ""}`}>
+                    <StyledView className={`${Platform.OS == "ios" ? "mt-8" : "mt-8"}`}>
                         <TouchableOpacity onPress={() => navigation.goBack()} className="ml-4">
                             <Ionicons name="chevron-back" size={24} color="#fff" />
                         </TouchableOpacity>
