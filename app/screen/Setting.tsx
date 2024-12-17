@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, KeyboardAvoidingView, Platform, TouchableOpacity, Alert, Modal, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, KeyboardAvoidingView, useColorScheme, Platform, TouchableOpacity, Alert, Modal, StyleSheet, ActivityIndicator } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "expo-router";
@@ -13,6 +13,7 @@ import { RootStackParamList } from "@/types";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledIonicons = styled(Ionicons);
+const colorScheme = useColorScheme();
 
 export default function Setting() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -59,17 +60,27 @@ export default function Setting() {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <StyledView className="w-full flex-1 bg-white dark:bg-neutral-900">
+                {/* <HeaderApp /> */}
                 <LinearGradient
                     colors={['#EB3834', '#69140F']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[96px]"} justify-center`}
                 >
-                    <StyledView className={`${Platform.OS == "ios" ? "mt-8" : "mt-8"}`}>
-                        <TouchableOpacity onPress={() => navigation.goBack()} className="ml-4">
-                            <Ionicons name="chevron-back" size={24} color="#fff" />
+                    <StyledView className={`${Platform.OS == "ios" ? "mt-14" : "mt-8"} flex-row items-center px-4`}>
+                        <TouchableOpacity
+                            onPress={() => navigation.goBack()}
+                            className="pr-4"
+                        >
+                            <Ionicons
+                                name="chevron-back"
+                                size={24}
+                                color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'}
+                            />
                         </TouchableOpacity>
-                        <StyledText className="absolute self-center text-lg text-white font-custom ">การตั้งค่า</StyledText>
+                        <StyledText className="font-custom text-xl dark:text-white">
+                            ตั้งค่า
+                        </StyledText>
                     </StyledView>
                 </LinearGradient>
                 <ScrollView>
@@ -130,9 +141,7 @@ export default function Setting() {
                         <StyledText className=" text-gray-500 dark:text-gray-200 font-custom">ทั่วไป</StyledText>
                     </StyledView>
 
-                    <TouchableOpacity onPress={() => navigation.navigate("AccountStatus", {
-                        backPage: "SettingTab"
-                    })}>
+                    <TouchableOpacity onPress={() => navigation.navigate("AccountStatus", {backPage: "SettingTab"})}>
                         <StyledView className="flex-row items-center justify-between w-full px-3">
                             <StyledView className="flex-row justify-center">
                                 <StyledIonicons name="alert-circle-outline" size={24} className="mt-1 text-black dark:text-white" />
@@ -145,9 +154,7 @@ export default function Setting() {
                         </StyledView>
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => navigation.navigate("ScheduleList", {
-                        backPage: "SettingTab"
-                    })}>
+                    <TouchableOpacity onPress={() => navigation.navigate("ScheduleList", {})}>
                         <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
                             <StyledView className="flex-row justify-center">
                                 <StyledIonicons name="calendar-outline" size={24} className="mt-1 text-black dark:text-white" />

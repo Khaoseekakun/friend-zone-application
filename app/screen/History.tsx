@@ -5,6 +5,7 @@ import { Image, ScrollView, Text, TextInput, View, TouchableOpacity, useColorSch
 import { HeaderApp } from '@/components/Header';
 import { Navigation } from '@/components/Navigation';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation, NavigationProp } from "@react-navigation/native";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -59,6 +60,7 @@ const bankInfo = {
 };
 
 export default function History() {
+    const navigation = useNavigation<NavigationProp<any>>();
     const [activeTab, setActiveTab] = useState<HistoryTab>('transactions');
     const colorScheme = useColorScheme();
 
@@ -74,7 +76,7 @@ export default function History() {
 
         return Object.entries(groups);
     };
-    
+
     const mockTransactions: Transaction[] = [
         {
             id: '1',
@@ -136,12 +138,12 @@ export default function History() {
     const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }) => {
         const bank = bankInfo[transaction.bank];
         const isIncoming = transaction.type === 'incoming';
-        
+
         return (
             <StyledView className="bg-white dark:bg-neutral-800 rounded-xl p-3 mb-3 shadow-sm">
                 <StyledView className={`flex-row items-center ${isIncoming ? 'justify-start' : 'justify-end'}`}>
                     <StyledView className="flex-row items-center flex-1">
-                        <StyledImage 
+                        <StyledImage
                             source={bank.logo}
                             className="w-12 h-12 rounded-full"
                         />
@@ -157,12 +159,11 @@ export default function History() {
                             </StyledText>
                         </StyledView>
                     </StyledView>
-                    
+
                     <StyledView className="items-end">
-                        <StyledText 
-                            className={`font-custom text-lg ${
-                                transaction.type === 'incoming' ? 'text-green-600 dark:text-green-400' : 'text-red-500'
-                            }`}
+                        <StyledText
+                            className={`font-custom text-lg ${transaction.type === 'incoming' ? 'text-green-600 dark:text-green-400' : 'text-red-500'
+                                }`}
                         >
                             {transaction.type === 'incoming' ? '+' : '-'}
                             {transaction.amount.toLocaleString()}.00
@@ -178,7 +179,7 @@ export default function History() {
 
     const AppointmentItem: React.FC<{ appointment: Appointment }> = ({ appointment }) => {
         return (
-            <TouchableOpacity 
+            <TouchableOpacity
                 className="bg-white dark:bg-neutral-800 rounded-xl p-4 mb-3 shadow-sm"
             >
                 <StyledView className="flex-row justify-between items-center mb-2">
@@ -187,10 +188,10 @@ export default function History() {
                             colors={['#EB3834', '#69140F']}
                             className="w-12 h-12 rounded-full items-center justify-center mr-3"
                         >
-                            <StyledIonIcon 
-                                name="calendar" 
-                                size={24} 
-                                color="#FFFFFF" 
+                            <StyledIonIcon
+                                name="calendar"
+                                size={24}
+                                color="#FFFFFF"
                             />
                         </LinearGradient>
                         <StyledView>
@@ -202,18 +203,17 @@ export default function History() {
                             </StyledText>
                         </StyledView>
                     </StyledView>
-                    <StyledText 
-                        className={`font-custom ${
-                            appointment.status === 'completed' ? 'text-green-600' :
-                            appointment.status === 'upcoming' ? 'text-blue-600' :
-                            'text-red-600'
-                        }`}
+                    <StyledText
+                        className={`font-custom ${appointment.status === 'completed' ? 'text-green-600' :
+                                appointment.status === 'upcoming' ? 'text-blue-600' :
+                                    'text-red-600'
+                            }`}
                     >
-                        {appointment.status === 'completed' ? 'เสร็จสิ้น' : 
-                         appointment.status === 'upcoming' ? 'กำลังจะถึง' : 'ยกเลิก'}
+                        {appointment.status === 'completed' ? 'เสร็จสิ้น' :
+                            appointment.status === 'upcoming' ? 'กำลังจะถึง' : 'ยกเลิก'}
                     </StyledText>
                 </StyledView>
-                
+
                 <StyledView className="space-y-2">
                     <StyledView className="flex-row items-center">
                         <StyledIonIcon name="person-outline" size={16} color={colorScheme === 'dark' ? '#9ca3af' : '#6b7280'} />
@@ -221,14 +221,14 @@ export default function History() {
                             {appointment.partnerName}
                         </StyledText>
                     </StyledView>
-                    
+
                     <StyledView className="flex-row items-center">
                         <StyledIonIcon name="calendar-outline" size={16} color={colorScheme === 'dark' ? '#9ca3af' : '#6b7280'} />
                         <StyledText className="font-custom text-gray-600 dark:text-gray-400 ml-2">
                             {new Date(appointment.date).toLocaleDateString('th-TH')} {appointment.time}
                         </StyledText>
                     </StyledView>
-                    
+
                     <StyledView className="flex-row items-center">
                         <StyledIonIcon name="location-outline" size={16} color={colorScheme === 'dark' ? '#9ca3af' : '#6b7280'} />
                         <StyledText className="font-custom text-gray-600 dark:text-gray-400 ml-2">
@@ -242,10 +242,32 @@ export default function History() {
 
     return (
         <StyledView className="flex-1 bg-gray-100 dark:bg-black">
-            <HeaderApp />
-            
+            {/* <HeaderApp /> */}
+            <LinearGradient
+                colors={['#EB3834', '#69140F']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[96px]"} justify-center`}
+            >
+                <StyledView className={`${Platform.OS == "ios" ? "mt-14" : "mt-8"} flex-row items-center px-4`}>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('SettingTab', {})}
+                        className="pr-4"
+                    >
+                        <StyledIonIcon
+                            name="chevron-back"
+                            size={24}
+                            color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'}
+                        />
+                    </TouchableOpacity>
+                    <StyledText className="font-custom text-xl dark:text-white">
+                        ประวัติ
+                    </StyledText>
+                </StyledView>
+            </LinearGradient>
+
             <StyledView className="flex-row px-4 py-2">
-                <TouchableOpacity 
+                <TouchableOpacity
                     className={`flex-1 py-3 ${activeTab === 'transactions' ? 'border-b-2 border-red-500' : ''}`}
                     onPress={() => setActiveTab('transactions')}
                 >
@@ -253,8 +275,8 @@ export default function History() {
                         ธุรกรรม
                     </StyledText>
                 </TouchableOpacity>
-                
-                <TouchableOpacity 
+
+                <TouchableOpacity
                     className={`flex-1 py-3 ${activeTab === 'appointments' ? 'border-b-2 border-red-500' : ''}`}
                     onPress={() => setActiveTab('appointments')}
                 >
@@ -276,8 +298,6 @@ export default function History() {
                 )}
                 <StyledView className="h-24" />
             </StyledScrollView>
-            
-            <Navigation current="History" />
         </StyledView>
     );
 }
