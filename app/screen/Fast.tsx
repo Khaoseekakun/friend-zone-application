@@ -241,7 +241,7 @@ export default function Fast() {
     return (
       <StyledView className="relative w-48 h-48 items-center justify-center">
         {/* Pulse effect */}
-        {/* <Animated.View
+        <Animated.View
           style={[{
             position: 'absolute',
             width: 200,
@@ -250,7 +250,7 @@ export default function Fast() {
             borderWidth: 2,
             borderColor: '#EB3834',
           }, pulseStyle]}
-        /> */}
+        />
   
         {/* Outer circle */}
         <Animated.View
@@ -783,7 +783,7 @@ export default function Fast() {
       >
         <Animated.View 
           entering={FadeInUp.delay(300).duration(1000)}
-          className="items-center"
+          className="items-center -top-14"
         >
           <AnimatedCircles />
   
@@ -835,7 +835,7 @@ export default function Fast() {
   
         <Animated.View 
           entering={FadeInDown.delay(300).duration(1000)}
-          className="absolute bottom-10 left-6 right-6"
+          className="absolute bottom-36 left-6 right-6"
         >
           <StyledText className="font-custom text-white/40 text-sm text-center">
             ระบบจะค้นหาเพื่อนที่ใกล้เคียงและว่างในเวลาที่คุณต้องการ
