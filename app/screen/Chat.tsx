@@ -8,6 +8,7 @@ import { equalTo, get, getDatabase, onValue, orderByChild, query, ref, set, limi
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FireBaseApp from "@/utils/firebaseConfig";
 import { RootStackParamList } from "@/types";
+import { LinearGradient } from 'expo-linear-gradient';
 import axios from "axios";
 
 const StyledView = styled(View);
@@ -16,6 +17,7 @@ const StyledTextInput = styled(TextInput);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledImage = styled(Image);
 const StyledIcon = styled(Ionicons);
+const StyledIonicons = styled(Ionicons);
 const Logo = require("../../assets/images/logo.png");
 const GuestIcon = require("../../assets/images/guesticon.jpg");
 
@@ -41,7 +43,14 @@ export default function Chat() {
                 longtitude: number;
             };
             jobsType: string;
-        }
+        };
+        scheduleData?: {
+            date: string;
+            description: string;
+            end_date: string;
+            location: string;
+            start_date: string;
+        };
     }
 
     interface Channel {
@@ -419,8 +428,98 @@ export default function Chat() {
                             </StyledView>
                         </StyledView>
                     </StyledView>
+                ) : item.senderId == "noti_schedules" ? (
+                    <StyledView className="flex-row justify-center my-2">
+                        <StyledView className="w-[90%] rounded-xl bg-red-50 dark:bg-neutral-800 border border-red-200 dark:border-neutral-700 overflow-hidden">
+                            {/* Header Section */}
+                            <StyledView className="flex-row items-center p-4 border-b border-red-200 dark:border-neutral-700">
+                                <StyledView className="w-10 h-10 rounded-full bg-red-100 dark:bg-neutral-700 items-center justify-center mr-3">
+                                    <StyledIonicons name="notifications-outline" size={24} color="#EB3834" />
+                                </StyledView>
+                                <StyledView className="flex-1">
+                                    <StyledText className="font-custom text-lg text-red-600 dark:text-red-400">
+                                        แจ้งเตือนการนัดหมาย
+                                    </StyledText>
+                                    <StyledText className="font-custom text-sm text-gray-600 dark:text-gray-400">
+                                        อีก 30 นาที
+                                    </StyledText>
+                                </StyledView>
+                            </StyledView>
+                
+                            {/* Details Section */}
+                            <StyledView className="p-4">
+                                <StyledText className="font-custom text-base text-gray-800 dark:text-gray-200 mb-3">
+                                    {item.scheduleData?.description}
+                                </StyledText>
+                
+                                <StyledView className="bg-white dark:bg-neutral-900 rounded-lg p-3 mb-4">
+                                    {/* Date */}
+                                    <StyledView className="flex-row items-center mb-2">
+                                        <StyledIonicons name="calendar-outline" size={20} color="#666" />
+                                        <StyledText className="font-custom text-gray-700 dark:text-gray-300 ml-2">
+                                            {new Date(item.scheduleData?.date || '').toLocaleDateString('th-TH')}
+                                        </StyledText>
+                                    </StyledView>
+                
+                                    {/* Time */}
+                                    <StyledView className="flex-row items-center mb-2">
+                                        <StyledIonicons name="time-outline" size={20} color="#666" />
+                                        <StyledText className="font-custom text-gray-700 dark:text-gray-300 ml-2">
+                                            {new Date(item.scheduleData?.start_date || '').toLocaleTimeString('th-TH', {
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                            {' - '}
+                                            {new Date(item.scheduleData?.end_date || '').toLocaleTimeString('th-TH', {
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        </StyledText>
+                                    </StyledView>
+                
+                                    {/* Location */}
+                                    <StyledView className="flex-row items-center">
+                                        <StyledIonicons name="location-outline" size={20} color="#666" />
+                                        <StyledText className="font-custom text-gray-700 dark:text-gray-300 ml-2 flex-1">
+                                            {item.scheduleData?.location}
+                                        </StyledText>
+                                    </StyledView>
+                                </StyledView>
+                
+                                {/* Action Buttons */}
+                                <StyledView className="flex-row justify-between space-x-3">
+                                    <TouchableOpacity
+                                        className="flex-1"
+                                    >
+                                        <LinearGradient
+                                            colors={['#EB3834', '#69140F']}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 0 }}
+                                            className="py-3 rounded-full"
+                                        >
+                                            <StyledText className="font-custom text-white text-center">
+                                                พร้อมแล้ว
+                                            </StyledText>
+                                        </LinearGradient>
+                                    </TouchableOpacity>
+                
+                                    <TouchableOpacity
+                                        className="flex-1"
+                                        onPress={() => handleScheduleResponse(item.id, 'not_ready')}
+                                    >
+                                        <StyledView className="bg-gray-200 dark:bg-neutral-700 py-3 rounded-full">
+                                            <StyledText className="font-custom text-gray-700 dark:text-gray-300 text-center">
+                                                ยังไม่พร้อม
+                                            </StyledText>
+                                        </StyledView>
+                                    </TouchableOpacity>
+                                </StyledView>
+                            </StyledView>
+                        </StyledView>
+                    </StyledView>
                 ) : (
                     <StyledView className={`flex-row ${isMyMessage ? 'justify-end' : 'justify-start'}`}>
+                        {/* Existing regular message content */}
                         {!isMyMessage && (
                             <StyledImage
                                 className="rounded-full w-[32px] h-[32px] mr-2"
@@ -432,9 +531,8 @@ export default function Chat() {
                                 {item.text}
                             </StyledText>
                         </StyledView>
-                    </StyledView >
-                )
-                }
+                    </StyledView>
+                )}
 
             </>
         );
@@ -539,6 +637,3 @@ export default function Chat() {
         </StyledView >
     );
 }
-
-
-
