@@ -17,6 +17,12 @@ export type RootStackParamList = {
   HomeScreen: {
     backPage?: string;
   },
+  History: {
+    backPage?: string;
+  },
+  AccountStatus: {
+    backPage?: string;
+  },
   Agreement: { nextScreen?: string, backPage?: string },
   RegisterStepTwo: { username: string, password: string, backPage?: string },
   PostUpdate: {

@@ -231,8 +231,6 @@ export default function NotificationsScreen({ navigation }: Props) {
                     ))}
                     <StyledView className="h-32" />
                 </StyledScrollView>
-
-                <Navigation current="NotificationTab" />
             </StyledView>
         </KeyboardAvoidingView>
     );
