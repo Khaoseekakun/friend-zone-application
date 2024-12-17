@@ -239,7 +239,73 @@ export default function Fast() {
     }));
 
     return (
-      <></>
+      <StyledView className="relative w-48 h-48 items-center justify-center">
+        {/* Pulse effect */}
+        {/* <Animated.View
+          style={[{
+            position: 'absolute',
+            width: 200,
+            height: 200,
+            borderRadius: 100,
+            borderWidth: 2,
+            borderColor: '#EB3834',
+          }, pulseStyle]}
+        /> */}
+
+        {/* Outer circle */}
+        <Animated.View
+          style={[{
+            position: 'absolute',
+            width: 192,
+            height: 192,
+            borderRadius: 96,
+            backgroundColor: '#EB3834',
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.1)',
+          }, circle1Style]}
+        />
+
+        {/* Middle circle */}
+        <Animated.View
+          style={[{
+            position: 'absolute',
+            width: 144,
+            height: 144,
+            borderRadius: 72,
+            backgroundColor: '#EB3834',
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.15)',
+          }, circle2Style]}
+        />
+
+        {/* Inner circle */}
+        <Animated.View
+          style={[{
+            position: 'absolute',
+            width: 96,
+            height: 96,
+            borderRadius: 48,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.2)',
+          }, circle3Style]}
+        />
+
+        {/* Center animated circle */}
+        <Animated.View
+          style={[{
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderWidth: 2,
+            borderColor: 'rgba(255,255,255,0.3)',
+          }, centerStyle]}
+        >
+          {/* <ActivityIndicator size="large" color="#fff" /> */}
+        </Animated.View>
+      </StyledView>
     );
   };
 
