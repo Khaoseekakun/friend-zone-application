@@ -1,3 +1,5 @@
+// ไม่แน่ใจว่ามึงแฮสรหัสอะมั้ย เพราะมันเปลี่ยนไม่ได้
+
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { View, Text, TouchableOpacity, TextInput, ScrollView, Platform, ActivityIndicator, KeyboardAvoidingView, Alert, Modal, FlatList } from "react-native";
 import { styled } from "nativewind";
@@ -20,6 +22,8 @@ interface UserProfile {
     previewAllImageUrl?: string[];
     phoneNumber?: string;
     gmail?: string;
+    firstname?: string;
+    lastname?: string;
 }
 
 const StyledView = styled(View);
@@ -72,7 +76,7 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
                     }
                 }
             );
-            console.log(response.data);
+            // console.log(response.data);
 
             if (response.data.status === 200) {
                 setStep(2);
@@ -130,9 +134,9 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
                     }
                 }
             );
-            console.log('response.data : ', response.data);
+            // console.log('response.data : ', response.data);
 
-            if (response.data.data.code === "EMAIL_EXIST") {
+            if (response.data.data.code === "EMAIL_EXISTS") {
                 Alert.alert("ข้อผิดพลาด", "อีเมลนี้มีอยู่ในระบบแล้ว");
                 return;
             }
@@ -234,39 +238,121 @@ const PasswordSection = ({
     confirmPassword: string,
     setConfirmPassword: (password: string) => void,
     onSave: () => void
-}) => (
-    <StyledView className="flex-1 px-4">
-        <StyledText className="text-2xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2 mt-4">เปลี่ยนรหัสผ่าน</StyledText>
-        <StyledText className="text-base text-gray-400 mb-6 font-custom">กรุณากรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่</StyledText>
-        <StyledView className="w-full mb-6">
-            <StyledInput
-                className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
-                placeholder="รหัสผ่านปัจจุบัน"
-                secureTextEntry
-                value={currentPassword}
-                onChangeText={setCurrentPassword}
-                placeholderTextColor="#666"
-            />
-            <StyledInput
-                className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
-                placeholder="รหัสผ่านใหม่"
-                secureTextEntry
-                value={newPassword}
-                onChangeText={setNewPassword}
-                placeholderTextColor="#666"
-            />
-            <StyledInput
-                className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
-                placeholder="ยืนยันรหัสผ่านใหม่"
-                secureTextEntry
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                placeholderTextColor="#666"
+}) => {
+    const [loading, setLoading] = useState(false);
+
+    const handleUpdatePassword = async () => {
+        try {
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                Alert.alert("ข้อผิดพลาด", "กรุณากรอกข้อมูลให้ครบถ้วน");
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                Alert.alert("ข้อผิดพลาด", "รหัสผ่านใหม่ไม่ตรงกัน");
+                return;
+            }
+
+            setLoading(true);
+            const userData = await AsyncStorage.getItem('userData');
+            if (!userData) return;
+            const userList = JSON.parse(userData);
+
+            // Verify current password
+            const verifyResponse = await axios.post('https://friendszone.app/api/oauth/password',
+                { 
+                    email: userList.email,
+                    password: currentPassword 
+                },
+                {
+                    headers: {
+                        "Authorization": `System ${API_SYSTEM_KEY}`
+                    }
+                }
+            );
+
+            if (verifyResponse.data.status !== 200) {
+                Alert.alert("ข้อผิดพลาด", "รหัสผ่านปัจจุบันไม่ถูกต้อง");
+                return;
+            }
+
+            // Update password
+            const updateResponse = await axios.put('https://friendszone.app/api/oauth/password',
+                {
+                    email: userList.email,
+                    oldPassword: currentPassword,
+                    newPassword: newPassword
+                },
+                {
+                    headers: {
+                        "Authorization": `System ${API_SYSTEM_KEY}`
+                    }
+                }
+            );
+
+            if (newPassword.length < 8) {
+                Alert.alert("ข้อผิดพลาด", "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร");
+                return;
+            }
+            
+            if (newPassword === currentPassword) {
+                Alert.alert("ข้อผิดพลาด", "รหัสผ่านใหม่ไม่สามารถเหมือนกับรหัสผ่านปัจจุบันได้");
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                Alert.alert("ข้อผิดพลาด", "รหัสผ่านใหม่ไม่ตรงกัน");
+                return;
+            }
+
+            if (updateResponse.data.status === 200) {
+                Alert.alert("สำเร็จ", "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว");
+                onSave();
+            }
+        } catch (error) {
+            Alert.alert("ข้อผิดพลาด", "ไม่สามารถเปลี่ยนรหัสผ่านได้");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <StyledView className="flex-1 px-4">
+            <StyledText className="text-2xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2 mt-4">เปลี่ยนรหัสผ่าน</StyledText>
+            <StyledText className="text-base text-gray-400 mb-6 font-custom">กรุณากรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่</StyledText>
+            <StyledView className="w-full mb-6">
+                <StyledInput
+                    className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
+                    placeholder="รหัสผ่านปัจจุบัน"
+                    secureTextEntry
+                    value={currentPassword}
+                    onChangeText={setCurrentPassword}
+                    placeholderTextColor="#666"
+                />
+                <StyledInput
+                    className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
+                    placeholder="รหัสผ่านใหม่"
+                    secureTextEntry
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                    placeholderTextColor="#666"
+                />
+                <StyledInput
+                    className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
+                    placeholder="ยืนยันรหัสผ่านใหม่"
+                    secureTextEntry
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    placeholderTextColor="#666"
+                />
+            </StyledView>
+            <GradientButton 
+                title={loading ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"} 
+                onPress={handleUpdatePassword} 
             />
         </StyledView>
-        <GradientButton title="บันทึกการเปลี่ยนแปลง" onPress={onSave} />
-    </StyledView>
-);
+    );
+};
 
 const BankSection = ({
     profileData,
@@ -275,15 +361,55 @@ const BankSection = ({
     setBankName,
     onSave
 }: {
-    bankAccount: string,
+    profileData: UserProfile | null,
     setBankAccount: (account: string) => void,
     bankName: string,
     setBankName: (name: string) => void,
     onSave: () => void
 }) => {
     const [showBankPicker, setShowBankPicker] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [accountNo, setAccountNo] = useState('');
+    const [accountName, setAccountName] = useState('');
 
-    const bankAccount = profileData?.firstname + profileData?.lastname;
+    const handleSave = async () => {
+        try {
+            if (!accountNo || !bankName || !accountName) {
+                Alert.alert("ข้อผิดพลาด", "กรุณากรอกข้อมูลธนาคารให้ครบถ้วน");
+                return;
+            }
+
+            setLoading(true);
+            const userData = await AsyncStorage.getItem('userData');
+            if (!userData) return;
+            const userList = JSON.parse(userData);
+
+            const response = await axios.put(
+                `https://friendszone.app/api/member/${userList.id}/transaction`,
+                {
+                    bankName,
+                    accountNo,
+                    accountName
+                },
+                {
+                    headers: {
+                        "Authorization": `System ${API_SYSTEM_KEY}`
+                    }
+                }
+            );
+            // console.log('response.data : ', response.data);
+            // response.data :  {"data": {"code": "BAD_REQUEST", "message": "Invalid request"}, "status": 500}
+
+            if (response.data.status === 200) {
+                Alert.alert("สำเร็จ", "บันทึกข้อมูลธนาคารเรียบร้อยแล้ว");
+                onSave();
+            }
+        } catch (error) {
+            Alert.alert("ข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลธนาคารได้");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <StyledView className="flex-1 px-4">
@@ -293,15 +419,15 @@ const BankSection = ({
                 <StyledInput
                     className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
                     placeholder="ชื่อบัญชีธนาคาร"
-                    value={bankAccount}
-                    onChangeText={setBankAccount}
+                    value={accountName}
+                    onChangeText={setAccountName}
                     placeholderTextColor="#666"
                 />
                 <StyledInput
                     className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
                     placeholder="เลขบัญชีธนาคาร"
-                    value={bankAccount}
-                    onChangeText={setBankAccount}
+                    value={accountNo}
+                    onChangeText={setAccountNo}
                     keyboardType="numeric"
                     placeholderTextColor="#666"
                 />
@@ -349,7 +475,10 @@ const BankSection = ({
                 </StyledView>
             </Modal>
 
-            <GradientButton title="บันทึกการเปลี่ยนแปลง" onPress={onSave} />
+            <GradientButton 
+                title={loading ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"} 
+                onPress={handleSave} 
+            />
         </StyledView>
     );
 };
@@ -402,7 +531,7 @@ export default function SettingSecurity() {
             if (response.data.status === 200) {
                 const profileData = response.data.data.profile;
                 setProfile(profileData);
-                console.log(profileData);
+                // console.log(profileData);
             }
         } catch (error) {
             console.error('Error fetching user data:', error);
@@ -473,6 +602,7 @@ export default function SettingSecurity() {
                 />;
             case 'bank':
                 return <BankSection
+                    profileData={profile}
                     bankAccount={bankAccount}
                     setBankAccount={setBankAccount}
                     bankName={bankName}

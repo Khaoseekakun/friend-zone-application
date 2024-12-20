@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { Video } from 'expo-av';
+import { ResizeMode, Video } from 'expo-av';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from "axios";
@@ -424,7 +424,7 @@ export default function AccountSetting() {
                                 <StyledView className="relative w-full h-full">
                                     <Video
                                         source={{ uri: video }}
-                                        resizeMode="cover"
+                                        resizeMode={ResizeMode.COVER}
                                         className="w-full h-full rounded-2xl"
                                         useNativeControls
                                     />
