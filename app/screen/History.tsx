@@ -44,7 +44,7 @@ const promptpay = require('../../assets/banks/PromptPay.png');
 const scb = require('../../assets/banks/SCB.png');
 const kbank = require('../../assets/banks/KBANK.png');
 
-const bankInfo = {
+const bankInfo: Record<BankType, { name: string; logo: any }> = {
     PROMPTPAY: {
         name: 'พร้อมเพย์',
         logo: promptpay,
@@ -56,6 +56,78 @@ const bankInfo = {
     KBANK: {
         name: 'กสิกรไทย',
         logo: kbank,
+    },
+    TRUEMONEY: {
+        name: 'ทรูมันนี่',
+        logo: null,
+    },
+    KTB: {
+        name: 'กรุงไทย',
+        logo: null,
+    },
+    BAY: {
+        name: 'กรุงศรีอยุธยา',
+        logo: null,
+    },
+    BBL: {
+        name: 'กรุงเทพ',
+        logo: null,
+    },
+    TMB: {
+        name: 'ทหารไทย',
+        logo: null,
+    },
+    CIMB: {
+        name: 'ซีไอเอ็มบี',
+        logo: null,
+    },
+    CITI: {
+        name: 'ซิตี้แบงก์',
+        logo: null,
+    },
+    GHB: {
+        name: 'อาคารสงเคราะห์',
+        logo: null,
+    },
+    GSB: {
+        name: 'ออมสิน',
+        logo: null,
+    },
+    HSBC: {
+        name: 'เอชเอสบีซี',
+        logo: null,
+    },
+    IBANK: {
+        name: 'อิสลามแห่งประเทศไทย',
+        logo: null,
+    },
+    ICBC: {
+        name: 'ไอซีบีซี',
+        logo: null,
+    },
+    KKP: {
+        name: 'เกียรตินาคินภัทร',
+        logo: null,
+    },
+    LHB: {
+        name: 'แลนด์ แอนด์ เฮ้าส์',
+        logo: null,
+    },
+    TCRB: {
+        name: 'ไทยเครดิตเพื่อรายย่อย',
+        logo: null,
+    },
+    TISCO: {
+        name: 'ทิสโก้',
+        logo: null,
+    },
+    UOB: {
+        name: 'ยูโอบี',
+        logo: null,
+    },
+    BAAC: {
+        name: 'ธ.ก.ส.',
+        logo: null,
     },
 };
 
