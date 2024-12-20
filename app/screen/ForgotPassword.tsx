@@ -19,15 +19,12 @@ export default function ForgotPassword() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [step, setStep] = useState<1 | 2 | 3>(1);
     const [email, setEmail] = useState('');
-    const [otp, setOtp] = useState<number | null>(null);
     const [otpEnter, setOtpEnter] = useState<string>('');
-    const [otpTimeout, setOtpTimeout] = useState<number | null>(null);
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const scaleValue = useRef(new Animated.Value(1)).current;
-    const [cooldown, setCooldown] = useState(Date.now());
 
     const handlePressIn = () => {
         Animated.spring(scaleValue, {
@@ -51,11 +48,6 @@ export default function ForgotPassword() {
         setIsPasswordVisible(!isPasswordVisible);
     };
 
-    const randomOtp = () => {
-        //random 6 digit number
-        return Math.floor(100000 + Math.random() * 900000);
-    }
-
 
     const handleSendOtpVerification = async () => {
         if (!email) {
@@ -66,49 +58,49 @@ export default function ForgotPassword() {
             ]);
             return;
         }
-        if (cooldown > Date.now()) {
-            let timeLeft = Math.ceil((cooldown - Date.now()) / 1000);
-            Alert.alert('กรุณารอสักครู่', `กรุณารอ ${timeLeft} วินาที ก่อนที่จะส่งรหัส OTP อีกครั้ง`)
-            return;
-        } else {
-            try {
-                setLoading(true);
-                const otp = randomOtp();
-                setOtp(otp);
-                const response = await axios.post('http://49.231.43.37:3000/api/email/otp',
-                    {
-                        email: email,
-                        otp: otp
-                    }, {
-                    headers: {
-                        'Authorization': `System ${API_SYSTEM_KEY}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-                )
 
-                if (response.data.status === 200) {
-                    setStep(2);
-                    setCooldown(Date.now() + 60000);
-                    setOtpTimeout(Date.now() + 600000);
-                } else {
-                    Alert.alert(`เกิดข้อผิดพลาด`, 'ไม่สามารถส่งรหัส OTP ไปยังอีเมลของคุณได้', [
+        try {
+            setLoading(true);
+            const response = await axios.post('https://friendszone.app/api/email/otp',
+                {
+                    email: email
+                }, {
+                headers: {
+                    'Authorization': `System ${API_SYSTEM_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+            )
+
+            if (response.data.status === 200) {
+                setStep(2);
+            } else {
+                if (response.data.data.code == "EMAIL_WAIT") {
+                    const timeLeft = response.data.data.timeLeft;
+                    return Alert.alert(`เกิดข้อผิดพลาด`, `กรุณารอ ${timeLeft} วินาที ก่อนที่จะส่งรหัส OTP อีกครั้ง`, [
                         {
-                            text: 'ลองอีกครั้ง'
+                            text: 'ตกลง'
                         }
                     ]);
                 }
 
-            } catch (error) {
-                console.log(error)
-                Alert.alert(`เกิดข้อผิดพลาด`, 'ไม่สามารถส่งรหัส OTP ไปยังอีเมลของคุณได้', [
+                return Alert.alert(`เกิดข้อผิดพลาด`, 'ไม่สามารถส่งรหัส OTP ไปยังอีเมลของคุณได้', [
                     {
                         text: 'ลองอีกครั้ง'
                     }
                 ]);
-            } finally {
-                setLoading(false);
+
             }
+
+        } catch (error) {
+            console.log(error)
+            Alert.alert(`เกิดข้อผิดพลาด`, 'ไม่สามารถส่งรหัส OTP ไปยังอีเมลของคุณได้', [
+                {
+                    text: 'ลองอีกครั้ง'
+                }
+            ]);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -117,17 +109,17 @@ export default function ForgotPassword() {
 
             //check password
 
-            if(password !== confirmPassword){
+            if (password !== confirmPassword) {
                 return Alert.alert('รหัสผ่านไม่ตรงกัน', 'รหัสผ่านที่คุณป้อนไม่ตรงกัน กรุณาลองใหม่อีกครั้ง')
             }
 
-            if(password.length < 6){
+            if (password.length < 6) {
                 return Alert.alert('รหัสผ่านไม่ถูกต้อง', 'รหัสผ่านของคุณต้องมีความยาวอย่างน้อย 6 ตัวอักษร')
             }
 
 
             setLoading(true);
-            const response = await axios.put('http://49.231.43.37:3000/api/oauth/password', {
+            const response = await axios.put('https://friendszone.app/api/oauth/password', {
                 email: email,
                 password: password
             }, {
@@ -137,7 +129,7 @@ export default function ForgotPassword() {
                 }
             })
 
-            if(response.data.status == 200){
+            if (response.data.status == 200) {
                 return Alert.alert('เปลี่ยนรหัสผ่านสำเร็จ', 'รหัสผ่านของคุณได้ถูกเปลี่ยนแล้ว', [
                     {
                         text: 'กลับไปหน้าเข้าสู่ระบบ',
@@ -205,6 +197,43 @@ export default function ForgotPassword() {
         </StyledView>
     );
 
+    const handleVerifyOTP = async () => {
+        try {
+            setLoading(true);
+            if (otpEnter.length < 6) {
+                return Alert.alert('รหัส OTP ไม่ถูกต้อง', 'กรุณากรอกรหัส OTP ที่ถูกต้อง')
+            }
+
+            if (isNaN(Number(otpEnter))) {
+                return Alert.alert('รหัส OTP ไม่ถูกต้อง', 'กรุณากรอกรหัส OTP ที่ถูกต้อง')
+            }
+
+            const response = await axios.put('https://friendszone.app/api/email/otp', {
+                email: email,
+                otp: otpEnter
+            }, {
+                headers: {
+                    'Authorization': `System ${API_SYSTEM_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+
+            if (response.data.status === 200) {
+                setStep(3);
+            } else {
+                if (response.data.data.code == "OTP_EXPIRED") {
+                    return Alert.alert('รหัส OTP หมดอายุ', 'รหัส OTP ที่คุณกรอกหมดอายุแล้ว โปรดส่งคำขอใหม่อีกครั้ง')
+                }
+                return Alert.alert('รหัส OTP ไม่ถูกต้อง', 'รหัส OTP ที่คุณกรอกไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง')
+            }
+        } catch (error) {
+            console.log(error)
+            Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถยืนยันรหัส OTP ของคุณได้')
+        } finally {
+            setLoading(false);
+        }
+    }
+
     const renderOtpStep = () => (
         <StyledView className="flex-1 px-6 justify-center items-center -top-10">
             <TouchableOpacity
@@ -236,25 +265,7 @@ export default function ForgotPassword() {
                 className="w-full duration-200 mb-4"
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
-                onPress={() => {
-                    if (otp === null) {
-                        Alert.alert('กรุณากรอกรหัส OTP', 'กรุณากรอกรหัส OTP ที่ส่งไปยังอีเมลของคุณ', [
-                            {
-                                text: 'ตกลง'
-                            }
-                        ]);
-                        return;
-                    }
-                    if (otpEnter.length < 6 || Number(otpEnter) !== otp || otpTimeout === null || otpTimeout < Date.now()) {
-                        Alert.alert('รหัส OTP ไม่ถูกต้อง', 'กรุณากรอกรหัส OTP ที่ส่งไปยังอีเมลของคุณอีกครั้ง', [
-                            {
-                                text: 'ตกลง'
-                            }
-                        ]);
-                        return;
-                    }
-                    setStep(3);
-                }}
+                onPress={handleVerifyOTP}
                 disabled={loading}
             >
                 <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
