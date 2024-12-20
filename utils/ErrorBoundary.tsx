@@ -1,5 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
+import { styled } from 'nativewind';
 import React, { ReactNode } from 'react';
-import { Text } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -8,6 +10,11 @@ interface ErrorBoundaryProps {
 interface ErrorBoundaryState {
   hasError: boolean;
 }
+
+const StyledView = styled(View);
+const StyledText = styled(Text);
+const StyledIonIcon = styled(Ionicons)
+const StyledTouchableOpacity = styled(TouchableOpacity)
 
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
@@ -26,7 +33,15 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
   render() {
     if (this.state.hasError) {
-      return <Text>Something went wrong.</Text>;
+      return (
+        <StyledView className="flex-1 justify-center items-center bg-white dark:bg-neutral-900">
+          <StyledIonIcon name="alert-circle-outline" size={48} color="red" />
+          <StyledText className="text-red-500 dark:text-red-400 text-lg font-bold">Something went wrong!</StyledText>
+          <StyledTouchableOpacity onPress={() => this.setState({ hasError: false })}>
+            <StyledText className="text-blue-500 dark:text-blue-400">Try again</StyledText>
+          </StyledTouchableOpacity>
+        </StyledView>
+      )
     }
     return this.props.children;
   }

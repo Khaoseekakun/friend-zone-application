@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logo-white.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.firendszone.app"

@@ -11,7 +11,6 @@ import { HeaderApp } from "@/components/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { getDatabase, ref, onValue, update } from "firebase/database";
-import { StripeProvider, useConfirmPayment } from '@stripe/stripe-react-native';
 import { StyleSheet } from "react-native";
 import { makeid } from "@/utils/Date";
 

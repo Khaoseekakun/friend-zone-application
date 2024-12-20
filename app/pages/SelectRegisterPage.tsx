@@ -4,7 +4,7 @@ import { NavigationProp } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
 import { styled } from "nativewind";
 import React from "react";
-import { Text, TouchableOpacity, View, SafeAreaView, Image } from "react-native";
+import { Text, TouchableOpacity, View, SafeAreaView } from "react-native";
 
 const StyledView = styled(View)
 const StyledText = styled(Text)
