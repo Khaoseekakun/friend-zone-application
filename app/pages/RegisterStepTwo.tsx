@@ -161,10 +161,7 @@ export default function RegisterStepTwo() {
     const today = new Date();
     const maxDate = new Date(today.setFullYear(today.getFullYear() - 18));
     const minDate = new Date(today.setFullYear(today.getFullYear() - 70));
-    const [isTextInputFocused, setIsTextInputFocused] = useState(false);
 
-    const handleFocus = () => setIsTextInputFocused(true);
-    const handleBlur = () => setIsTextInputFocused(false);
     const [theme, setTheme] = useState(Appearance.getColorScheme());
     useEffect(() => {
         const listener = Appearance.addChangeListener(({ colorScheme }) => {

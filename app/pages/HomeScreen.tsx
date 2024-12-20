@@ -45,11 +45,13 @@ export default function HomeScreen() {
     };
   }, [navigation]);
 
+  const fetchUserData = async () => {
+    const userData = await AsyncStorage.getItem('userData');
+    setuUserData(JSON.parse(userData || '{}'));
+  };
+  
   useEffect(() => {
-    const fetchUserData = async () => {
-      const userData = await AsyncStorage.getItem('userData');
-      setuUserData(JSON.parse(userData || '{}'));
-    };
+
     fetchUserData();
 
 
@@ -59,32 +61,34 @@ export default function HomeScreen() {
     return await AsyncStorage.getItem('uuid') as string;
   };
 
-  useEffect(() => {
-    const checkNotificationPermissions = async () => {
-      try {
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        if (existingStatus !== 'granted') await Notifications.requestPermissionsAsync();
+  const checkNotificationPermissions = async () => {
+    try {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      if (existingStatus !== 'granted') await Notifications.requestPermissionsAsync();
 
-        const token = (await Notifications.getExpoPushTokenAsync({
-          deviceId: await getDeviceId()
-        })).data;
+      const token = (await Notifications.getExpoPushTokenAsync({
+        deviceId: await getDeviceId()
+      })).data;
 
-        if (userData && userData.id && userData.token) {
-          await axios.put('https://friendszone.app/api/notification/', {
-            userId: userData?.id,
-            notificationToken: token
-          }, {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'All ' + userData?.token, // Add a space after 'All'
-            },
-          });
+      if (userData && userData.id && userData.token) {
+        await axios.put('https://friendszone.app/api/notification/', {
+          userId: userData?.id,
+          notificationToken: token
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'All ' + userData?.token, // Add a space after 'All'
+          },
+        });
 
-        }
-      } catch (error) {
-        console.log('')
       }
-    };
+    } catch (error) {
+      console.log('')
+    }
+  };
+
+
+  useEffect(() => {
 
     checkNotificationPermissions();
   }, [userData]);

@@ -19,18 +19,21 @@ export default function AgreementScreen() {
     const [error, setError] = useState<string | null>(null);
     const [agree, setAgree] = useState(false);
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    
+    const fetchPolicyContent = async () => {
+        try {
+            const response = await axios.get('https://friendszone.app/api/policy');
+            const policyData = response.data.body.map((item: any) => item.content);
+            setPolicyContent(policyData);
+            setLoading(false);
+        } catch (err) {
+            setError('Failed to load policy content. Please try again later.');
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchPolicyContent = async () => {
-            try {
-                const response = await axios.get('https://friendszone.app/api/policy');
-                const policyData = response.data.body.map((item: any) => item.content);
-                setPolicyContent(policyData);
-                setLoading(false);
-            } catch (err) {
-                setError('Failed to load policy content. Please try again later.');
-                setLoading(false);
-            }
-        };
+        
         fetchPolicyContent();
     }, []);
 

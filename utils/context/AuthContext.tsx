@@ -1,9 +1,6 @@
 // src/utils/context/AuthContext.tsx
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { NavigationProp, StackActions } from '@react-navigation/native';
-import { useNavigation } from 'expo-router';
-import { RootStackParamList } from '@/types';
 
 type AuthContextType = {
     userToken: string | null;
@@ -17,7 +14,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [isLoading, setIsLoading] = useState(true);
     const [userToken, setUserToken] = useState<string | null>(null);
 
-    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
     const checkToken = async () => {
         try {
             const token = await AsyncStorage.getItem('userToken');

@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, Animated, Dimensions } from "react-native";
 import { styled } from "nativewind";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useNavigation } from "expo-router";
-import { NavigationProp } from "@react-navigation/native";
 
 const Tab = createBottomTabNavigator();
 
