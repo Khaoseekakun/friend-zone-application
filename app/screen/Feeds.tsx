@@ -49,7 +49,7 @@ export default function FeedsTab() {
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const snapPoints = [0, "50%"];
+    const snapPoints = ["50%"];
     const [userData, setuserData] = useState<any>();
     const [postAction, setPostAction] = useState('');
     const [refreshing, setRefreshing] = useState(false);

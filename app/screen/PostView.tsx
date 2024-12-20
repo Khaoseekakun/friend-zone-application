@@ -67,7 +67,7 @@ export default function PostView() {
     const [posts, setPosts] = useState<Post[]>([]);
     const bottomSheetRef = useRef<BottomSheet>(null);
     const bottomSheetRefComment = useRef<BottomSheet>(null);
-    const snapPoints = ['30%', '0%']
+    const snapPoints = ['30%']
     const [userData, setuserData] = useState<any>();
     const [postAction, setPostAction] = useState('');
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);

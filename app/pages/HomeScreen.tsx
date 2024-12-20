@@ -13,7 +13,6 @@ import SchedulePage from "../screen/SchedulePage";
 import Search from "../screen/Search";
 import Chat from "../screen/Chat";
 import AccountSetting from "../screen/SettingAccount";
-import ProfileMember from "../screen/ProfileMember";
 import ScheduleList from "../screen/ScheduleList";
 import Policy from "../screen/Policy";
 import axios from "axios";
@@ -104,7 +103,6 @@ export default function HomeScreen() {
         <Tab.Screen name="Search" component={Search} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="Chat" component={Chat} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="AccountSetting" component={AccountSetting} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="ProfileMember" component={ProfileMember} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="ScheduleList" component={ScheduleList} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="Policy" component={Policy} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="PostView" component={PostView} options={{ headerShown: false, animation: "fade" }} />

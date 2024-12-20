@@ -51,7 +51,7 @@ export default function ProfileTab() {
     const bottomSheetRef = useRef<BottomSheet>(null);
     const bottomSheetRefReview = useRef<BottomSheet>(null);
 
-    const snapPoints = ["80%", 0];
+    const snapPoints = ["80%"];
     const [loading, setLoading] = useState(true);
     const [userProfile, setUserProfile] = useState<any>(null);
     const [userData, setUserData] = useState<any>({});
@@ -657,7 +657,7 @@ export default function ProfileTab() {
                                                 </StyledText>
                                                 <StyledView className="bg-red-50 dark:bg-red-900/30 rounded-full px-3 py-1 ml-2">
                                                     <StyledText className="text-red-500 dark:text-red-400 font-custom">
-                                                        {userProfile?.profile?.Review.length}
+                                                        {userProfile?.profile?.Review?.length}
                                                     </StyledText>
                                                 </StyledView>
                                             </StyledView>
@@ -681,7 +681,7 @@ export default function ProfileTab() {
                                                 <StyledView>
                                                     <StyledText className="text-4xl font-bold text-red-600 dark:text-red-500 font-custom">
                                                         {
-                                                            userProfile?.profile?.Review.length
+                                                            userProfile?.profile?.Review?.length
                                                         }
                                                     </StyledText>
                                                     <StyledView className="flex-row mt-1">
@@ -690,7 +690,7 @@ export default function ProfileTab() {
                                                                 key={star}
                                                                 name="star"
                                                                 size={16}
-                                                                className={`text-red-500 ${star <= (userProfile?.profile?.Review.length > 0 ? Number(userProfile?.profile?.Review.reduce((prev: number, current: any) => prev + current.star, 0)) / userProfile?.profile?.Review.length : 0) ? "text-red-500" : "text-gray-300"} mr-0.5`}
+                                                                className={`text-red-500 ${star <= (userProfile?.profile?.Review?.length > 0 ? Number(userProfile?.profile?.Review.reduce((prev: number, current: any) => prev + current.star, 0)) / userProfile?.profile?.Review?.length : 0) ? "text-red-500" : "text-gray-300"} mr-0.5`}
                                                             />
                                                         ))}
                                                     </StyledView>
