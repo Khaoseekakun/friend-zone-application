@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { View, Text, Alert, ActivityIndicator, ScrollView, Dimensions, Image, Linking, Appearance, Platform } from "react-native";
 import { styled } from "nativewind";
 import { HeaderApp } from "@/components/Header";
@@ -51,7 +51,7 @@ export default function ProfileTab() {
     const bottomSheetRef = useRef<BottomSheet>(null);
     const bottomSheetRefReview = useRef<BottomSheet>(null);
 
-    const snapPoints = useMemo(() => ["85%"], []);
+    const snapPoints = ["80%", 0];
     const [loading, setLoading] = useState(true);
     const [userProfile, setUserProfile] = useState<any>(null);
     const [userData, setUserData] = useState<any>({});

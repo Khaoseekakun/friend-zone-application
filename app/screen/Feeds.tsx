@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { View, Text, TouchableOpacity, Modal, Image, ActivityIndicator, FlatList, Alert, StyleSheet, SafeAreaView, Appearance } from "react-native";
 import { styled } from "nativewind";
 import { HeaderApp } from "@/components/Header";
@@ -49,7 +49,7 @@ export default function FeedsTab() {
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const snapPoints = useMemo(() => ["35%"], []);
+    const snapPoints = [0, "50%"];
     const [userData, setuserData] = useState<any>();
     const [postAction, setPostAction] = useState('');
     const [refreshing, setRefreshing] = useState(false);

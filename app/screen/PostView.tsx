@@ -9,7 +9,7 @@ import { NavigationProp, RouteProp, useIsFocused, useRoute } from '@react-naviga
 import axios from 'axios';
 import { useNavigation } from 'expo-router';
 import { styled } from 'nativewind';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Alert, Appearance, Image, Keyboard, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import ImageViewer from 'react-native-image-zoom-viewer';
@@ -67,7 +67,7 @@ export default function PostView() {
     const [posts, setPosts] = useState<Post[]>([]);
     const bottomSheetRef = useRef<BottomSheet>(null);
     const bottomSheetRefComment = useRef<BottomSheet>(null);
-    const snapPoints = useMemo(() => ["35%"], []);
+    const snapPoints = ['30%', '0%']
     const [userData, setuserData] = useState<any>();
     const [postAction, setPostAction] = useState('');
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);

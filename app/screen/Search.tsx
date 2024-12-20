@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Platform, Dimensions, StyleSheet, Image, ActivityIndicator, KeyboardAvoidingView, Alert, useColorScheme } from "react-native";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";

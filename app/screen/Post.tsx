@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, Text, KeyboardAvoidingView, Platform, TextInput, Image, TouchableOpacity, ActivityIndicator, Alert, Modal, StyleSheet, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
@@ -43,7 +43,7 @@ export default function Post() {
     const messageLimit = 512;
     const [textFocus, setTextFocus] = useState(false);
 
-    const snapPoints = useMemo(() => ["25%"], ["50%"]);
+    const snapPoints = ["25%", "50%"];
 
     const [userData, setuserData] = useState<any>();
     useEffect(() => {
