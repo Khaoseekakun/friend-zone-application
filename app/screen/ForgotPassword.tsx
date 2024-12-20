@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Animated, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, useColorScheme } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Animated, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, useColorScheme, Appearance } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp, StackActions } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
@@ -15,7 +15,6 @@ const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledSafeAreaView = styled(SafeAreaView);
 
 export default function ForgotPassword() {
-    const colorScheme = useColorScheme();
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [step, setStep] = useState<1 | 2 | 3>(1);
     const [email, setEmail] = useState('');
@@ -25,6 +24,15 @@ export default function ForgotPassword() {
     const [loading, setLoading] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const scaleValue = useRef(new Animated.Value(1)).current;
+    const [theme, setTheme] = useState(Appearance.getColorScheme());
+
+    useEffect(() => {
+        const listener = Appearance.addChangeListener(({ colorScheme }) => {
+            setTheme(colorScheme);
+        });
+
+        return () => listener.remove();
+    }, []);
 
     const handlePressIn = () => {
         Animated.spring(scaleValue, {
@@ -113,7 +121,7 @@ export default function ForgotPassword() {
                 return Alert.alert('รหัสผ่านไม่ตรงกัน', 'รหัสผ่านที่คุณป้อนไม่ตรงกัน กรุณาลองใหม่อีกครั้ง')
             }
 
-            if (password.length < 6) {
+            if (password?.length < 6) {
                 return Alert.alert('รหัสผ่านไม่ถูกต้อง', 'รหัสผ่านของคุณต้องมีความยาวอย่างน้อย 6 ตัวอักษร')
             }
 
@@ -172,7 +180,7 @@ export default function ForgotPassword() {
             >
                 <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
                     <LinearGradient
-                        colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
+                        colors={theme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         className="rounded-full py-3 shadow-sm"
@@ -200,7 +208,7 @@ export default function ForgotPassword() {
     const handleVerifyOTP = async () => {
         try {
             setLoading(true);
-            if (otpEnter.length < 6) {
+            if (otpEnter?.length < 6) {
                 return Alert.alert('รหัส OTP ไม่ถูกต้อง', 'กรุณากรอกรหัส OTP ที่ถูกต้อง')
             }
 
@@ -240,7 +248,7 @@ export default function ForgotPassword() {
                 onPress={() => setStep(1)}
                 className="absolute top-10 left-6"
             >
-                <Ionicons name="arrow-back" size={24} color={colorScheme === 'dark' ? '#fff' : '#000'} />
+                <Ionicons name="arrow-back" size={24} color={theme === 'dark' ? '#fff' : '#000'} />
             </TouchableOpacity>
 
             <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">ยืนยันรหัส OTP</StyledText>
@@ -270,7 +278,7 @@ export default function ForgotPassword() {
             >
                 <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
                     <LinearGradient
-                        colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
+                        colors={theme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         className="rounded-full py-3 shadow-sm"
@@ -298,7 +306,7 @@ export default function ForgotPassword() {
                 onPress={() => setStep(2)}
                 className="absolute top-10 left-6"
             >
-                <Ionicons name="arrow-back" size={24} color={colorScheme === 'dark' ? '#fff' : '#000'} />
+                <Ionicons name="arrow-back" size={24} color={theme === 'dark' ? '#fff' : '#000'} />
             </TouchableOpacity>
 
             <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] pt-2">ตั้งรหัสผ่านใหม่</StyledText>
@@ -347,7 +355,7 @@ export default function ForgotPassword() {
             >
                 <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
                     <LinearGradient
-                        colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
+                        colors={theme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         className="rounded-full py-3 shadow-sm"

@@ -271,13 +271,13 @@ export default function PostView() {
                     <StyledView className="px-2 mb-[60px]">
                         <StyledText className="font-custom mt-3 dark:text-white">{item.content}</StyledText>
                         {
-                            item.images.length === 1 ? (
+                            item.images?.length === 1 ? (
                                 <>
                                     <TouchableOpacity onPress={() => openImageModal(item.images)}>
                                         <StyledImage source={{ uri: item.images[0] }} className="rounded-md mt-2 h-96 w-full" />
                                     </TouchableOpacity>
                                 </>
-                            ) : item.images.length === 2 ? (
+                            ) : item.images?.length === 2 ? (
                                 <>
                                     <StyledView className="max-h-[350px] mb-2">
                                         <TouchableOpacity onPress={() => openImageModal(item.images, 0)}>
@@ -288,7 +288,7 @@ export default function PostView() {
                                         </TouchableOpacity>
                                     </StyledView>
                                 </>
-                            ) : item.images.length === 3 ? (
+                            ) : item.images?.length === 3 ? (
                                 <>
                                     <StyledView className="max-h-[350px] mb-2">
                                         <TouchableOpacity onPress={() => openImageModal(item.images, 0)}>
@@ -304,7 +304,7 @@ export default function PostView() {
                                         </StyledView>
                                     </StyledView>
                                 </>
-                            ) : item.images.length === 4 ? (
+                            ) : item.images?.length === 4 ? (
                                 <>
                                     <StyledView className="max-h-[350px] mb-2">
                                         <StyledView className="flex-row">
@@ -326,7 +326,7 @@ export default function PostView() {
                                         </StyledView>
                                     </StyledView>
                                 </>
-                            ) : item.images.length > 4 ? (
+                            ) : item.images?.length > 4 ? (
                                 <>
                                     <StyledView className="max-h-[350px] mb-2 shadow-sm">
                                         <StyledView className="flex-row">
@@ -349,7 +349,7 @@ export default function PostView() {
                                                 </StyledView>
                                                 <StyledView className="absolute top-0 right-0 w-full h-full flex-row justify-center items-center">
                                                     <StyledText className="font-custom text-white absolute text-center text-2xl" style={{ alignSelf: 'center' }}>
-                                                        +{item.images.length - 4}
+                                                        +{item.images?.length - 4}
                                                     </StyledText>
                                                 </StyledView>
 
@@ -381,7 +381,7 @@ export default function PostView() {
                                     onPress={() => { }}
                                     className="text-black dark:text-white"
                                 />
-                                <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">{commentList.length}</StyledText>
+                                <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">{commentList?.length}</StyledText>
                             </StyledView>
                         </StyledView>
 
@@ -438,7 +438,7 @@ export default function PostView() {
                     <StyledTouchableOpacity className='absolute right-3'
                         onPress={postComment}>
                         <StyledIonicons
-                            className={`${newComment.length > 0 ? 'text-black' : 'text-gray-500'}`}
+                            className={`${newComment?.length > 0 ? 'text-black' : 'text-gray-500'}`}
                             name="send"
                             size={25}>
 

@@ -112,6 +112,9 @@ export type RootStackParamList = {
   },
   RegisterMember: {
     backPage?: string
+  },
+  SettingSecurity: {
+    backPage?: string
   }
 };
 

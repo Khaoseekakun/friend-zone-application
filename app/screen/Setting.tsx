@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, KeyboardAvoidingView, useColorScheme, Platform, TouchableOpacity, Alert, Modal, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, KeyboardAvoidingView, useColorScheme, Platform, TouchableOpacity, Alert, Modal, StyleSheet, ActivityIndicator, Appearance } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "expo-router";
@@ -13,12 +13,21 @@ import { RootStackParamList } from "@/types";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledIonicons = styled(Ionicons);
-const colorScheme = useColorScheme();
 
 export default function Setting() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [isLogout, setIsLogout] = useState(false);
     const [userData, setUserData] = useState<any>();
+    const [theme, setTheme] = useState(Appearance.getColorScheme());
+
+    useEffect(() => {
+        const listener = Appearance.addChangeListener(({ colorScheme }) => {
+            setTheme(colorScheme);
+        });
+
+        return () => listener.remove();
+    }, [])
+
     const Logout = async () => {
         setIsLogout(true);
         try {
@@ -75,10 +84,10 @@ export default function Setting() {
                             <Ionicons
                                 name="chevron-back"
                                 size={24}
-                                color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'}
+                                color={theme === 'dark' ? '#FFFFFF' : '#000000'}
                             />
                         </TouchableOpacity>
-                        <StyledText className="font-custom text-xl dark:text-white">
+                        <StyledText className="font-custom text-xl text-white">
                             ตั้งค่า
                         </StyledText>
                     </StyledView>
@@ -141,6 +150,21 @@ export default function Setting() {
                         <StyledText className=" text-gray-500 dark:text-gray-200 font-custom">ทั่วไป</StyledText>
                     </StyledView>
 
+                    <TouchableOpacity onPress={() => navigation.navigate("SettingSecurity", {
+                        backPage: "SettingTab"
+                    })}>
+                        <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
+                            <StyledView className="flex-row justify-center">
+                                <StyledIonicons name="shield-checkmark-outline" size={24} className="mt-1 text-black dark:text-white" />
+                                <StyledView className="ml-2">
+                                    <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">ตั้งค่าความปลอดภัย</StyledText>
+                                    <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">ความปลอดภัยของบัญชี</StyledText>
+                                </StyledView>
+                            </StyledView>
+                            <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
+                        </StyledView>
+                    </TouchableOpacity>
+
                     <TouchableOpacity onPress={() => navigation.navigate("AccountStatus", {backPage: "SettingTab"})}>
                         <StyledView className="flex-row items-center justify-between w-full px-3">
                             <StyledView className="flex-row justify-center">
@@ -153,6 +177,8 @@ export default function Setting() {
                             <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                         </StyledView>
                     </TouchableOpacity>
+
+                    
 
                     <TouchableOpacity onPress={() => navigation.navigate("ScheduleList", {})}>
                         <StyledView className="flex-row items-center justify-between w-full px-3 py-2">

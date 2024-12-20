@@ -173,7 +173,7 @@ export default function Chat() {
                 }));
 
 
-                if (loadedMessages.length > 0) {
+                if (loadedMessages?.length > 0) {
                     const newLastMessageKey = loadedMessages[0].id;
                     if (newLastMessageKey !== lastMessageKey) {
                         setLastMessageKey(newLastMessageKey);
@@ -184,7 +184,7 @@ export default function Chat() {
                     setMessages(prevMessages => {
 
                         const firstLoadedMessage = loadedMessages[0];
-                        if (prevMessages.length > 0 && prevMessages[0].id === firstLoadedMessage.id) {
+                        if (prevMessages?.length > 0 && prevMessages[0].id === firstLoadedMessage.id) {
                             loadedMessages.shift();
                         }
                         return [...loadedMessages, ...prevMessages];
@@ -659,7 +659,7 @@ export default function Chat() {
 
                         </StyledTextInput>
                         {
-                            newMessage.length > 0 ? (
+                            newMessage?.length > 0 ? (
                                 <StyledView className="absolute right-0 h-[45px] w-[45px] bottom-0">
                                     <StyledTouchableOpacity
                                         onPress={sendMessage}

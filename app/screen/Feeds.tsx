@@ -15,6 +15,7 @@ import { Navigation } from "@/components/Navigation";
 import FireBaseApp from "@/utils/firebaseConfig";
 import { RootStackParamList } from "@/types";
 import { Likes, MembersDB } from "@/types/prismaInterface";
+
 const GuestIcon = require("../../assets/images/guesticon.jpg")
 
 const StyledView = styled(View);
@@ -90,7 +91,7 @@ export default function FeedsTab() {
             });
             const newPosts = response.data.data.posts;
             if (newPosts) {
-                if (newPosts.length > 0) {
+                if (newPosts?.length > 0) {
                     setPosts(prevPosts => [...prevPosts, ...newPosts]);
                     setPage(pageNumber++);
                 } else {
@@ -292,13 +293,13 @@ export default function FeedsTab() {
                 <StyledView className="pl-[65px] pr-9">
                     <StyledText className="font-custom -mt-3 dark:text-white">{item.content}</StyledText>
                     {
-                        item.images.length === 1 ? (
+                        item.images?.length === 1 ? (
                             <>
                                 <TouchableOpacity onPress={() => openImageModal(item.images)}>
                                     <StyledImage source={{ uri: item.images[0] }} className="rounded-md mt-2 h-96 w-full" />
                                 </TouchableOpacity>
                             </>
-                        ) : item.images.length === 2 ? (
+                        ) : item.images?.length === 2 ? (
                             <>
                                 <StyledView className="max-h-[350px] mb-2">
                                     <TouchableOpacity onPress={() => openImageModal(item.images, 0)}>
@@ -309,7 +310,7 @@ export default function FeedsTab() {
                                     </TouchableOpacity>
                                 </StyledView>
                             </>
-                        ) : item.images.length === 3 ? (
+                        ) : item.images?.length === 3 ? (
                             <>
                                 <StyledView className="max-h-[350px] mb-2">
                                     <TouchableOpacity onPress={() => openImageModal(item.images, 0)}>
@@ -325,7 +326,7 @@ export default function FeedsTab() {
                                     </StyledView>
                                 </StyledView>
                             </>
-                        ) : item.images.length === 4 ? (
+                        ) : item.images?.length === 4 ? (
                             <>
                                 <StyledView className="max-h-[350px] mb-2">
                                     <StyledView className="flex-row">
@@ -347,7 +348,7 @@ export default function FeedsTab() {
                                     </StyledView>
                                 </StyledView>
                             </>
-                        ) : item.images.length > 4 ? (
+                        ) : item.images?.length > 4 ? (
                             <>
                                 <StyledView className="max-h-[350px] mb-2 shadow-sm">
                                     <StyledView className="flex-row">
@@ -370,7 +371,7 @@ export default function FeedsTab() {
                                             </StyledView>
                                             <StyledView className="absolute top-0 right-0 w-full h-full flex-row justify-center items-center">
                                                 <StyledText className="font-custom text-white absolute text-center text-2xl" style={{ alignSelf: 'center' }}>
-                                                    +{item.images.length - 4}
+                                                    +{item.images?.length - 4}
                                                 </StyledText>
                                             </StyledView>
 
@@ -386,7 +387,7 @@ export default function FeedsTab() {
                             <StyledView className="flex-row justify-center mr-5 items-center">
                                 <StyledIonicons
                                     name={
-                                        posts[index].likes.length > 0 ? "heart" : "heart-outline"
+                                        posts[index].likes?.length > 0 ? "heart" : "heart-outline"
                                     }
                                     size={24}
                                     className="text-red-500"

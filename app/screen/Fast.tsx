@@ -79,7 +79,7 @@ export default function Fast() {
       }, 60000);
 
       const dotsTimer = setInterval(() => {
-        setDots(prev => prev.length < 3 ? prev + '.' : '');
+        setDots(prev => prev?.length < 3 ? prev + '.' : '');
       }, 500);
 
       return () => {

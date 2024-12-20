@@ -23,7 +23,7 @@ export default function PostUpdate() {
     const [message, setMessage] = useState('');
     const [userData, setuserData] = useState<any>();
     const [loading, setLoading] = useState(false);
-    const [loadingImages, setLoadingImages] = useState(new Array(images.length).fill(true));
+    const [loadingImages, setLoadingImages] = useState(new Array(images?.length).fill(true));
 
     const messageLimit = 512;
 
@@ -103,8 +103,8 @@ export default function PostUpdate() {
                             </TouchableOpacity>
                             <StyledText className="text-center self-center text-lg font-bold text-white">แก้ไขโพสต์</StyledText>
 
-                            <TouchableOpacity onPress={() => upDateTwoStep(id)} className="absolute right-3 pt-[60] flex-row" disabled={(message.length == 0 || (message == content))}>
-                                <StyledText className={`text-center self-center text-lg font-bold ${message.length > 0 ? "text-white" : "text-gray-500"}`}>แก้ไข</StyledText>
+                            <TouchableOpacity onPress={() => upDateTwoStep(id)} className="absolute right-3 pt-[60] flex-row" disabled={(message?.length == 0 || (message == content))}>
+                                <StyledText className={`text-center self-center text-lg font-bold ${message?.length > 0 ? "text-white" : "text-gray-500"}`}>แก้ไข</StyledText>
                             </TouchableOpacity>
                         </StyledView>
                     </LinearGradient>
@@ -137,10 +137,10 @@ export default function PostUpdate() {
                     <StyledView className="bg-gray-200 w-full h-[1px]" />
 
                     {
-                        message.length > 0 && (
+                        message?.length > 0 && (
                             <>
                                 <StyledText className="text-sm text-gray-500 self-end mr-2 mt-2">
-                                    {messageLimit - message.length}
+                                    {messageLimit - message?.length}
                                 </StyledText>
                             </>
                         )

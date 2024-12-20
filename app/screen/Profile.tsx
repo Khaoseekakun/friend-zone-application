@@ -244,7 +244,7 @@ export default function ProfileTab() {
     const loadJobsList = async () => {
         try {
             if (!jobCategory) {
-                if (userProfile.profile.JobMembers.length > 0) {
+                if (userProfile.profile.JobMembers?.length > 0) {
                     const resdata = await axios.get(`https://friendszone.app/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
                         headers: {
                             "Content-Type": "application/json",
@@ -989,7 +989,7 @@ export default function ProfileTab() {
                                             >
                                                 <StyledText className={`${scheduleLocation ? "text-black dark:text-neutral-200" : "text-gray-300"} font-custom`}>
                                                     {
-                                                        scheduleLocation.length > 0 ? scheduleLocation : "ค้นหาสถานที่"
+                                                        scheduleLocation?.length > 0 ? scheduleLocation : "ค้นหาสถานที่"
                                                     }
                                                 </StyledText>
                                             </StyledTouchableOpacity>
@@ -1044,7 +1044,7 @@ export default function ProfileTab() {
                                     <TouchableOpacity
                                         className="w-full px-6"
                                         onPress={() => {
-                                            if (joblist.length <= 0) {
+                                            if (joblist?.length <= 0) {
                                                 Alert.alert("ข้อผิดพลาด", "สมาชิกนี้ยังไม่มีประเภทงานที่รองรับ", [{ text: "OK" }])
                                                 return;
                                             } else {

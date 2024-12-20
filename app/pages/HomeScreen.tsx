@@ -23,6 +23,7 @@ import NotificationPage from "../screen/Notifications";
 import SettingPassword from "../screen/SettingPassword";
 import AccountStatus from "../screen/AccountStatus";
 import History from "../screen/History";
+import SettingSecurity from "../screen/SettingSecurity";
 
 const Tab = createBottomTabNavigator();
 
@@ -110,6 +111,7 @@ export default function HomeScreen() {
         <Tab.Screen name="SettingPassword" component={SettingPassword} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="AccountStatus" component={AccountStatus} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="History" component={History} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="SettingSecurity" component={SettingSecurity} options={{ headerShown: false, animation: "shift" }} />
 
       </Tab.Navigator>
     </>

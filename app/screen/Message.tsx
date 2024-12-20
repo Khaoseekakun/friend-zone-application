@@ -161,7 +161,7 @@ export default function Message() {
                                                 maxLength={50}
                                             />
                                             <StyledIonIcon name="search" size={20} color="#9ca3af" className="pl-5 absolute mt-[10px]" />
-                                            {search.length > 0 && (
+                                            {search?.length > 0 && (
                                                 <StyledView className="right-5 absolute mt-[8px] bg-gray-50 rounded-full">
                                                     <StyledIonIcon name="close" size={24} color={""} onPress={() => setSearch('')} />
                                                 </StyledView>

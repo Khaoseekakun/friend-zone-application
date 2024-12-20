@@ -85,7 +85,7 @@ export default function Post() {
             mediaTypes: "images",
             aspect: [4, 3],
             quality: 1,
-            selectionLimit: images.length < selectcount ? selectcount - images.length : 0,
+            selectionLimit: images?.length < selectcount ? selectcount - images?.length : 0,
             allowsMultipleSelection: true,
         });
 
@@ -200,7 +200,7 @@ export default function Post() {
                 return;
             }
     
-            if (result.assets && result.assets.length > 0) {
+            if (result.assets && result.assets?.length > 0) {
                 const optimizedUri = await optimizeImage(result.assets[0].uri);
                 setImages((prevImages) => [...prevImages, optimizedUri]);
             }
@@ -245,7 +245,7 @@ export default function Post() {
                 }
                 return Alert.alert('ผิดพลาด', 'ไม่สามารถสร้างโพสต์ได้', [{ text: 'ลองอีกครั้ง' }]);
             } else {
-                if (images.length > 0) {
+                if (images?.length > 0) {
                     await uploadImages(postCreate.data.data.id);
                 } else {
                     refreshHandler();
@@ -285,8 +285,8 @@ export default function Post() {
                                 </TouchableOpacity>
                                 <StyledText className="font-custom text-center self-center text-lg font-bold text-white">สร้างโพสต์</StyledText>
 
-                                <TouchableOpacity onPress={handlePost} className="absolute right-3 pt-[60] flex-row" disabled={(images.length === 0 && message.length === 0)}>
-                                    <StyledText className={`font-custom text-center self-center text-lg font-bold ${images.length > 0 || message.length > 0 ? "text-white" : "text-gray-500"}`}>โพสต์</StyledText>
+                                <TouchableOpacity onPress={handlePost} className="absolute right-3 pt-[60] flex-row" disabled={(images?.length === 0 && message?.length === 0)}>
+                                    <StyledText className={`font-custom text-center self-center text-lg font-bold ${images?.length > 0 || message?.length > 0 ? "text-white" : "text-gray-500"}`}>โพสต์</StyledText>
                                 </TouchableOpacity>
                             </StyledView>
                         </LinearGradient>
@@ -328,10 +328,10 @@ export default function Post() {
 
 
                         {
-                            message.length > 0 && (
+                            message?.length > 0 && (
                                 <>
                                     <StyledText className="text-sm text-gray-500 self-end mr-2 mt-2 font-custom">
-                                        {messageLimit - message.length}
+                                        {messageLimit - message?.length}
                                     </StyledText>
                                 </>
                             )
@@ -369,15 +369,15 @@ export default function Post() {
                                 <StyledView className="flex-1 bg-white">
                                     <StyledView className="mt-2 rounded-lg mx-4">
                                         <StyledView className="my-2 py-1">
-                                            <TouchableOpacity onPress={() => { pickImages(); }} className="flex-row items-center" disabled={images.length >= 6}>
-                                                <Ionicons name="images" size={24} color={`${images.length >= 6 ? "#99d390" : "#3fd826"}`} />
-                                                <StyledText className={`pl-4 text-lg font-custom ${images.length >= 6 ? "text-gray-500" : ""}`}>รูปภาพ/วิดีโอ ({images.length}/{selectcount})</StyledText>
+                                            <TouchableOpacity onPress={() => { pickImages(); }} className="flex-row items-center" disabled={images?.length >= 6}>
+                                                <Ionicons name="images" size={24} color={`${images?.length >= 6 ? "#99d390" : "#3fd826"}`} />
+                                                <StyledText className={`pl-4 text-lg font-custom ${images?.length >= 6 ? "text-gray-500" : ""}`}>รูปภาพ/วิดีโอ ({images?.length}/{selectcount})</StyledText>
                                             </TouchableOpacity>
                                         </StyledView>
                                         <StyledView className="my-2 py-1">
-                                            <TouchableOpacity onPress={() => { uploadImageFromCamera() }} disabled={images.length >= 6} className="flex-row items-center">
-                                                <Ionicons name="camera" size={24} color={`${images.length >= 6 ? "#2bbbbb" : "#2b98e8"}`} />
-                                                <StyledText className={`pl-4 text-lg font-custom ${images.length >= 6 ? "text-gray-500" : ""}`}>กล้อง</StyledText>
+                                            <TouchableOpacity onPress={() => { uploadImageFromCamera() }} disabled={images?.length >= 6} className="flex-row items-center">
+                                                <Ionicons name="camera" size={24} color={`${images?.length >= 6 ? "#2bbbbb" : "#2b98e8"}`} />
+                                                <StyledText className={`pl-4 text-lg font-custom ${images?.length >= 6 ? "text-gray-500" : ""}`}>กล้อง</StyledText>
                                             </TouchableOpacity>
                                         </StyledView>
                                     </StyledView>

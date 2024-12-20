@@ -227,7 +227,7 @@ export default function Search() {
     }
 
     const rows = [];
-    for (let i = 0; i < data.length; i += 2) {
+    for (let i = 0; i < data?.length; i += 2) {
         rows.push(data.slice(i, i + 2));
     }
 

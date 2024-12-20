@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, Platform, ActivityIndicator, KeyboardAvoidingView, Alert } from "react-native";
 import { styled } from "nativewind";
+import { Modal, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { ResizeMode, Video } from 'expo-av';
+import { Video } from 'expo-av';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from "axios";
@@ -62,16 +63,48 @@ export default function AccountSetting() {
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
 
     // Image States
-    const [images, setImages] = useState<string[]>([]);
     const [oldImages, setOldImages] = useState<string[]>([]);
+    const [images, setImages] = useState<string[]>([]);
 
     // Video States
     const [video, setVideo] = useState<string | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadTimer, setUploadTimer] = useState<NodeJS.Timeout | null>(null);
 
     // UI States
     const [isUpdated, setIsUpdated] = useState(false);
     const [loading, setLoading] = useState(true);
     const [loadingUpdate, setLoadingUpdate] = useState(false);
+
+    const UploadingVideo = () => {
+        setUploading(true);
+        setUploadProgress(0);
+
+        const timer = setInterval(() => {
+            setUploadProgress((prev) => {
+                if (prev >= 100) {
+                    clearInterval(timer);
+                    setUploading(false);
+                    setVideo('https://nopparat.pro/video.mp4');
+                    return prev;
+                }
+                return prev + (100 / 15);
+            });
+        }, 1000);
+
+        setUploadTimer(timer);
+    };
+
+    const cancleUpload = () => {
+        if (uploadTimer) {
+            clearInterval(uploadTimer);
+        }
+        setUploading(false);
+        setUploadProgress(0);
+        setUploadTimer(null);
+    };
+
 
     useEffect(() => {
         fetchUserData();
@@ -87,7 +120,7 @@ export default function AccountSetting() {
             }
 
             const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [16, 9],
                 quality: 1,
@@ -104,10 +137,28 @@ export default function AccountSetting() {
                     return;
                 }
 
-                setVideo(result.assets[0].uri);
+                // setVideo(result.assets[0].uri);
+                setUploading(true);
+                setUploadProgress(0);
+
+                const timer = setInterval(() => {
+                    setUploadProgress((prev) => {
+                        if (prev >= 100) {
+                            clearInterval(timer);
+                            setUploading(false);
+                            return prev;
+                        }
+                        return prev + (100 / 5);
+                    });
+                }, 1000);
+
+                setUploadTimer(timer);
             }
         } catch (error) {
             Alert.alert('ข้อผิดพลาด', 'ไม่สามารถเลือกวิดีโอได้ กรุณาลองใหม่อีกครั้ง');
+            setUploading(false);
+            setUploadProgress(0);
+            setUploadTimer(null);
         }
     };
 
@@ -373,7 +424,7 @@ export default function AccountSetting() {
                                 <StyledView className="relative w-full h-full">
                                     <Video
                                         source={{ uri: video }}
-                                        resizeMode={ResizeMode.COVER}
+                                        resizeMode="cover"
                                         className="w-full h-full rounded-2xl"
                                         useNativeControls
                                     />
@@ -392,7 +443,7 @@ export default function AccountSetting() {
                                     <StyledView className="flex-1 rounded-xl bg-white dark:bg-neutral-800 items-center justify-center border border-neutral-300 dark:border-neutral-700 border-dashed">
                                         <StyledIonicons name="videocam-outline" size={40} className="text-black dark:text-white mb-2" />
                                         <StyledText className="font-custom text-neutral-500 dark:text-neutral-400">
-                                            อัพโหลดวิดีโอ (ไม่เกิน 30 นาที)
+                                            อัพโหลดวิดีโอ (ไม่เกิน 100 MB.)
                                         </StyledText>
                                     </StyledView>
                                 </TouchableOpacity>

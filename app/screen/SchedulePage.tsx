@@ -343,7 +343,7 @@ export default function SchedulePage() {
                             {error}
                         </StyledText>
                     </StyledView>
-                ) : schedules.length > 0 ? (
+                ) : schedules?.length > 0 ? (
                     <ScrollView
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ paddingBottom: 80 }}

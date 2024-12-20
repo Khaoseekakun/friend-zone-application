@@ -195,7 +195,7 @@ export default function ScheduleList() {
                         <StyledText className="font-custom text-center">กำลังโหลดข้อมูล...</StyledText>
                     </>
                 ) :
-                    schedule.length > 0 ? (
+                    schedule?.length > 0 ? (
                         <ScrollView>
                             {
                                 schedule.map((item, index) => (
