@@ -1,3 +1,5 @@
+// ส่งวีดีโอไม่เป็นอะ ฝากหน่อยนะ
+
 import React, { useState, useEffect } from "react";
 import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, Platform, ActivityIndicator, KeyboardAvoidingView, Alert } from "react-native";
 import { styled } from "nativewind";

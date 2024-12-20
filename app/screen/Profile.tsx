@@ -612,9 +612,11 @@ export default function ProfileTab() {
                                                     ระยะห่าง
                                                 </StyledText>
                                                 <StyledText className="text-black dark:text-white font-custom text-lg font-semibold">
-                                                    {Number(distance.toFixed(0)) / 1000 > 10
+                                                    {/* {Number(distance.toFixed(0)) / 1000 > 10
                                                         ? `${(distance / 1000).toFixed(1)} กม.`
-                                                        : `${(distance / 1000).toFixed(1)} กม.`}
+                                                        : `${(distance / 1000).toFixed(1)} กม.`} */}
+                                                        {isNaN(distance) ? '0.0 กม.' : 
+                                                        `${(distance / 1000).toFixed(1)} กม.`}
                                                 </StyledText>
                                             </StyledView>
                                         </StyledView>
