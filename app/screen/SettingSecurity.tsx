@@ -35,7 +35,7 @@ const GRADIENT_END = '#f97316';
 // Add this constant for bank options
 const BANK_OPTIONS = [
     "ธนาคารกสิกรไทย",
-    "ธนาคารกรุงเทพ",
+    "ธนาคารกรุงเทพ", 
     "ธนาคารไทยพาณิชย์",
     "ธนาคารกรุงไทย",
     "ธนาคารกรุงศรีอยุธยา",
@@ -111,6 +111,43 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
         }
     };
 
+    const handleUpdateEmail = async () => {
+        try {
+            setLoading(true);
+            const userData = await AsyncStorage.getItem('userData');
+            if (!userData) return;
+            const userList = JSON.parse(userData);
+
+            const response = await axios.put('https://friendszone.app/api/email',
+                { 
+                    oldEmail: email,
+                    newEmail: newEmail,
+                    accountType: 'member'
+                },
+                {
+                    headers: {
+                        "Authorization": `System ${API_SYSTEM_KEY}`
+                    }
+                }
+            );
+            console.log('response.data : ', response.data);
+
+            if (response.data.data.code === "EMAIL_EXIST") {
+                Alert.alert("ข้อผิดพลาด", "อีเมลนี้มีอยู่ในระบบแล้ว");
+                return;
+            }
+
+            if (response.data.status === 200) {
+                Alert.alert("สำเร็จ", "อัพเดทอีเมลเรียบร้อยแล้ว");
+                onSave();
+            }
+        } catch (error) {
+            Alert.alert("ข้อผิดพลาด", "ไม่สามารถอัพเดทอีเมลได้");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <StyledView className="flex-1 px-4">
             {step === 1 && (
@@ -160,18 +197,21 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
 
             {step === 3 && (
                 <>
-                    <StyledText className="text-2xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">กรอกอีเมลใหม่</StyledText>
+                    <StyledText className="text-2xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2 mt-4">กรอกอีเมลใหม่</StyledText>
                     <StyledText className="text-base text-gray-400 mb-6 font-custom">กรุณากรอกอีเมลใหม่ที่ต้องการเปลี่ยน</StyledText>
                     <StyledView className="w-full mb-6">
-                        <StyledText className="font-custom text-sm text-gray-600 dark:text-gray-200 mb-2 ml-4 absolute -top-2 px-1 bg-white dark:bg-black z-50 left-2">อีเมลใหม่</StyledText>
                         <StyledInput
-                            className="font-custom border border-gray-300 rounded-full py-4 px-4 text-gray-600 dark:text-gray-200 w-full"
+                            className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-2"
+                            placeholderTextColor="#666"
                             placeholder="กรอกอีเมลใหม่ของคุณ"
                             value={newEmail}
                             onChangeText={setNewEmail}
                         />
                     </StyledView>
-                    <GradientButton title="บันทึกการเปลี่ยนแปลง" onPress={onSave} />
+                    <GradientButton 
+                        title={loading ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}
+                        onPress={handleUpdateEmail} 
+                    />
                 </>
             )}
         </StyledView>
@@ -196,34 +236,40 @@ const PasswordSection = ({
     onSave: () => void
 }) => (
     <StyledView className="flex-1 px-4">
-        <StyledText className="font-custom text-neutral-400 dark:text-black text-base mb-3 mt-4">เปลี่ยนรหัสผ่าน</StyledText>
-        <StyledInput
-            className="bg-gray-100 dark:bg-neutral-800 p-3 rounded-xl mb-4"
-            placeholder="รหัสผ่านปัจจุบัน"
-            secureTextEntry
-            value={currentPassword}
-            onChangeText={setCurrentPassword}
-        />
-        <StyledInput
-            className="bg-gray-100 dark:bg-neutral-800 p-3 rounded-xl mb-4"
-            placeholder="รหัสผ่านใหม่"
-            secureTextEntry
-            value={newPassword}
-            onChangeText={setNewPassword}
-        />
-        <StyledInput
-            className="bg-gray-100 dark:bg-neutral-800 p-3 rounded-xl mb-4"
-            placeholder="ยืนยันรหัสผ่านใหม่"
-            secureTextEntry
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-        />
-        <GradientButton title="บันทึก" onPress={onSave} />
+        <StyledText className="text-2xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2 mt-4">เปลี่ยนรหัสผ่าน</StyledText>
+        <StyledText className="text-base text-gray-400 mb-6 font-custom">กรุณากรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่</StyledText>
+        <StyledView className="w-full mb-6">
+            <StyledInput
+                className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
+                placeholder="รหัสผ่านปัจจุบัน"
+                secureTextEntry
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                placeholderTextColor="#666"
+            />
+            <StyledInput
+                className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
+                placeholder="รหัสผ่านใหม่"
+                secureTextEntry
+                value={newPassword}
+                onChangeText={setNewPassword}
+                placeholderTextColor="#666"
+            />
+            <StyledInput
+                className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
+                placeholder="ยืนยันรหัสผ่านใหม่"
+                secureTextEntry
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholderTextColor="#666"
+            />
+        </StyledView>
+        <GradientButton title="บันทึกการเปลี่ยนแปลง" onPress={onSave} />
     </StyledView>
 );
 
 const BankSection = ({
-    bankAccount,
+    profileData,
     setBankAccount,
     bankName,
     setBankName,
@@ -237,35 +283,39 @@ const BankSection = ({
 }) => {
     const [showBankPicker, setShowBankPicker] = useState(false);
 
+    const bankAccount = profileData?.firstname + profileData?.lastname;
+
     return (
         <StyledView className="flex-1 px-4">
-            <StyledText className="font-custom text-neutral-400 dark:text-black text-base mb-3 mt-4">บัญชีธนาคาร</StyledText>
-            <StyledInput
-                className="bg-gray-100 dark:bg-neutral-800 p-3 rounded-xl mb-4"
-                placeholder="ชื่อบัญชีธนาคาร"
-                value={bankAccount}
-                onChangeText={setBankAccount}
-            />
-            <StyledText className="font-custom text-neutral-400 dark:text-black text-base mb-3 mt-4">บัญชีธนาคาร</StyledText>
-            <StyledInput
-                className="bg-gray-100 dark:bg-neutral-800 p-3 rounded-xl mb-4"
-                placeholder="เลขบัญชีธนาคาร"
-                value={bankAccount}
-                onChangeText={setBankAccount}
-                keyboardType="numeric"
-            />
+            <StyledText className="text-2xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2 mt-4">บัญชีธนาคาร</StyledText>
+            <StyledText className="text-base text-gray-400 mb-6 font-custom">กรุณากรอกข้อมูลบัญชีธนาคารของคุณ</StyledText>
+            <StyledView className="w-full mb-6">
+                <StyledInput
+                    className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
+                    placeholder="ชื่อบัญชีธนาคาร"
+                    value={bankAccount}
+                    onChangeText={setBankAccount}
+                    placeholderTextColor="#666"
+                />
+                <StyledInput
+                    className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
+                    placeholder="เลขบัญชีธนาคาร"
+                    value={bankAccount}
+                    onChangeText={setBankAccount}
+                    keyboardType="numeric"
+                    placeholderTextColor="#666"
+                />
 
-            {/* Bank Selection Button */}
-            <TouchableOpacity
-                onPress={() => setShowBankPicker(true)}
-                className="bg-gray-100 dark:bg-neutral-800 p-3 rounded-xl mb-4"
-            >
-                <StyledText className={`${bankName ? 'text-black dark:text-white' : 'text-gray-500'}`}>
-                    {bankName || "เลือกธนาคาร"}
-                </StyledText>
-            </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => setShowBankPicker(true)}
+                    className="bg-white dark:bg-neutral-800 rounded-xl p-4 mb-4"
+                >
+                    <StyledText className={`font-custom ${bankName ? 'text-black dark:text-white' : 'text-gray-500'}`}>
+                        {bankName || "เลือกธนาคาร"}
+                    </StyledText>
+                </TouchableOpacity>
+            </StyledView>
 
-            {/* Bank Selection Modal */}
             <Modal
                 visible={showBankPicker}
                 transparent={true}
@@ -299,7 +349,7 @@ const BankSection = ({
                 </StyledView>
             </Modal>
 
-            <GradientButton title="บันทึก" onPress={onSave} />
+            <GradientButton title="บันทึกการเปลี่ยนแปลง" onPress={onSave} />
         </StyledView>
     );
 };
@@ -376,7 +426,6 @@ export default function SettingSecurity() {
             Alert.alert("ข้อผิดพลาด", "กรุณากรอกอีเมล");
             return;
         }
-        // Add email update logic here
         setActiveSection('main');
     };
 
@@ -389,7 +438,6 @@ export default function SettingSecurity() {
             Alert.alert("ข้อผิดพลาด", "รหัสผ่านใหม่ไม่ตรงกัน");
             return;
         }
-        // Add password update logic here
         setActiveSection('main');
     };
 
@@ -398,7 +446,6 @@ export default function SettingSecurity() {
             Alert.alert("ข้อผิดพลาด", "กรุณากรอกข้อมูลธนาคารให้ครบถ้วน");
             return;
         }
-        // Add bank info update logic here
         setActiveSection('main');
     };
 
@@ -438,7 +485,7 @@ export default function SettingSecurity() {
                         <StyledView className="px-4 py-4 space-y-6">
                             {/* การเข้าถึงบัญชี */}
                             <StyledView>
-                                <StyledText className="font-custom dark:text-neutral-400 text-base mb-3">
+                                <StyledText className="text-2xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">
                                     การเข้าถึงบัญชี
                                 </StyledText>
 
@@ -451,7 +498,7 @@ export default function SettingSecurity() {
                                         <StyledView className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full items-center justify-center">
                                             <StyledIonicons name="mail-outline" size={24} className="text-blue-500" />
                                         </StyledView>
-                                        <StyledView className="flex-1 ml-3 mt-6">
+                                        <StyledView className="flex-1 ml-3">
                                             <StyledText className="text-base dark:text-white font-custom">
                                                 เปลี่ยนอีเมล
                                             </StyledText>
@@ -487,7 +534,7 @@ export default function SettingSecurity() {
 
                             {/* ข้อมูลการเงิน */}
                             <StyledView>
-                                <StyledText className="font-custom dark:text-neutral-400 text-base mb-3">
+                                <StyledText className="text-2xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">
                                     ข้อมูลการเงิน
                                 </StyledText>
 
@@ -515,7 +562,7 @@ export default function SettingSecurity() {
 
                             {/* Phone Number */}
                             <StyledView>
-                                <StyledText className="font-custom dark:text-neutral-400 text-base mb-3">
+                                <StyledText className="text-2xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">
                                     ข้อมูลการติดต่อ
                                 </StyledText>
 
@@ -525,10 +572,10 @@ export default function SettingSecurity() {
                                             <StyledIonicons name="phone-portrait-outline" size={24} className="text-yellow-500" />
                                         </StyledView>
                                         <StyledView className="flex-1 ml-3">
-                                            <StyledText className="text-xs text-neutral-400 dark:text-neutral-500 font-custom">
+                                            <StyledText className="text-base dark:text-white font-custom">
                                                 เบอร์โทรศัพท์
                                             </StyledText>
-                                            <StyledText className="text-base dark:text-white font-custom pt-1">
+                                            <StyledText className="text-xs text-neutral-400 dark:text-neutral-500 font-custom">
                                                 {profile?.phoneNumber || "-"}
                                             </StyledText>
                                         </StyledView>
