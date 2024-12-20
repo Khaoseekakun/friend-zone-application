@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, Platform, ActivityIndicator, KeyboardAvoidingView } from "react-native";
+import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, Platform, ActivityIndicator, KeyboardAvoidingView, Alert } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { Video } from 'expo-av';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from "axios";
@@ -50,7 +51,7 @@ const SERVICE_OPTIONS: ServiceOption[] = [
 export default function AccountSetting() {
     const navigation = useNavigation<any>();
 
-    // Profile Data States
+
     const [profileData, setProfileData] = useState<UserProfile | null>(null);
     const [username, setUsername] = useState("");
     const [bio, setBio] = useState("");
@@ -64,6 +65,9 @@ export default function AccountSetting() {
     const [images, setImages] = useState<string[]>([]);
     const [oldImages, setOldImages] = useState<string[]>([]);
 
+    // Video States
+    const [video, setVideo] = useState(null);
+
     // UI States
     const [isUpdated, setIsUpdated] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -72,6 +76,40 @@ export default function AccountSetting() {
     useEffect(() => {
         fetchUserData();
     }, []);
+
+    const handleVideoPick = async () => {
+        try {
+            const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+            if (permissionResult.granted === false) {
+                Alert.alert('ข้อผิดพลาด', 'ต้องการการอนุญาตเข้าถึงคลังรูปภาพ');
+                return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+                allowsEditing: true,
+                aspect: [16, 9],
+                quality: 1,
+                videoMaxDuration: 30,
+            });
+
+            if (!result.canceled) {
+                const response = await fetch(result.assets[0].uri);
+                const blob = await response.blob();
+                const fileSize = blob.size / (1024 * 1024);
+
+                if (fileSize > 50) {
+                    Alert.alert('ข้อผิดพลาด', 'ขนาดไฟล์วิดีโอต้องไม่เกิน 50MB');
+                    return;
+                }
+
+                setVideo(result.assets[0].uri);
+            }
+        } catch (error) {
+            Alert.alert('ข้อผิดพลาด', 'ไม่สามารถเลือกวิดีโอได้ กรุณาลองใหม่อีกครั้ง');
+        }
+    };
 
     // Check for changes in data
     useEffect(() => {
@@ -321,6 +359,41 @@ export default function AccountSetting() {
                                 >
                                     <StyledView className="flex-1 rounded-xl bg-white dark:bg-neutral-800 items-center justify-center border border-neutral-300 dark:border-neutral-700 border-dashed">
                                         <StyledIonicons name="add" size={40} className="font-custom text-black dark:text-white" />
+                                    </StyledView>
+                                </TouchableOpacity>
+                            )}
+                        </StyledView>
+                    </StyledView>
+                    <StyledView>
+                        <StyledText className="font-custom text-neutral-400 text-base mb-2">
+                            วิดีโอแนะนำตัว
+                        </StyledText>
+                        <StyledView className="w-full aspect-video mb-4">
+                            {video ? (
+                                <StyledView className="relative w-full h-full">
+                                    <Video
+                                        source={{ uri: video }}
+                                        resizeMode="cover"
+                                        className="w-full h-full rounded-2xl"
+                                        useNativeControls
+                                    />
+                                    <StyledTouchableOpacity
+                                        onPress={() => setVideo(null)}
+                                        className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1.5 z-10"
+                                    >
+                                        <StyledIonicons name="close" size={18} className="text-white" />
+                                    </StyledTouchableOpacity>
+                                </StyledView>
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={handleVideoPick}
+                                    className="w-full h-full"
+                                >
+                                    <StyledView className="flex-1 rounded-xl bg-white dark:bg-neutral-800 items-center justify-center border border-neutral-300 dark:border-neutral-700 border-dashed">
+                                        <StyledIonicons name="videocam-outline" size={40} className="text-black dark:text-white mb-2" />
+                                        <StyledText className="font-custom text-neutral-500 dark:text-neutral-400">
+                                            อัพโหลดวิดีโอ (ไม่เกิน 30 นาที)
+                                        </StyledText>
                                     </StyledView>
                                 </TouchableOpacity>
                             )}
