@@ -5,6 +5,8 @@ import { useNavigation, NavigationProp, StackActions } from '@react-navigation/n
 import { RootStackParamList } from '../../types';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import axios from 'axios';
+import { API_SYSTEM_KEY } from '@/components/config';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -17,12 +19,15 @@ export default function ForgotPassword() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [step, setStep] = useState<1 | 2 | 3>(1);
     const [email, setEmail] = useState('');
-    const [otp, setOtp] = useState('');
+    const [otp, setOtp] = useState<number | null>(null);
+    const [otpEnter, setOtpEnter] = useState<string>('');
+    const [otpTimeout, setOtpTimeout] = useState<number | null>(null);
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const scaleValue = useRef(new Animated.Value(1)).current;
+    const [cooldown, setCooldown] = useState(Date.now());
 
     const handlePressIn = () => {
         Animated.spring(scaleValue, {
@@ -46,6 +51,108 @@ export default function ForgotPassword() {
         setIsPasswordVisible(!isPasswordVisible);
     };
 
+    const randomOtp = () => {
+        //random 6 digit number
+        return Math.floor(100000 + Math.random() * 900000);
+    }
+
+
+    const handleSendOtpVerification = async () => {
+        if (!email) {
+            Alert.alert('กรุณากรอกอีเมลของคุณ', 'กรุณากรอกอีเมลของคุณก่อนที่จะส่งรหัส OTP', [
+                {
+                    text: 'ตกลง'
+                }
+            ]);
+            return;
+        }
+        if (cooldown > Date.now()) {
+            let timeLeft = Math.ceil((cooldown - Date.now()) / 1000);
+            Alert.alert('กรุณารอสักครู่', `กรุณารอ ${timeLeft} วินาที ก่อนที่จะส่งรหัส OTP อีกครั้ง`)
+            return;
+        } else {
+            try {
+                setLoading(true);
+                const otp = randomOtp();
+                setOtp(otp);
+                const response = await axios.post('http://49.231.43.37:3000/api/email/otp',
+                    {
+                        email: email,
+                        otp: otp
+                    }, {
+                    headers: {
+                        'Authorization': `System ${API_SYSTEM_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+                )
+
+                if (response.data.status === 200) {
+                    setStep(2);
+                    setCooldown(Date.now() + 60000);
+                    setOtpTimeout(Date.now() + 600000);
+                } else {
+                    Alert.alert(`เกิดข้อผิดพลาด`, 'ไม่สามารถส่งรหัส OTP ไปยังอีเมลของคุณได้', [
+                        {
+                            text: 'ลองอีกครั้ง'
+                        }
+                    ]);
+                }
+
+            } catch (error) {
+                console.log(error)
+                Alert.alert(`เกิดข้อผิดพลาด`, 'ไม่สามารถส่งรหัส OTP ไปยังอีเมลของคุณได้', [
+                    {
+                        text: 'ลองอีกครั้ง'
+                    }
+                ]);
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
+    const handleSendResetPassword = async () => {
+        try {
+
+            //check password
+
+            if(password !== confirmPassword){
+                return Alert.alert('รหัสผ่านไม่ตรงกัน', 'รหัสผ่านที่คุณป้อนไม่ตรงกัน กรุณาลองใหม่อีกครั้ง')
+            }
+
+            if(password.length < 6){
+                return Alert.alert('รหัสผ่านไม่ถูกต้อง', 'รหัสผ่านของคุณต้องมีความยาวอย่างน้อย 6 ตัวอักษร')
+            }
+
+
+            setLoading(true);
+            const response = await axios.put('http://49.231.43.37:3000/api/oauth/password', {
+                email: email,
+                password: password
+            }, {
+                headers: {
+                    'Authorization': `System ${API_SYSTEM_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+
+            if(response.data.status == 200){
+                return Alert.alert('เปลี่ยนรหัสผ่านสำเร็จ', 'รหัสผ่านของคุณได้ถูกเปลี่ยนแล้ว', [
+                    {
+                        text: 'กลับไปหน้าเข้าสู่ระบบ',
+                        onPress: () => navigation.navigate('Login', {})
+                    }
+                ])
+            }
+
+            Alert.alert('เปลี่ยนรหัสผ่านไม่สำเร็จ', 'ไม่สามารถเปลี่ยนรหัสผ่านของคุณได้')
+        } catch (error) {
+            console.log(error)
+            Alert.alert('เปลี่ยนรหัสผ่านไม่สำเร็จ', 'ไม่สามารถเปลี่ยนรหัสผ่านของคุณได้')
+        }
+    }
+
     const renderEmailStep = () => (
         <StyledView className="flex-1 px-6 justify-center items-center -top-10">
             <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">ลืมรหัสผ่าน</StyledText>
@@ -68,7 +175,7 @@ export default function ForgotPassword() {
                 className="w-full duration-200 mb-4"
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
-                onPress={() => setStep(2)}
+                onPress={() => handleSendOtpVerification()}
                 disabled={loading}
             >
                 <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
@@ -117,8 +224,8 @@ export default function ForgotPassword() {
                 <StyledTextInput
                     placeholder="กรอกรหัส OTP"
                     className="font-custom border border-gray-300 rounded-full py-4 px-4 text-gray-600 dark:text-gray-200 w-full"
-                    value={otp}
-                    onChangeText={setOtp}
+                    value={`${otpEnter}`}
+                    onChangeText={setOtpEnter}
                     placeholderTextColor="#9CA3AF"
                     keyboardType="number-pad"
                     maxLength={6}
@@ -129,7 +236,25 @@ export default function ForgotPassword() {
                 className="w-full duration-200 mb-4"
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
-                onPress={() => setStep(3)}
+                onPress={() => {
+                    if (otp === null) {
+                        Alert.alert('กรุณากรอกรหัส OTP', 'กรุณากรอกรหัส OTP ที่ส่งไปยังอีเมลของคุณ', [
+                            {
+                                text: 'ตกลง'
+                            }
+                        ]);
+                        return;
+                    }
+                    if (otpEnter.length < 6 || Number(otpEnter) !== otp || otpTimeout === null || otpTimeout < Date.now()) {
+                        Alert.alert('รหัส OTP ไม่ถูกต้อง', 'กรุณากรอกรหัส OTP ที่ส่งไปยังอีเมลของคุณอีกครั้ง', [
+                            {
+                                text: 'ตกลง'
+                            }
+                        ]);
+                        return;
+                    }
+                    setStep(3);
+                }}
                 disabled={loading}
             >
                 <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
@@ -165,7 +290,7 @@ export default function ForgotPassword() {
                 <Ionicons name="arrow-back" size={24} color={colorScheme === 'dark' ? '#fff' : '#000'} />
             </TouchableOpacity>
 
-            <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">ตั้งรหัสผ่านใหม่</StyledText>
+            <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] pt-2">ตั้งรหัสผ่านใหม่</StyledText>
             <StyledText className="text-lg text-gray-400 mb-8 font-custom">กรุณาตั้งรหัสผ่านใหม่ของคุณ</StyledText>
 
             <StyledView className="w-full mb-7">
@@ -206,7 +331,7 @@ export default function ForgotPassword() {
                 className="w-full duration-200"
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
-                onPress={() => navigation.navigate('Login', {})}
+                onPress={() => handleSendResetPassword()}
                 disabled={loading}
             >
                 <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
@@ -234,7 +359,7 @@ export default function ForgotPassword() {
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <StyledSafeAreaView className="flex-1 bg-white dark:bg-black">
+            <StyledSafeAreaView className="flex-1 bg-white dark:bg-black pt-14">
                 {step === 1 && renderEmailStep()}
                 {step === 2 && renderOtpStep()}
                 {step === 3 && renderNewPasswordStep()}
