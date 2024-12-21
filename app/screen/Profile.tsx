@@ -217,48 +217,6 @@ export default function ProfileTab() {
         }
     }
 
-    const loadJobsList = async () => {
-        try {
-            if (!jobCategory) {
-                if (userProfile?.profile?.JobMembers?.length > 0) {
-                    const resdata = await axios.get(`https://friendszone.app/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `All ${userData.token}`
-                        }
-                    })
-
-                    if (resdata.data.status == 200) {
-                        setJobList(resdata.data.data.JobsList?.map((job: any) => ({
-                            label: job.jobName,
-                            value: job.id,
-
-                        })))
-                    }
-                }
-            } else {
-                const resdata = await axios.get(`https://friendszone.app/api/jobs?categoryType=${jobCategory}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `All ${userData.token}`
-                    }
-                })
-
-                if (resdata.data.status == 200) {
-                    setJobList(resdata.data.data.JobsList?.map((job: any) => ({
-                        label: job.jobName,
-                        value: job.id,
-
-                    })))
-
-                }
-            }
-
-
-        } catch (error) {
-        }
-    }
-
     const fetchUserData = useCallback(async () => {
         try {
             setLoading(true);
@@ -761,60 +719,7 @@ export default function ProfileTab() {
                 <BottomSheetScrollView>
                     <StyledView className="flex-1 mb-20">
                         {
-                            searchFocus ? (
-                                <>
-                                    <StyledView className="flex-row items-center px-6 py-1 ">
-                                        <StyledView className="w-full px-1">
-                                            <StyledView className="flex-row gap-1 items-center w-full mb-2">
-
-                                                <StyledIonIcon name="chevron-back" size={24}
-                                                    onPress={() => setSearchFocus(false)}
-                                                    className="text-black dark:text-neutral-200"
-
-                                                />
-                                                <StyledTextInput
-                                                    placeholder="ค้นหาสถานที่"
-                                                    className="font-custom border border-gray-300 rounded-2xl py-3 mr-2 px-4 text-gray-700 dark:text-neutral-200 min-w-[80%]"
-                                                    value={locationSearch}
-                                                    placeholderTextColor="#d1d5db"
-                                                    onChangeText={setLocationSearch}
-                                                >
-
-                                                </StyledTextInput>
-                                                <StyledIonIcon
-                                                    name="search"
-                                                    size={24}
-                                                    className="text-black dark:text-neutral-200"
-                                                    onPress={() => {
-                                                        setSearchFocus(true)
-                                                        searchMapGeoLocation(locationSearch)
-                                                    }}
-                                                />
-
-                                            </StyledView>
-                                            {
-                                                geoLocation?.map((location, index) => (
-                                                    <TouchableOpacity
-                                                        key={index}
-                                                        className="flex-row items-center py-2"
-                                                        onPress={() => {
-                                                            setPin(location);
-                                                            setSearchFocus(false);
-                                                            setScheduleLocation(location.locationName);
-                                                        }}
-                                                    >
-                                                        <StyledIonIcon name="location-outline" size={24} className="mr-2 text-black dark:text-neutral-200" />
-                                                        <StyledText className="text-lg text-black font-custom dark:text-neutral-200 flex-wrap pr-2 border-b-[1px] border-gray-200 max-w-[95%]">{location.locationName}</StyledText>
-                                                    </TouchableOpacity>
-                                                ))
-                                            }
-                                        </StyledView>
-
-                                    </StyledView>
-
-
-                                </>
-                            ) : showSelectJobs ? (
+                            showSelectJobs ? (
                                 <>
                                     <StyledView className="flex-row items-center px-6 py-1">
                                         <StyledView className="w-full px-1">
@@ -879,8 +784,6 @@ export default function ProfileTab() {
                                             <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
                                                 ประเภทงาน
                                             </StyledText>
-
-
                                             <TouchableOpacity
                                                 onPress={showSelectJob}>
                                                 <StyledView
@@ -921,17 +824,23 @@ export default function ProfileTab() {
                                     <StyledView className="items-center px-6 py-1">
                                         <StyledView className="w-full px-1">
                                             <StyledText className="text-lg text-black font-custom dark:text-neutral-200">จุดนัดหมาย</StyledText>
-
-                                            <StyledTouchableOpacity
-                                                onPress={() => setSearchFocus(true)}
-                                                className="font-custom border-[1px] border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full"
+                                            <StyledView
+                                                className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
                                             >
-                                                <StyledText className={`${scheduleLocation ? "text-black dark:text-neutral-200" : "text-gray-300"} font-custom`}>
-                                                    {
-                                                        scheduleLocation?.length > 0 ? scheduleLocation : "ค้นหาสถานที่"
-                                                    }
-                                                </StyledText>
-                                            </StyledTouchableOpacity>
+                                                <TextInput
+                                                    placeholder="จุดนัดหมาย"
+                                                    value={scheduleLocation}
+                                                    onChangeText={setScheduleLocation}
+                                                    className="font-custom text-gray-700 dark:text-white"
+                                                    placeholderTextColor="#d1d5db"
+                                                    style={{
+                                                        textAlignVertical: 'top',
+                                                        minHeight: 40,
+                                                    }}
+                                                />
+                                            </StyledView>
+
+
                                         </StyledView>
                                     </StyledView>
 
@@ -944,6 +853,7 @@ export default function ProfileTab() {
                                                 longitudeDelta: 0.0421,
 
                                             }}
+
                                             onPress={(e) => {
                                                 const { latitude, longitude } = e.nativeEvent.coordinate;
                                                 setPin({ latitude, longitude });
@@ -959,7 +869,7 @@ export default function ProfileTab() {
                                                     <Marker
                                                         coordinate={pin}
                                                         title="Selected Location"
-                                                        draggable
+                                                        draggable={true}
                                                         onDragEnd={(e) => {
                                                             const { latitude, longitude } = e.nativeEvent.coordinate;
                                                             setPin({ latitude, longitude });
@@ -1011,7 +921,7 @@ export default function ProfileTab() {
                     </StyledView>
                 </BottomSheetScrollView>
             </BottomSheet>
-            
+
             <DateTimePickerModal
                 isVisible={isDatePickerVisible}
                 mode="date"
