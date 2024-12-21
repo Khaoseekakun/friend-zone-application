@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Alert } from "react-native";
 import Profile from "../screen/Profile";
 import * as Notifications from 'expo-notifications';
 import Message from "../screen/Message";
@@ -28,11 +29,11 @@ import SettingSecurity from "../screen/SettingSecurity";
 const Tab = createBottomTabNavigator();
 
 export default function HomeScreen() {
-
   const [userData, setuUserData] = useState<any>({});
   const navigation = useNavigation<any>();
 
   useEffect(() => {
+    // Add notification response listener
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
       const data = response.notification.request.content.data;
       if (data && data.screen) {
@@ -49,53 +50,41 @@ export default function HomeScreen() {
     const userData = await AsyncStorage.getItem('userData');
     setuUserData(JSON.parse(userData || '{}'));
   };
-  
+
   useEffect(() => {
-
     fetchUserData();
-
-
   }, []);
-
-  const getDeviceId = async () => {
-    return await AsyncStorage.getItem('uuid') as string;
-  };
 
   const checkNotificationPermissions = async () => {
     try {
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       if (existingStatus !== 'granted') await Notifications.requestPermissionsAsync();
 
-      const token = (await Notifications.getExpoPushTokenAsync({
-        deviceId: await getDeviceId()
-      })).data;
+      const token = (await Notifications.getExpoPushTokenAsync()).data;
 
       if (userData && userData.id && userData.token) {
         await axios.put('https://friendszone.app/api/notification/', {
           userId: userData?.id,
-          notificationToken: token
+          notificationToken: token,
         }, {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'All ' + userData?.token, // Add a space after 'All'
+            'Authorization': `All ${userData?.token}`, // Add a space after 'All'
           },
         });
-
       }
     } catch (error) {
-      console.log('')
+      console.log('Error in notification permissions:', error);
     }
   };
 
-
   useEffect(() => {
-
     checkNotificationPermissions();
   }, [userData]);
 
   return (
     <>
-      <Tab.Navigator tabBar={() => null} >
+      <Tab.Navigator tabBar={() => null}>
         <Tab.Screen name="FeedsTab" component={Feeds} options={{ headerShown: false, animation: "fade" }} />
         <Tab.Screen name="MessageTab" component={Message} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="SettingTab" component={Setting} options={{ headerShown: false, animation: "shift" }} />
@@ -116,7 +105,6 @@ export default function HomeScreen() {
         <Tab.Screen name="AccountStatus" component={AccountStatus} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="History" component={History} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="SettingSecurity" component={SettingSecurity} options={{ headerShown: false, animation: "shift" }} />
-
       </Tab.Navigator>
     </>
   );

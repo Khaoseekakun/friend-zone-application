@@ -1,7 +1,17 @@
 export enum UserType {
   Admin = "Admin",
   Member = "Member",
-  Customer = "Customer"
+  Customer = "Customer",
+}
+
+export interface Province {
+  id: string;
+  name: string;
+  MembersDB: MembersDB[];
+  CustomersDB: CustomersDB[];
+  updatedAt: Date;
+  createdAt: Date;
+  status: boolean;
 }
 
 export interface MembersDB {
@@ -15,12 +25,12 @@ export interface MembersDB {
   password: string;
   resetFirstPassword: boolean;
   verified: boolean;
+  emailVerified: boolean;
   phoneNumber?: string;
   profileUrl?: string;
   updatedAt: Date;
   createdAt: Date;
   deleted: boolean;
-  province: string[];
   birthday?: Date;
   pinLocation: number[];
   bio?: string;
@@ -28,6 +38,7 @@ export interface MembersDB {
   reviews: number;
   weight: number;
   height: number;
+  previrwVideoUrl?: string;
   previewFirstImageUrl?: string;
   previewAllImageUrl: string[];
   loggedAt?: string;
@@ -38,6 +49,12 @@ export interface MembersDB {
   JobMembers: JobMembers[];
   Warning: Warning[];
   Review: Review[];
+  BankAccount: BankAccount[];
+  jobCategory?: JobCategory;
+  jobCategoryId?: string;
+  status: string;
+  Province?: Province;
+  provinceId?: string;
 }
 
 export interface Review {
@@ -46,11 +63,13 @@ export interface Review {
   star: number;
   updatedAt: Date;
   createdAt: Date;
+  reviewUserId: string;
   customerId?: string;
   memberId?: string;
-  CustomerDB?: CustomersDB;
   MemberDB?: MembersDB;
   userType: UserType;
+  CustomersDB?: CustomersDB;
+  customersDBId?: string;
 }
 
 export interface CustomersDB {
@@ -64,10 +83,10 @@ export interface CustomersDB {
   password: string;
   gmail?: string;
   verified: boolean;
+  emailVerified: boolean;
   updatedAt: Date;
   createdAt: Date;
   deleted: boolean;
-  province: string[];
   birthday?: Date;
   profileUrl?: string;
   stripeUserId?: string;
@@ -75,6 +94,7 @@ export interface CustomersDB {
   bio?: string;
   weight: number;
   height: number;
+  previrwVideoUrl?: string;
   previewAllImageUrl: string[];
   Comments: Comments[];
   MessagesChat: MessagesChat[];
@@ -82,6 +102,8 @@ export interface CustomersDB {
   Warning: Warning[];
   loggedAt?: string;
   Review: Review[];
+  Province?: Province;
+  provinceId?: string;
 }
 
 export interface Warning {
@@ -122,17 +144,10 @@ export interface BankAccount {
   accountName: string;
   accountNo: string;
   bankName: string;
-  bankId: string;
   memberId: string;
   RegisterMemberData?: RegisterMemberData;
   registerMemberDataId?: string;
-  updatedAt: Date;
-  createdAt: Date;
-}
-
-export interface BankList {
-  id: string;
-  bankName: string;
+  Member?: MembersDB;
   updatedAt: Date;
   createdAt: Date;
 }
@@ -229,6 +244,7 @@ export interface JobCategory {
   categoryName: string;
   JobsList: JobsList[];
   serviceRate: ServiceRate[];
+  MembersDB: MembersDB[];
 }
 
 export interface MessagesChat {
@@ -263,4 +279,13 @@ export interface ServiceDistanceRate {
   id: string;
   distance: number;
   price: number;
+}
+
+export interface GmailOtp {
+  id: string;
+  gmail: string;
+  otp: string;
+  updatedAt: Date;
+  createdAt: Date;
+  timeout: Date;
 }

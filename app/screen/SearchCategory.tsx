@@ -174,7 +174,7 @@ export default function SearchCategory() {
                 height: CARD_HEIGHT,
               }}
               onPress={() => navigation.navigate('Search', {
-                searchType: 'Friend'
+                searchType: '673080a432edea568b2a6554'
               })}
             >
               <LinearGradient

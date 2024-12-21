@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { View, Text, Alert, ActivityIndicator, ScrollView, Dimensions, Image, Linking, Appearance, Platform } from "react-native";
+import { View, Text, Alert, ActivityIndicator, ScrollView, Dimensions, Image, Linking, Appearance, Platform, TouchableNativeFeedback, Keyboard, TouchableWithoutFeedback, StyleSheet } from "react-native";
 import { styled } from "nativewind";
 import { HeaderApp } from "@/components/Header";
 import { NavigationProp, RouteProp, useIsFocused, useRoute } from "@react-navigation/native";
@@ -22,6 +22,8 @@ import RNPickerSelect from 'react-native-picker-select';
 import { sendPushNotification } from "@/utils/Notification";
 import DateTimePicker from 'react-native-ui-datepicker';
 import { Modal, Animated } from 'react-native';
+import { JobMembers, Review } from "@/types/prismaInterface";
+import { set } from "firebase/database";
 
 configureReanimatedLogger({
     level: ReanimatedLogLevel.warn,
@@ -42,11 +44,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export default function ProfileTab() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const route = useRoute<ProfileParam>();
-    const { profileId, jobCategory, backPage, searchType } = route.params;
+    const { profileId, jobCategory, backPage } = route.params;
     const isFoucs = useIsFocused()
-    const convertJobs = {
-        "Friend": "เพื่อนท่องเที่ยว"
-    }
 
     const bottomSheetRef = useRef<BottomSheet>(null);
     const bottomSheetRefReview = useRef<BottomSheet>(null);
@@ -77,8 +76,12 @@ export default function ProfileTab() {
     const [showSelectJobs, setShowSelectJob] = useState(false);
 
     const [searchFocus, setSearchFocus] = useState<boolean>(false);
+    const [reviewList, setReviewList] = useState<Review[]>([]);
 
     const [locationSearch, setLocationSearch] = useState<string>("");
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState<string>("");
 
 
     const [pin, setPin] = useState<{
@@ -111,11 +114,12 @@ export default function ProfileTab() {
                 longitude: location.coords.longitude,
             });
 
-
-            setDistance(getDistanceMemberToCustomer({ latitude: location.coords.latitude, longitude: location.coords.longitude }, {
-                latitude: parseFloat(userProfile?.profile.pinLocation[0]),
-                longitude: parseFloat(userProfile?.profile.pinLocation[1])
-            }));
+            if (userProfile?.profile?.pinLocation) {
+                setDistance(getDistanceMemberToCustomer({ latitude: location.coords.latitude, longitude: location.coords.longitude }, {
+                    latitude: parseFloat(userProfile.profile.pinLocation[0]),
+                    longitude: parseFloat(userProfile.profile.pinLocation[1])
+                }));
+            }
         }
     };
 
@@ -125,27 +129,6 @@ export default function ProfileTab() {
 
     const [reviewText, setReviewText] = useState('');
     const [reviewStars, setReviewStars] = useState(0);
-
-
-    const [reviews, setReviews] = useState([
-        {
-            id: 1,
-            username: "User1",
-            avatar: "https://placeholder.com/150",
-            rating: 5,
-            comment: "บริการดีมาก เป็นกันเอง แนะนำสถานที่ได้ดี",
-            date: "10 ธ.ค. 2024"
-        },
-        {
-            id: 2,
-            username: "User2",
-            avatar: "https://placeholder.com/150",
-            rating: 4,
-            comment: "ไกด์น่ารัก พาเที่ยวสนุก รู้จักที่กินอร่อยๆ",
-            date: "9 ธ.ค. 2024"
-        }
-    ]);
-
     const [modalVisible, setModalVisible] = useState(false);
     const slideAnim = useRef(new Animated.Value(0)).current;
     const showModal = () => {
@@ -228,7 +211,7 @@ export default function ProfileTab() {
 
         try {
             const response = await axios(config);
-            const newLocations = response.data.features.map((feature: any) => ({
+            const newLocations = response.data.features?.map((feature: any) => ({
                 latitude: feature.geometry.coordinates[1],
                 longitude: feature.geometry.coordinates[0],
                 locationName: feature.properties.formatted || location
@@ -237,15 +220,14 @@ export default function ProfileTab() {
             setGeoLocation(newLocations);
 
         } catch (error) {
-            console.error("Failed to fetch map geo location:", error);
         }
     }
 
     const loadJobsList = async () => {
         try {
             if (!jobCategory) {
-                if (userProfile.profile.JobMembers?.length > 0) {
-                    const resdata = await axios.get(`https://friendszone.app/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
+                if (userProfile?.profile?.JobMembers?.length > 0) {
+                    const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
                         headers: {
                             "Content-Type": "application/json",
                             "Authorization": `All ${userData.token}`
@@ -253,17 +235,15 @@ export default function ProfileTab() {
                     })
 
                     if (resdata.data.status == 200) {
-                        setJobList(resdata.data.data.JobsList.map((job: any) => ({
+                        setJobList(resdata.data.data.JobsList?.map((job: any) => ({
                             label: job.jobName,
                             value: job.id,
 
                         })))
-                    } else {
-                        console.log(resdata.data)
                     }
                 }
             } else {
-                const resdata = await axios.get(`https://friendszone.app/api/jobs?categoryType=${convertJobs[jobCategory as keyof typeof convertJobs]}`, {
+                const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?categoryType=${jobCategory}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `All ${userData.token}`
@@ -271,21 +251,17 @@ export default function ProfileTab() {
                 })
 
                 if (resdata.data.status == 200) {
-                    setJobList(resdata.data.data.JobsList.map((job: any) => ({
+                    setJobList(resdata.data.data.JobsList?.map((job: any) => ({
                         label: job.jobName,
                         value: job.id,
 
                     })))
 
-                    console.log(resdata.data.data)
-                } else {
-                    console.log(resdata.data)
                 }
             }
 
 
         } catch (error) {
-            console.error("Failed to fetch jobs list:", error);
         }
     }
 
@@ -306,7 +282,7 @@ export default function ProfileTab() {
                 return;
             }
 
-            const user = await axios.get(`https://friendszone.app/api/profile/${profileId}`, {
+            const user = await axios.get(`http://49.231.43.37:3000/api/profile/${profileId}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `All ${parsedData?.token}`
@@ -318,23 +294,21 @@ export default function ProfileTab() {
             setImages(user.data.data?.profile.previewAllImageUrl)
             setIsActive(0);
         } catch (error) {
-            console.error("Failed to fetch user data:", error);
         } finally {
             setLoading(false);
         }
     }, [profileId, navigation]);
 
     useEffect(() => {
-        if (loading === false) {
-            if (userProfile?.profile.type === "member" && loading === false) {
-                loadJobsList();
+        if (isFoucs != false) {
+            if (loading === false) {
+                loadReview();
+            } else {
+                fetchUserData();
+                requestLocationPermission();
             }
-        } else {
-            fetchUserData();
-            requestLocationPermission();
-        }
 
-        console.log(userProfile)
+        }
     }, [isFoucs, loading, userProfile]);
 
     const [theme, setTheme] = useState(Appearance.getColorScheme());
@@ -400,7 +374,9 @@ export default function ProfileTab() {
 
 
         try {
-            const response = await axios.post('https://friendszone.app/api/schedule', {
+            setLoadingMessage('กำลังสร้างนัดหมาย...');
+            setIsLoading(true);
+            const response = await axios.post('http://49.231.43.37:3000/api/schedule', {
                 customerId: userData.id,
                 memberId: userProfile?.profile.id,
                 date: scheduleDateTime,
@@ -433,6 +409,9 @@ export default function ProfileTab() {
         } catch (error) {
             Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
         }
+        finally {
+            setIsLoading(false);
+        }
     }
 
     const sendReview = async () => {
@@ -441,8 +420,9 @@ export default function ProfileTab() {
         }
 
         try {
-            setLoadingReviews(true);
-            const response = await axios.post(`https://friendszone.app/api/profile/${userProfile?.profile.id}/review`, {
+            setLoadingMessage('กำลังสร้างรีวิว...');
+            setIsLoading(true);
+            const response = await axios.post(`http://49.231.43.37:3000/api/profile/${userProfile?.profile.id}/review`, {
                 userId: userData.id,
                 star: reviewStars,
                 text: reviewText
@@ -454,28 +434,44 @@ export default function ProfileTab() {
             });
 
             if (response.data.status != 200) {
-                console.log(response.data);
                 Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถสร้างรีวิวได้', [{ text: 'OK' }]);
             } else {
-                Alert.alert('สำเร็จ', 'สร้างรีวิวสำเร็จ', [{ text: 'OK' }]);
+                setLoadingMessage('สร้างรีวิวสำเร็จ');
                 fetchUserData();
                 setShowReviewModal(false);
+                setReviewStars(0);
+                setReviewText('');
+                bottomSheetRefReview.current?.close()
             }
+
         } catch (error) {
-            console.log(error)
             Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถสร้างรีวิวได้', [{ text: 'OK' }]);
         } finally {
-            setLoadingReviews(false);
+            setIsLoading(false);
         }
     }
 
+    const loadReview = async () => {
+        try {
+            setLoadingReviews(true);
+            const response = await axios.get(`http://49.231.43.37:3000/api/profile/${userProfile?.profile.id}/review`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `All ${userData.token}`
+                }
+            });
+
+            if (response.data.status == 200) {
+                setReviewList(response.data.data);
+            }
+        } catch (error) {
+        }
+    }
 
     return (
         <StyledView className="flex-1 dark:bg-neutral-900">
             <HeaderApp back={
                 backPage ?? 'FeedsTab'
-            } searchType={
-                searchType
             } />
 
             {
@@ -513,8 +509,8 @@ export default function ProfileTab() {
 
                                     <StyledView className="absolute bottom-2 flex-row items-center left-2">
                                         <StyledIonIcon name="heart" color={'#ad2722'} size={40} />
-                                        <StyledText className="text-[30px] text-white font-custom">{userProfile?.profile.rating}</StyledText>
-                                        <StyledText className="text-[25px] text-gray-200 font-custom">({userProfile?.profile.reviews})</StyledText>
+                                        <StyledText className="text-[30px] text-white font-custom">{(reviewList.reduce((acc, review) => acc + review.star, 0) / reviewList.length).toFixed(1)}</StyledText>
+                                        <StyledText className="text-[20px] text-gray-200 font-custom ml-1 mt-2">({reviewList.length})</StyledText>
                                     </StyledView>
                                 </StyledView>
 
@@ -531,7 +527,7 @@ export default function ProfileTab() {
                                 <StyledView className="px-5 py-4">
 
                                     <StyledText className="text-[28px] text-black dark:text-white font-custom font-semibold mb-3">
-                                        {userProfile?.profile.username}
+                                        {userProfile?.profile?.username}
                                     </StyledText>
                                     <StyledView className="mb-3">
                                         <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm mb-2">
@@ -541,13 +537,13 @@ export default function ProfileTab() {
                                         <StyledView className="flex-row items-center justify-between mb-3">
                                             <StyledView className="flex-row items-center">
                                                 <StyledIonIcon
-                                                    name={userProfile?.profile.gender === "ชาย" ? "male" : "female"}
+                                                    name={userProfile?.profile?.gender === "ชาย" ? "male" : "female"}
                                                     size={20}
-                                                    className={userProfile?.profile.gender === "ชาย" ? "text-blue-500" : "text-pink-500"}
+                                                    className={userProfile?.profile?.gender === "ชาย" ? "text-blue-500" : "text-pink-500"}
                                                     style={{ marginRight: 8 }}
                                                 />
                                                 <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-base">
-                                                    {userProfile?.profile.gender}
+                                                    {userProfile?.profile?.gender}
                                                 </StyledText>
                                             </StyledView>
 
@@ -558,7 +554,7 @@ export default function ProfileTab() {
                                                     className="text-gray-500 dark:text-gray-400 mr-2"
                                                 />
                                                 <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-base">
-                                                    {getAge(userProfile?.profile.birthday)} ปี
+                                                    {getAge(userProfile?.profile?.birthday)} ปี
                                                 </StyledText>
                                             </StyledView>
 
@@ -569,7 +565,7 @@ export default function ProfileTab() {
                                                     className="text-gray-500 dark:text-gray-400 mr-2"
                                                 />
                                                 <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-base">
-                                                    {userProfile?.profile.province[0]}
+                                                    {userProfile?.profile?.Province?.name ?? 'ข้อมูลที่ไม่รู้จัก'}
                                                 </StyledText>
                                             </StyledView>
                                         </StyledView>
@@ -581,7 +577,7 @@ export default function ProfileTab() {
                                                 </StyledText>
                                                 <StyledView className="flex-row items-center">
                                                     <StyledText className="text-gray-700 dark:text-gray-200 font-custom text-base font-semibold">
-                                                        {userProfile?.profile.height || 170}
+                                                        {userProfile?.profile?.height || 170}
                                                     </StyledText>
                                                     <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm ml-1">
                                                         ซม.
@@ -595,7 +591,7 @@ export default function ProfileTab() {
                                                 </StyledText>
                                                 <StyledView className="flex-row items-center">
                                                     <StyledText className="text-gray-700 dark:text-gray-200 font-custom text-base font-semibold">
-                                                        {userProfile?.profile.weight || 60}
+                                                        {userProfile?.profile?.weight || 60}
                                                     </StyledText>
                                                     <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm ml-1">
                                                         กก.
@@ -605,7 +601,7 @@ export default function ProfileTab() {
                                         </StyledView>
                                     </StyledView>
 
-                                    {userProfile?.profile.type === "member" && (
+                                    {userProfile?.profile?.type === "member" && (
                                         <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4 mb-4">
                                             <StyledView className="flex-row items-center justify-between">
                                                 <StyledText className="text-gray-600 dark:text-gray-400 font-custom text-base">
@@ -615,17 +611,17 @@ export default function ProfileTab() {
                                                     {/* {Number(distance.toFixed(0)) / 1000 > 10
                                                         ? `${(distance / 1000).toFixed(1)} กม.`
                                                         : `${(distance / 1000).toFixed(1)} กม.`} */}
-                                                        {isNaN(distance) ? '0.0 กม.' : 
+                                                    {isNaN(distance) ? '0.0 กม.' :
                                                         `${(distance / 1000).toFixed(1)} กม.`}
                                                 </StyledText>
                                             </StyledView>
                                         </StyledView>
                                     )}
 
-                                    {userProfile?.profile.bio && (
+                                    {userProfile?.profile?.bio && (
                                         <StyledView className="bg-gray-50 dark:bg-neutral-800 rounded-2xl p-4 mb-4">
                                             <StyledText className="text-base text-gray-700 dark:text-gray-200 font-custom leading-6">
-                                                {userProfile.profile.bio}
+                                                {userProfile?.profile?.bio}
                                             </StyledText>
                                         </StyledView>
                                     )}
@@ -635,7 +631,7 @@ export default function ProfileTab() {
                                             บริการ
                                         </StyledText>
                                         <StyledView className="flex-row flex-wrap">
-                                            {joblist.map((job, index) => (
+                                            {userProfile.profile.JobMembers.map((job: JobMembers, index: number) => (
                                                 <LinearGradient
                                                     key={index}
                                                     colors={['#ec4899', '#f97316']}
@@ -644,7 +640,7 @@ export default function ProfileTab() {
                                                     className="rounded-full px-4 py-2 mr-2 mb-2"
                                                 >
                                                     <StyledText className="font-custom text-white text-base">
-                                                        {job.label}
+                                                        {job.jobs?.jobName ?? 'ไม่ระบุ'}
                                                     </StyledText>
                                                 </LinearGradient>
                                             ))}
@@ -659,7 +655,7 @@ export default function ProfileTab() {
                                                 </StyledText>
                                                 <StyledView className="bg-red-50 dark:bg-red-900/30 rounded-full px-3 py-1 ml-2">
                                                     <StyledText className="text-red-500 dark:text-red-400 font-custom">
-                                                        {userProfile?.profile?.Review?.length}
+                                                        {reviewList?.length}
                                                     </StyledText>
                                                 </StyledView>
                                             </StyledView>
@@ -683,8 +679,9 @@ export default function ProfileTab() {
                                                 <StyledView>
                                                     <StyledText className="text-4xl font-bold text-red-600 dark:text-red-500 font-custom">
                                                         {
-                                                            userProfile?.profile?.Review?.length
+                                                            reviewList?.length > 0 ? (Number(reviewList.reduce((prev: number, current: any) => prev + current.star, 0)) / reviewList?.length).toFixed(1) : 0
                                                         }
+
                                                     </StyledText>
                                                     <StyledView className="flex-row mt-1">
                                                         {[1, 2, 3, 4, 5].map((star) => (
@@ -692,7 +689,7 @@ export default function ProfileTab() {
                                                                 key={star}
                                                                 name="star"
                                                                 size={16}
-                                                                className={`text-red-500 ${star <= (userProfile?.profile?.Review?.length > 0 ? Number(userProfile?.profile?.Review.reduce((prev: number, current: any) => prev + current.star, 0)) / userProfile?.profile?.Review?.length : 0) ? "text-red-500" : "text-gray-300"} mr-0.5`}
+                                                                className={`text-red-500 ${star <= (reviewList?.length > 0 ? Number(reviewList.reduce((prev: number, current: any) => prev + current.star, 0)) / reviewList?.length : 0) ? "text-red-500" : "text-gray-300"} mr-0.5`}
                                                             />
                                                         ))}
                                                     </StyledView>
@@ -701,43 +698,53 @@ export default function ProfileTab() {
                                         </StyledView>
 
                                         {/* รายการรีวิว */}
-                                        {reviews.map((review) => (
-                                            <StyledView
-                                                key={review.id}
-                                                className="border-b border-gray-100 dark:border-neutral-800 py-4"
-                                            >
-                                                <StyledView className="flex-row justify-between items-start mb-3">
-                                                    <StyledView className="flex-row items-center">
-                                                        <StyledImage
-                                                            source={{ uri: review.avatar }}
-                                                            className="w-10 h-10 rounded-full mr-3"
-                                                        />
-                                                        <StyledView>
-                                                            <StyledText className="font-bold text-base text-black dark:text-white font-custom mb-1">
-                                                                {review.username}
-                                                            </StyledText>
+                                        {
+                                            reviewList?.length > 0 ?
+                                                reviewList?.map((review: Review) => (
+                                                    <StyledView
+                                                        key={review.id}
+                                                        className="border-b border-gray-100 dark:border-neutral-800 py-4"
+                                                    >
+                                                        <StyledView className="flex-row justify-between items-start mb-3">
                                                             <StyledView className="flex-row items-center">
-                                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                                    <StyledIonIcon
-                                                                        key={star}
-                                                                        name={star <= review.rating ? "star" : "star-outline"}
-                                                                        size={14}
-                                                                        className={star <= review.rating ? "text-red-500 mr-0.5" : "text-gray-300 mr-0.5"}
-                                                                    />
-                                                                ))}
-                                                                <StyledText className="text-gray-400 text-sm font-custom ml-2">
-                                                                    {review.date}
-                                                                </StyledText>
+                                                                <StyledImage
+                                                                    source={{ uri: review.userType == "Member" ? review.MemberDB?.profileUrl ?? undefined : review.CustomersDB?.profileUrl ?? undefined }}
+                                                                    className="w-10 h-10 rounded-full mr-3"
+                                                                />
+                                                                <StyledView>
+                                                                    <StyledText className="font-bold text-base text-black dark:text-white font-custom mb-1">
+                                                                        {review.userType == "Member" ? review.MemberDB?.username : review.CustomersDB?.username}
+                                                                    </StyledText>
+                                                                    <StyledView className="flex-row items-center">
+                                                                        {[1, 2, 3, 4, 5]?.map((star) => (
+                                                                            <StyledIonIcon
+                                                                                key={star}
+                                                                                name={star <= review.star ? "star" : "star-outline"}
+                                                                                size={14}
+                                                                                className={star <= review.star ? "text-red-500 mr-0.5" : "text-gray-300 mr-0.5"}
+                                                                            />
+                                                                        ))}
+                                                                        <StyledText className="text-gray-400 text-sm font-custom ml-2">
+                                                                            {new Date(review.createdAt).toDateString()}
+                                                                        </StyledText>
+                                                                    </StyledView>
+                                                                </StyledView>
                                                             </StyledView>
                                                         </StyledView>
-                                                    </StyledView>
-                                                </StyledView>
 
-                                                <StyledText className="text-gray-600 dark:text-gray-300 font-custom leading-6 ml-15">
-                                                    {review.comment}
-                                                </StyledText>
-                                            </StyledView>
-                                        ))}
+                                                        <StyledText className="text-gray-600 dark:text-gray-300 font-custom leading-6 ml-15">
+                                                            {review.text}
+                                                        </StyledText>
+                                                    </StyledView>
+                                                )) : (
+                                                    <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-center">
+                                                        ยังไม่มีรีวิว
+                                                    </StyledText>
+                                                )
+                                        }
+
+
+
 
                                         {/* เพิ่ม Modal Component */}
 
@@ -749,9 +756,9 @@ export default function ProfileTab() {
                 )
             }
 
-            {userProfile?.profile.type === "member" && userData.role != "member" && (
+            {userProfile?.profile?.id !== userData.id && (
                 <TouchableOpacity
-                    className="w-full px-[15%] mb-4 duration-200"
+                    className="w-full px-[15%] mb-4 duration-200 absolute bottom-0"
                     onPress={async () => {
                         if (hasLocationPermission) {
                             if (!pin) {
@@ -829,7 +836,7 @@ export default function ProfileTab() {
 
                                             </StyledView>
                                             {
-                                                geoLocation.map((location, index) => (
+                                                geoLocation?.map((location, index) => (
                                                     <TouchableOpacity
                                                         key={index}
                                                         className="flex-row items-center py-2"
@@ -864,7 +871,7 @@ export default function ProfileTab() {
 
                                             </StyledView>
                                             {
-                                                joblist.map((jobs, index) => (
+                                                joblist?.map((jobs, index) => (
                                                     <TouchableOpacity
                                                         key={index}
                                                         className="flex-row items-center"
@@ -925,33 +932,6 @@ export default function ProfileTab() {
                                                     <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? joblist.find((j) => j.value == scheduleJobs)?.label : "เลือกประเภทงาน"}</StyledText>
                                                 </StyledView>
                                             </TouchableOpacity>
-                                            {/* <RNPickerSelect
-                                                items={joblist}
-                                                onValueChange={setScheduleJobs}
-                                                value={scheduleJobs}
-                                                placeholder={{ label: 'เลือกประเภทงาน', value: null }}
-                                                style={{
-                                                    inputIOS: {
-                                                        fontFamily: 'Kanit',
-                                                        width: '100%',
-                                                        borderColor: '#d1d5db',
-                                                        color: theme === 'dark' ? '#fff' : '#000',
-                                                        padding: 16,
-                                                        borderWidth: 1,
-                                                        borderRadius: 16,
-                                                        zIndex: 100,
-                                                    },
-                                                    inputAndroid: {
-                                                        fontFamily: 'Kanit',
-                                                        width: '100%',
-                                                        borderColor: '#d1d5db',
-                                                        color: theme === 'dark' ? '#fff' : '#000',
-                                                        padding: 16,
-                                                        borderWidth: 1,
-                                                        borderRadius: 16,
-                                                    },
-                                                }}
-                                            /> */}
                                         </StyledView>
                                     </StyledView>
 
@@ -1075,7 +1055,6 @@ export default function ProfileTab() {
                 </BottomSheetScrollView>
             </BottomSheet>
 
-
             <BottomSheet
                 ref={bottomSheetRefReview}
                 snapPoints={["70%"]}
@@ -1087,87 +1066,97 @@ export default function ProfileTab() {
                 }}
             >
                 <BottomSheetView style={{ height: "80%" }}>
-                    <StyledView className="flex-1justify-end">
-                        <StyledView className=" rounded-t-3xl px-6">
-                            <StyledView className="flex-row items-center justify-between mb-6">
-                                <StyledText className="text-2xl text-black dark:text-white font-custom">
-                                    เขียนรีวิว
-                                </StyledText>
-                                <TouchableOpacity onPress={
-                                    () => bottomSheetRefReview.current?.close()
-                                }>
-                                    <StyledIonIcon
-                                        name="close"
-                                        size={24}
-                                        className="text-gray-400"
-                                    />
+                    <TouchableWithoutFeedback
+                        touchSoundDisabled={true}
+                        onPress={() => {
+                            Keyboard.dismiss();
+                        }}
+                    >
+                        <StyledView className="flex-1justify-end">
+                            <StyledView className=" rounded-t-3xl px-6">
+                                <StyledView className="flex-row items-center justify-between mb-6">
+                                    <StyledText className="text-2xl text-black dark:text-white font-custom">
+                                        เขียนรีวิว
+                                    </StyledText>
+                                    <TouchableOpacity onPress={
+                                        () => bottomSheetRefReview.current?.close()
+                                    }>
+                                        <StyledIonIcon
+                                            name="close"
+                                            size={24}
+                                            className="text-gray-400"
+                                        />
+                                    </TouchableOpacity>
+                                </StyledView>
+
+                                <StyledView className="items-center mb-8">
+                                    <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-4">
+                                        ให้คะแนนประสบการณ์ของคุณ
+                                    </StyledText>
+                                    <StyledView className="flex-row">
+                                        {[1, 2, 3, 4, 5]?.map((star) => (
+                                            <TouchableOpacity
+                                                key={star}
+                                                onPress={() => setReviewStars(star)}
+                                                className="mx-2"
+                                            >
+                                                <StyledIonIcon
+                                                    name="star"
+                                                    size={32}
+                                                    color={
+                                                        reviewStars >= star ? "#FFD700" : "#D3D3D3"
+                                                    }
+                                                />
+                                            </TouchableOpacity>
+                                        ))}
+                                    </StyledView>
+                                </StyledView>
+
+                                <StyledView className="mb-8">
+                                    <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
+                                        เขียนความคิดเห็นของคุณ
+                                    </StyledText>
+                                    <StyledView className="bg-gray-50 dark:bg-neutral-700 rounded-2xl p-4">
+                                        <TextInput
+                                            multiline
+                                            numberOfLines={5}
+                                            value={reviewText}
+                                            onChangeText={setReviewText}
+                                            placeholder="แชร์ประสบการณ์ของคุณ..."
+                                            placeholderTextColor="#9CA3AF"
+                                            className="font-custom text-gray-700 dark:text-gray-200 min-h-[120px]"
+                                            textAlignVertical="top"
+                                        />
+                                    </StyledView>
+                                </StyledView>
+
+                                {/* ปุ่มส่งรีวิว */}
+                                <TouchableOpacity
+                                    disabled={loading}
+                                    onPress={() => {
+                                        if (reviewStars && reviewText) {
+                                            sendReview();
+                                        } else {
+                                            Alert.alert("ข้อมูลไม่ครบ", "โปรดกรอกข้อมูลให้ครบถ้วน", [{ text: "OK" }]);
+                                        }
+                                    }}
+                                >
+                                    <LinearGradient
+                                        colors={['#EB3834', '#69140F']}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 0 }}
+                                        className="rounded-full py-4"
+                                    >
+                                        <StyledText className="text-white text-center text-lg font-custom">
+                                           {
+                                                  loading ? <ActivityIndicator size="small" color="#fff" /> : "ส่ง"
+                                           }
+                                        </StyledText>
+                                    </LinearGradient>
                                 </TouchableOpacity>
                             </StyledView>
-
-                            <StyledView className="items-center mb-8">
-                                <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-4">
-                                    ให้คะแนนประสบการณ์ของคุณ
-                                </StyledText>
-                                <StyledView className="flex-row">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                        <TouchableOpacity
-                                            key={star}
-                                            onPress={() => setReviewStars(star)}
-                                            className="mx-2"
-                                        >
-                                            <StyledIonIcon
-                                                name="star"
-                                                size={32}
-                                                color={
-                                                    reviewStars >= star ? "#FFD700" : "#D3D3D3"
-                                                }
-                                            />
-                                        </TouchableOpacity>
-                                    ))}
-                                </StyledView>
-                            </StyledView>
-
-                            <StyledView className="mb-8">
-                                <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
-                                    เขียนความคิดเห็นของคุณ
-                                </StyledText>
-                                <StyledView className="bg-gray-50 dark:bg-neutral-700 rounded-2xl p-4">
-                                    <TextInput
-                                        multiline
-                                        numberOfLines={5}
-                                        value={reviewText}
-                                        onChangeText={setReviewText}
-                                        placeholder="แชร์ประสบการณ์ของคุณ..."
-                                        placeholderTextColor="#9CA3AF"
-                                        className="font-custom text-gray-700 dark:text-gray-200 min-h-[120px]"
-                                        textAlignVertical="top"
-                                    />
-                                </StyledView>
-                            </StyledView>
-
-                            {/* ปุ่มส่งรีวิว */}
-                            <TouchableOpacity
-                            onPress={() => {
-                                if (reviewStars && reviewText) {
-                                    sendReview();
-                                } else {
-                                    Alert.alert("ข้อมูลไม่ครบ", "โปรดกรอกข้อมูลให้ครบถ้วน", [{ text: "OK" }]);
-                                }
-                            }}
-                            >
-                                <LinearGradient
-                                    colors={['#EB3834', '#69140F']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 0 }}
-                                    className="rounded-full py-4"
-                                >
-                                    <StyledText className="text-white text-center text-lg font-custom">
-                                        โพสต์รีวิว
-                                    </StyledText>
-                                </LinearGradient>
-                            </TouchableOpacity>
                         </StyledView>
-                    </StyledView>
+                    </TouchableWithoutFeedback>
                 </BottomSheetView>
             </BottomSheet>
 

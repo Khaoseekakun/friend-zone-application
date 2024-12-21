@@ -28,6 +28,7 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType } ) => {
             setuserData(JSON.parse(userData || '{}'));
         };
         fetchUserData();
+        console.log(searchType)
     }, []);
 
     return (

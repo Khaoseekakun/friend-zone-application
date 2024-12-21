@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Platform, Dimensions, StyleSheet, Image, ActivityIndicator, KeyboardAvoidingView, Alert, useColorScheme } from "react-native";
-import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { NavigationProp, RouteProp, useIsFocused, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { FlatList, TextInput } from "react-native-gesture-handler";
@@ -76,21 +76,31 @@ export default function Search() {
     const [data, setData] = useState<IMembersDB[]>([]);
     const [layout, setLayout] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
-    const [ageFilter, setAgeFilter] = useState<string>('');
+    const [MinAgeFilter, setMinAgeFilter] = useState<string>('');
+    const [MaxAgeFilter, setMaxAgeFilter] = useState<string>('');
     const [ratingFilter, setRatingFilter] = useState<number[]>([]);
     const [genderFilter, setGenderFilter] = useState<string[]>([]);
     const [isUserDataLoaded, setIsUserDataLoaded] = useState(false);
     const [hasLocationPermission, setHasLocationPermission] = useState(false);
     const [selfPin, setSelfPin] = useState<LatLng | null>(null);
     const [distance, setDistance] = useState<number>(0);
+    const [saveSearchType, setSaveSearchType] = useState<string>('');
     const colorScheme = useColorScheme();
 
+    const isFoucs = useIsFocused()
 
 
-    const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
-    const [showJobTypeDropdown, setShowJobTypeDropdown] = useState(false);
-    const [selectedProvince, setSelectedProvince] = useState<string>('');
-    const [selectedJobType, setSelectedJobType] = useState<string>('');
+    const [provinces, setProvinces] = useState<{
+        id: string;
+        name: string;
+    }[]>([]);
+
+    const [jobTypes, setJobTypes] = useState<{
+        id: string;
+        name: string;
+    }[]>([]);
+
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -116,10 +126,26 @@ export default function Search() {
             }
         };
 
+
         requestLocationPermission();
         fetchUserData();
 
     }, []);
+
+
+
+    const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
+    const [showJobTypeDropdown, setShowJobTypeDropdown] = useState(false);
+
+    const [selectedProvince, setSelectedProvince] = useState<{
+        id: string;
+        name: string;
+    }>();
+
+    const [selectedJobType, setSelectedJobType] = useState<{
+        id: string;
+        name: string;
+    }>();
 
     const genderOptions = [
         {
@@ -152,56 +178,134 @@ export default function Search() {
             value: 1
         }
     ]
-    const provinces: string[] = [
-        'กรุงเทพมหานคร',
-        'เชียงใหม่',
-        'นนทบุรี',
-        'ปทุมธานี',
-        'ภูเก็ต',
-        'ขอนแก่น',
-        'เชียงราย',
-        'นครราชสีมา',
-        'อุดรธานี',
-        'สงขลา',
-        // เพิ่มจังหวัดอื่นๆ ตามต้องการ
-    ];
-    const jobTypes: string[] = [
-        'เพื่อนเที่ยว',
-        'เพื่อนทานข้าว',
-        'เพื่อนช้อปปิ้ง',
-        'เพื่อนเล่นเกม',
-        'เพื่อนออกกำลังกาย',
-        'MC/DJ',
-        'นักดนตรี/นักร้อง',
-        'พิธีกร',
-        // เพิ่มประเภทงานอื่นๆ ตามต้องการ
-    ];
-
-
-    const jobsCategory = {
-        "Friend": "673080a432edea568b2a6554",
-        "Music": "someMusicCategoryId",
-        "Dj": "someDjCategoryId"
-    }
 
     useEffect(() => {
-        try {
-            if (isUserDataLoaded && userData) {
-                handlerSearch(true, { searchType });
+        if (isFoucs != false) {
+            try {
+                if (isUserDataLoaded && userData) {
+                    if (searchType == undefined) {
+                        handlerSearch(false, { searchType: saveSearchType });
+                    } else {
+                        setSaveSearchType(searchType);
+                        handlerSearch(false, { searchType: searchType });
+                    }
+
+                    const fetchProvinces = async () => {
+                        try {
+                            const response = await axios.get(
+                                "http://49.231.43.37:3000/api/province",
+                                {
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                }
+                            );
+
+                            if (response.status !== 200 || !response.data.body) {
+                                return Alert.alert("Error", "เกิดข้อผิดพลาดในการโหลดจังหวัด");
+                            }
+
+                            const provincesData = response.data.body.map(
+                                (province: any) => ({
+                                    id: province.id,
+                                    name: province.name,
+                                })
+                            );
+
+                            setProvinces(provincesData);
+                        } catch (error) {
+                            console.error("Error fetching provinces:", error);
+                            Alert.alert("Error", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+                        }
+                    };
+
+                    const fetchJobTypes = async () => {
+                        try {
+                            const response = await axios.get(
+                                `http://49.231.43.37:3000/api/categoryJobs/${searchType == undefined ? saveSearchType : searchType}/jobslist`,
+                                {
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                }
+                            );
+
+                            if (response.status !== 200 || !response.data.body) {
+                                return Alert.alert("Error", "เกิดข้อผิดพลาดในการโหลดประเภทงาน");
+                            }
+
+                            const jobTypesData = response.data.body.map(
+                                (jobType: any) => ({
+                                    id: jobType.id,
+                                    name: jobType.jobName,
+                                })
+                            );
+
+                            setJobTypes(jobTypesData);
+                        } catch (error) {
+                            console.error("Error fetching job types:", error);
+                            Alert.alert("Error", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+                        }
+                    };
+
+                    fetchProvinces();
+                    fetchJobTypes();
+
+                }
+            } catch (error) {
+
             }
-        } catch (error) {
 
+            finally {
+                setLoadPage(false);
+            }
         }
 
-        finally {
-            setLoadPage(false);
-        }
-    }, [isUserDataLoaded, userData]);
+    }, [isUserDataLoaded, userData, isFoucs]);
 
     async function handlerSearch(filterSearch: boolean, options: SearchOption) {
         try {
+            setSearchLoading(true);
+            let url = `http://49.231.43.37:3000/api/search/members?jobsCategory=${searchType == undefined ? saveSearchType : searchType}`
+            let deafult_age = '18-99'
+
+            if (filterSearch == true) {
+                url += '&filter=true'
+
+                if (selectedProvince) {
+                    url += `&province=${selectedProvince.id}`
+                }
+
+                if (selectedJobType) {
+                    url += `&jobType=${selectedJobType.id}`
+                }
+
+                if (genderFilter.length > 0) {
+                    for (let i = 0; i < genderFilter.length; i++) {
+                        url += `&gender=${genderFilter[i]}`
+                    }
+                }
+
+                if (MinAgeFilter) {
+                    deafult_age = deafult_age.replace('18', MinAgeFilter)
+                }
+
+                if (MaxAgeFilter) {
+                    deafult_age = deafult_age.replace('99', MaxAgeFilter)
+                }
+
+                if (ratingFilter.length > 0) {
+                    for (let i = 0; i < ratingFilter.length; i++) {
+                        url += `&rating=${ratingFilter[i]}`
+                    }
+                }
+
+            }
+
+
+
             const response = await axios.get(
-                `https://friendszone.app/api/search/members?jobsCategory=${jobsCategory[searchType]}`,
+                url,
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -214,15 +318,21 @@ export default function Search() {
                 return Alert.alert("Error", "เกิดข้อผิดพลาดในการค้นหา");
             }
 
-            const membersData = response.data.data.members.map(
-                (member: any) => member.MembersDB
-            );
+            if (response.data.data.members.length === 0) {
+                setData([]);
+            } else {
+                const membersData = response.data.data.members.map(
+                    (member: any) => member.MembersDB
+                );
 
+                setData(membersData);
+            }
 
-            setData(membersData);
         } catch (error) {
             console.error("Error fetching data:", error);
             Alert.alert("Error", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+        } finally {
+            setSearchLoading(false);
         }
     }
 
@@ -255,103 +365,107 @@ export default function Search() {
         return getDistance(selfPin, memberPin);
     }
 
-    const renderGridItem = ({ item }: { item: IMembersDB[] }) => (
-        <StyledView style={styles.row}>
-            {item.map((data) => (
-                <TouchableOpacity
-                    key={data.id}
-                    style={styles.gridCard}
-                    activeOpacity={0.8}
-                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "Search" })}
-                >
-                    <Image
-                        source={{ uri: data.previewFirstImageUrl }}
-                        style={styles.gridImage}
-                    />
-                    <LinearGradient
-                        colors={['rgba(0,0,0,0.8)', 'transparent']}
-                        start={{ x: 0, y: 1 }}
-                        end={{ x: 0, y: 0 }}
-                        style={styles.gridInfoContainer}
+    const renderGridItem = ({ item }: { item: IMembersDB[] }) => {
+        return !searchloading ? (
+            <StyledView style={styles.row}>
+                {item.map((data) => (
+                    <TouchableOpacity
+                        key={data.id}
+                        style={styles.gridCard}
+                        activeOpacity={0.8}
+                        onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "Search", backOptions: { searchType } })}
                     >
-                        <StyledView className="absolute bottom-3 px-2">
-                            <StyledView className="flex-row items-center">
-                                <StyledText className="font-custom text-white text-xl">{data.username}</StyledText>
-                                <StyledText className="font-custom text-white text-xl mx-1">{getAge(data.birthday as unknown as string)}</StyledText>
-                                <StyledIonIcon
-                                    name={data.gender === "ชาย" ? "male" : "female"}
-                                    color={data.gender === "ชาย" ? '#69ddff' : '#ff8df6'}
-                                    size={24}
-                                />
-                            </StyledView>
-                            <StyledView className="flex-row items-center mt-1">
+                        <Image
+                            source={{ uri: data.previewFirstImageUrl }}
+                            style={styles.gridImage}
+                        />
+                        <LinearGradient
+                            colors={['rgba(0,0,0,0.8)', 'transparent']}
+                            start={{ x: 0, y: 1 }}
+                            end={{ x: 0, y: 0 }}
+                            style={styles.gridInfoContainer}
+                        >
+                            <StyledView className="absolute bottom-3 px-2">
                                 <StyledView className="flex-row items-center">
-                                    <HeartIcon />
-                                    <StyledText className="font-custom text-white text-lg ml-1">
-                                        {data.rating.toFixed(1)}
-                                    </StyledText>
+                                    <StyledText className="font-custom text-white text-xl">{data.username}</StyledText>
+                                    <StyledText className="font-custom text-white text-xl mx-1">{getAge(data.birthday as unknown as string)}</StyledText>
+                                    <StyledIonIcon
+                                        name={data.gender === "ชาย" ? "male" : "female"}
+                                        color={data.gender === "ชาย" ? '#69ddff' : '#ff8df6'}
+                                        size={24}
+                                    />
                                 </StyledView>
-                                <StyledView>
-                                    <StyledText className="font-custom text-gray-300 text-sm ml-1">
-                                        ( 10{distance > 0 && `(${distance > 1000
+                                <StyledView className="flex-row items-center mt-1">
+                                    <StyledView className="flex-row items-center">
+                                        <HeartIcon />
+                                        <StyledText className="font-custom text-white text-lg ml-1">
+                                            {data.rating.toFixed(1)}
+                                        </StyledText>
+                                    </StyledView>
+                                    <StyledView>
+                                        <StyledText className="font-custom text-gray-300 text-sm ml-1">
+                                            ( 10{distance > 0 && `(${distance > 1000
                                                 ? `${(distance / 1000).toFixed(1)} Km`
                                                 : `${distance.toFixed(0)} M`
-                                            })`} km.)
+                                                })`} km.)
+                                        </StyledText>
+                                    </StyledView>
+                                </StyledView>
+                            </StyledView>
+
+                        </LinearGradient>
+                    </TouchableOpacity>
+                ))}
+            </StyledView>
+        ) : null
+    }
+
+    const renderListItem = ({ item }: { item: IMembersDB[] }) => {
+        return !searchloading ? (
+            <StyledView>
+                {item.map((data, index) => (
+                    <TouchableOpacity
+                        key={`${data.id}-${index}`}
+                        style={styles.listCard}
+                        activeOpacity={0.8}
+                        onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "Search" })}
+                    >
+                        <Image
+                            source={{ uri: data.previewFirstImageUrl }}
+                            style={[styles.listImage, { height: HEIGHT / 2.4 }]}
+                        />
+                        <LinearGradient
+                            colors={['rgba(0,0,0,0.8)', 'transparent']}
+                            start={{ x: 0, y: 1 }}
+                            end={{ x: 0, y: 0 }}
+                            style={styles.listInfoContainer}
+                        >
+                            <StyledView className="flex-row justify-between items-center w-full px-4 -bottom-6">
+                                <StyledView className="flex-row items-center">
+                                    <StyledText className="font-custom text-white text-2xl">{data.username}</StyledText>
+                                    <StyledText className="font-custom text-white text-2xl mx-2">{getAge(data.birthday as unknown as string)}</StyledText>
+                                    <StyledIonIcon
+                                        name={data.gender === "ชาย" ? "male" : "female"}
+                                        color={data.gender === "ชาย" ? '#69ddff' : '#ff8df6'}
+                                        size={28}
+                                    />
+                                </StyledView>
+                                <StyledView className="flex-row items-center">
+                                    <HeartIcon />
+                                    <StyledText className="font-custom text-white text-xl ml-2">
+                                        {data.rating.toFixed(1)}
+                                    </StyledText>
+                                    <StyledText className="font-custom text-gray-300 text-sm ml-1">
+                                        ({data.reviews.toLocaleString()})
                                     </StyledText>
                                 </StyledView>
                             </StyledView>
-                        </StyledView>
-
-                    </LinearGradient>
-                </TouchableOpacity>
-            ))}
-        </StyledView>
-    );
-
-    const renderListItem = ({ item }: { item: IMembersDB[] }) => (
-        <StyledView>
-            {item.map((data, index) => (
-                <TouchableOpacity
-                    key={`${data.id}-${index}`}
-                    style={styles.listCard}
-                    activeOpacity={0.8}
-                    onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "Search" })}
-                >
-                    <Image
-                        source={{ uri: data.previewFirstImageUrl }}
-                        style={[styles.listImage, { height: HEIGHT / 2.4 }]}
-                    />
-                    <LinearGradient
-                        colors={['rgba(0,0,0,0.8)', 'transparent']}
-                        start={{ x: 0, y: 1 }}
-                        end={{ x: 0, y: 0 }}
-                        style={styles.listInfoContainer}
-                    >
-                        <StyledView className="flex-row justify-between items-center w-full px-4 -bottom-6">
-                            <StyledView className="flex-row items-center">
-                                <StyledText className="font-custom text-white text-2xl">{data.username}</StyledText>
-                                <StyledText className="font-custom text-white text-2xl mx-2">{getAge(data.birthday as unknown as string)}</StyledText>
-                                <StyledIonIcon
-                                    name={data.gender === "ชาย" ? "male" : "female"}
-                                    color={data.gender === "ชาย" ? '#69ddff' : '#ff8df6'}
-                                    size={28}
-                                />
-                            </StyledView>
-                            <StyledView className="flex-row items-center">
-                                <HeartIcon />
-                                <StyledText className="font-custom text-white text-xl ml-2">
-                                    {data.rating.toFixed(1)}
-                                </StyledText>
-                                <StyledText className="font-custom text-gray-300 text-sm ml-1">
-                                    ({data.reviews.toLocaleString()})
-                                </StyledText>
-                            </StyledView>
-                        </StyledView>
-                    </LinearGradient>
-                </TouchableOpacity>
-            ))}
-        </StyledView>
-    );
+                        </LinearGradient>
+                    </TouchableOpacity>
+                ))}
+            </StyledView>
+        ) : null
+    }
 
     return (
         <>
@@ -370,12 +484,21 @@ export default function Search() {
                             <>
                                 <FlatList
                                     refreshing={searchloading}
-                                    // onRefresh={() => handlerSearch(true, { searchType: "Friend" })}
+                                    onRefresh={() => handlerSearch(true, { searchType })}
                                     data={rows}
                                     renderItem={layout === 0 ? renderGridItem : renderListItem}
                                     ListFooterComponent={() => (
                                         <StyledView className="mb-[20%]" />
                                     )}
+
+                                    ListHeaderComponent={() => {
+                                        return searchloading ? (
+                                            <StyledView className="flex-1 justify-center items-center">
+                                                <ActivityIndicator size="large" color="#FF4B6C" />
+                                            </StyledView>
+                                        ) : null;
+                                    }}
+
                                     showsVerticalScrollIndicator={false}
                                 />
                                 <StyledTouchableOpacity
@@ -405,11 +528,10 @@ export default function Search() {
                         )
                     }
                 </StyledView>
-
                 <Navigation current="SearchCategory" />
 
                 {isOpen && (
-                    <StyledView className="absolute w-full h-full justify-center items-center">
+                    <StyledView className="absolute w-full h-screen justify-center items-center">
                         <TouchableOpacity
                             className="absolute flex-1 bg-black opacity-25 w-full h-screen justify-center"
                             onPress={() => setIsOpen(false)}
@@ -436,7 +558,7 @@ export default function Search() {
                                         onPress={() => setShowProvinceDropdown(true)}
                                     >
                                         <StyledText className="font-custom text-gray-700 dark:text-gray-300">
-                                            {selectedProvince || "เลือกจังหวัด"}
+                                            {selectedProvince?.name || "เลือกจังหวัด"}
                                         </StyledText>
                                         <StyledIonicons
                                             name="chevron-down"
@@ -478,6 +600,7 @@ export default function Search() {
                                             keyboardType="numeric"
                                             placeholderTextColor="#9CA3AF"
                                             maxLength={2}
+                                            onChangeText={(text) => setMinAgeFilter(text)}
                                         />
                                         <StyledText className="font-custom dark:text-white mx-2">-</StyledText>
                                         <StyledTextInput
@@ -486,6 +609,7 @@ export default function Search() {
                                             keyboardType="numeric"
                                             placeholderTextColor="#9CA3AF"
                                             maxLength={2}
+                                            onChangeText={(text) => setMaxAgeFilter(text)}
                                         />
                                     </StyledView>
                                 </StyledView>
@@ -520,7 +644,7 @@ export default function Search() {
                                         onPress={() => setShowJobTypeDropdown(true)}
                                     >
                                         <StyledText className="font-custom text-gray-700 dark:text-gray-300">
-                                            {selectedJobType || "เลือกประเภทงาน"}
+                                            {selectedJobType?.name || "เลือกประเภทงาน"}
                                         </StyledText>
                                         <StyledIonicons
                                             name="chevron-down"
@@ -533,18 +657,32 @@ export default function Search() {
                                 <StyledView className="h-20" />
                             </ScrollView>
 
-                            <StyledTouchableOpacity
-                                className="absolute bg-red-500 rounded-full mb-4 mx-3 py-3 px-2 bottom-0 w-[90%] self-center"
-                                onPress={() => {
-                                    handlerSearch(true, { searchType });
-                                    setIsOpen(false);
-                                }}
-                            >
-                                <StyledText className="font-custom text-lg text-white text-center">ค้นหา</StyledText>
-                            </StyledTouchableOpacity>
+                            <StyledView className="absolute bottom-0 w-full flex-row">
+                                <StyledTouchableOpacity
+                                    className="mb-3 px-2 bottom-0 w-6/12 self-center"
+                                    onPress={() => {
+                                        setGenderFilter([]);
+                                        setRatingFilter([]);
+                                        setMinAgeFilter('');
+                                        setMaxAgeFilter('');
+                                        setSelectedProvince(undefined);
+                                        setSelectedJobType(undefined);
+                                    }}
+                                >
+                                    <StyledText className="bg-gray-500 rounded-full py-2  font-custom text-lg text-white text-center">คืนค่า</StyledText>
+                                </StyledTouchableOpacity>
+                                <StyledTouchableOpacity
+                                    className=" mb-3 px-2 bottom-0 w-6/12 self-center"
+                                    onPress={() => {
+                                        handlerSearch(true, { searchType });
+                                        setIsOpen(false);
+                                    }}
+                                >
+                                    <StyledText className="bg-red-500 rounded-full py-2  font-custom text-lg text-white text-center">ค้นหา</StyledText>
+                                </StyledTouchableOpacity>
+                            </StyledView>
                         </StyledView>
 
-                        {/* Province Dropdown Modal */}
                         {showProvinceDropdown && (
                             <StyledView className="absolute w-full h-full bg-black/50">
                                 <TouchableOpacity
@@ -564,7 +702,7 @@ export default function Search() {
                                                 }}
                                             >
                                                 <StyledText className="font-custom text-lg text-gray-700 dark:text-gray-300">
-                                                    {province}
+                                                    {province.name}
                                                 </StyledText>
                                             </TouchableOpacity>
                                         ))}
@@ -573,7 +711,6 @@ export default function Search() {
                             </StyledView>
                         )}
 
-                        {/* Job Type Dropdown Modal */}
                         {showJobTypeDropdown && (
                             <StyledView className="absolute w-full h-full bg-black/50">
                                 <TouchableOpacity
@@ -593,7 +730,7 @@ export default function Search() {
                                                 }}
                                             >
                                                 <StyledText className="font-custom text-lg text-gray-700 dark:text-gray-300">
-                                                    {jobType}
+                                                    {jobType.name}
                                                 </StyledText>
                                             </TouchableOpacity>
                                         ))}
@@ -605,7 +742,9 @@ export default function Search() {
 
                 )}
 
+
             </KeyboardAvoidingView>
+
         </>
     );
 }

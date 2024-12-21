@@ -44,11 +44,11 @@ export type RootStackParamList = {
     backPage?: string;
   },
   Search: {
-    searchType: "Friend" | "Music" | "Dj",
+    searchType: string,
     backPage?: string;
   },
   SearchLoading: {
-    searchType: "Friend" | "Music" | "Dj",
+    searchType: string,
     backPage?: string;
   },
   Chat: {
@@ -67,7 +67,6 @@ export type RootStackParamList = {
     jobCategory?: string,
     backPage?: string,
     searchType?: string
-    backData?: any
   },
   FeedsTab: {
     backPage?: string;

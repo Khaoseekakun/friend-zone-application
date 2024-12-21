@@ -130,11 +130,11 @@ export default function Login() {
 
     return (
         <KeyboardAvoidingView
-            style={{ flex: 1 }}
+            style={{ flex: 1}}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <StyledSafeAreaView className="flex-1 bg-white dark:bg-black">
-                <StyledView className="flex-1 px-6 justify-center items-center -top-10">
+                <StyledView className="flex-1 px-6 justify-center items-center">
                     <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">Friend Zone</StyledText>
                     <StyledText className="text-lg text-gray-400 mb-8 font-custom">ยินดีต้อนรับกลับ</StyledText>
 
