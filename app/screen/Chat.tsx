@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, ActivityIndicator, Alert, Image, Keyboard, Appearance } from "react-native";
+import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, ActivityIndicator, Alert, Image, Keyboard, Appearance, useColorScheme } from "react-native";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
@@ -454,7 +454,7 @@ export default function Chat() {
                             }}
                         >
                             <LinearGradient
-                                colors={['#EB3834', '#69140F']}
+                                colors={useColorScheme() === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 0 }}
                                 className="py-3 rounded-full"
@@ -514,7 +514,7 @@ export default function Chat() {
                             }}
                         >
                             <LinearGradient
-                                colors={['#EB3834', '#69140F']}
+                                colors={useColorScheme() === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 0 }}
                                 className="py-3 rounded-full"
@@ -574,7 +574,7 @@ export default function Chat() {
                     }}
                 >
                     <LinearGradient
-                        colors={['#EB3834', '#69140F']}
+                        colors={useColorScheme() === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         className="py-3 rounded-full"
@@ -1064,7 +1064,7 @@ export default function Chat() {
                                     }}
                                 >
                                     <LinearGradient
-                                        colors={['#EB3834', '#69140F']}
+                                        colors={useColorScheme() === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                                         start={{ x: 0, y: 0 }}
                                         end={{ x: 1, y: 0 }}
                                         className="rounded-full py-4"

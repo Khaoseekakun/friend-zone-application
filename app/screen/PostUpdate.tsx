@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, KeyboardAvoidingView, Platform, TextInput, Image, TouchableOpacity, ActivityIndicator, Alert, Modal, StyleSheet, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { View, Text, KeyboardAvoidingView, Platform, TextInput, Image, TouchableOpacity, ActivityIndicator, Alert, Modal, StyleSheet, TouchableWithoutFeedback, Keyboard, useColorScheme } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
@@ -17,6 +17,7 @@ const StyledTouchableWithoutFeedback = styled(TouchableWithoutFeedback);
 type PostUpdateParam = RouteProp<RootStackParamList, 'PostUpdate'>;
 export default function PostUpdate() {
     const route = useRoute<PostUpdateParam>();
+    const colorScheme = useColorScheme();
 
     const { id, content, member, images } = route.params.post;
     const navigation = useNavigation<NavigationProp<any>>();
@@ -92,7 +93,7 @@ export default function PostUpdate() {
                 <StyledView className="flex-1">
 
                     <LinearGradient
-                        colors={['#EB3834', '#69140F']}
+                        colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         className="w-full top-0 h-[106px]"

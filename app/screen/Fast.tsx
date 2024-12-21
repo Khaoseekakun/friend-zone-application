@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, StyleSheet, ActivityIndicator, Alert, Pressable, useAnimatedValue } from "react-native";
+import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, StyleSheet, ActivityIndicator, Alert, Pressable, useAnimatedValue, SafeAreaView, useColorScheme, Appearance } from "react-native";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { LinearGradient } from "expo-linear-gradient";
@@ -17,7 +17,8 @@ import Animated, {
   Easing,
   useAnimatedStyle,
   withDelay,
-  withRepeat
+  withRepeat,
+  interpolate
 } from 'react-native-reanimated';
 import { RootStackParamList } from "@/types";
 import { Feather } from "lucide-react-native";
@@ -66,6 +67,15 @@ export default function Fast() {
   const [dots, setDots] = useState('');
   const router = useRoute<CategorySearch>();
   const { backPage } = router.params;
+  const [theme, setTheme] = useState(Appearance.getColorScheme());
+
+  useEffect(() => {
+      const listener = Appearance.addChangeListener(({ colorScheme }) => {
+          setTheme(colorScheme);
+      });
+
+      return () => listener.remove();
+  }, []);
 
   const backgroundAnim = useSharedValue(0);
   const _color = "#AB1815";
@@ -138,448 +148,523 @@ export default function Fast() {
       end={{ x: 0, y: 1 }}
       className="flex-1"
     >
-      <StyledScrollView className="flex-1 pt-10">
-        <Animated.View
-          className="px-3 pb-20"
+      <SafeAreaView style={{flex: 1}}>
+        <StyledScrollView className="flex-1">
+        <AnimatedTouchable
+          onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()}
+          className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute left-6 mt-3 z-10"
         >
-          <StyledText className="font-custom text-white text-3xl mb-3 text-center">
-            เลือกหมวดหมู่ค้นหาด่วน
-          </StyledText>
+          <Ionicons name="chevron-back" size={24} color="#EB3834" />
+        </AnimatedTouchable>
+          <Animated.View
+            className="px-3 pb-20"
+          >
+            <StyledText className="font-custom text-white text-3xl mb-3 text-center mt-4 ml-10">
+              เลือกหมวดหมู่ค้นหาด่วน
+            </StyledText>
 
-          <StyledView className="flex-row flex-wrap justify-between px-2">
-            <AnimatedTouchable
-              className="mb-3"
-              style={{
-                width: CARD_WIDTH - 16,
-                height: CARD_HEIGHT,
-              }}
-              onPress={() => setStep(2)}
-            >
-              <LinearGradient
-                colors={['#FF4B48', '#AB1815']}
-                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+            <StyledView className="flex-row flex-wrap justify-between px-2">
+              <AnimatedTouchable
+                className="mb-3"
+                style={{
+                  width: CARD_WIDTH - 16,
+                  height: CARD_HEIGHT,
+                }}
+                onPress={() => setStep(2)}
               >
-                <StyledView className="flex-1 justify-center items-center p-4">
-                  <StyledView className="flex-1">
-                    <StyledView className="w-full h-[120px] relative">
-                      <StyledView className="absolute -left-9 top-10">
-                        <StyledImage
-                          source={iconFriend2}
-                          className="w-[143px] h-[143px]"
-                          resizeMode="contain"
-                        />
+                <LinearGradient
+                  colors={['#FF4B48', '#AB1815']}
+                  // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+                >
+                  <StyledView className="flex-1 justify-center items-center p-4">
+                    <StyledView className="flex-1">
+                      <StyledView className="w-full h-[120px] relative">
+                        <StyledView className="absolute -left-9 top-10">
+                          <StyledImage
+                            source={iconFriend2}
+                            className="w-[143px] h-[143px]"
+                            resizeMode="contain"
+                          />
+                        </StyledView>
+                        <StyledView className="absolute -right-9 top-10">
+                          <StyledImage
+                            source={iconFriend1}
+                            className="w-[143px] h-[143px]"
+                            resizeMode="contain"
+                          />
+                        </StyledView>
                       </StyledView>
-                      <StyledView className="absolute -right-9 top-10">
+                    </StyledView>
+
+                    <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                      เพื่อเที่ยว
+                    </StyledText>
+                    {/* <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                      <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                    </StyledView> */}
+                  </StyledView>
+                </LinearGradient>
+              </AnimatedTouchable>
+              <AnimatedTouchable
+                className="mb-3"
+                style={{
+                  width: CARD_WIDTH - 16,
+                  height: CARD_HEIGHT,
+                }}
+              >
+                <LinearGradient
+                  colors={['#8B0000', '#4A0404']}
+                  // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+                >
+                  <StyledView className="flex-1 justify-center items-center p-4">
+                    <StyledView className="flex-1">
+                      <StyledView className="w-full h-[120px] relative">
+                        <StyledView className="absolute -left-6 top-10">
+                          <StyledImage
+                            source={iconDJ2}
+                            className="w-[143px] h-[143px]"
+                            resizeMode="contain"
+                          />
+                        </StyledView>
+                        <StyledView className="absolute -right-12 top-10">
+                          <StyledImage
+                            source={iconDJ1}
+                            className="w-[143px] h-[143px]"
+                            resizeMode="contain"
+                          />
+                        </StyledView>
+                      </StyledView>
+                    </StyledView>
+
+                    <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                      MC/DJ/พิธีกร
+                    </StyledText>
+                    <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                      <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                    </StyledView>
+                  </StyledView>
+                </LinearGradient>
+              </AnimatedTouchable>
+              <AnimatedTouchable
+                className="mb-3"
+                style={{
+                  width: CARD_WIDTH - 16,
+                  height: CARD_HEIGHT,
+                }}
+              >
+                <LinearGradient
+                  colors={['#8B0000', '#4A0404']}
+                  // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+                >
+                  <StyledView className="flex-1 justify-center items-center p-4">
+                    <StyledView className="flex-1">
+                      <StyledView className="w-full h-[120px] relative">
+                        <StyledView className="absolute -left-7 top-7">
+                          <StyledImage
+                            source={iconMusic1}
+                            className="w-[150px] h-[150px]"
+                            resizeMode="contain"
+                          />
+                        </StyledView>
+                        <StyledView className="absolute -right-[100px] top-4">
+                          <StyledImage
+                            source={iconMusic2}
+                            className="w-[180px] h-[180px]"
+                            resizeMode="contain"
+                          />
+                        </StyledView>
+                      </StyledView>
+                    </StyledView>
+
+                    <StyledText className="font-custom text-white text-base text-center -mt-5 px-2">
+                      วงดนตรี/นักร้อง
+                    </StyledText>
+                    <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                      <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                    </StyledView>
+                  </StyledView>
+                </LinearGradient>
+              </AnimatedTouchable>
+              <AnimatedTouchable
+                className="mb-3"
+                style={{
+                  width: CARD_WIDTH - 16,
+                  height: CARD_HEIGHT,
+                }}
+              >
+                <LinearGradient
+                  colors={['#8B0000', '#4A0404']}
+                  // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+                >
+                  <StyledView className="flex-1 justify-center items-center p-4">
+                    <StyledView className="flex-1">
+                      <StyledView className="w-full h-[120px] items-center justify-center top-7">
                         <StyledImage
-                          source={iconFriend1}
-                          className="w-[143px] h-[143px]"
+                          source={iconTable1}
+                          className="w-[250px] h-[250px]"
                           resizeMode="contain"
                         />
                       </StyledView>
                     </StyledView>
-                  </StyledView>
 
-                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
-                    เพื่อนเที่ยว
-                  </StyledText>
-                  {/* <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
-                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
-                  </StyledView> */}
-                </StyledView>
-              </LinearGradient>
-            </AnimatedTouchable>
-            <AnimatedTouchable
-              className="mb-3"
-              style={{
-                width: CARD_WIDTH - 16,
-                height: CARD_HEIGHT,
-              }}
-            >
-              <LinearGradient
-                colors={['#8B0000', '#4A0404']}
-                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+                    <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                      จองโต๊ะ
+                    </StyledText>
+                    <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                      <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                    </StyledView>
+                  </StyledView>
+                </LinearGradient>
+              </AnimatedTouchable>
+              <AnimatedTouchable
+                className="mb-3"
+                style={{
+                  width: CARD_WIDTH - 16,
+                  height: CARD_HEIGHT,
+                }}
               >
-                <StyledView className="flex-1 justify-center items-center p-4">
-                  <StyledView className="flex-1">
-                    <StyledView className="w-full h-[120px] relative">
-                      <StyledView className="absolute -left-6 top-10">
+                <LinearGradient
+                  colors={['#8B0000', '#4A0404']}
+                  // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+                >
+                  <StyledView className="flex-1 justify-center items-center p-4">
+                    <StyledView className="flex-1">
+                      <StyledView className="w-full h-[120px] items-center justify-center right-1 top-[55px]">
                         <StyledImage
-                          source={iconDJ2}
-                          className="w-[143px] h-[143px]"
-                          resizeMode="contain"
-                        />
-                      </StyledView>
-                      <StyledView className="absolute -right-12 top-10">
-                        <StyledImage
-                          source={iconDJ1}
-                          className="w-[143px] h-[143px]"
+                          source={iconTicket1}
+                          className="w-[130px] h-[130px]"
                           resizeMode="contain"
                         />
                       </StyledView>
                     </StyledView>
-                  </StyledView>
 
-                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
-                    MC/DJ/พิธีกร
-                  </StyledText>
-                  <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
-                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
-                  </StyledView>
-                </StyledView>
-              </LinearGradient>
-            </AnimatedTouchable>
-            <AnimatedTouchable
-              className="mb-3"
-              style={{
-                width: CARD_WIDTH - 16,
-                height: CARD_HEIGHT,
-              }}
-            >
-              <LinearGradient
-                colors={['#8B0000', '#4A0404']}
-                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
-              >
-                <StyledView className="flex-1 justify-center items-center p-4">
-                  <StyledView className="flex-1">
-                    <StyledView className="w-full h-[120px] relative">
-                      <StyledView className="absolute -left-7 top-7">
-                        <StyledImage
-                          source={iconMusic1}
-                          className="w-[150px] h-[150px]"
-                          resizeMode="contain"
-                        />
-                      </StyledView>
-                      <StyledView className="absolute -right-[100px] top-4">
-                        <StyledImage
-                          source={iconMusic2}
-                          className="w-[180px] h-[180px]"
-                          resizeMode="contain"
-                        />
-                      </StyledView>
+                    <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                      Concert
+                    </StyledText>
+                    <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                      <StyledText className="font-custom text-white text-xl">SOON</StyledText>
                     </StyledView>
                   </StyledView>
-
-                  <StyledText className="font-custom text-white text-base text-center -mt-5 px-2">
-                    วงดนตรี/นักร้อง
-                  </StyledText>
-                  <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
-                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
-                  </StyledView>
-                </StyledView>
-              </LinearGradient>
-            </AnimatedTouchable>
-            <AnimatedTouchable
-              className="mb-3"
-              style={{
-                width: CARD_WIDTH - 16,
-                height: CARD_HEIGHT,
-              }}
-            >
-              <LinearGradient
-                colors={['#8B0000', '#4A0404']}
-                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+                </LinearGradient>
+              </AnimatedTouchable>
+              <AnimatedTouchable
+                className="mb-3"
+                style={{
+                  width: CARD_WIDTH - 16,
+                  height: CARD_HEIGHT,
+                }}
               >
-                <StyledView className="flex-1 justify-center items-center p-4">
-                  <StyledView className="flex-1">
-                    <StyledView className="w-full h-[120px] items-center justify-center top-7">
-                      <StyledImage
-                        source={iconTable1}
-                        className="w-[250px] h-[250px]"
-                        resizeMode="contain"
-                      />
-                    </StyledView>
-                  </StyledView>
-
-                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
-                    จองโต๊ะ
-                  </StyledText>
-                  <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
-                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
-                  </StyledView>
-                </StyledView>
-              </LinearGradient>
-            </AnimatedTouchable>
-            <AnimatedTouchable
-              className="mb-3"
-              style={{
-                width: CARD_WIDTH - 16,
-                height: CARD_HEIGHT,
-              }}
-            >
-              <LinearGradient
-                colors={['#8B0000', '#4A0404']}
-                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
-              >
-                <StyledView className="flex-1 justify-center items-center p-4">
-                  <StyledView className="flex-1">
-                    <StyledView className="w-full h-[120px] items-center justify-center right-1 top-[55px]">
-                      <StyledImage
-                        source={iconTicket1}
-                        className="w-[130px] h-[130px]"
-                        resizeMode="contain"
-                      />
-                    </StyledView>
-                  </StyledView>
-
-                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
-                    Concert
-                  </StyledText>
-                  <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
-                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
-                  </StyledView>
-                </StyledView>
-              </LinearGradient>
-            </AnimatedTouchable>
-            <AnimatedTouchable
-              className="mb-3"
-              style={{
-                width: CARD_WIDTH - 16,
-                height: CARD_HEIGHT,
-              }}
-            >
-              <LinearGradient
-                colors={['#8B0000', '#4A0404']}
-                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
-              >
-                <StyledView className="flex-1 justify-center items-center p-4">
-                  <StyledView className="flex-1">
-                    <StyledView className="w-full h-[120px] relative">
-                      <StyledView className="absolute -right-[90px] top-2">
-                        <StyledImage
-                          source={iconCar1}
-                          className="w-[215px] h-[215px]"
-                          resizeMode="contain"
-                        />
-                      </StyledView>
-                      <StyledView className="absolute -right-7 top-[10px]">
-                        <StyledImage
-                          source={iconCar2}
-                          className="w-[90px] h-[90px]"
-                          resizeMode="contain"
-                        />
+                <LinearGradient
+                  colors={['#8B0000', '#4A0404']}
+                  // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
+                >
+                  <StyledView className="flex-1 justify-center items-center p-4">
+                    <StyledView className="flex-1">
+                      <StyledView className="w-full h-[120px] relative">
+                        <StyledView className="absolute -right-[90px] top-2">
+                          <StyledImage
+                            source={iconCar1}
+                            className="w-[215px] h-[215px]"
+                            resizeMode="contain"
+                          />
+                        </StyledView>
+                        <StyledView className="absolute -right-7 top-[10px]">
+                          <StyledImage
+                            source={iconCar2}
+                            className="w-[90px] h-[90px]"
+                            resizeMode="contain"
+                          />
+                        </StyledView>
                       </StyledView>
                     </StyledView>
-                  </StyledView>
 
-                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
-                    FDrive
-                  </StyledText>
-                  <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
-                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                    <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                      FDrive
+                    </StyledText>
+                    <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                      <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                    </StyledView>
                   </StyledView>
-                </StyledView>
-              </LinearGradient>
-            </AnimatedTouchable>
+                </LinearGradient>
+              </AnimatedTouchable>
 
-          </StyledView>
-        </Animated.View>
-      </StyledScrollView>
+            </StyledView>
+          </Animated.View>
+        </StyledScrollView>
+      </SafeAreaView>
     </LinearGradient>
   );
 
   const renderAppointmentForm = () => (
-    <StyledScrollView className="flex-1 mb-14">
-      <AnimatedTouchable
-        onPress={() => setStep(1)}
-        className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute -top-1 left-6 mt-3"
-      >
-        <Ionicons name="chevron-back" size={24} color="#EB3834" />
-      </AnimatedTouchable>
-      <StyledView className="flex-row items-center px-6 py-2 mt-10">
-        <StyledView className="w-6/12 px-1">
-          <StyledText className="text-lg font-custom dark:text-neutral-200">วัน/เดือน/ปี</StyledText>
-          <TouchableOpacity>
-            <StyledView className="border border-gray-300 rounded-2xl py-4 px-4">
-              <StyledText className="font-custom text-gray-700 dark:text-white">
-                {scheduleDate || "03/10/2567"}
-              </StyledText>
-            </StyledView>
-          </TouchableOpacity>
-        </StyledView>
-
-        <StyledView className="w-6/12 px-1">
-          <StyledText className="text-lg font-custom dark:text-neutral-200">เวลา</StyledText>
-          <TouchableOpacity>
-            <StyledView className="border border-gray-300 rounded-2xl py-4 px-4">
-              <StyledText className="font-custom text-gray-700 dark:text-white">
-                {scheduleTime || "10:10"}
-              </StyledText>
-            </StyledView>
-          </TouchableOpacity>
-        </StyledView>
-      </StyledView>
-
-      {/* Job Type Selection */}
-      <StyledView className="flex-row items-center px-6 py-2">
-        <StyledView className="w-full px-1">
-          <StyledText className="text-lg font-custom dark:text-neutral-200">
-            ประเภทงาน
-          </StyledText>
-          <TouchableOpacity>
-            <StyledView className="border border-gray-300 rounded-2xl py-4 px-4">
-              <StyledText className="font-custom text-gray-700 dark:text-white">
-                {scheduleJobs ? joblist.find(j => j.value === scheduleJobs)?.label : "เลือกประเภทงาน"}
-              </StyledText>
-            </StyledView>
-          </TouchableOpacity>
-        </StyledView>
-      </StyledView>
-
-      {/* Location */}
-      <StyledView className="items-center px-6 py-2">
-        <StyledView className="w-full px-1">
-          <StyledText className="text-lg font-custom dark:text-neutral-200">จุดนัดหมาย</StyledText>
-          <TouchableOpacity onPress={() => setSearchFocus(true)}>
-            <StyledView className="border border-gray-300 rounded-2xl py-4 px-4">
-              <StyledText className="font-custom text-gray-700 dark:text-white">
-                {scheduleLocation || "ค้นหาสถานที่"}
-              </StyledText>
-            </StyledView>
-          </TouchableOpacity>
-        </StyledView>
-      </StyledView>
-
-      {/* Map */}
-      <StyledView className="px-6 py-2 rounded-2xl my-2 mt-5 h-[300px]">
-        <StyledMapView
-          initialRegion={{
-            latitude: 13.7563,
-            longitude: 100.5018,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          }}
-          className="w-full h-full rounded-2xl"
-          onPress={(e) => {
-            const { latitude, longitude } = e.nativeEvent.coordinate;
-            setPin({ latitude, longitude });
-          }}
+    <SafeAreaView style={{flex: 1}}>
+      <StyledScrollView className="flex-1">
+        <AnimatedTouchable
+          onPress={() => setStep(1)}
+          className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute left-6 mt-3"
         >
-          {pin && (
-            <>
-              <Marker coordinate={pin} />
-              <Circle
-                center={pin}
-                radius={250}
-                strokeColor="rgba(255, 0, 0, 0.5)"
-                fillColor="rgba(255, 0, 0, 0.2)"
-              />
-            </>
-          )}
-        </StyledMapView>
-      </StyledView>
+          <Ionicons name="chevron-back" size={24} color="#EB3834" />
+        </AnimatedTouchable>
+        <StyledView className="flex-row items-center px-6 py-2 mt-10">
+          <StyledView className="w-6/12 px-1">
+            <StyledText className="text-lg font-custom dark:text-neutral-200">วัน/เดือน/ปี</StyledText>
+            <TouchableOpacity>
+              <StyledView className="border border-gray-300 rounded-2xl py-4 px-4">
+                <StyledText className="font-custom text-gray-700 dark:text-white">
+                  {scheduleDate || "03/10/2567"}
+                </StyledText>
+              </StyledView>
+            </TouchableOpacity>
+          </StyledView>
 
-      {/* Submit Button */}
-      <TouchableOpacity
-        className="w-full px-6 my-6"
-        onPress={handleCreateSchedule}
-        disabled={loading}
-      >
-        <LinearGradient
-          colors={['#EB3834', '#69140F']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          className="rounded-full py-3 shadow-sm mb-14"
-        >
-          {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <StyledText className="font-custom text-center text-white text-lg font-semibold">
-              นัดหมายแบบเร่งด่วน
+          <StyledView className="w-6/12 px-1">
+            <StyledText className="text-lg font-custom dark:text-neutral-200">เวลา</StyledText>
+            <TouchableOpacity>
+              <StyledView className="border border-gray-300 rounded-2xl py-4 px-4">
+                <StyledText className="font-custom text-gray-700 dark:text-white">
+                  {scheduleTime || "10:10"}
+                </StyledText>
+              </StyledView>
+            </TouchableOpacity>
+          </StyledView>
+        </StyledView>
+
+        {/* Job Type Selection */}
+        <StyledView className="flex-row items-center px-6 py-2">
+          <StyledView className="w-full px-1">
+            <StyledText className="text-lg font-custom dark:text-neutral-200">
+              ประเภทงาน
             </StyledText>
-          )}
-        </LinearGradient>
-      </TouchableOpacity>
-    </StyledScrollView>
+            <TouchableOpacity>
+              <StyledView className="border border-gray-300 rounded-2xl py-4 px-4">
+                <StyledText className="font-custom text-gray-700 dark:text-white">
+                  {scheduleJobs ? joblist.find(j => j.value === scheduleJobs)?.label : "เลือกประเภทงาน"}
+                </StyledText>
+              </StyledView>
+            </TouchableOpacity>
+          </StyledView>
+        </StyledView>
+
+        {/* Location */}
+        <StyledView className="items-center px-6 py-2">
+          <StyledView className="w-full px-1">
+            <StyledText className="text-lg font-custom dark:text-neutral-200">จุดนัดหมาย</StyledText>
+            <TouchableOpacity onPress={() => setSearchFocus(true)}>
+              <StyledView className="border border-gray-300 rounded-2xl py-4 px-4">
+                <StyledText className="font-custom text-gray-700 dark:text-white">
+                  {scheduleLocation || "ค้นหาสถานที่"}
+                </StyledText>
+              </StyledView>
+            </TouchableOpacity>
+          </StyledView>
+        </StyledView>
+
+        {/* Map */}
+        <StyledView className="px-6 py-2 rounded-2xl my-2 mt-5 h-[300px]">
+          <StyledMapView
+            initialRegion={{
+              latitude: 13.7563,
+              longitude: 100.5018,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}
+            className="w-full h-full rounded-2xl"
+            onPress={(e) => {
+              const { latitude, longitude } = e.nativeEvent.coordinate;
+              setPin({ latitude, longitude });
+            }}
+          >
+            {pin && (
+              <>
+                <Marker coordinate={pin} />
+                <Circle
+                  center={pin}
+                  radius={250}
+                  strokeColor="rgba(255, 0, 0, 0.5)"
+                  fillColor="rgba(255, 0, 0, 0.2)"
+                />
+              </>
+            )}
+          </StyledMapView>
+        </StyledView>
+
+        {/* Submit Button */}
+        <TouchableOpacity
+          className="w-full px-6 my-6"
+          onPress={handleCreateSchedule}
+          disabled={loading}
+        >
+          <LinearGradient
+            colors={theme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            className="rounded-full py-3 shadow-sm"
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <StyledText className="font-custom text-center text-white text-lg font-semibold">
+                นัดหมายแบบเร่งด่วน
+              </StyledText>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+      </StyledScrollView>
+    </SafeAreaView>
   );
+
+  useEffect(() => {
+    if (step === 3) {
+      backgroundAnim.value = withRepeat(
+        withTiming(1, {
+          duration: 2000,
+          easing: Easing.linear,
+        }),
+        -1,
+        false
+      );
+    }
+  }, [step]);
+
+  const rStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: interpolate(backgroundAnim.value, [0, 1], [1, 2]) }],
+      opacity: interpolate(backgroundAnim.value, [0, 1], [0.7, 0]),
+    };
+  });
 
   const renderWaitingScreen = () => {
     return (
       <LinearGradient
-        colors={['#8B0000', '#4A0404']}
+        colors={['#8B0000', '#4A0404']} 
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         className="flex-1 justify-center items-center px-6"
       >
-        <Animated.View
-          entering={FadeInUp.delay(300).duration(1000)}
-          className="items-center"
-        >
-          <StyledView className="w-[100px] h-[100px] bg-red-400/20 rounded-full items-center justify-center">
-            <Image source={Icon} style={{ width: 50, height: 50 }} />
-          </StyledView>
-
-          <StyledText className="font-custom text-white text-3xl mb-3 text-center mt-8">
-            กำลังรอการตอบรับ
-          </StyledText>
-
-          <StyledText className="font-custom text-white/80 text-lg mb-8 text-center">
-            โปรดรอสักครู่{'\n'}ระบบกำลังค้นหาเพื่อนที่ว่างให้คุณ
-          </StyledText>
-
-          <LinearGradient
-            colors={['#FF4B48', '#AB1815']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            className="w-full h-2 rounded-full mb-4 overflow-hidden"
+        <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <Animated.View
+            entering={FadeInUp.delay(300).duration(1000)}
+            className="items-center"
           >
-            <Animated.View
-              className="h-full bg-white/90"
-              style={{
-                width: `${(timeLeft / 15) * 100}%`,
-              }}
-            />
-          </LinearGradient>
+            <StyledView className="relative">
+              <Animated.View
+                style={[styleRipple.dot, rStyle, { position: 'absolute' }]}
+              />
+              <Animated.View
+                style={[
+                  styleRipple.dot,
+                  rStyle,
+                  { position: 'absolute', transform: [{ scale: 1.5 }] },
+                ]}
+              />
+              <Animated.View 
+                className="w-[120px] h-[120px] bg-red-400/20 rounded-full items-center justify-center"
+                style={{
+                  shadowColor: "#FF4B48",
+                  shadowOffset: {
+                    width: 0,
+                    height: 0,
+                  },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 20,
+                  elevation: 10
+                }}
+              >
+                <Image 
+                  source={Icon} 
+                  style={{ width: 60, height: 60 }} 
+                  className="opacity-90"
+                />
+              </Animated.View>
+            </StyledView>
 
-          <StyledView className="flex-row items-center">
-            <StyledIonIcon name="time-outline" size={24} color="white" style={{ opacity: 0.6 }} />
-            <StyledText className="font-custom text-white/60 text-base text-center ml-2">
-              เหลือเวลาอีก {timeLeft} นาที
+            <StyledText className="font-custom text-white text-4xl mb-2 text-center mt-10 p-1">
+              กำลังค้นหา{dots}
             </StyledText>
-          </StyledView>
 
-          <TouchableOpacity
-            className="mt-8"
-            onPress={() => setStep(1)}
-          >
+            <StyledText className="font-custom text-white/70 text-lg mb-12 text-center">
+              ระบบกำลังค้นหาเพื่อนที่ว่างให้คุณ{'\n'}โปรดรอสักครู่
+            </StyledText>
+
             <LinearGradient
-              colors={['#ffffff30', '#ffffff10']}
+              colors={['#FF4B48', '#AB1815']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              className="px-8 py-3 rounded-full"
+              className="w-full h-3 rounded-full mb-4 overflow-hidden"
+              style={{
+                shadowColor: "#FF4B48",
+                shadowOffset: {
+                  width: 0,
+                  height: 4,
+                },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 5
+              }}
             >
-              <StyledText className="font-custom text-white text-base">
-                ยกเลิกการค้นหา
-              </StyledText>
+              <Animated.View
+                className="h-full bg-white/90"
+                style={{
+                  width: `${(timeLeft / 15) * 100}%`,
+                }}
+              />
             </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
 
-        <Animated.View
-          entering={FadeInDown.delay(300).duration(1000)}
-          className="absolute bottom-10 left-6 right-6"
-        >
-          <StyledText className="font-custom text-white/40 text-sm text-center">
+            <StyledView className="flex-row items-center bg-white/10 px-6 py-3 rounded-full">
+              <StyledIonIcon name="time-outline" size={24} color="white" style={{ opacity: 0.8 }} />
+              <StyledText className="font-custom text-white/80 text-lg text-center ml-2">
+                เหลือเวลาอีก {timeLeft} นาที
+              </StyledText>
+            </StyledView>
+
+            <TouchableOpacity
+              className="mt-12"
+              onPress={() => setStep(1)}
+            >
+              <LinearGradient
+                colors={['#ffffff40', '#ffffff15']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                className="px-10 py-4 rounded-full"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: {
+                    width: 0,
+                    height: 4,
+                  },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 8,
+                  elevation: 5
+                }}
+              >
+                <StyledText className="font-custom text-white text-lg">
+                  ยกเลิกการค้นหา
+                </StyledText>
+              </LinearGradient>
+            </TouchableOpacity>
+          </Animated.View>
+
+          <StyledText className="font-custom text-white/40 text-base text-center mt-12 px-6">
             ระบบจะค้นหาเพื่อนที่ใกล้เคียงและว่างในเวลาที่คุณต้องการ
           </StyledText>
-        </Animated.View>
+        </SafeAreaView>
       </LinearGradient>
     );
   };

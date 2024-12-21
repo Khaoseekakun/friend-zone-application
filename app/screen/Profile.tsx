@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { View, Text, Alert, ActivityIndicator, ScrollView, Dimensions, Image, Linking, Appearance, Keyboard, TouchableWithoutFeedback } from "react-native";
+import { View, Text, Alert, ActivityIndicator, ScrollView, Dimensions, Image, Linking, Appearance, Keyboard, TouchableWithoutFeedback, useColorScheme } from "react-native";
 import { styled } from "nativewind";
 import { HeaderApp } from "@/components/Header";
 import { NavigationProp, RouteProp, useIsFocused, useRoute } from "@react-navigation/native";
@@ -42,6 +42,7 @@ export default function ProfileTab() {
     const route = useRoute<ProfileParam>();
     const { profileId, jobCategory, backPage } = route.params;
     const isFoucs = useIsFocused()
+    const colorScheme = useColorScheme();
 
     const bottomSheetRef = useRef<BottomSheet>(null);
 
@@ -603,7 +604,7 @@ export default function ProfileTab() {
                                             {userProfile.profile.JobMembers.map((job: JobMembers, index: number) => (
                                                 <LinearGradient
                                                     key={index}
-                                                    colors={['#ec4899', '#f97316']}
+                                                    colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                                                     start={{ x: 0, y: 0 }}
                                                     end={{ x: 1, y: 0 }}
                                                     className="rounded-full px-4 py-2 mr-2 mb-2"
@@ -700,11 +701,6 @@ export default function ProfileTab() {
                                                 )
                                         }
 
-
-
-
-                                        {/* เพิ่ม Modal Component */}
-
                                     </StyledView>
                                 </StyledView>
                             </StyledView>
@@ -737,7 +733,7 @@ export default function ProfileTab() {
                     }}
                 >
                     <LinearGradient
-                        colors={['#EB3834', '#69140F']}
+                        colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         className="rounded-full py-3 shadow-sm"
@@ -993,7 +989,7 @@ export default function ProfileTab() {
                                         disabled={loading}
                                     >
                                         <LinearGradient
-                                            colors={['#EB3834', '#69140F']}
+                                            colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                                             start={{ x: 0, y: 0 }}
                                             end={{ x: 1, y: 0 }}
                                             className="rounded-full py-3 shadow-sm"

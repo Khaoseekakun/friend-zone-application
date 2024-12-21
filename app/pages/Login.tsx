@@ -212,7 +212,7 @@ export default function Login() {
                     >
                         <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
                             <LinearGradient
-                                colors={colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316']}
+                                colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 0 }}
                                 className="rounded-full py-3 shadow-sm"

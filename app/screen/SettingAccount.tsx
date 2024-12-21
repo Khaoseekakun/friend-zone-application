@@ -1,7 +1,7 @@
 // ส่งวีดีโอไม่เป็นอะ ฝากหน่อยนะ
 
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, Platform, ActivityIndicator, KeyboardAvoidingView, Alert } from "react-native";
+import { View, Text, Image, TouchableOpacity, TextInput, ScrollView, Platform, ActivityIndicator, KeyboardAvoidingView, Alert, Appearance } from "react-native";
 import { styled } from "nativewind";
 import { Modal, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -106,6 +106,15 @@ export default function AccountSetting() {
         setUploadProgress(0);
         setUploadTimer(null);
     };
+    const [theme, setTheme] = useState(Appearance.getColorScheme());
+  
+    useEffect(() => {
+        const listener = Appearance.addChangeListener(({ colorScheme }) => {
+            setTheme(colorScheme);
+        });
+  
+        return () => listener.remove();
+    }, []);
 
 
     useEffect(() => {
@@ -626,7 +635,7 @@ export default function AccountSetting() {
                                 className="w-full"
                             >
                                 <LinearGradient
-                                    colors={[GRADIENT_START, GRADIENT_END]}
+                                    colors={theme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                                     start={{ x: 0, y: 0 }}
                                     end={{ x: 1, y: 0 }}
                                     className="rounded-full py-2 items-center"
