@@ -64,11 +64,12 @@ export default function Setting() {
     }, [])
 
     return (
-        <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-            <StyledView className="w-full flex-1 bg-white dark:bg-neutral-900">
+        <StyledView className="w-full flex-1 bg-white dark:bg-neutral-900">
+
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
                 {/* <HeaderApp /> */}
                 <LinearGradient
                     colors={['#EB3834', '#69140F']}
@@ -165,7 +166,7 @@ export default function Setting() {
                         </StyledView>
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => navigation.navigate("AccountStatus", {backPage: "SettingTab"})}>
+                    <TouchableOpacity onPress={() => navigation.navigate("AccountStatus", { backPage: "SettingTab" })}>
                         <StyledView className="flex-row items-center justify-between w-full px-3">
                             <StyledView className="flex-row justify-center">
                                 <StyledIonicons name="alert-circle-outline" size={24} className="mt-1 text-black dark:text-white" />
@@ -178,7 +179,7 @@ export default function Setting() {
                         </StyledView>
                     </TouchableOpacity>
 
-                    
+
 
                     <TouchableOpacity onPress={() => navigation.navigate("ScheduleList", {})}>
                         <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
@@ -243,22 +244,24 @@ export default function Setting() {
                 </ScrollView>
                 <StyledText className="font-custom absolute bottom-7 left-3 text-gray-300">V1.0.0</StyledText>
                 <StyledText className="font-custom absolute bottom-4 left-3 text-gray-300">K2N Tech Studio</StyledText>
-            </StyledView>
 
-            <Modal
-                visible={isLogout}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => setIsLogout(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <ActivityIndicator size="large" color="#EB3834" />
-                        <StyledText className="font-custom" style={styles.modalText} >กำลังออกจากระบบ...</StyledText>
+                <Modal
+                    visible={isLogout}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setIsLogout(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <ActivityIndicator size="large" color="#EB3834" />
+                            <StyledText className="font-custom" style={styles.modalText} >กำลังออกจากระบบ...</StyledText>
+                        </View>
                     </View>
-                </View>
-            </Modal>
-        </KeyboardAvoidingView >
+                </Modal>
+            </KeyboardAvoidingView >
+
+        </StyledView>
+
     );
 }
 

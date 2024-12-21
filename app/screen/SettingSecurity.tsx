@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { View, Text, TouchableOpacity, TextInput, ScrollView, Platform, ActivityIndicator, KeyboardAvoidingView, Alert, Modal, FlatList } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from "axios";
@@ -39,7 +39,7 @@ const GRADIENT_END = '#f97316';
 // Add this constant for bank options
 const BANK_OPTIONS = [
     "ธนาคารกสิกรไทย",
-    "ธนาคารกรุงเทพ", 
+    "ธนาคารกรุงเทพ",
     "ธนาคารไทยพาณิชย์",
     "ธนาคารกรุงไทย",
     "ธนาคารกรุงศรีอยุธยา",
@@ -61,15 +61,16 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
     const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const handleSendOTP = async () => {
+    const handleSendOTP = async (
+        step: number,
+    ) => {
         try {
             setLoading(true);
             const userData = await AsyncStorage.getItem('userData');
             if (!userData) return;
-            const userList = JSON.parse(userData);
 
-            const response = await axios.post('https://friendszone.app/api/email/otp', 
-                { email },
+            const response = await axios.post('https://friendszone.app/api/email/otp',
+                { email: step === 2 ? email : newEmail },
                 {
                     headers: {
                         "Authorization": `System ${API_SYSTEM_KEY}`
@@ -79,8 +80,9 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
             // console.log(response.data);
 
             if (response.data.status === 200) {
-                setStep(2);
-                Alert.alert("สำเร็จ", "ส่งรหัส OTP แล้ว กรุณาตรวจสอบอีเมลของคุณ");
+                setStep(step);
+            } else {
+                console.log(response.data);
             }
         } catch (error) {
             Alert.alert("ข้อผิดพลาด", "ไม่สามารถส่งรหัส OTP ได้");
@@ -89,15 +91,19 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
         }
     };
 
-    const handleVerifyOTP = async () => {
+    const handleVerifyOTP = async (
+        submit = false
+    ) => {
         try {
             setLoading(true);
             const userData = await AsyncStorage.getItem('userData');
             if (!userData) return;
-            const userList = JSON.parse(userData);
 
             const response = await axios.put('https://friendszone.app/api/email/otp',
-                { email, otp },
+                {
+                    email: submit == true ? newEmail : email,
+                    otp
+                },
                 {
                     headers: {
                         "Authorization": `System ${API_SYSTEM_KEY}`
@@ -106,7 +112,13 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
             );
 
             if (response.data.status === 200) {
-                setStep(3);
+                if (submit == true) {
+                    handleUpdateEmail();
+                } else {
+                    setStep(3);
+                }
+            } else {
+                console.log(response.data);
             }
         } catch (error) {
             Alert.alert("ข้อผิดพลาด", "รหัส OTP ไม่ถูกต้อง");
@@ -120,10 +132,9 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
             setLoading(true);
             const userData = await AsyncStorage.getItem('userData');
             if (!userData) return;
-            const userList = JSON.parse(userData);
 
             const response = await axios.put('https://friendszone.app/api/email',
-                { 
+                {
                     oldEmail: email,
                     newEmail: newEmail,
                     accountType: 'member'
@@ -134,7 +145,6 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
                     }
                 }
             );
-            // console.log('response.data : ', response.data);
 
             if (response.data.data.code === "EMAIL_EXISTS") {
                 Alert.alert("ข้อผิดพลาด", "อีเมลนี้มีอยู่ในระบบแล้ว");
@@ -171,9 +181,9 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
                             editable={false}
                         />
                     </StyledView>
-                    <GradientButton 
-                        title={loading ? "กำลังส่งรหัส..." : "ส่งรหัส OTP"} 
-                        onPress={handleSendOTP} 
+                    <GradientButton
+                        title={loading ? "กำลังส่งรหัส..." : "ส่งรหัส OTP"}
+                        onPress={(() => { handleSendOTP(2) })}
                     />
                 </>
             )}
@@ -192,9 +202,9 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
                             onChangeText={setOtp}
                         />
                     </StyledView>
-                    <GradientButton 
-                        title={loading ? "กำลังตรวจสอบ..." : "ยืนยันรหัส OTP"} 
-                        onPress={handleVerifyOTP} 
+                    <GradientButton
+                        title={loading ? "กำลังตรวจสอบ..." : "ยืนยันรหัส OTP"}
+                        onPress={handleVerifyOTP}
                     />
                 </>
             )}
@@ -212,9 +222,30 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
                             onChangeText={setNewEmail}
                         />
                     </StyledView>
-                    <GradientButton 
+                    <GradientButton
                         title={loading ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}
-                        onPress={handleUpdateEmail} 
+                        onPress={(() => { handleSendOTP(4) })}
+                    />
+                </>
+            )}
+
+            {step === 4 && (
+                <>
+                    <StyledText className="text-2xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">ยืนยันรหัส OTP อีเมลใหม่</StyledText>
+                    <StyledText className="text-base text-gray-400 mb-6 font-custom">กรุณากรอกรหัส OTP ที่ส่งไปยังอีเมลใหม่ของคุณ</StyledText>
+                    <StyledView className="w-full mb-6">
+                        <StyledInput
+                            className="font-custom border border-gray-300 rounded-full py-4 px-4 text-gray-600 dark:text-gray-200 w-full text-center text-xl tracking-widest"
+                            placeholder="_ _ _ _ _ _"
+                            maxLength={6}
+                            keyboardType="number-pad"
+                            value={otp}
+                            onChangeText={setOtp}
+                        />
+                    </StyledView>
+                    <GradientButton
+                        title={loading ? "กำลังตรวจสอบ..." : "ยืนยันรหัส OTP"}
+                        onPress={(() => { handleVerifyOTP(true) })}
                     />
                 </>
             )}
@@ -240,6 +271,9 @@ const PasswordSection = ({
     onSave: () => void
 }) => {
     const [loading, setLoading] = useState(false);
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleUpdatePassword = async () => {
         try {
@@ -257,26 +291,24 @@ const PasswordSection = ({
             const userData = await AsyncStorage.getItem('userData');
             if (!userData) return;
             const userList = JSON.parse(userData);
+            // Update password
 
-            // Verify current password
-            const verifyResponse = await axios.post('https://friendszone.app/api/oauth/password',
-                { 
-                    email: userList.email,
-                    password: currentPassword 
-                },
-                {
-                    headers: {
-                        "Authorization": `System ${API_SYSTEM_KEY}`
-                    }
-                }
-            );
 
-            if (verifyResponse.data.status !== 200) {
-                Alert.alert("ข้อผิดพลาด", "รหัสผ่านปัจจุบันไม่ถูกต้อง");
+            if (newPassword.length < 8) {
+                Alert.alert("ข้อผิดพลาด", "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร");
                 return;
             }
 
-            // Update password
+            if (newPassword === currentPassword) {
+                Alert.alert("ข้อผิดพลาด", "รหัสผ่านใหม่ไม่สามารถเหมือนกับรหัสผ่านปัจจุบันได้");
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                Alert.alert("ข้อผิดพลาด", "รหัสผ่านใหม่ไม่ตรงกัน");
+                return;
+            }
+
             const updateResponse = await axios.put('https://friendszone.app/api/oauth/password',
                 {
                     email: userList.email,
@@ -290,24 +322,19 @@ const PasswordSection = ({
                 }
             );
 
-            if (newPassword.length < 8) {
-                Alert.alert("ข้อผิดพลาด", "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร");
-                return;
-            }
-            
-            if (newPassword === currentPassword) {
-                Alert.alert("ข้อผิดพลาด", "รหัสผ่านใหม่ไม่สามารถเหมือนกับรหัสผ่านปัจจุบันได้");
-                return;
-            }
-
-            if (newPassword !== confirmPassword) {
-                Alert.alert("ข้อผิดพลาด", "รหัสผ่านใหม่ไม่ตรงกัน");
-                return;
-            }
-
             if (updateResponse.data.status === 200) {
                 Alert.alert("สำเร็จ", "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว");
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
                 onSave();
+            } else {
+                if (updateResponse.data.data.code == "WRONG_PASSWORD") {
+                    Alert.alert("ข้อผิดพลาด", "รหัสผ่านปัจจุบันไม่ถูกต้อง");
+                }
+                else if (updateResponse.data.data.code == "USER_NOT_FOUND") {
+                    Alert.alert("ข้อผิดพลาด", "ไม่พบผู้ใช้งาน");
+                }
             }
         } catch (error) {
             Alert.alert("ข้อผิดพลาด", "ไม่สามารถเปลี่ยนรหัสผ่านได้");
@@ -321,34 +348,60 @@ const PasswordSection = ({
             <StyledText className="text-2xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2 mt-4">เปลี่ยนรหัสผ่าน</StyledText>
             <StyledText className="text-base text-gray-400 mb-6 font-custom">กรุณากรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่</StyledText>
             <StyledView className="w-full mb-6">
-                <StyledInput
-                    className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
-                    placeholder="รหัสผ่านปัจจุบัน"
-                    secureTextEntry
-                    value={currentPassword}
-                    onChangeText={setCurrentPassword}
-                    placeholderTextColor="#666"
-                />
-                <StyledInput
-                    className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
-                    placeholder="รหัสผ่านใหม่"
-                    secureTextEntry
-                    value={newPassword}
-                    onChangeText={setNewPassword}
-                    placeholderTextColor="#666"
-                />
-                <StyledInput
-                    className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
-                    placeholder="ยืนยันรหัสผ่านใหม่"
-                    secureTextEntry
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    placeholderTextColor="#666"
-                />
+                <StyledText className="font-custom text-neutral-400 text-base mb-2">
+                    รหัสผ่านปัจจุบัน
+                </StyledText>
+                <StyledView className="flex-row items-center bg-white dark:bg-neutral-800 rounded-xl mb-2 px-4 py-1">
+                    <StyledInput
+                        className="flex-1 dark:text-white font-custom text-lg"
+                        placeholder="รหัสผ่านปัจจุบัน"
+                        secureTextEntry={!showCurrentPassword}
+                        value={currentPassword}
+                        onChangeText={setCurrentPassword}
+                        placeholderTextColor="#666"
+                    />
+                    <TouchableOpacity onPress={() => setShowCurrentPassword(!showCurrentPassword)}>
+                        <StyledIonicons name={showCurrentPassword ? "eye-off" : "eye"} size={24} className="text-gray-500" />
+                    </TouchableOpacity>
+                </StyledView>
+
+                <StyledText className="font-custom text-neutral-400 text-base mb-2">
+                    รหัสผ่านใหม่
+                </StyledText>
+                <StyledView className="flex-row items-center bg-white dark:bg-neutral-800 rounded-xl mb-2 px-4 py-1">
+                    <StyledInput
+                        className="flex-1 dark:text-white font-custom text-lg"
+                        placeholder="รหัสผ่านใหม่"
+                        secureTextEntry={!showNewPassword}
+                        value={newPassword}
+                        onChangeText={setNewPassword}
+                        placeholderTextColor="#666"
+                    />
+                    <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
+                        <StyledIonicons name={showNewPassword ? "eye-off" : "eye"} size={24} className="text-gray-500" />
+                    </TouchableOpacity>
+                </StyledView>
+
+                <StyledText className="font-custom text-neutral-400 text-base mb-2">
+                    ยืนยันรหัสผ่านใหม่
+                </StyledText>
+                <StyledView className="flex-row items-center bg-white dark:bg-neutral-800 rounded-xl mb-2 px-4 py-1">
+                    <StyledInput
+                        className="flex-1 dark:text-white font-custom text-lg"
+                        placeholder="ยืนยันรหัสผ่านใหม่"
+                        secureTextEntry={!showConfirmPassword}
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        placeholderTextColor="#666"
+                    />
+                    <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                        <StyledIonicons name={showConfirmPassword ? "eye-off" : "eye"} size={24} className="text-gray-500" />
+                    </TouchableOpacity>
+                </StyledView>
             </StyledView>
-            <GradientButton 
-                title={loading ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"} 
-                onPress={handleUpdatePassword} 
+            <GradientButton
+                title={loading ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}
+                onPress={handleUpdatePassword}
             />
         </StyledView>
     );
@@ -357,20 +410,26 @@ const PasswordSection = ({
 const BankSection = ({
     profileData,
     setBankAccount,
+    bankNo,
+    bankAccount,
     bankName,
     setBankName,
     onSave
 }: {
     profileData: UserProfile | null,
     setBankAccount: (account: string) => void,
+    bankAccount: string,
     bankName: string,
+    bankNo: string,
     setBankName: (name: string) => void,
     onSave: () => void
 }) => {
     const [showBankPicker, setShowBankPicker] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [accountNo, setAccountNo] = useState('');
-    const [accountName, setAccountName] = useState('');
+    const [accountNo, setAccountNo] = useState(bankNo);
+    const [accountName, setAccountName] = useState(bankAccount);
+
+
 
     const handleSave = async () => {
         try {
@@ -403,6 +462,10 @@ const BankSection = ({
             if (response.data.status === 200) {
                 Alert.alert("สำเร็จ", "บันทึกข้อมูลธนาคารเรียบร้อยแล้ว");
                 onSave();
+            } else {
+                if (response.data.data.code == "MEMBER_NOT_FOUND") {
+                    Alert.alert("ข้อผิดพลาด", "ไม่พบข้อมูลสมาชิก");
+                }
             }
         } catch (error) {
             Alert.alert("ข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลธนาคารได้");
@@ -419,14 +482,14 @@ const BankSection = ({
                 <StyledInput
                     className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
                     placeholder="ชื่อบัญชีธนาคาร"
-                    value={accountName}
+                    value={accountName ? accountName : bankAccount}
                     onChangeText={setAccountName}
                     placeholderTextColor="#666"
                 />
                 <StyledInput
                     className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mb-4"
                     placeholder="เลขบัญชีธนาคาร"
-                    value={accountNo}
+                    value={accountNo ? accountNo : bankNo}
                     onChangeText={setAccountNo}
                     keyboardType="numeric"
                     placeholderTextColor="#666"
@@ -475,9 +538,9 @@ const BankSection = ({
                 </StyledView>
             </Modal>
 
-            <GradientButton 
-                title={loading ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"} 
-                onPress={handleSave} 
+            <GradientButton
+                title={loading ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}
+                onPress={handleSave}
             />
         </StyledView>
     );
@@ -500,7 +563,6 @@ const GradientButton = ({ onPress, title }: { onPress: () => void, title: string
 
 export default function SettingSecurity() {
     const navigation = useNavigation<any>();
-
     const [email, setEmail] = useState("");
     const [newEmail, setNewEmail] = useState("");
     const [step, setStep] = useState(1);
@@ -509,9 +571,11 @@ export default function SettingSecurity() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [bankAccount, setBankAccount] = useState("");
     const [bankName, setBankName] = useState("");
+    const [bankNo, setBankNo] = useState("");
     const [loading, setLoading] = useState(false);
-    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [profile, setProfile] = useState<any>(null);
     const [activeSection, setActiveSection] = useState<'main' | 'email' | 'password' | 'bank'>('main');
+    const isFoucs = useIsFocused();
 
     const fetchUserData = async () => {
         try {
@@ -541,14 +605,19 @@ export default function SettingSecurity() {
     };
 
     useEffect(() => {
-        fetchUserData();
-    }, []);
-
-    useEffect(() => {
-        if (profile?.gmail) {
-            setEmail(profile.gmail);
+        if (isFoucs == true) {
+            if (profile?.gmail) {
+                setEmail(profile.gmail);
+            }
+            if (profile?.BankAccount.length > 0) {
+                setBankAccount(profile.BankAccount[0].accountName);
+                setBankName(profile.BankAccount[0].bankName);
+                setBankNo(profile.BankAccount[0].accountNo);
+            }
+            fetchUserData();
+            setStep(1);
         }
-    }, [profile]);
+    }, [isFoucs]);
 
     const updateEmail = async () => {
         if (!email) {
@@ -603,9 +672,10 @@ export default function SettingSecurity() {
             case 'bank':
                 return <BankSection
                     profileData={profile}
-                    bankAccount={bankAccount}
                     setBankAccount={setBankAccount}
                     bankName={bankName}
+                    bankNo={bankNo}
+                    bankAccount={bankAccount}
                     setBankName={setBankName}
                     onSave={updateBankInfo}
                 />;
@@ -663,32 +733,36 @@ export default function SettingSecurity() {
                             </StyledView>
 
                             {/* ข้อมูลการเงิน */}
-                            <StyledView>
-                                <StyledText className="text-2xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">
-                                    ข้อมูลการเงิน
-                                </StyledText>
+                            {
+                                profile?.type === 'member' && (
+                                    <StyledView>
+                                        <StyledText className="text-2xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">
+                                            ข้อมูลการเงิน
+                                        </StyledText>
 
-                                {/* Bank Account */}
-                                <TouchableOpacity
-                                    className="bg-white dark:bg-neutral-800 rounded-xl"
-                                    onPress={() => setActiveSection('bank')}
-                                >
-                                    <StyledView className="flex-row items-center p-4 border-l-4 border-green-500">
-                                        <StyledView className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full items-center justify-center">
-                                            <StyledIonicons name="card-outline" size={24} className="text-green-500" />
-                                        </StyledView>
-                                        <StyledView className="flex-1 ml-3">
-                                            <StyledText className="text-base dark:text-white font-custom">
-                                                บัญชีธนาคาร
-                                            </StyledText>
-                                            <StyledText className="text-xs text-neutral-400 dark:text-neutral-500 font-custom">
-                                                เพิ่มหรือแก้ไขบัญชีธนาคารของคุณ
-                                            </StyledText>
-                                        </StyledView>
-                                        <StyledIonicons name="chevron-forward" size={24} className="text-neutral-400" />
+                                        {/* Bank Account */}
+                                        <TouchableOpacity
+                                            className="bg-white dark:bg-neutral-800 rounded-xl"
+                                            onPress={() => setActiveSection('bank')}
+                                        >
+                                            <StyledView className="flex-row items-center p-4 border-l-4 border-green-500">
+                                                <StyledView className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full items-center justify-center">
+                                                    <StyledIonicons name="card-outline" size={24} className="text-green-500" />
+                                                </StyledView>
+                                                <StyledView className="flex-1 ml-3">
+                                                    <StyledText className="text-base dark:text-white font-custom">
+                                                        บัญชีธนาคาร
+                                                    </StyledText>
+                                                    <StyledText className="text-xs text-neutral-400 dark:text-neutral-500 font-custom">
+                                                        เพิ่มหรือแก้ไขบัญชีธนาคารของคุณ
+                                                    </StyledText>
+                                                </StyledView>
+                                                <StyledIonicons name="chevron-forward" size={24} className="text-neutral-400" />
+                                            </StyledView>
+                                        </TouchableOpacity>
                                     </StyledView>
-                                </TouchableOpacity>
-                            </StyledView>
+                                )
+                            }
 
                             {/* Phone Number */}
                             <StyledView>

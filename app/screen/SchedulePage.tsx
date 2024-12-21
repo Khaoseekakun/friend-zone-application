@@ -81,7 +81,7 @@ export default function SchedulePage() {
         jobCategoryId: string;
     }[]>([]);
 
-    const database = getDatabase(FireBaseApp, 'https://friendszone-d1e20-default-rtdb.asia-southeast1.firebasedatabase.app');
+    const database = getDatabase(FireBaseApp);
 
     useEffect(() => {
         (async () => {

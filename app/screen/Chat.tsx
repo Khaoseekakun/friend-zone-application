@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, ActivityIndicator, Alert, Image } from "react-native";
+import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, ActivityIndicator, Alert, Image, Keyboard, Appearance } from "react-native";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
-import { FlatList, TextInput } from "react-native-gesture-handler";
+import { FlatList, TextInput, TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { equalTo, get, getDatabase, onValue, orderByChild, query, ref, set, limitToLast, startAt, push, serverTimestamp, update, endAt } from "firebase/database";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FireBaseApp from "@/utils/firebaseConfig";
 import { RootStackParamList } from "@/types";
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from "axios";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import { addNotification } from "@/utils/Notification";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -30,7 +32,7 @@ export default function Chat() {
         text: string;
         senderId: string;
         timestamp: string;
-        status: string;
+        status: 'approve_work_customer' | 'approve_work_member' | 'timeout_customer' | 'timeout_member' | 'cancel_customer' | 'cancel_member' | 'working' | 'work_success' | 'reviewed' | 'sent';
         images: string[];
         details: {
             billingPrice: number;
@@ -48,8 +50,8 @@ export default function Chat() {
         end_date: string;
         location: string;
         start_date: string;
-        notificationState: 'ready_confirm' | 'cancel_confirm' | null
-        
+        notificationState: 'ready_confirm' | 'cancel_confirm' | null;
+
     }
 
     interface Channel {
@@ -68,30 +70,27 @@ export default function Chat() {
     const { chatId, receiverId, chatName, profileUrl, helper } = router.params;
     const [userData, setUserData] = useState<any>({});
     const [lastMessageKey, setLastMessageKey] = useState<string | null>(null);
-    const database = getDatabase(FireBaseApp, 'https://friendszone-d1e20-default-rtdb.asia-southeast1.firebasedatabase.app');
+    const database = getDatabase(FireBaseApp);
     const isCustomer = userData.role === 'customer';
     const [channels, setChannels] = useState<Channel[]>([]);
     const [channelId, setChatId] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
-    const [notificationStatus, setNotificationStatus] = useState<'initial' | 'ready' | 'cancel'>('initial');
+    const [reviewMessage, setReviewMessage] = useState<Message | null>(null);
 
-    const handleNotificationAction = (messageId: string, action: 'ready' | 'cancel', confirm: boolean = false) => {
-        if (action === 'ready') {
-            if (confirm) {
-                // Handle final confirmation
-                setNotificationStatus('initial');
-            } else {
-                setNotificationStatus('ready');
-            }
-        } else if (action === 'cancel') {
-            if (confirm) {
-                // Handle final cancellation
-                setNotificationStatus('initial');
-            } else {
-                setNotificationStatus('cancel');
-            }
-        }
-    };
+    const bottomSheetRefReview = useRef<BottomSheet>(null);
+    const [reviewStars, setReviewStars] = useState(0);
+    const [reviewText, setReviewText] = useState('');
+    const [sendReviewLoading, setSendReviewLoading] = useState(false);
+
+    const [theme, setTheme] = useState(Appearance.getColorScheme());
+
+    useEffect(() => {
+        const listener = Appearance.addChangeListener(({ colorScheme }) => {
+            setTheme(colorScheme);
+        });
+
+        return () => listener.remove();
+    }, [])
 
     const updateMessageState = (messageId: string, state: 'ready_confirm' | 'cancel_confirm' | null) => {
         setMessages(prevMessages => prevMessages.map(msg => {
@@ -220,7 +219,7 @@ export default function Chat() {
         } else {
             fetchChatHistory();
         }
-        const database = getDatabase(FireBaseApp, 'https://friendszone-d1e20-default-rtdb.asia-southeast1.firebasedatabase.app');
+        const database = getDatabase(FireBaseApp);
         const messagesRef = ref(database, `/channels/${chatId ?? channelId}/messages`);
 
         const unsubscribe = onValue(messagesRef, (snapshot) => {
@@ -272,7 +271,7 @@ export default function Chat() {
                 return;
             }
 
-            const database = getDatabase(FireBaseApp, 'https://friendszone-d1e20-default-rtdb.asia-southeast1.firebasedatabase.app');
+            const database = getDatabase(FireBaseApp);
             const messagesRef = ref(database, `/channels/${chatId}/messages`);
 
             const newMessageRef = push(messagesRef);
@@ -378,6 +377,218 @@ export default function Chat() {
         }
     };
 
+    const firebaseUpdateSchedule = (channelId: string, message: Message, status: 'approve_work_customer' | 'approve_work_member' | 'timeout_customer' | 'timeout_member' | 'cancel_customer' | 'cancel_member' | 'working' | 'work_success' | 'reviewed') => {
+        const updateRef = ref(database, `/channels/${channelId}/messages/${message.id}`);
+        update(updateRef, {
+            status
+        });
+    }
+
+    const sendReview = async (
+        message : Message
+    ) => {
+        if (!reviewText) {
+            return Alert.alert('ข้อมูลไม่ครบ', 'โปรดกรอกข้อมูลให้ครบถ้วน', [{ text: 'OK' }]);
+        }
+
+        try {
+            setSendReviewLoading(true);
+            const response = await axios.post(`https://friendszone.app/api/profile/${userData.id}/review`, {
+                userId: userData.id,
+                star: reviewStars,
+                text: reviewText
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `All ${userData.token}`
+                }
+            });
+
+            if (response.data.status != 200) {
+                Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถสร้างรีวิวได้', [{ text: 'OK' }]);
+            } else {
+                
+                bottomSheetRefReview.current?.close()
+                firebaseUpdateSchedule(chatId as string, message, 'reviewed');
+                addNotification(userData.id, {
+                    content: `${userData.username} ได้รีวิวคุณ`,
+                    data: {},
+                    timestamp: `${new Date().toISOString()}`,
+                    type: "review",
+                    user: {
+                        id: userData.id,
+                        name: userData.username,
+                        avatar: userData.profileUrl
+                    },
+                    isRead: false
+                })
+                setReviewStars(0);
+                setReviewText('');
+            }
+
+        } catch (error) {
+            Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถสร้างรีวิวได้', [{ text: 'OK' }]);
+        } finally {
+            setSendReviewLoading(false);
+        }
+    }
+
+    const buttonScheduleRender = (
+        item: Message,) => {
+        if (item.status === 'approve_work_customer') {
+            if (userData.role === 'customer') {
+                return (
+                    <StyledView className="flex-row space-x-2">
+                        <TouchableOpacity
+                            className="flex-1"
+                            onPress={() => {
+                                if (item.notificationState === 'ready_confirm') {
+                                    updateMessageState(item.id, null);
+                                    if (chatId) return firebaseUpdateSchedule(chatId as string, item, 'working');
+                                } else if (item.notificationState === 'cancel_confirm') {
+                                    if (chatId) return firebaseUpdateSchedule(chatId as string, item, 'cancel_customer');
+                                    updateMessageState(item.id, null);
+                                } else {
+                                    updateMessageState(item.id, 'ready_confirm');
+                                }
+                            }}
+                        >
+                            <LinearGradient
+                                colors={['#EB3834', '#69140F']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                className="py-3 rounded-full"
+                            >
+                                <StyledText className="font-custom text-white text-center">
+                                    {item.notificationState ? 'ยืนยัน' : 'พร้อมแล้ว'}
+                                </StyledText>
+                            </LinearGradient>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            className="flex-1"
+                            onPress={() => {
+                                if (item.notificationState) {
+                                    updateMessageState(item.id, null);
+                                } else {
+                                    updateMessageState(item.id, 'cancel_confirm');
+                                }
+                            }}
+                        >
+                            <StyledView className="bg-gray-200 dark:bg-neutral-700 py-3 rounded-full">
+                                <StyledText className="font-custom text-gray-700 dark:text-gray-300 text-center">
+                                    {item.notificationState ? 'ย้อนกลับ' : 'ยกเลิก'}
+                                </StyledText>
+                            </StyledView>
+                        </TouchableOpacity>
+                    </StyledView>
+                )
+            } else {
+                return (
+                    <StyledView className="flex-row justify-center">
+                        <StyledText className="text-white font-custom">
+                            รอการยืนยันจาก {chatName}
+                        </StyledText>
+                    </StyledView>
+                )
+            }
+        }
+
+        if (item.status === 'approve_work_member') {
+            if (userData.role === 'member') {
+                return (
+                    <>
+                        <TouchableOpacity
+                            className="flex-1"
+                            onPress={() => {
+                                if (item.notificationState === 'ready_confirm') {
+                                    updateMessageState(item.id, null);
+                                    if (chatId) return firebaseUpdateSchedule(chatId as string, item, 'approve_work_customer');
+
+                                } else if (item.notificationState === 'cancel_confirm') {
+                                    updateMessageState(item.id, null);
+                                    if (chatId) return firebaseUpdateSchedule(chatId as string, item, 'cancel_member');
+                                } else {
+                                    updateMessageState(item.id, 'ready_confirm');
+                                }
+                            }}
+                        >
+                            <LinearGradient
+                                colors={['#EB3834', '#69140F']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                className="py-3 rounded-full"
+                            >
+                                <StyledText className="font-custom text-white text-center">
+                                    {item.notificationState ? 'ยืนยัน' : 'พร้อมแล้ว'}
+                                </StyledText>
+                            </LinearGradient>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            className="flex-1"
+                            onPress={() => {
+                                if (item.notificationState) {
+                                    updateMessageState(item.id, null);
+                                } else {
+                                    updateMessageState(item.id, 'cancel_confirm');
+                                }
+                            }}
+                        >
+                            <StyledView className="bg-gray-200 dark:bg-neutral-700 py-3 rounded-full">
+                                <StyledText className="font-custom text-gray-700 dark:text-gray-300 text-center">
+                                    {item.notificationState ? 'ย้อนกลับ' : 'ยกเลิก'}
+                                </StyledText>
+                            </StyledView>
+                        </TouchableOpacity>
+                    </>
+                )
+            } else {
+                return (
+                    <StyledView className="flex-row justify-center">
+                        <StyledText className="text-white font-custom">
+                            รอการยืนยันจาก {chatName}
+                        </StyledText>
+                    </StyledView>
+                )
+            }
+        }
+
+        if (item.status === 'timeout_customer' || item.status === 'timeout_member') {
+            return (
+                <StyledView className="flex-row justify-center">
+                    <StyledText className="text-white font-custom">
+                        งานนี้ถูกยกเลิกโดยอัตโนมัติเนื่องจาก {(item.status === 'timeout_customer' ? userData.role == "customer" ? 'คุณ' : chatName : null)} {(item.status === 'timeout_member' ? userData.role == "member" ? 'คุณ' : chatName : null)}ตอบกลับช้าเกิน 20 นาที
+                    </StyledText>
+                </StyledView>
+            )
+        }
+
+        if (item.status === "work_success" && userData.role !== 'customer') {
+            return (
+                <TouchableOpacity
+                    className="flex-1"
+                    onPress={() => {
+                        setReviewMessage(item)
+                        bottomSheetRefReview.current?.expand();
+                    }}
+                >
+                    <LinearGradient
+                        colors={['#EB3834', '#69140F']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        className="py-3 rounded-full"
+                    >
+                        <StyledText className="font-custom text-white text-center">
+                            รีวิวงานครั้งนี้
+                        </StyledText>
+                    </LinearGradient>
+                </TouchableOpacity>
+            )
+        }
+    }
+
+
     const renderMessage = ({ item, index }: { item: Message, index: number }) => {
         const isMyMessage = item.senderId === userData.id;
 
@@ -387,11 +598,6 @@ export default function Chat() {
             const currentMessageTime = new Date(item.timestamp);
             return (currentMessageTime.getTime() - prevMessageTime.getTime()) > 10 * 60 * 1000;
         })();
-
-
-
-
-        // console.log(item)
 
         return (
             <>
@@ -409,7 +615,7 @@ export default function Chat() {
 
                 {item.senderId == "system" ? (
                     <StyledView className={`flex-row justify-center`}>
-                        <StyledView className={`${isMyMessage ? 'bg-[#EB3834]' : ''} rounded-xl px-3 py-2 max-w-[90%] mb-3 border-neutral-500 border-dashed border-[1px] w-full`}>
+                        <StyledView className={`${isMyMessage ? 'bg-[#EB3834]' : ''} rounded-xl px-3 py-2 max-w-[90%] mb-3 border-neutral-500 bg-white dark:bg-neutral-800 border-dashed border-[1px] w-full`}>
                             <StyledText className={`${isMyMessage ? 'text-white' : 'text-black dark:text-white'} font-custom text-2xl text-center`}>
                                 ฿ {(item.details.billingPrice / 100).toLocaleString()}
                             </StyledText>
@@ -476,11 +682,121 @@ export default function Chat() {
                                         แจ้งเตือนการนัดหมาย
                                     </StyledText>
                                     <StyledText className="font-custom text-sm text-gray-600 dark:text-gray-400">
-                                        อีก 30 นาที
+                                        {
+                                            // countdown time schdule
+                                            (new Date(item.date).getTime() - new Date().getTime()) > 0 ? (
+                                                <StyledText className="font-custom text-sm text-red-600 dark:text-red-400">
+                                                    การนัดหมายจะเริ่มใน {Math.floor((new Date(item.date).getTime() - new Date().getTime()) / 1000 / 60)} นาที
+                                                </StyledText>
+                                            ) : (
+                                                <StyledText className="font-custom text-sm text-red-600 dark:text-red-400">
+                                                    {
+                                                        item.status === "approve_work_member" ? userData.role == "member" ? (
+                                                            <StyledText className="font-custom text-sm text-yellow-600 dark:text-yellow-400">
+                                                                คุณตอบกลับช้าเหลือเวลาอีก {Math.floor((new Date(item.date).getTime() + 20 * 60 * 1000 - new Date().getTime()) / 1000 / 60)} นาที
+                                                            </StyledText>
+                                                        ) : (
+                                                            <StyledText className="font-custom text-sm text-yellow-600 dark:text-yellow-400">
+                                                                {chatName} ตอบกลับช้าเหลือเวลาอีก {Math.floor((new Date(item.date).getTime() + 20 * 60 * 1000 - new Date().getTime()) / 1000 / 60)} นาที
+                                                            </StyledText>
+                                                        ) : null
+                                                    }
+
+                                                    {
+                                                        item.status === "approve_work_customer" ? userData.role == "customer" ? (
+                                                            <StyledText className="font-custom text-sm text-yellow-600 dark:text-yellow-400">
+                                                                คุณตอบกลับช้าเหลือเวลาอีก {Math.floor((new Date(item.date).getTime() + 20 * 60 * 1000 - new Date().getTime()) / 1000 / 60)} นาที
+                                                            </StyledText>
+                                                        ) : (
+                                                            <StyledText className="font-custom text-sm text-yellow-600 dark:text-yellow-400">
+                                                                {chatName} ตอบกลับช้าเหลือเวลาอีก {Math.floor((new Date(item.date).getTime() + 20 * 60 * 1000 - new Date().getTime()) / 1000 / 60)} นาที
+                                                            </StyledText>
+                                                        ) : null
+                                                    }
+
+                                                    {
+                                                        item.status === "timeout_customer" ? userData.role == "customer" ? (
+                                                            <StyledText className="font-custom text-sm text-red-600 dark:text-red-400">
+                                                                คุณตอบกลับช้าเกิน 20 นาที
+                                                            </StyledText>
+                                                        ) : (
+                                                            <StyledText className="font-custom text-sm text-red-600 dark:text-red-400">
+                                                                {chatName} ตอบกลับช้าเกิน 20 นาที
+                                                            </StyledText>
+                                                        ) : null
+                                                    }
+
+                                                    {
+                                                        item.status === "timeout_member" ? userData.role == "member" ? (
+                                                            <StyledText className="font-custom text-sm text-red-600 dark:text-red-400">
+                                                                คุณตอบกลับช้าเกิน 20 นาที
+                                                            </StyledText>
+                                                        ) : (
+                                                            <StyledText className="font-custom text-sm text-red-600 dark:text-red-400">
+                                                                {chatName} ตอบกลับช้าเกิน 20 นาที
+                                                            </StyledText>
+                                                        ) : null
+                                                    }
+
+                                                    {
+                                                        item.status === "cancel_customer" ? userData.role == "customer" ? (
+                                                            <StyledText className="font-custom text-sm text-gray-600 dark:text-gray-400">
+                                                                คุณยกเลิกการนัดหมาย
+                                                            </StyledText>
+                                                        ) : (
+                                                            <StyledText className="font-custom text-sm text-gray-600 dark:text-gray-400">
+                                                                {chatName} ยกเลิกการนัดหมาย
+                                                            </StyledText>
+                                                        ) : null
+                                                    }
+
+                                                    {
+                                                        item.status === "cancel_member" ? userData.role == "member" ? (
+                                                            <StyledText className="font-custom text-sm text-gray-600 dark:text-gray-400">
+                                                                คุณยกเลิกการนัดหมาย
+                                                            </StyledText>
+                                                        ) : (
+                                                            <StyledText className="font-custom text-sm text-gray-600 dark:text-gray-400">
+                                                                {chatName} ยกเลิกการนัดหมาย
+                                                            </StyledText>
+                                                        ) : null
+                                                    }
+
+                                                    {
+                                                        item.status === "work_success" ? (
+                                                            <StyledText className="font-custom text-sm text-green-600 dark:text-green-400">
+                                                                งานเสร็จสิ้น
+                                                            </StyledText>
+                                                        ) : null
+                                                    }
+
+                                                    {
+                                                        item.status === "reviewed" ? userData.role == "member" ? (
+                                                            <StyledText className="font-custom text-sm text-orange-600 dark:text-orange-200">
+                                                                {chatName} ได้รีวิวงานให้คุณแล้ว
+                                                            </StyledText>
+                                                        ) : (
+                                                            <StyledText className="font-custom text-sm text-orange-600 dark:text-orange-200">
+                                                                คุณได้รีวิวงานี้แล้ว
+                                                            </StyledText>
+                                                        ) : null
+                                                    }
+
+                                                    {
+                                                        item.status === "working" ? (
+                                                            <StyledText className="font-custom text-sm text-orange-600 dark:text-orange-400">
+                                                                งานกำลังดำเนินการ
+                                                            </StyledText>
+                                                        ) : null
+                                                    }
+
+                                                </StyledText>
+                                            )
+                                        }
                                     </StyledText>
                                 </StyledView>
                             </StyledView>
-                
+
                             {/* Dynamic Content Section */}
                             <StyledView className="p-4">
                                 {item.notificationState === 'ready_confirm' ? (
@@ -496,7 +812,7 @@ export default function Chat() {
                                         <StyledText className="font-custom text-base text-gray-800 dark:text-gray-200 mb-3">
                                             {item.text}
                                         </StyledText>
-                
+
                                         <StyledView className="bg-white dark:bg-neutral-900 rounded-lg p-3 mb-4">
                                             <StyledView className="flex-row items-center mb-2">
                                                 <StyledIonicons name="calendar-outline" size={20} color="#666" />
@@ -504,7 +820,7 @@ export default function Chat() {
                                                     {new Date(item.date || '').toLocaleDateString('th-TH')}
                                                 </StyledText>
                                             </StyledView>
-                
+
                                             <StyledView className="flex-row items-center mb-2">
                                                 <StyledIonicons name="time-outline" size={20} color="#666" />
                                                 <StyledText className="font-custom text-gray-700 dark:text-gray-300 ml-2">
@@ -519,7 +835,7 @@ export default function Chat() {
                                                     })}
                                                 </StyledText>
                                             </StyledView>
-                
+
                                             <StyledView className="flex-row items-center">
                                                 <StyledIonicons name="location-outline" size={20} color="#666" />
                                                 <StyledText className="font-custom text-gray-700 dark:text-gray-300 ml-2 flex-1">
@@ -529,49 +845,12 @@ export default function Chat() {
                                         </StyledView>
                                     </>
                                 )}
-                
+
                                 {/* Action Buttons */}
                                 <StyledView className="flex-row justify-between space-x-3">
-                                    <TouchableOpacity
-                                        className="flex-1"
-                                        onPress={() => {
-                                            if (item.notificationState === 'ready_confirm') {
-                                                updateMessageState(item.id, null);
-                                            } else if (item.notificationState === 'cancel_confirm') {
-                                                updateMessageState(item.id, null);
-                                            } else {
-                                                updateMessageState(item.id, 'ready_confirm');
-                                            }
-                                        }}
-                                    >
-                                        <LinearGradient
-                                            colors={['#EB3834', '#69140F']}
-                                            start={{ x: 0, y: 0 }}
-                                            end={{ x: 1, y: 0 }}
-                                            className="py-3 rounded-full"
-                                        >
-                                            <StyledText className="font-custom text-white text-center">
-                                                {item.notificationState ? 'ยืนยัน' : 'พร้อมแล้ว'}
-                                            </StyledText>
-                                        </LinearGradient>
-                                    </TouchableOpacity>
-                
-                                    <TouchableOpacity
-                                        className="flex-1"
-                                        onPress={() => {
-                                            if (item.notificationState) {
-                                                updateMessageState(item.id, null);
-                                            } else {
-                                                updateMessageState(item.id, 'cancel_confirm');
-                                            }
-                                        }}
-                                    >
-                                        <StyledView className="bg-gray-200 dark:bg-neutral-700 py-3 rounded-full">
-                                            <StyledText className="font-custom text-gray-700 dark:text-gray-300 text-center">
-                                                {item.notificationState ? 'ย้อนกลับ' : 'ยกเลิก'}
-                                            </StyledText>
-                                        </StyledView>
-                                    </TouchableOpacity>
+                                    {
+                                        buttonScheduleRender(item)
+                                    }
                                 </StyledView>
                             </StyledView>
                         </StyledView>
@@ -600,16 +879,16 @@ export default function Chat() {
 
 
     return (
-        <StyledView className="flex-1 bg-white dark:bg-neutral-900">
+        <StyledView className="flex-1 bg-gray-200 dark:bg-neutral-900">
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
-                <StyledView className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[60px]"} justify-center border-b-[1px] pt-3 border-gray-200 dark:border-neutral-800 mt-2`}>
-                    <TouchableOpacity onPress={() => navigation.navigate("MessageTab", {})} className="absolute ml-4">
+                <StyledView className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[92px]"} bg-white dark:bg-neutral-900 justify-center border-b-[1px] pt-3 border-gray-200 dark:border-neutral-800`}>
+                    <TouchableOpacity onPress={() => navigation.navigate("MessageTab", {})} className="absolute ml-4 pt-5">
                         <StyledIcon name="chevron-back" size={24} className="text-black dark:text-white" />
                     </TouchableOpacity>
-                    <StyledText className="text-center self-center text-lg font-custom text-black dark:text-white">{chatName}</StyledText>
+                    <StyledText className="text-center self-center text-lg font-custom text-black dark:text-white pt-5">{chatName}</StyledText>
                 </StyledView>
                 {isLoading && !refreshing ? (
                     <StyledView className="flex-1 items-center justify-center">
@@ -647,12 +926,13 @@ export default function Chat() {
                     >
                         <StyledTextInput
                             multiline
-                            className={`w-full px-4 font-custom ${inputFocus ? "max-h-[120px]" : "max-h-[50px]"} dark:text-white py-3 pr-[50px]`}
+                            className={`w-full px-4 font-custom ${inputFocus ? "max-h-[120px]" : "max-h-[50px]"} dark:text-white py-3 pr-[50px] dark:placeholder-white`}
                             onChangeText={(text) => {
                                 setNewMessage(text);
                                 setInputFocus(true);
                             }}
                             placeholder="พิมพ์ข้อความ..."
+                            placeholderTextColor="#9CA3AF"
                             value={newMessage}
                             onPress={() => setInputFocus(true)}
                         >
@@ -672,26 +952,135 @@ export default function Chat() {
                                     </StyledTouchableOpacity>
                                 </StyledView>
                             ) : (
-                                <StyledView className="absolute right-4 h-[45px] w-[90px]">
-                                    <StyledView className="w-full h-full rounded-full items-center justify-center flex-row">
+                                <></>
+                                // <StyledView className="absolute right-4 h-[45px] w-[90px]">
+                                //     <StyledView className="w-full h-full rounded-full items-center justify-center flex-row">
 
-                                        <StyledIcon name="mic-outline" size={30} className="self-center mr-2 text-dark dark:text-white">
+                                //         <StyledIcon name="mic-outline" size={30} className="self-center mr-2 text-dark dark:text-white">
 
-                                        </StyledIcon>
+                                //         </StyledIcon>
 
-                                        <StyledIcon name="image-outline" size={30} className="self-center mr-2 text-dark dark:text-white">
+                                //         <StyledIcon name="image-outline" size={30} className="self-center mr-2 text-dark dark:text-white">
 
-                                        </StyledIcon>
-                                        <StyledIcon name="camera-outline" size={30} className="self-center mr-2 text-dark dark:text-white">
+                                //         </StyledIcon>
+                                //         <StyledIcon name="camera-outline" size={30} className="self-center mr-2 text-dark dark:text-white">
 
-                                        </StyledIcon>
-                                    </StyledView>
-                                </StyledView>
+                                //         </StyledIcon>
+                                //     </StyledView>
+                                // </StyledView>
                             )
                         }
                     </StyledView>
                 </StyledView>
             </KeyboardAvoidingView >
+            <BottomSheet
+                ref={bottomSheetRefReview}
+                snapPoints={["70%"]}
+                enablePanDownToClose={true}
+                index={-1}
+                backgroundStyle={{
+                    borderRadius: 10,
+                    backgroundColor: theme == "dark" ? "#262626" : "#fff"
+                }}
+            >
+                <BottomSheetView style={{ height: "80%" }}>
+                    <TouchableWithoutFeedback
+                        touchSoundDisabled={true}
+                        onPress={() => {
+                            Keyboard.dismiss();
+                        }}
+                    >
+                        <StyledView className="flex-1justify-end">
+                            <StyledView className=" rounded-t-3xl px-6">
+                                <StyledView className="flex-row items-center justify-between mb-6">
+                                    <StyledText className="text-2xl text-black dark:text-white font-custom">
+                                        เขียนรีวิว
+                                    </StyledText>
+                                    <TouchableOpacity onPress={
+                                        () => bottomSheetRefReview.current?.close()
+                                    }>
+                                        <StyledIonicons
+                                            name="close"
+                                            size={24}
+                                            className="text-gray-400"
+                                        />
+                                    </TouchableOpacity>
+                                </StyledView>
+
+                                <StyledView className="items-center mb-8">
+                                    <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-4">
+                                        ให้คะแนนประสบการณ์ของคุณ
+                                    </StyledText>
+                                    <StyledView className="flex-row">
+                                        {[1, 2, 3, 4, 5]?.map((star) => (
+                                            <TouchableOpacity
+                                                key={star}
+                                                onPress={() => setReviewStars(star)}
+                                                className="mx-2"
+                                            >
+                                                <StyledIonicons
+                                                    name="star"
+                                                    size={32}
+                                                    color={
+                                                        reviewStars >= star ? "#FFD700" : "#D3D3D3"
+                                                    }
+                                                />
+                                            </TouchableOpacity>
+                                        ))}
+                                    </StyledView>
+                                </StyledView>
+
+                                <StyledView className="mb-8">
+                                    <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
+                                        เขียนความคิดเห็นของคุณ
+                                    </StyledText>
+                                    <StyledView className="bg-gray-50 dark:bg-neutral-700 rounded-2xl p-4">
+                                        <TextInput
+                                            multiline
+                                            numberOfLines={5}
+                                            value={reviewText}
+                                            onChangeText={setReviewText}
+                                            placeholder="แชร์ประสบการณ์ของคุณ..."
+                                            placeholderTextColor="#9CA3AF"
+                                            className="font-custom text-gray-700 dark:text-gray-200 min-h-[120px]"
+                                            textAlignVertical="top"
+                                        />
+                                    </StyledView>
+                                </StyledView>
+
+                                {/* ปุ่มส่งรีวิว */}
+                                <TouchableOpacity
+                                    disabled={sendReviewLoading}
+                                    onPress={() => {
+                                        if (reviewStars && reviewText) {
+                                            if(reviewMessage){
+                                                sendReview(reviewMessage);
+                                            }else{
+                                                Alert.alert('ข้อมูลไม่ครบ', 'โปรดลองใหมอีกครั้ง', [{ text: 'OK' }]);
+                                            }
+                                        } else {
+                                            Alert.alert("ข้อมูลไม่ครบ", "โปรดกรอกข้อมูลให้ครบถ้วน", [{ text: "OK" }]);
+                                        }
+                                    }}
+                                >
+                                    <LinearGradient
+                                        colors={['#EB3834', '#69140F']}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 0 }}
+                                        className="rounded-full py-4"
+                                    >
+                                        <StyledText className="text-white text-center text-lg font-custom">
+                                            {
+                                                isLoading ? <ActivityIndicator size="small" color="#fff" /> : "ส่ง"
+                                            }
+                                        </StyledText>
+                                    </LinearGradient>
+                                </TouchableOpacity>
+                            </StyledView>
+                        </StyledView>
+                    </TouchableWithoutFeedback>
+                </BottomSheetView>
+            </BottomSheet>
 
         </StyledView >
     );

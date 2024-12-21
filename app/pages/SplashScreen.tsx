@@ -38,6 +38,24 @@ function SplashScreen({ navigation }: Props) {
     }
   }, [fadeOut]);
 
+  const styles = StyleSheet.create({
+    mainContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
+    },
+    container: {
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    logo: {
+      width: 120,
+      height: 120,
+      resizeMode: 'contain',
+    },
+  });
+
   return (
     <SafeAreaView style={styles.mainContainer}>
       <StatusBar
@@ -52,22 +70,6 @@ function SplashScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
-  },
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logo: {
-    width: 120,
-    height: 120,
-    resizeMode: 'contain',
-  },
-});
+
 
 export default SplashScreen;

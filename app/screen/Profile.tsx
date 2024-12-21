@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { View, Text, Alert, ActivityIndicator, ScrollView, Dimensions, Image, Linking, Appearance, Platform, TouchableNativeFeedback, Keyboard, TouchableWithoutFeedback, StyleSheet } from "react-native";
+import { View, Text, Alert, ActivityIndicator, ScrollView, Dimensions, Image, Linking, Appearance, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { styled } from "nativewind";
 import { HeaderApp } from "@/components/Header";
 import { NavigationProp, RouteProp, useIsFocused, useRoute } from "@react-navigation/native";
@@ -11,19 +11,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { TextInput, TouchableOpacity } from "react-native-gesture-handler";
 import { LinearGradient } from "expo-linear-gradient";
 import BottomSheet, { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
-import { useSharedValue, configureReanimatedLogger, ReanimatedLogLevel } from "react-native-reanimated";
+import { configureReanimatedLogger, ReanimatedLogLevel } from "react-native-reanimated";
 import { getAge } from "@/utils/Date";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import * as Location from 'expo-location';
 import MapView, { Circle, Marker, LatLng } from 'react-native-maps';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import Carousel from 'react-native-reanimated-carousel';
-import RNPickerSelect from 'react-native-picker-select';
-import { sendPushNotification } from "@/utils/Notification";
-import DateTimePicker from 'react-native-ui-datepicker';
-import { Modal, Animated } from 'react-native';
+import { addNotification, sendPushNotification } from "@/utils/Notification";
+import { Animated } from 'react-native';
 import { JobMembers, Review } from "@/types/prismaInterface";
-import { set } from "firebase/database";
 
 configureReanimatedLogger({
     level: ReanimatedLogLevel.warn,
@@ -48,7 +44,6 @@ export default function ProfileTab() {
     const isFoucs = useIsFocused()
 
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const bottomSheetRefReview = useRef<BottomSheet>(null);
 
     const snapPoints = ["80%"];
     const [loading, setLoading] = useState(true);
@@ -81,7 +76,6 @@ export default function ProfileTab() {
     const [locationSearch, setLocationSearch] = useState<string>("");
 
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setLoadingMessage] = useState<string>("");
 
 
     const [pin, setPin] = useState<{
@@ -227,7 +221,7 @@ export default function ProfileTab() {
         try {
             if (!jobCategory) {
                 if (userProfile?.profile?.JobMembers?.length > 0) {
-                    const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
+                    const resdata = await axios.get(`https://friendszone.app/api/jobs?jobId=${userProfile?.profile?.JobMembers[0].jobId}`, {
                         headers: {
                             "Content-Type": "application/json",
                             "Authorization": `All ${userData.token}`
@@ -243,7 +237,7 @@ export default function ProfileTab() {
                     }
                 }
             } else {
-                const resdata = await axios.get(`http://49.231.43.37:3000/api/jobs?categoryType=${jobCategory}`, {
+                const resdata = await axios.get(`https://friendszone.app/api/jobs?categoryType=${jobCategory}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `All ${userData.token}`
@@ -282,7 +276,7 @@ export default function ProfileTab() {
                 return;
             }
 
-            const user = await axios.get(`http://49.231.43.37:3000/api/profile/${profileId}`, {
+            const user = await axios.get(`https://friendszone.app/api/profile/${profileId}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `All ${parsedData?.token}`
@@ -374,9 +368,8 @@ export default function ProfileTab() {
 
 
         try {
-            setLoadingMessage('กำลังสร้างนัดหมาย...');
             setIsLoading(true);
-            const response = await axios.post('http://49.231.43.37:3000/api/schedule', {
+            const response = await axios.post('https://friendszone.app/api/schedule', {
                 customerId: userData.id,
                 memberId: userProfile?.profile.id,
                 date: scheduleDateTime,
@@ -404,6 +397,23 @@ export default function ProfileTab() {
                         data: {}
                     }
                 })
+
+                addNotification(userProfile?.profile.id, {
+                    content: `${userData.username} ต้องการนัดหมายกับคุณ ที่ ${scheduleLocation}`,
+                    data: {
+                        appointmentId: response.data.data.id
+                    },
+                    timestamp: `${new Date().toISOString()}`,
+                    type: "appointment",
+                    user: {
+                        id: userData.id,
+                        name: userData.username,
+                        avatar: userData.profileUrl
+                    },
+                    isRead: false
+                })
+
+
                 navigation.navigate("SchedulePage", {});
             }
         } catch (error) {
@@ -413,48 +423,10 @@ export default function ProfileTab() {
             setIsLoading(false);
         }
     }
-
-    const sendReview = async () => {
-        if (!reviewText) {
-            return Alert.alert('ข้อมูลไม่ครบ', 'โปรดกรอกข้อมูลให้ครบถ้วน', [{ text: 'OK' }]);
-        }
-
-        try {
-            setLoadingMessage('กำลังสร้างรีวิว...');
-            setIsLoading(true);
-            const response = await axios.post(`http://49.231.43.37:3000/api/profile/${userProfile?.profile.id}/review`, {
-                userId: userData.id,
-                star: reviewStars,
-                text: reviewText
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `All ${userData.token}`
-                }
-            });
-
-            if (response.data.status != 200) {
-                Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถสร้างรีวิวได้', [{ text: 'OK' }]);
-            } else {
-                setLoadingMessage('สร้างรีวิวสำเร็จ');
-                fetchUserData();
-                setShowReviewModal(false);
-                setReviewStars(0);
-                setReviewText('');
-                bottomSheetRefReview.current?.close()
-            }
-
-        } catch (error) {
-            Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถสร้างรีวิวได้', [{ text: 'OK' }]);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
     const loadReview = async () => {
         try {
             setLoadingReviews(true);
-            const response = await axios.get(`http://49.231.43.37:3000/api/profile/${userProfile?.profile.id}/review`, {
+            const response = await axios.get(`https://friendszone.app/api/profile/${userProfile?.profile.id}/review`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `All ${userData.token}`
@@ -608,11 +580,8 @@ export default function ProfileTab() {
                                                     ระยะห่าง
                                                 </StyledText>
                                                 <StyledText className="text-black dark:text-white font-custom text-lg font-semibold">
-                                                    {/* {Number(distance.toFixed(0)) / 1000 > 10
-                                                        ? `${(distance / 1000).toFixed(1)} กม.`
-                                                        : `${(distance / 1000).toFixed(1)} กม.`} */}
-                                                    {isNaN(distance) ? '0.0 กม.' :
-                                                        `${(distance / 1000).toFixed(1)} กม.`}
+
+                                                    {isNaN(distance) ? 'ไม่สามารถระบุได้' : `${(distance / 1000) < 10 ? 10 : (distance / 1000).toFixed(0)} Km.`}
                                                 </StyledText>
                                             </StyledView>
                                         </StyledView>
@@ -659,18 +628,6 @@ export default function ProfileTab() {
                                                     </StyledText>
                                                 </StyledView>
                                             </StyledView>
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    bottomSheetRefReview.current?.expand()
-                                                }}
-                                                className="flex-row items-center"
-                                            >
-                                                <StyledIonIcon
-                                                    name="create-outline"
-                                                    size={20}
-                                                    className="text-red-500 mr-1"
-                                                />
-                                            </TouchableOpacity>
                                         </StyledView>
 
                                         {/* สรุปคะแนนรีวิว */}
@@ -1054,112 +1011,7 @@ export default function ProfileTab() {
                     </StyledView>
                 </BottomSheetScrollView>
             </BottomSheet>
-
-            <BottomSheet
-                ref={bottomSheetRefReview}
-                snapPoints={["70%"]}
-                enablePanDownToClose={true}
-                index={-1}
-                backgroundStyle={{
-                    borderRadius: 10,
-                    backgroundColor: theme == "dark" ? "#262626" : "#fff"
-                }}
-            >
-                <BottomSheetView style={{ height: "80%" }}>
-                    <TouchableWithoutFeedback
-                        touchSoundDisabled={true}
-                        onPress={() => {
-                            Keyboard.dismiss();
-                        }}
-                    >
-                        <StyledView className="flex-1justify-end">
-                            <StyledView className=" rounded-t-3xl px-6">
-                                <StyledView className="flex-row items-center justify-between mb-6">
-                                    <StyledText className="text-2xl text-black dark:text-white font-custom">
-                                        เขียนรีวิว
-                                    </StyledText>
-                                    <TouchableOpacity onPress={
-                                        () => bottomSheetRefReview.current?.close()
-                                    }>
-                                        <StyledIonIcon
-                                            name="close"
-                                            size={24}
-                                            className="text-gray-400"
-                                        />
-                                    </TouchableOpacity>
-                                </StyledView>
-
-                                <StyledView className="items-center mb-8">
-                                    <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-4">
-                                        ให้คะแนนประสบการณ์ของคุณ
-                                    </StyledText>
-                                    <StyledView className="flex-row">
-                                        {[1, 2, 3, 4, 5]?.map((star) => (
-                                            <TouchableOpacity
-                                                key={star}
-                                                onPress={() => setReviewStars(star)}
-                                                className="mx-2"
-                                            >
-                                                <StyledIonIcon
-                                                    name="star"
-                                                    size={32}
-                                                    color={
-                                                        reviewStars >= star ? "#FFD700" : "#D3D3D3"
-                                                    }
-                                                />
-                                            </TouchableOpacity>
-                                        ))}
-                                    </StyledView>
-                                </StyledView>
-
-                                <StyledView className="mb-8">
-                                    <StyledText className="text-base text-gray-600 dark:text-gray-300 font-custom mb-2">
-                                        เขียนความคิดเห็นของคุณ
-                                    </StyledText>
-                                    <StyledView className="bg-gray-50 dark:bg-neutral-700 rounded-2xl p-4">
-                                        <TextInput
-                                            multiline
-                                            numberOfLines={5}
-                                            value={reviewText}
-                                            onChangeText={setReviewText}
-                                            placeholder="แชร์ประสบการณ์ของคุณ..."
-                                            placeholderTextColor="#9CA3AF"
-                                            className="font-custom text-gray-700 dark:text-gray-200 min-h-[120px]"
-                                            textAlignVertical="top"
-                                        />
-                                    </StyledView>
-                                </StyledView>
-
-                                {/* ปุ่มส่งรีวิว */}
-                                <TouchableOpacity
-                                    disabled={loading}
-                                    onPress={() => {
-                                        if (reviewStars && reviewText) {
-                                            sendReview();
-                                        } else {
-                                            Alert.alert("ข้อมูลไม่ครบ", "โปรดกรอกข้อมูลให้ครบถ้วน", [{ text: "OK" }]);
-                                        }
-                                    }}
-                                >
-                                    <LinearGradient
-                                        colors={['#EB3834', '#69140F']}
-                                        start={{ x: 0, y: 0 }}
-                                        end={{ x: 1, y: 0 }}
-                                        className="rounded-full py-4"
-                                    >
-                                        <StyledText className="text-white text-center text-lg font-custom">
-                                           {
-                                                  loading ? <ActivityIndicator size="small" color="#fff" /> : "ส่ง"
-                                           }
-                                        </StyledText>
-                                    </LinearGradient>
-                                </TouchableOpacity>
-                            </StyledView>
-                        </StyledView>
-                    </TouchableWithoutFeedback>
-                </BottomSheetView>
-            </BottomSheet>
-
+            
             <DateTimePickerModal
                 isVisible={isDatePickerVisible}
                 mode="date"

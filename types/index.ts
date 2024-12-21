@@ -98,7 +98,7 @@ export type RootStackParamList = {
   },
   PostView: {
     backPage?: string;
-    item: Post
+    postId : string
   },
   SettingTab: {
     backPage?: string
@@ -130,4 +130,26 @@ interface Post {
     likes: number
   }
   likes: Likes[]
+}
+
+
+export type NotificationType = 'like' | 'comment' | 'appointment' | 'message' | 'system' | "review";
+
+export interface Notification {
+    id?: string;
+    type: NotificationType;
+    content: string;
+    timestamp: string;
+    isRead: boolean;
+    data: {
+        postId?: string;
+        appointmentId?: string;
+        chatId?: string;
+        userId?: string;
+    };
+    user?: {
+        id: string;
+        name: string;
+        avatar?: string;
+    };
 }

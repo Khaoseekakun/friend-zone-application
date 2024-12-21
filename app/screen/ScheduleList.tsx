@@ -26,7 +26,7 @@ export default function ScheduleList() {
     const [loading, setLoading] = useState(false);
     const [schedule, setSchedule] = useState<Schedule[]>([]);
     const [userData, setUserData] = useState<any>({});
-    const database = getDatabase(FireBaseApp, 'https://friendszone-d1e20-default-rtdb.asia-southeast1.firebasedatabase.app');
+    const database = getDatabase(FireBaseApp);
     const [paymentLoading, setPaymentLoading] = useState(false);
     const [jobsList, setJobList] = useState<{
         id: string;

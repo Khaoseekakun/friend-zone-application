@@ -45,14 +45,14 @@ interface Post {
     likes: Likes[]
 }
 
-type PostUpdateParam = RouteProp<RootStackParamList, 'PostView'>;
 
 export default function PostView() {
 
+    type PostUpdateParam = RouteProp<RootStackParamList, 'PostView'>;
     const route = useRoute<PostUpdateParam>();
     const navigation = useNavigation<NavigationProp<RootStackParamList>>()
 
-    const { item, backPage } = route.params;
+    const { postId, backPage } = route.params;
 
     const [loading, setLoading] = useState(true);
 
@@ -64,7 +64,7 @@ export default function PostView() {
     const [isOpen, setIsOpen] = useState(false);
 
     const [isDeleting, setIsDeleting] = useState(false);
-    const [posts, setPosts] = useState<Post[]>([]);
+    const [posts, setPosts] = useState<Post>({} as Post);
     const bottomSheetRef = useRef<BottomSheet>(null);
     const bottomSheetRefComment = useRef<BottomSheet>(null);
     const snapPoints = ['30%']
@@ -90,6 +90,36 @@ export default function PostView() {
     useEffect(() => {
         setComment([])
     }, [])
+    const fetchPosts = async () => {
+        try {
+
+            setLoading(true);
+            const response = await axios.get(`https://friendszone.app/api/post/${postId}?by=${userData?.id}`, {
+
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `All ${userData?.token}`
+                }
+            });
+            
+            if(response.data.status === 404){
+                return Alert.alert('ไม่พบโพสต์', 'โพสต์นี้ไม่มีอยู่ในระบบ', [{ text: 'ตกลง', onPress: () => navigation.navigate('FeedsTab', {}) }])
+            }else  if(response.data.status == 400){
+                return Alert.alert('ข้อผิดพลาด', 'ไม่สามารถเข้าถึงโพสต์ได้', [{ text: 'ตกลง', onPress: () => navigation.navigate('FeedsTab', {}) }])
+            }else if(response.data.status == 200) {
+                const newPosts = response.data.data.posts;
+                setPosts(newPosts)
+            }else{
+                Alert.alert('ข้อผิดพลาด', 'ไม่สามารถเข้าถึงโพสต์ได้', [{ text: 'ตกลง', onPress: () => navigation.navigate('FeedsTab', {}) }])
+            }
+
+        } catch (error) {
+            console.error("Error fetching posts", error);
+        } finally {
+            setLoading(false);
+            
+        }
+    };
 
 
     const deletePost = async (postId: string) => {
@@ -117,8 +147,7 @@ export default function PostView() {
     }
 
     const handleGotoEditPost = () => {
-        if (!posts.find((p) => p.id === postAction)) return Alert.alert('ผิดพลาด', 'ไม่พบข้อมูลของโพสต์นี้', [{ text: 'ตกลง' }]);
-        navigation.navigate("PostUpdate", { post: posts.find((p) => p.id === postAction) as any })
+        navigation.navigate("PostUpdate", { post: posts as any })
         bottomSheetRef.current?.close();
     }
 
@@ -137,6 +166,7 @@ export default function PostView() {
 
     useEffect(() => {
         fetchComent()
+        fetchPosts()
     }, [userData])
 
     const fetchUserData = async () => {
@@ -186,7 +216,7 @@ export default function PostView() {
             Keyboard.dismiss()
             setInputDisable(true)
             const response = await axios.post(
-                `https://friendszone.app/api/post/${item.id}/comment`,
+                `https://friendszone.app/api/post/${postId}/comment`,
                 {
                     content: newComment,
                     userId: userData?.id,
@@ -213,7 +243,7 @@ export default function PostView() {
     const fetchComent = async () => {
         try {
             const response = await axios.get(
-                `https://friendszone.app/api/post/${item.id}/comment`,
+                `https://friendszone.app/api/post/${postId}/comment`,
                 {
                     headers: {
                         Authorization: `All ${userData?.token}`,
@@ -249,12 +279,12 @@ export default function PostView() {
                 <ScrollView>
                     <StyledView className="my-1" />
                     <StyledView className="w-full flex-row items-center justify-between">
-                        <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab', { profileId: item.member.id })}>
-                            <Image className="ml-3 rounded-full w-[40px] h-[40px]" source={item.member?.profileUrl ? { uri: item.member?.profileUrl } : GuestIcon} />
+                        <TouchableOpacity className="flex-1 flex-row left-0 shadow-sm" onPress={() => navigation.navigate('ProfileTab', { profileId: posts.member?.id })}>
+                            <Image className="ml-3 rounded-full w-[40px] h-[40px]" source={posts.member?.profileUrl ? { uri: posts.member?.profileUrl } : GuestIcon} />
                             <StyledView className="pl-3 mt-2 flex-row">
-                                <StyledText className="font-custom font-bold text-md dark:text-white">{item.member.username} </StyledText>
-                                {item.member.verified == true ? (<StyledView className="-mt-1"><StyledIonicons name={'checkmark-done'} size={18} color={'#dd164f'} /></StyledView>) : <></>}
-                                <StyledText className="font-custom text-md ml-1 text-gray-400 ">{formatTimeDifference(item.createdAt)}</StyledText>
+                                <StyledText className="font-custom font-bold text-md dark:text-white">{posts.member?.username} </StyledText>
+                                {posts.member?.verified == true ? (<StyledView className="-mt-1"><StyledIonicons name={'checkmark-done'} size={18} color={'#dd164f'} /></StyledView>) : <></>}
+                                <StyledText className="font-custom text-md ml-1 text-gray-400 ">{formatTimeDifference(posts.createdAt)}</StyledText>
                             </StyledView>
                         </TouchableOpacity>
                         <StyledView className="mr-3 flex-row items-center mb-2">
@@ -263,93 +293,93 @@ export default function PostView() {
                                 size={22}
                                 color="gray"
                                 accessibilityLabel="Settings"
-                                onPress={() => { BottomSheetShow(0), setPostAction(item.id) }}
+                                onPress={() => { BottomSheetShow(0), setPostAction(posts.id) }}
                             />
                         </StyledView>
                     </StyledView>
 
                     <StyledView className="px-2 mb-[60px]">
-                        <StyledText className="font-custom mt-3 dark:text-white">{item.content}</StyledText>
+                        <StyledText className="font-custom mt-3 dark:text-white">{posts.content}</StyledText>
                         {
-                            item.images?.length === 1 ? (
+                            posts.images?.length === 1 ? (
                                 <>
-                                    <TouchableOpacity onPress={() => openImageModal(item.images)}>
-                                        <StyledImage source={{ uri: item.images[0] }} className="rounded-md mt-2 h-96 w-full" />
+                                    <TouchableOpacity onPress={() => openImageModal(posts.images)}>
+                                        <StyledImage source={{ uri: posts.images[0] }} className="rounded-md mt-2 h-96 w-full" />
                                     </TouchableOpacity>
                                 </>
-                            ) : item.images?.length === 2 ? (
+                            ) : posts.images?.length === 2 ? (
                                 <>
                                     <StyledView className="max-h-[350px] mb-2">
-                                        <TouchableOpacity onPress={() => openImageModal(item.images, 0)}>
-                                            <StyledImage source={{ uri: item.images[0] }} className="rounded-t-md mt-2 h-[175px] w-full" />
+                                        <TouchableOpacity onPress={() => openImageModal(posts.images, 0)}>
+                                            <StyledImage source={{ uri: posts.images[0] }} className="rounded-t-md mt-2 h-[175px] w-full" />
                                         </TouchableOpacity>
-                                        <TouchableOpacity onPress={() => openImageModal(item.images, 1)}>
-                                            <StyledImage source={{ uri: item.images[1] }} className="rounded-b-md h-[175px] w-full" />
+                                        <TouchableOpacity onPress={() => openImageModal(posts.images, 1)}>
+                                            <StyledImage source={{ uri: posts.images[1] }} className="rounded-b-md h-[175px] w-full" />
                                         </TouchableOpacity>
                                     </StyledView>
                                 </>
-                            ) : item.images?.length === 3 ? (
+                            ) : posts.images?.length === 3 ? (
                                 <>
                                     <StyledView className="max-h-[350px] mb-2">
-                                        <TouchableOpacity onPress={() => openImageModal(item.images, 0)}>
-                                            <StyledImage source={{ uri: item.images[0] }} className="rounded-t-md mt-2 h-[175px] w-full" />
+                                        <TouchableOpacity onPress={() => openImageModal(posts.images, 0)}>
+                                            <StyledImage source={{ uri: posts.images[0] }} className="rounded-t-md mt-2 h-[175px] w-full" />
                                         </TouchableOpacity>
                                         <StyledView className="flex-row">
-                                            <TouchableOpacity onPress={() => openImageModal(item.images, 1)} className="w-1/2">
-                                                <StyledImage source={{ uri: item.images[1] }} className="rounded-bl-md h-[175px] w-full" />
+                                            <TouchableOpacity onPress={() => openImageModal(posts.images, 1)} className="w-1/2">
+                                                <StyledImage source={{ uri: posts.images[1] }} className="rounded-bl-md h-[175px] w-full" />
                                             </TouchableOpacity>
-                                            <TouchableOpacity onPress={() => openImageModal(item.images, 2)} className="w-1/2">
-                                                <StyledImage source={{ uri: item.images[2] }} className="rounded-br-md h-[175px] w-full" />
+                                            <TouchableOpacity onPress={() => openImageModal(posts.images, 2)} className="w-1/2">
+                                                <StyledImage source={{ uri: posts.images[2] }} className="rounded-br-md h-[175px] w-full" />
                                             </TouchableOpacity>
                                         </StyledView>
                                     </StyledView>
                                 </>
-                            ) : item.images?.length === 4 ? (
+                            ) : posts.images?.length === 4 ? (
                                 <>
                                     <StyledView className="max-h-[350px] mb-2">
                                         <StyledView className="flex-row">
-                                            <TouchableOpacity onPress={() => openImageModal(item.images, 0)} className="w-1/2">
-                                                <StyledImage source={{ uri: item.images[0] }} className="rounded-tl-md h-[175px] w-full" />
+                                            <TouchableOpacity onPress={() => openImageModal(posts.images, 0)} className="w-1/2">
+                                                <StyledImage source={{ uri: posts.images[0] }} className="rounded-tl-md h-[175px] w-full" />
                                             </TouchableOpacity>
-                                            <TouchableOpacity onPress={() => openImageModal(item.images, 1)} className="w-1/2">
-                                                <StyledImage source={{ uri: item.images[1] }} className="rounded-tr-md h-[175px] w-full" />
+                                            <TouchableOpacity onPress={() => openImageModal(posts.images, 1)} className="w-1/2">
+                                                <StyledImage source={{ uri: posts.images[1] }} className="rounded-tr-md h-[175px] w-full" />
                                             </TouchableOpacity>
                                         </StyledView>
 
                                         <StyledView className="flex-row">
-                                            <TouchableOpacity onPress={() => openImageModal(item.images, 2)} className="w-1/2">
-                                                <StyledImage source={{ uri: item.images[2] }} className="rounded-bl-md h-[175px] w-full" />
+                                            <TouchableOpacity onPress={() => openImageModal(posts.images, 2)} className="w-1/2">
+                                                <StyledImage source={{ uri: posts.images[2] }} className="rounded-bl-md h-[175px] w-full" />
                                             </TouchableOpacity>
-                                            <TouchableOpacity onPress={() => openImageModal(item.images, 3)} className="w-1/2">
-                                                <StyledImage source={{ uri: item.images[3] }} className="rounded-br-md h-[175px] w-full" />
+                                            <TouchableOpacity onPress={() => openImageModal(posts.images, 3)} className="w-1/2">
+                                                <StyledImage source={{ uri: posts.images[3] }} className="rounded-br-md h-[175px] w-full" />
                                             </TouchableOpacity>
                                         </StyledView>
                                     </StyledView>
                                 </>
-                            ) : item.images?.length > 4 ? (
+                            ) : posts.images?.length > 4 ? (
                                 <>
                                     <StyledView className="max-h-[350px] mb-2 shadow-sm">
                                         <StyledView className="flex-row">
-                                            <TouchableOpacity onPress={() => openImageModal(item.images, 0)} className="w-1/2">
-                                                <StyledImage source={{ uri: item.images[0] }} className="rounded-tl-md h-[175px] w-full" />
+                                            <TouchableOpacity onPress={() => openImageModal(posts.images, 0)} className="w-1/2">
+                                                <StyledImage source={{ uri: posts.images[0] }} className="rounded-tl-md h-[175px] w-full" />
                                             </TouchableOpacity>
-                                            <TouchableOpacity onPress={() => openImageModal(item.images, 1)} className="w-1/2">
-                                                <StyledImage source={{ uri: item.images[1] }} className="rounded-tr-md h-[175px] w-full" />
+                                            <TouchableOpacity onPress={() => openImageModal(posts.images, 1)} className="w-1/2">
+                                                <StyledImage source={{ uri: posts.images[1] }} className="rounded-tr-md h-[175px] w-full" />
                                             </TouchableOpacity>
                                         </StyledView>
 
                                         <StyledView className="flex-row">
-                                            <TouchableOpacity onPress={() => openImageModal(item.images, 2)} className="w-1/2">
-                                                <StyledImage source={{ uri: item.images[2] }} className="rounded-bl-md h-[175px] w-full" />
+                                            <TouchableOpacity onPress={() => openImageModal(posts.images, 2)} className="w-1/2">
+                                                <StyledImage source={{ uri: posts.images[2] }} className="rounded-bl-md h-[175px] w-full" />
                                             </TouchableOpacity>
-                                            <TouchableOpacity onPress={() => openImageModal(item.images, 3)} className="w-1/2">
-                                                <StyledImage source={{ uri: item.images[3] }} className="rounded-br-md h-[175px] w-full" />
+                                            <TouchableOpacity onPress={() => openImageModal(posts.images, 3)} className="w-1/2">
+                                                <StyledImage source={{ uri: posts.images[3] }} className="rounded-br-md h-[175px] w-full" />
                                                 <StyledView className="absolute top-0 right-0 bg-black rounded-br-md opacity-50 w-full h-full flex-row justify-center items-center">
 
                                                 </StyledView>
                                                 <StyledView className="absolute top-0 right-0 w-full h-full flex-row justify-center items-center">
                                                     <StyledText className="font-custom text-white absolute text-center text-2xl" style={{ alignSelf: 'center' }}>
-                                                        +{item.images?.length - 4}
+                                                        +{posts.images?.length - 4}
                                                     </StyledText>
                                                 </StyledView>
 
@@ -370,7 +400,7 @@ export default function PostView() {
                                     onPress={() => { }}
                                     className="text-red-500"
                                 />
-                                <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">{item._count.likes}</StyledText>
+                                <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">{posts._count?.likes}</StyledText>
                             </StyledView>
 
 
@@ -390,9 +420,9 @@ export default function PostView() {
                                 commentList.map((comment) => (
                                     <StyledView key={comment.id} className='flex-row justify-start border-t-[1px] py-2 border-gray-100 dark:border-neutral-800'>
                                         <StyledImage className='bg-gray-500 rounded-full w-[30px] h-[30px]'
-                                            source={comment.accountType == "customer" ? comment.customer?.profileUrl ? { uri: comment.customer.profileUrl } : GuestIcon : comment.member?.profileUrl ? { uri: comment.member.profileUrl } : GuestIcon} />
+                                            source={comment.accountType == "customer" ? comment.customer?.profileUrl ? { uri: comment.customer.profileUrl } : GuestIcon : comment.member?.profileUrl ? { uri: comment.member?.profileUrl } : GuestIcon} />
                                         <StyledView className='px-2'>
-                                            <TouchableOpacity onPress={() => navigation.navigate('ProfileTab', { profileId: comment.accountType == "customer" ? comment.customer?.id as string : comment.member?.id as string})}>
+                                            <TouchableOpacity onPress={() => navigation.navigate('ProfileTab', { profileId: comment.accountType == "customer" ? comment.customer?.id as string : comment.member?.id as string })}>
                                                 <StyledView className='flex-row'>
                                                     <StyledText className='font-custom font-bold dark:text-white'>{comment.accountType == "customer" ? comment.customer?.username : comment.member?.username}</StyledText>
                                                     <StyledText className='pl-2 text-gray-400 font-custom'>{formatTimeDifference(comment.createdAt.toString())}</StyledText>
@@ -499,7 +529,7 @@ export default function PostView() {
                     <StyledView className="flex-1">
                         <StyledView className="mt-5 bg-gray-100 dark:bg-neutral-800 rounded-lg mx-5">
                             <StyledView className="my-2 px-3 py-1">
-                                <TouchableOpacity onPress={() => navigation.navigate("ProfileTab", { profileId: posts.find((p) => p.id == postAction)?.member.id ?? "" })} className="flex-row items-center">
+                                <TouchableOpacity onPress={() => navigation.navigate("ProfileTab", { profileId: posts?.member?.id ?? "" })} className="flex-row items-center">
                                     <StyledIonicons
                                         name="information-circle-outline"
                                         size={24}
@@ -523,7 +553,7 @@ export default function PostView() {
                             </StyledView>
 
                             {
-                                posts.some((p) => p.id === postAction && p.member.id === userData?.id) ? null :
+                                posts?.member?.id === userData?.id ? null :
                                     (
                                         <>
                                             <StyledView className="bg-gray-200 dark:bg-neutral-700 w-full h-[1px]" />
@@ -542,7 +572,7 @@ export default function PostView() {
                         </StyledView>
 
                         {
-                            posts.some((p) => p.id === postAction && p.member.id === userData?.id) ? (
+                            posts.member?.id === userData?.id ? (
                                 <>
                                     <StyledView className="mt-4 bg-gray-100 dark:bg-neutral-800 rounded-lg mx-5">
                                         <StyledView className="my-2 px-3 py-1">

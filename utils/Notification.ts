@@ -1,4 +1,7 @@
 import axios from "axios";
+import FireBaseApp from "./firebaseConfig";
+import { getDatabase, push, ref, set } from "firebase/database";
+import { Notification } from "@/types";
 
 export const sendPushNotification = async (userToken : string ,receiverId: string, notify: {
     title: string;
@@ -24,5 +27,17 @@ export const sendPushNotification = async (userToken : string ,receiverId: strin
         })
     } catch (error) {
 
+    }
+};
+
+
+const database = getDatabase(FireBaseApp);
+
+export const addNotification = async (userId: string, notification: Notification) => {
+    try {
+        const notiRef = ref(database, `notifications/${userId}`);
+        await push(notiRef, notification);
+    } catch (error) {
+        console.error('Error adding notification:', error);
     }
 };

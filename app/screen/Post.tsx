@@ -12,6 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Logout } from "@/utils/Auth/Logout";
 import * as ImageManipulator from 'expo-image-manipulator';
 import { LinearGradient } from "expo-linear-gradient";
+import FireBaseApp from "@/utils/firebaseConfig";
 const GuestIcon = require("../../assets/images/guesticon.jpg")
 
 const StyledView = styled(View);
@@ -20,18 +21,8 @@ const StyledTextInput = styled(TextInput);
 const StyledBottomSheetView = styled(BottomSheetView);
 const StyledTouchableWithoutFeedback = styled(TouchableWithoutFeedback);
 const StyledImage = styled(Image);
-const firebaseConfig = {
-    apiKey: "AIzaSyB6-tcwtkosfRGDQq4_6Nvpz47Lnt33_UM",
-    authDomain: "friendszone-d1e20.firebaseapp.com",
-    projectId: "friendszone-d1e20",
-    storageBucket: "friendszone-d1e20.appspot.com",
-    messagingSenderId: "820285031495",
-    appId: "1:820285031495:web:154296ce35bf7171bcdd62",
-    measurementId: "G-RN2B2NF5DM"
-};
 
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
+const storage = getStorage(FireBaseApp);
 
 export default function Post() {
     const navigation = useNavigation<NavigationProp<any>>();

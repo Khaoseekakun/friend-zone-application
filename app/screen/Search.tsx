@@ -193,7 +193,7 @@ export default function Search() {
                     const fetchProvinces = async () => {
                         try {
                             const response = await axios.get(
-                                "http://49.231.43.37:3000/api/province",
+                                "https://friendszone.app/api/province",
                                 {
                                     headers: {
                                         "Content-Type": "application/json",
@@ -222,7 +222,7 @@ export default function Search() {
                     const fetchJobTypes = async () => {
                         try {
                             const response = await axios.get(
-                                `http://49.231.43.37:3000/api/categoryJobs/${searchType == undefined ? saveSearchType : searchType}/jobslist`,
+                                `https://friendszone.app/api/categoryJobs/${searchType == undefined ? saveSearchType : searchType}/jobslist`,
                                 {
                                     headers: {
                                         "Content-Type": "application/json",
@@ -266,7 +266,7 @@ export default function Search() {
     async function handlerSearch(filterSearch: boolean, options: SearchOption) {
         try {
             setSearchLoading(true);
-            let url = `http://49.231.43.37:3000/api/search/members?jobsCategory=${searchType == undefined ? saveSearchType : searchType}`
+            let url = `https://friendszone.app/api/search/members?jobsCategory=${searchType == undefined ? saveSearchType : searchType}`
             let deafult_age = '18-99'
 
             if (filterSearch == true) {

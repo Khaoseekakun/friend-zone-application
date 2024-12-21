@@ -827,14 +827,14 @@ export default function RegisterMember() {
                 }
 
                 try {
-                    const userChecker = await axios.get(`http://49.231.43.37:3000/api/customer?username=${username}`, {
+                    const userChecker = await axios.get(`https://friendszone.app/api/customer?username=${username}`, {
                         headers: {
                             'Content-Type': 'application/json',
                             Authorization: `System ${API_SYSTEM_KEY}`,
                         },
                     });
 
-                    const memberChecker = await axios.get(`http://49.231.43.37:3000/api/member?username=${username}`, {
+                    const memberChecker = await axios.get(`https://friendszone.app/api/member?username=${username}`, {
                         headers: {
                             'Content-Type': 'application/json',
                             Authorization: `System ${API_SYSTEM_KEY}`,
@@ -874,7 +874,7 @@ export default function RegisterMember() {
                     try {
                         setLoading(true)
 
-                        const registerResponse = await axios.post('http://49.231.43.37:3000/api/member/register', {
+                        const registerResponse = await axios.post('https://friendszone.app/api/member/register', {
                             username: username,
                             password: password,
                             email: email,

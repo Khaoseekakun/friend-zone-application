@@ -28,7 +28,6 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType } ) => {
             setuserData(JSON.parse(userData || '{}'));
         };
         fetchUserData();
-        console.log(searchType)
     }, []);
 
     return (
@@ -78,7 +77,9 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType } ) => {
                         name="notifications"
                         size={24}
                         color="white"
-                        onPress={() => navigation.navigate('Notification', {})}
+                        onPress={() => navigation.navigate('Notification', {
+                            backPage: navigation.getState().routes[navigation.getState().index].name
+                        })}
                         accessibilityLabel="Settings"
                     />
                     <StyledIonicons

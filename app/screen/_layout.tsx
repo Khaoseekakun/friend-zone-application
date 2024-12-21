@@ -4,9 +4,7 @@ import React from "react"
 export default () => {
     return (
         <Stack>
-            <Stack.Screen name="Home" options={{headerShown:false}}
-
-            ></Stack.Screen>
+            <Stack.Screen name="Home" options={{headerShown:false}}></Stack.Screen>
         </Stack>
     )
 }

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -7,100 +7,72 @@ import {
     useColorScheme,
     Platform,
     KeyboardAvoidingView,
-    Image,
-    ActivityIndicator,
-    Dimensions
+    Appearance,
 } from 'react-native';
-import { NavigationProp } from '@react-navigation/native';
+import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
 import { styled } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { HeaderApp } from '@/components/Header';
 import { Navigation } from '@/components/Navigation';
+import { getDatabase, ref, onValue } from 'firebase/database';
+import FireBaseApp from '@/utils/firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Notification, NotificationType, RootStackParamList } from '@/types';
+import { useNavigation } from 'expo-router';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledScrollView = styled(ScrollView);
 const StyledIonicons = styled(Ionicons);
-
-type NotificationType = 'like' | 'comment' | 'appointment' | 'message' | 'system';
-
-interface Notification {
-    id: string;
-    type: NotificationType;
-    content: string;
-    timestamp: string;
-    isRead: boolean;
-    data: {
-        postId?: string;
-        appointmentId?: string;
-        chatId?: string;
-        userId?: string;
-    };
-    user?: {
-        id: string;
-        name: string;
-        avatar?: string;
-    };
-}
-
-interface Props {
-    navigation: NavigationProp<any>;
-}
-
-export default function NotificationsScreen({ navigation }: Props) {
+export default function NotificationsScreen() {
     const colorScheme = useColorScheme();
     const [loading, setLoading] = useState(false);
-    const [notifications, setNotifications] = useState<Notification[]>([
-        {
-            id: '1',
-            type: 'appointment',
-            content: 'ต้องการนัดเจอกันที่ร้านกาแฟ',
-            timestamp: '2024-12-05T10:30:00',
-            isRead: false,
-            data: { appointmentId: '123' },
-            user: {
-                id: '1',
-                name: 'John Doe',
-                avatar: '/api/placeholder/40/40',
-            },
-        },
-        {
-          id: '2',
-          type: 'system',
-          content: 'การนัดหมายของคุณกับ Sarah จะเริ่มในอีก 1 ชั่วโมง',
-          timestamp: '2024-12-05T09:15:00',
-          isRead: false,
-          data: { appointmentId: '124' },
-        },
-        {
-          id: '3',
-          type: 'message',
-          content: 'แสดงความคิดเห็นในโพสต์ของคุณ',
-          timestamp: '2024-12-04T15:20:00',
-          isRead: true,
-          data: { chatId: '456' },
-          user: {
-            id: '2',
-            name: 'Jane Smith',
-            avatar: '/api/placeholder/40/40',
-          },
-        },
-        {
-          id: '4',
-          type: 'like',
-          content: 'ถูกใจโพสต์ของคุณ',
-          timestamp: '2024-12-04T12:00:00',
-          isRead: true,
-          data: { postId: '789' },
-          user: {
-            id: '3',
-            name: 'Mike Wilson',
-            avatar: '/api/placeholder/40/40',
-          },
-        },
-    ]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [userData, setUserData] = useState<any>();
+    const database = getDatabase(FireBaseApp);
+
+
+
+    type PostUpdateParam = RouteProp<RootStackParamList, 'Notification'>;
+    const route = useRoute<PostUpdateParam>();
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>()
+
+    const { backPage } = route.params;
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                setLoading(true);
+                const userData = await AsyncStorage.getItem('userData');
+                setUserData(JSON.parse(userData || '{}'));
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUserData();
+    }, []);
+
+    useEffect(() => {
+        if (userData?.id) {
+            const notiRef = ref(database, `notifications/${userData.id}`);
+            const unsubscribe = onValue(notiRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    const notificationsArray = Object.keys(data).map((key) => ({
+                        id: key,
+                        ...data[key],
+                    }));
+                    setNotifications(notificationsArray);
+                }
+            });
+
+            return () => unsubscribe();
+        }
+    }, [userData]);
 
     const getNotificationIcon = (type: NotificationType) => {
         switch (type) {
@@ -114,6 +86,8 @@ export default function NotificationsScreen({ navigation }: Props) {
                 return 'mail';
             case 'system':
                 return 'notifications';
+            case 'review':
+                return 'star';
             default:
                 return 'notifications';
         }
@@ -131,6 +105,8 @@ export default function NotificationsScreen({ navigation }: Props) {
                 return '#9B51E0';
             case 'system':
                 return '#FFA726';
+            case 'review':
+                return '#FFD700';
             default:
                 return '#FFA726';
         }
@@ -159,14 +135,16 @@ export default function NotificationsScreen({ navigation }: Props) {
     const handlePress = (notification: Notification) => {
         switch (notification.type) {
             case 'appointment':
-                navigation.navigate('SchedulePage', { id: notification.data.appointmentId });
+                navigation.navigate('SchedulePage', {});
                 break;
             case 'message':
-                navigation.navigate('Chat', { id: notification.data.chatId });
                 break;
             case 'like':
+            case 'review':
             case 'comment':
-                navigation.navigate('Post', { id: notification.data.postId });
+                navigation.navigate('PostView', {
+                    postId: notification.data.postId as string
+                });
                 break;
         }
     };
@@ -177,8 +155,8 @@ export default function NotificationsScreen({ navigation }: Props) {
             onPress={() => handlePress(item)}
         >
             <LinearGradient
-                colors={colorScheme === 'dark' ? 
-                    [item.isRead ? '#1a1a1a' : '#2a1a1a', item.isRead ? '#0a0a0a' : '#1a0a0a'] : 
+                colors={colorScheme === 'dark' ?
+                    [item.isRead ? '#1a1a1a' : '#2a1a1a', item.isRead ? '#0a0a0a' : '#1a0a0a'] :
                     [item.isRead ? '#ffffff' : '#fff5f5', item.isRead ? '#ffffff' : '#fff5f5']}
                 className="flex-row items-center p-4"
             >
@@ -207,31 +185,28 @@ export default function NotificationsScreen({ navigation }: Props) {
     );
 
     return (
-        <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-            <StyledView className="flex-1 bg-gray-50 dark:bg-black">
-                <HeaderApp />
-                
-                <StyledView className="px-4 py-3">
-                    <StyledText className="font-custom text-2xl dark:text-white">
-                        การแจ้งเตือน
-                    </StyledText>
-                </StyledView>
+        <StyledView className="flex-1 bg-gray-50 dark:bg-black">
+            <HeaderApp back={
+                backPage
+            } />
 
-                <StyledScrollView
-                    className="flex-1"
-                    showsVerticalScrollIndicator={false}
-                >
-                    {notifications.map((notification) => (
-                        <React.Fragment key={notification.id}>
-                            {renderNotification({ item: notification })}
-                        </React.Fragment>
-                    ))}
-                    <StyledView className="h-32" />
-                </StyledScrollView>
+            <StyledView className="px-4 py-3">
+                <StyledText className="font-custom text-2xl dark:text-white">
+                    การแจ้งเตือน
+                </StyledText>
             </StyledView>
-        </KeyboardAvoidingView>
+
+            <StyledScrollView
+                className="flex-1"
+                showsVerticalScrollIndicator={false}
+            >
+                {notifications.map((notification) => (
+                    <React.Fragment key={notification.id}>
+                        {renderNotification({ item: notification })}
+                    </React.Fragment>
+                ))}
+                <StyledView className="h-32" />
+            </StyledScrollView>
+        </StyledView>
     );
 }
