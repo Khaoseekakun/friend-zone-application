@@ -12,6 +12,16 @@ import { ResizeMode, Video } from 'expo-av';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from "axios";
+import { JobsList } from "@/types/prismaInterface";
+import FireBaseApp from "@/utils/firebaseConfig";
+import {
+    putFile,
+    ref,
+    getStorage
+} from '@react-native-firebase/storage'
+
+
+const database = getStorage();
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -30,8 +40,17 @@ interface UserProfile {
     location: string;
     height: number;
     weight: number;
-    services: string[];
+    profileUrl: string;
+    jobCategory: {
+        JobsList: JobsList[]
+    },
+    JobMembers: {
+        jobId: string;
+        jobName: string;
+    }[],
     previewAllImageUrl: string[];
+    previewFirstImageUrl?: string;
+    previrwVideoUrl?: string;
 }
 
 interface ServiceOption {
@@ -63,12 +82,15 @@ export default function AccountSetting() {
     const [height, setHeight] = useState("");
     const [weight, setWeight] = useState("");
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
+    const [jobsList, setJobsList] = useState([]);
 
     // Image States
     const [oldImages, setOldImages] = useState<string[]>([]);
     const [images, setImages] = useState<string[]>([]);
+    const [profileImage, setProfileImage] = useState<string | null>(null);
 
     // Video States
+    const [oldVideo, setOldVideo] = useState<string | null>(null);
     const [video, setVideo] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -79,23 +101,27 @@ export default function AccountSetting() {
     const [loading, setLoading] = useState(true);
     const [loadingUpdate, setLoadingUpdate] = useState(false);
 
-    const UploadingVideo = () => {
-        setUploading(true);
-        setUploadProgress(0);
+    const UploadingVideo = async () => {
+        try {
+            setUploading(true);
+            setUploadProgress(0);
+            if (!video) return Alert.alert('ข้อผิดพลาด', 'ไม่พบวิดีโอที่จะอัพโหลด');
+            const refVideo = ref(database, `/video/${profileData?.id}`);
+            const uploadTask = putFile(refVideo, video)
 
-        const timer = setInterval(() => {
-            setUploadProgress((prev) => {
-                if (prev >= 100) {
-                    clearInterval(timer);
-                    setUploading(false);
-                    setVideo('https://nopparat.pro/video.mp4');
-                    return prev;
-                }
-                return prev + (100 / 15);
-            });
-        }, 1000);
+            uploadTask.on("state_changed", (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setUploadProgress(progress);
+            })
 
-        setUploadTimer(timer);
+            await uploadTask;
+        } catch (error) {
+            console.error('Error uploading video:', error);
+            Alert.alert('ข้อผิดพลาด', 'ไม่สามารถอัพโหลดวิดีโอได้ กรุณาลองใหม่อีกครั้ง');
+        } finally {
+            setUploading(false);
+            setUploadProgress(0);
+        }
     };
 
     const cancleUpload = () => {
@@ -106,13 +132,14 @@ export default function AccountSetting() {
         setUploadProgress(0);
         setUploadTimer(null);
     };
+
     const [theme, setTheme] = useState(Appearance.getColorScheme());
-  
+
     useEffect(() => {
         const listener = Appearance.addChangeListener(({ colorScheme }) => {
             setTheme(colorScheme);
         });
-  
+
         return () => listener.remove();
     }, []);
 
@@ -131,11 +158,10 @@ export default function AccountSetting() {
             }
 
             const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                mediaTypes: 'videos',
                 allowsEditing: true,
-                aspect: [16, 9],
-                quality: 1,
-                videoMaxDuration: 30,
+                aspect: [9, 16],
+                quality: 1
             });
 
             if (!result.canceled) {
@@ -143,8 +169,8 @@ export default function AccountSetting() {
                 const blob = await response.blob();
                 const fileSize = blob.size / (1024 * 1024);
 
-                if (fileSize > 50) {
-                    Alert.alert('ข้อผิดพลาด', 'ขนาดไฟล์วิดีโอต้องไม่เกิน 50MB');
+                if (fileSize > 100) {
+                    Alert.alert('ข้อผิดพลาด', 'ขนาดไฟล์วิดีโอต้องไม่เกิน 100MB');
                     return;
                 }
 
@@ -177,15 +203,17 @@ export default function AccountSetting() {
     useEffect(() => {
         const hasChanges =
             JSON.stringify(images) !== JSON.stringify(oldImages) ||
-            JSON.stringify(selectedServices) !== JSON.stringify(profileData?.services) ||
+            JSON.stringify(selectedServices) !== JSON.stringify(profileData?.JobMembers.map((service) => service.jobId)) ||
             bio !== profileData?.bio ||
-            education !== profileData?.education ||
-            location !== profileData?.location ||
+            (location === "" ? undefined : location) !== profileData?.location ||
             height !== profileData?.height?.toString() ||
-            weight !== profileData?.weight?.toString();
+            weight !== profileData?.weight?.toString() ||
+            username !== profileData?.username ||
+            oldVideo !== video;
+
 
         setIsUpdated(hasChanges);
-    }, [images, selectedServices, bio, education, location, height, weight]);
+    }, [images, selectedServices, bio, education, location, height, weight, profileData]);
 
     const fetchUserData = async () => {
         try {
@@ -193,15 +221,14 @@ export default function AccountSetting() {
             if (!userData) return;
 
             const userList = JSON.parse(userData);
-            const response = await axios.get<{ status: number; data: { profile: UserProfile } }>(
-                `https://friendszone.app/api/profile/${userList.id}`,
+            const response = await axios.get<{ status: number; data: { profile: any } }>(
+                `http://49.231.43.37:3000/api/profile/${userList.id}`,
                 {
                     headers: {
                         "Authorization": `All ${userList?.token}`
                     }
                 }
             );
-
             if (response.data.status === 200) {
                 const profile = response.data.data.profile;
                 setProfileData(profile);
@@ -214,6 +241,12 @@ export default function AccountSetting() {
                 setSelectedServices(profile.services || []);
                 setImages(profile.previewAllImageUrl || []);
                 setOldImages(profile.previewAllImageUrl || []);
+                setJobsList(profile.jobCategory.JobsList || [])
+                if (profile.JobMembers.length > 0) {
+                    for (let i = 0; i < profile.JobMembers.length; i++) {
+                        toggleService(profile.JobMembers[i].jobId)
+                    }
+                }
             }
         } catch (error) {
             console.error('Error fetching user data:', error);
@@ -239,6 +272,39 @@ export default function AccountSetting() {
             return null;
         }
     };
+
+    const handleImagePickProfile = async (useCamera = false) => {
+        try {
+            const { status } = useCamera
+                ? await ImagePicker.requestCameraPermissionsAsync()
+                : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+            if (status !== 'granted') {
+                alert(useCamera ? 'ต้องการการเข้าถึงกล้อง' : 'ต้องการการเข้าถึงคลังรูปภาพ');
+                return;
+            }
+
+            const result = await (useCamera
+                ? ImagePicker.launchCameraAsync
+                : ImagePicker.launchImageLibraryAsync)({
+                    mediaTypes: "images",
+                    allowsEditing: true,
+                    aspect: [6, 4],
+                    quality: 1
+                });
+
+            if (!result.canceled && result.assets[0]) {
+                const optimizedBase64 = await optimizeImage(result.assets[0].uri);
+                if (optimizedBase64) {
+                    setProfileImage(optimizedBase64);
+                }
+            }
+        } catch (error) {
+            console.error('Error picking image:', error);
+            alert('เกิดข้อผิดพลาดในการเลือกรูปภาพ');
+        }
+    };
+
 
     const handleImagePick = async (useCamera = false) => {
         try {
@@ -292,7 +358,7 @@ export default function AccountSetting() {
 
             const userList = JSON.parse(userData);
             await axios.put(
-                `https://friendszone.app/api/profile/${userList.id}`,
+                `http://49.231.43.37:3000/api/profile/${userList.id}`,
                 {
                     bio,
                     education,
@@ -327,8 +393,13 @@ export default function AccountSetting() {
             setLocation(profileData.location || "");
             setHeight(profileData.height?.toString() || "");
             setWeight(profileData.weight?.toString() || "");
-            setSelectedServices(profileData.services || []);
+            setSelectedServices(profileData.JobMembers.map((service) => service.jobId));
             setImages(profileData.previewAllImageUrl || []);
+            setOldImages(profileData.previewAllImageUrl || []);
+            setProfileImage(null);
+            setVideo(profileData.previrwVideoUrl || null);
+            setUsername(profileData.username || "");
+
         }
     };
 
@@ -374,20 +445,34 @@ export default function AccountSetting() {
                 <StyledView className="px-4 py-4 space-y-6 mb-16">
                     <StyledView className="self-center ">
                         <TouchableOpacity
-                            onPress={() => handleImagePick(false)}
+                            onPress={() => handleImagePickProfile(true)}
                             className=""
                         >
-                            <StyledView className="w-[100px] h-[100px] rounded-full bg-gray-200 dark:bg-neutral-800 border-[1px] border-neutral-300 dark:border-neutral-700 border-dashed items-center justify-center">
-                                <StyledIonicons
-                                    name={
-                                        'camera-outline'
-                                    }
-                                    size={40}
-                                    className="text-gray-500">
-                                </StyledIonicons>
-                            </StyledView>
+                            {profileImage ? (
+                                <StyledImage
+                                    source={{ uri: `data:image/jpeg;base64,${profileImage}` }}
+                                    className="w-24 h-24 rounded-full"
+                                />
+                            ) : (
+                                profileData?.profileUrl ? (
+                                    <StyledImage
+                                        source={{ uri: profileData.profileUrl }}
+                                        className="w-24 h-24 rounded-full"
+                                    />
+                                ) : (
+                                    <StyledView className="w-[100px] h-[100px] rounded-full bg-gray-200 dark:bg-neutral-800 border-[1px] border-neutral-300 dark:border-neutral-700 border-dashed items-center justify-center">
+                                        <StyledIonicons
+                                            name={
+                                                'camera-outline'
+                                            }
+                                            size={40}
+                                            className="text-gray-500">
+                                        </StyledIonicons>
+                                    </StyledView>
+                                )
+                            )}
 
-                            <StyledText className="mt-2 font-custom text-gray-600">อัปโหลดรูปภาพ</StyledText>
+                            <StyledText className="mt-2 font-custom text-gray-600">อัพโหลดรูปภาพ</StyledText>
                         </TouchableOpacity>
                     </StyledView >
                     <StyledView className="border-b-[1px] border-gray-200"></StyledView>
@@ -439,6 +524,17 @@ export default function AccountSetting() {
                                         className="w-full h-full rounded-2xl"
                                         useNativeControls
                                     />
+                                    {
+                                        isUpdated && (
+                                            <StyledTouchableOpacity
+                                                onPress={() => UploadingVideo}
+                                                className="absolute -top-2 -right-2 bg-blue-500 rounded-full p-1.5 z-10"
+                                            >
+                                                <StyledIonicons name="save-outline" size={18} className="text-white" />
+                                            </StyledTouchableOpacity>
+                                        )
+                                    }
+
                                     <StyledTouchableOpacity
                                         onPress={() => setVideo(null)}
                                         className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1.5 z-10"
@@ -504,13 +600,9 @@ export default function AccountSetting() {
                                     </StyledView>
 
                                     <StyledView className="flex-1 ml-3">
-                                        <StyledInput
+                                        <StyledText
                                             className="dark:text-white font-custom text-base"
-                                            value={location}
-                                            onChangeText={setLocation}
-                                            placeholder="กรุณาระบุที่อยู่ของคุณ"
-                                            placeholderTextColor="#666"
-                                        />
+                                        >คลิกที่นี่เพิ่มตั้งค่าที่อยู่ของคุณตาม GPS</StyledText>
                                     </StyledView>
 
                                     <StyledIonicons
@@ -583,7 +675,7 @@ export default function AccountSetting() {
                             บริการของฉัน
                         </StyledText>
                         <StyledView className="flex-row flex-wrap gap-2">
-                            {SERVICE_OPTIONS.map((service) => (
+                            {jobsList.map((service: JobsList) => (
                                 <TouchableOpacity
                                     key={service.id}
                                     onPress={() => toggleService(service.id)}
@@ -596,16 +688,11 @@ export default function AccountSetting() {
                                         borderWidth: 0,
                                     } : {}}
                                 >
-                                    <StyledIonicons
-                                        name={service.icon}
-                                        size={20}
-                                        className={selectedServices.includes(service.id) ? 'text-white' : 'text-neutral-600 dark:text-white'}
-                                    />
-                                    <StyledText className={`ml-2 ${selectedServices.includes(service.id)
+                                    <StyledText className={` ${selectedServices.includes(service.id)
                                         ? 'text-white'
                                         : 'text-neutral-600 dark:text-white'
                                         }`}>
-                                        {service.name}
+                                        {service.jobName}
                                     </StyledText>
                                 </TouchableOpacity>
                             ))}

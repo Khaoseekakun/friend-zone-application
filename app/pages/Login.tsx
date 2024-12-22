@@ -8,12 +8,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
+import { API_SYSTEM_KEY } from '@/components/config';
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledSafeAreaView = styled(SafeAreaView);
-const API_SYSTEM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiTG9naW4iLCJzeXN0ZW0iOmZhbHNlLCJwZXJtaXNzaW9ucyI6eyJMb2dpbiI6dHJ1ZX19.K2u_ZzJF_uekLqbmAiuMWZgmisGepYjATVrF-Ks8OX0';
 
 export default function Login() {
     const colorScheme = useColorScheme();
@@ -25,7 +25,7 @@ export default function Login() {
     const scaleValue = useRef(new Animated.Value(1)).current;
     const [pageLoading, setPageLoading] = useState(true);
     const [deviceId, setDeviceId] = useState('');
-    
+
     const getDeviceId = async () => {
         return await AsyncStorage.getItem('uuid') as string;
     };
@@ -61,17 +61,18 @@ export default function Login() {
     const loginHandler = async () => {
         setLoading(true);
         try {
-            const loginData = await axios.post('https://friendszone.app/api/oauth/login', {
+            const loginData = await axios.post('http://49.231.43.37:3000/api/oauth/login', {
                 phoneNumber: phone,
                 password: password,
                 deviceId: deviceId
             }, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Login ${API_SYSTEM_KEY}`
+                    'Authorization': `System ${API_SYSTEM_KEY}`
                 }
             });
 
+            console.log(loginData.data);
             if (loginData.data.data.code !== "LOGIN_SUCCESS") {
                 if (loginData.data.data.code === "ALREADY_LOGGED_IN") {
                     return Alert.alert("ไม่สำเร็จ", "บัญชีนี้กำลังเข้าสู่ระบบในเครื่องอื่นโปรดออกจากระบบก่อน", [{ text: "ลองอีกครั้ง" }]);
@@ -79,9 +80,10 @@ export default function Login() {
                     return Alert.alert("ไม่สำเร็จ", "เบอร์โทรศัพท์หรือรหัสผ่านไม่ถูกต้อง", [{ text: "ลองอีกครั้ง" }]);
                 }
 
+
             }
 
-            if(loginData.data.data.data.status === 'pending') {
+            if (loginData.data.data.data.status === 'pending') {
                 return Alert.alert("ไม่สำเร็จ", "บัญชีนี้ยังไม่ได้รับการอนุมัติจากผู้ดูแลระบบ", [{ text: "ลองอีกครั้ง" }]);
             }
 
@@ -129,11 +131,11 @@ export default function Login() {
     };
 
     return (
-        <KeyboardAvoidingView
-            style={{ flex: 1}}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-            <StyledSafeAreaView className="flex-1 bg-white dark:bg-black">
+        <StyledSafeAreaView className="flex-1 bg-white dark:bg-black">
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
                 <StyledView className="flex-1 px-6 justify-center items-center">
                     <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">Friend Zone</StyledText>
                     <StyledText className="text-lg text-gray-400 mb-8 font-custom">ยินดีต้อนรับกลับ</StyledText>
@@ -189,7 +191,7 @@ export default function Login() {
                             </StyledTouchableOpacity>
                         </StyledView>
                     </StyledView>
-                    
+
                     <StyledView className="flex-row justify-between w-full mb-10">
                         <StyledView className="flex-row items-center">
                             <StyledTouchableOpacity onPress={() => navigation.navigate('Agreement', { nextScreen: 'Register' })}>
@@ -226,7 +228,7 @@ export default function Login() {
                         </Animated.View>
                     </TouchableOpacity>
                 </StyledView>
-            </StyledSafeAreaView>
-        </KeyboardAvoidingView>
+            </KeyboardAvoidingView >
+        </StyledSafeAreaView>
     );
 }

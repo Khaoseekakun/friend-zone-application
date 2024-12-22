@@ -802,7 +802,7 @@ export default function SettingSecurity() {
                     className="absolute left-4"
                     onPress={() => {
                         if (activeSection === 'main') {
-                            navigation.goBack();
+                            navigation.navigate('SettingTab', {});
                         } else {
                             setActiveSection('main');
                         }

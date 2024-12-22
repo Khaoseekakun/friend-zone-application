@@ -18,19 +18,25 @@ import ScheduleList from "../screen/ScheduleList";
 import Policy from "../screen/Policy";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
+import { StackActions, useNavigation } from "@react-navigation/native";
 import PostView from "../screen/PostView";
 import NotificationPage from "../screen/Notifications";
 import SettingPassword from "../screen/SettingPassword";
 import AccountStatus from "../screen/AccountStatus";
 import History from "../screen/History";
 import SettingSecurity from "../screen/SettingSecurity";
+import SettingDeleteAccount from "../screen/SettingDeleteAccount";
 
 const Tab = createBottomTabNavigator();
 
 export default function HomeScreen() {
   const [userData, setuUserData] = useState<any>({});
   const navigation = useNavigation<any>();
+  const [deviceId, setDeviceId] = useState('');
+
+  const getDeviceId = async () => {
+    return await AsyncStorage.getItem('uuid') as string;
+  };
 
   useEffect(() => {
     // Add notification response listener
@@ -52,6 +58,9 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
+    (async () => {
+      setDeviceId(await getDeviceId())
+    })()
     fetchUserData();
   }, []);
 
@@ -77,6 +86,51 @@ export default function HomeScreen() {
       console.log('Error in notification permissions:', error);
     }
   };
+
+  const Logout = async () => {
+    await AsyncStorage.removeItem('userData');
+    await AsyncStorage.removeItem('userToken');
+    const resetAction = StackActions.replace("Login")
+    navigation.dispatch(resetAction);
+  }
+
+  const checkOtherLogin = async () => {
+    if (deviceId && userData.id) {
+      try {
+        const res = await axios.get(`http://49.231.43.37:3000/api/oauth/login?deviceId=${deviceId}&userId=${userData.id}`, {
+          headers: {
+            'Authorization': `All ${userData.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (res.data.status == 200) {
+          // no other login
+        } else {
+          Alert.alert('บัญชีของคุณถูกใช้งานจากอุปกรณ์อื่น', 'กรุณาเข้าสู่ระบบใหม่', [
+            {
+              text: 'ตกลง',
+              onPress: async () => {
+                Logout()
+              }
+            }
+          ])
+        }
+
+      } catch (error) {
+        console.log('Error in checking other login:', error);
+      }
+    }
+  }
+
+  //checkOtherLogin check every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      checkOtherLogin();
+    }, 1000*60);
+
+    return () => clearInterval(interval);
+  }, [userData]);
 
   useEffect(() => {
     checkNotificationPermissions();
@@ -105,6 +159,7 @@ export default function HomeScreen() {
         <Tab.Screen name="AccountStatus" component={AccountStatus} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="History" component={History} options={{ headerShown: false, animation: "shift" }} />
         <Tab.Screen name="SettingSecurity" component={SettingSecurity} options={{ headerShown: false, animation: "shift" }} />
+        <Tab.Screen name="SettingDeleteAccount" component={SettingDeleteAccount} options={{ headerShown: false, animation: "shift" }} />
       </Tab.Navigator>
     </>
   );

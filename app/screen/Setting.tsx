@@ -166,7 +166,7 @@ export default function Setting() {
                         </StyledView>
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => navigation.navigate("AccountStatus", { backPage: "SettingTab" })}>
+                    {/* <TouchableOpacity onPress={() => navigation.navigate("AccountStatus", { backPage: "SettingTab" })}>
                         <StyledView className="flex-row items-center justify-between w-full px-3">
                             <StyledView className="flex-row justify-center">
                                 <StyledIonicons name="alert-circle-outline" size={24} className="mt-1 text-black dark:text-white" />
@@ -177,7 +177,7 @@ export default function Setting() {
                             </StyledView>
                             <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                         </StyledView>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
 
 
 
@@ -215,6 +215,19 @@ export default function Setting() {
                                 <StyledView className="ml-2">
                                     <StyledText className=" text-gray-700 dark:text-gray-50 font-custom text-lg">นโยบายและความเป็นส่วนตัว</StyledText>
                                     <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">เงื่อนไขและข้อกำหนดในการใช้บริการ</StyledText>
+                                </StyledView>
+                            </StyledView>
+                            <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
+                        </StyledView>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => navigation.navigate("SettingDeleteAccount", {})}>
+                        <StyledView className="flex-row items-center justify-between w-full px-3 pb-2">
+                            <StyledView className="flex-row justify-center">
+                                <StyledIonicons name="trash-outline" size={24} className="mt-1 text-red-700" />
+                                <StyledView className="ml-2">
+                                    <StyledText className=" text-red-500 font-custom text-lg">ขอลบบัญชี</StyledText>
+                                    <StyledText className=" text-gray-500 dark:text-gray-200 font-custom text-sm ">ลบบัญชีของคุณอย่างถาวร</StyledText>
                                 </StyledView>
                             </StyledView>
                             <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />

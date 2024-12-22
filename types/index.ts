@@ -47,6 +47,9 @@ export type RootStackParamList = {
     searchType: string,
     backPage?: string;
   },
+  SettingDeleteAccount: {
+    backPage?: string;
+  },
   SearchLoading: {
     searchType: string,
     backPage?: string;

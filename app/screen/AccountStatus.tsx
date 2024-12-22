@@ -1,9 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { styled } from 'nativewind';
 import React, { useEffect, useState } from 'react';
-import { Image, ScrollView, Text, TextInput, View, SafeAreaView, Platform, Appearance, TouchableOpacity, Alert } from 'react-native';
+import { Image, ScrollView, Text, TextInput, View, SafeAreaView, Platform, Appearance, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
 const StyledView = styled(View);
@@ -30,17 +29,17 @@ export default function AccountStatus() {
 
     return (
         <StyledSafeAreaView className="flex-1 bg-gray-100 dark:bg-neutral-950">
-            <StyledView className={`flex-row justify-center items-center px-4 border-b border-neutral-200 dark:border-neutral-800 w-full ${Platform.OS === "ios" ? "h-[50px]" : "h-[40px]"}`}>
+            <StyledView className={`flex-row justify-center items-center px-4 border-b border-neutral-200 dark:border-neutral-800 w-full ${Platform.OS === "ios" ? "h-[50px]" : "h-[103px]"}`}>
                 <TouchableOpacity
                     className="absolute left-4"
                     onPress={() => navigation.goBack()}
                 >
-                    <StyledText className="font-custom text-gray-500 dark:text-white text-lg">
+                    <StyledText className="font-custom text-gray-500 dark:text-white text-lg mt-6">
                         กลับ
                     </StyledText>
                 </TouchableOpacity>
 
-                <StyledText className="dark:text-white text-lg font-custom">
+                <StyledText className="dark:text-white text-lg font-custom mt-6">
                     สถานะบัญชี
                 </StyledText>
             </StyledView>
