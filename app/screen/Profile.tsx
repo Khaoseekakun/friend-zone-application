@@ -18,8 +18,8 @@ import * as Location from 'expo-location';
 import MapView, { Circle, Marker, LatLng } from 'react-native-maps';
 import Carousel from 'react-native-reanimated-carousel';
 import { addNotification, sendPushNotification } from "@/utils/Notification";
-import { Animated } from 'react-native';
 import { JobMembers, Review } from "@/types/prismaInterface";
+import { ResizeMode, Video } from "expo-av";
 
 configureReanimatedLogger({
     level: ReanimatedLogLevel.warn,
@@ -46,7 +46,7 @@ export default function ProfileTab() {
 
     const bottomSheetRef = useRef<BottomSheet>(null);
 
-    const snapPoints = ["80%"];
+    const snapPoints = ["90%"];
     const [loading, setLoading] = useState(true);
     const [userProfile, setUserProfile] = useState<any>(null);
     const [userData, setUserData] = useState<any>({});
@@ -75,6 +75,7 @@ export default function ProfileTab() {
     const [reviewList, setReviewList] = useState<Review[]>([]);
 
     const [locationSearch, setLocationSearch] = useState<string>("");
+    const [showVideo, setShowVideo] = useState(false);
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -108,7 +109,7 @@ export default function ProfileTab() {
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
             });
-
+            console.log(location.coords.latitude, location.coords.longitude);
             if (userProfile?.profile?.pinLocation) {
                 setDistance(getDistanceMemberToCustomer({ latitude: location.coords.latitude, longitude: location.coords.longitude }, {
                     latitude: parseFloat(userProfile.profile.pinLocation[0]),
@@ -120,27 +121,6 @@ export default function ProfileTab() {
 
 
     const [loadingReviews, setLoadingReviews] = useState(false);
-    const [showReviewModal, setShowReviewModal] = useState(false);
-
-    const [reviewText, setReviewText] = useState('');
-    const [reviewStars, setReviewStars] = useState(0);
-    const [modalVisible, setModalVisible] = useState(false);
-    const slideAnim = useRef(new Animated.Value(0)).current;
-    const showModal = () => {
-        setModalVisible(true);
-        Animated.spring(slideAnim, {
-            toValue: 1,
-            useNativeDriver: true,
-        }).start();
-    };
-
-    const hideModal = () => {
-        Animated.timing(slideAnim, {
-            toValue: 0,
-            duration: 250,
-            useNativeDriver: true,
-        }).start(() => setModalVisible(false));
-    };
 
     const getCurrentLocation = async () => {
         const location = await Location.getCurrentPositionAsync({});
@@ -195,29 +175,6 @@ export default function ProfileTab() {
     }
 
 
-    const searchMapGeoLocation = async (location: string) => {
-        const config = {
-            method: 'get',
-            url: `https://api.geoapify.com/v1/geocode/search?text=${location}&apiKey=11f05231e68b44deac129650b5bf211d`,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        };
-
-        try {
-            const response = await axios(config);
-            const newLocations = response.data.features?.map((feature: any) => ({
-                latitude: feature.geometry.coordinates[1],
-                longitude: feature.geometry.coordinates[0],
-                locationName: feature.properties.formatted || location
-            }));
-
-            setGeoLocation(newLocations);
-
-        } catch (error) {
-        }
-    }
-
     const fetchUserData = useCallback(async () => {
         try {
             setLoading(true);
@@ -241,7 +198,6 @@ export default function ProfileTab() {
                     "Authorization": `All ${parsedData?.token}`
                 }
             });
-
 
             setUserProfile(user.data.data);
             setImages(user.data.data?.profile.previewAllImageUrl)
@@ -410,6 +366,26 @@ export default function ProfileTab() {
                     <StyledView className="flex-1 justify-center items-center bg-white dark:bg-neutral-900">
                         <ActivityIndicator size="large" color="#999" />
                     </StyledView>
+                ) : showVideo ? (
+                    <>
+                        <StyledView className="flex-1">
+                            <StyledView className="flex-1 relative w-full h-full">
+                                <Video
+                                    source={{ uri: userProfile?.profile?.previewVideoUrl }}
+                                    resizeMode={ResizeMode.COVER}
+                                    className="w-full h-full"
+                                    useNativeControls
+                                />
+                                <StyledView className="absolute pl-2 py-2">
+                                    <StyledTouchableOpacity onPress={() => setShowVideo(false)}
+                                        className="bg-white dark:bg-neutral-900 rounded-full p-1 px-2 flex-row items-center">
+                                        <StyledIonIcon name="chevron-back" size={24} className="text-black dark:text-white"/>
+                                        <StyledText className="font-custom text-black dark:text-white text-lg">กลับ</StyledText>
+                                    </StyledTouchableOpacity>
+                                </StyledView>
+                            </StyledView>
+                        </StyledView>
+                    </>
                 ) : (
                     <>
                         <StyledScrollView>
@@ -443,6 +419,13 @@ export default function ProfileTab() {
                                         <StyledText className="text-[30px] text-white font-custom">{(reviewList.reduce((acc, review) => acc + review.star, 0) / reviewList.length).toFixed(1)}</StyledText>
                                         <StyledText className="text-[20px] text-gray-200 font-custom ml-1 mt-2">({reviewList.length})</StyledText>
                                     </StyledView>
+
+                                    <StyledTouchableOpacity
+                                        onPress={() => setShowVideo(true)}
+                                        className="absolute bottom-2 flex-row items-center right-2 rounded-full bg-[#ad2722] p-2">
+                                        <StyledIonIcon name="play" className="text-white pr-2" size={20} />
+                                        <StyledText className="text-white font-custom">วิดีโอ</StyledText>
+                                    </StyledTouchableOpacity>
                                 </StyledView>
 
                                 <StyledView id="Image Dot" className="absolute top-2 w-full flex-row justify-between px-2 gap-1">
@@ -554,153 +537,164 @@ export default function ProfileTab() {
                                         </StyledView>
                                     )}
 
-                                    <StyledView className="mt-2">
-                                        <StyledText className="text-base font-semibold text-gray-500 dark:text-gray-400 font-custom mb-3">
-                                            บริการ
-                                        </StyledText>
-                                        <StyledView className="flex-row flex-wrap">
-                                            {userProfile.profile.JobMembers.map((job: JobMembers, index: number) => (
-                                                <LinearGradient
-                                                    key={index}
-                                                    colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
-                                                    start={{ x: 0, y: 0 }}
-                                                    end={{ x: 1, y: 0 }}
-                                                    className="rounded-full px-4 py-2 mr-2 mb-2"
-                                                >
-                                                    <StyledText className="font-custom text-white text-base">
-                                                        {job.jobs?.jobName ?? 'ไม่ระบุ'}
+                                    {
+                                        userProfile?.profile?.type === "member" && (
+                                            <>
+                                                <StyledView className="mt-2">
+                                                    <StyledText className="text-base font-semibold text-gray-500 dark:text-gray-400 font-custom mb-3">
+                                                        บริการ
                                                     </StyledText>
-                                                </LinearGradient>
-                                            ))}
-                                        </StyledView>
-                                    </StyledView>
-                                    <StyledView className="px-2 py-4 border-t-[1px] border-neutral-300 mt-2">
-                                        {/* หัวข้อรีวิว */}
-                                        <StyledView className="flex-row items-center justify-between mb-6">
-                                            <StyledView className="flex-row items-center">
-                                                <StyledText className="text-xl font-semibold text-black dark:text-white font-custom">
-                                                    รีวิวทั้งหมด
-                                                </StyledText>
-                                                <StyledView className="bg-red-50 dark:bg-red-900/30 rounded-full px-3 py-1 ml-2">
-                                                    <StyledText className="text-red-500 dark:text-red-400 font-custom">
-                                                        {reviewList?.length}
-                                                    </StyledText>
-                                                </StyledView>
-                                            </StyledView>
-                                        </StyledView>
-
-                                        {/* สรุปคะแนนรีวิว */}
-                                        <StyledView className="bg-red-100/80 dark:bg-red-900/10 rounded-2xl p-4 mb-6">
-                                            <StyledView className="flex-row items-center justify-between">
-                                                <StyledView>
-                                                    <StyledText className="text-4xl font-bold text-red-600 dark:text-red-500 font-custom">
-                                                        {
-                                                            reviewList?.length > 0 ? (Number(reviewList.reduce((prev: number, current: any) => prev + current.star, 0)) / reviewList?.length).toFixed(1) : 0
-                                                        }
-
-                                                    </StyledText>
-                                                    <StyledView className="flex-row mt-1">
-                                                        {[1, 2, 3, 4, 5].map((star) => (
-                                                            <StyledIonIcon
-                                                                key={star}
-                                                                name="star"
-                                                                size={16}
-                                                                className={`text-red-500 ${star <= (reviewList?.length > 0 ? Number(reviewList.reduce((prev: number, current: any) => prev + current.star, 0)) / reviewList?.length : 0) ? "text-red-500" : "text-gray-300"} mr-0.5`}
-                                                            />
+                                                    <StyledView className="flex-row flex-wrap">
+                                                        {userProfile.profile.JobMembers.map((job: JobMembers, index: number) => (
+                                                            <LinearGradient
+                                                                key={index}
+                                                                colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
+                                                                start={{ x: 0, y: 0 }}
+                                                                end={{ x: 1, y: 0 }}
+                                                                className="rounded-full px-4 py-2 mr-2 mb-2"
+                                                            >
+                                                                <StyledText className="font-custom text-white text-base">
+                                                                    {job.jobs?.jobName ?? 'ไม่ระบุ'}
+                                                                </StyledText>
+                                                            </LinearGradient>
                                                         ))}
                                                     </StyledView>
                                                 </StyledView>
-                                            </StyledView>
-                                        </StyledView>
+                                                <StyledView className="px-2 py-4 border-t-[1px] border-neutral-300 mt-2">
+                                                    {/* หัวข้อรีวิว */}
+                                                    <StyledView className="flex-row items-center justify-between mb-6">
+                                                        <StyledView className="flex-row items-center">
+                                                            <StyledText className="text-xl font-semibold text-black dark:text-white font-custom">
+                                                                รีวิวทั้งหมด
+                                                            </StyledText>
+                                                            <StyledView className="bg-red-50 dark:bg-red-900/30 rounded-full px-3 py-1 ml-2">
+                                                                <StyledText className="text-red-500 dark:text-red-400 font-custom">
+                                                                    {reviewList?.length}
+                                                                </StyledText>
+                                                            </StyledView>
+                                                        </StyledView>
+                                                    </StyledView>
 
-                                        {/* รายการรีวิว */}
-                                        {
-                                            reviewList?.length > 0 ?
-                                                reviewList?.map((review: Review) => (
-                                                    <StyledView
-                                                        key={review.id}
-                                                        className="border-b border-gray-100 dark:border-neutral-800 py-4"
-                                                    >
-                                                        <StyledView className="flex-row justify-between items-start mb-3">
-                                                            <StyledView className="flex-row items-center">
-                                                                <StyledImage
-                                                                    source={{ uri: review.userType == "Member" ? review.MemberDB?.profileUrl ?? undefined : review.CustomersDB?.profileUrl ?? undefined }}
-                                                                    className="w-10 h-10 rounded-full mr-3"
-                                                                />
-                                                                <StyledView>
-                                                                    <StyledText className="font-bold text-base text-black dark:text-white font-custom mb-1">
-                                                                        {review.userType == "Member" ? review.MemberDB?.username : review.CustomersDB?.username}
-                                                                    </StyledText>
-                                                                    <StyledView className="flex-row items-center">
-                                                                        {[1, 2, 3, 4, 5]?.map((star) => (
-                                                                            <StyledIonIcon
-                                                                                key={star}
-                                                                                name={star <= review.star ? "star" : "star-outline"}
-                                                                                size={14}
-                                                                                className={star <= review.star ? "text-red-500 mr-0.5" : "text-gray-300 mr-0.5"}
-                                                                            />
-                                                                        ))}
-                                                                        <StyledText className="text-gray-400 text-sm font-custom ml-2">
-                                                                            {new Date(review.createdAt).toDateString()}
-                                                                        </StyledText>
-                                                                    </StyledView>
+                                                    {/* สรุปคะแนนรีวิว */}
+                                                    <StyledView className="bg-red-100/80 dark:bg-red-900/10 rounded-2xl p-4 mb-6">
+                                                        <StyledView className="flex-row items-center justify-between">
+                                                            <StyledView>
+                                                                <StyledText className="text-4xl font-bold text-red-600 dark:text-red-500 font-custom">
+                                                                    {
+                                                                        reviewList?.length > 0 ? (Number(reviewList.reduce((prev: number, current: any) => prev + current.star, 0)) / reviewList?.length).toFixed(1) : 0
+                                                                    }
+
+                                                                </StyledText>
+                                                                <StyledView className="flex-row mt-1">
+                                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                                        <StyledIonIcon
+                                                                            key={star}
+                                                                            name="star"
+                                                                            size={16}
+                                                                            className={`text-red-500 ${star <= (reviewList?.length > 0 ? Number(reviewList.reduce((prev: number, current: any) => prev + current.star, 0)) / reviewList?.length : 0) ? "text-red-500" : "text-gray-300"} mr-0.5`}
+                                                                        />
+                                                                    ))}
                                                                 </StyledView>
                                                             </StyledView>
                                                         </StyledView>
-
-                                                        <StyledText className="text-gray-600 dark:text-gray-300 font-custom leading-6 ml-15">
-                                                            {review.text}
-                                                        </StyledText>
                                                     </StyledView>
-                                                )) : (
-                                                    <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-center">
-                                                        ยังไม่มีรีวิว
-                                                    </StyledText>
-                                                )
-                                        }
 
-                                    </StyledView>
+                                                    <StyledScrollView style={{ maxHeight: 300 }} nestedScrollEnabled>
+                                                        {
+                                                            reviewList?.length > 0 ?
+                                                                reviewList?.map((review: Review) => (
+                                                                    <StyledView
+                                                                        key={review.id}
+                                                                        className="border-b border-gray-100 dark:border-neutral-800 py-4"
+                                                                    >
+                                                                        <StyledView className="flex-row justify-between items-start mb-3">
+                                                                            <StyledView className="flex-row items-center">
+                                                                                <StyledImage
+                                                                                    source={{ uri: review.userType == "Member" ? review.MemberDB?.profileUrl ?? undefined : review.CustomersDB?.profileUrl ?? undefined }}
+                                                                                    className="w-10 h-10 rounded-full mr-3"
+                                                                                />
+                                                                                <StyledView>
+                                                                                    <StyledText className="font-bold text-base text-black dark:text-white font-custom mb-1">
+                                                                                        {review.userType == "Member" ? review.MemberDB?.username : review.CustomersDB?.username}
+                                                                                    </StyledText>
+                                                                                    <StyledView className="flex-row items-center">
+                                                                                        {[1, 2, 3, 4, 5]?.map((star) => (
+                                                                                            <StyledIonIcon
+                                                                                                key={star}
+                                                                                                name={star <= review.star ? "star" : "star-outline"}
+                                                                                                size={14}
+                                                                                                className={star <= review.star ? "text-red-500 mr-0.5" : "text-gray-300 mr-0.5"}
+                                                                                            />
+                                                                                        ))}
+                                                                                        <StyledText className="text-gray-400 text-sm font-custom ml-2">
+                                                                                            {new Date(review.createdAt).toDateString()}
+                                                                                        </StyledText>
+                                                                                    </StyledView>
+                                                                                </StyledView>
+                                                                            </StyledView>
+                                                                        </StyledView>
+
+                                                                        <StyledText className="text-gray-600 dark:text-gray-300 font-custom leading-6 ml-15">
+                                                                            {review.text}
+                                                                        </StyledText>
+                                                                    </StyledView>
+                                                                )) : (
+                                                                    <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-center">
+                                                                        ยังไม่มีรีวิว
+                                                                    </StyledText>
+                                                                )
+                                                        }
+                                                    </StyledScrollView>
+                                                </StyledView>
+                                            </>
+                                        )
+                                    }
                                 </StyledView>
                             </StyledView>
                         </StyledScrollView>
+                        {!userData.id || userProfile?.profile?.id !== userData.id && (
+                            <View style={{ zIndex: 0 }}>
+                                <StyledTouchableOpacity
+                                    disabled={false}
+                                    className="w-full px-[15%] mb-4 duration-200 absolute bottom-1"
+                                    onPress={async () => {
+                                        if (hasLocationPermission) {
+                                            if (!pin) {
+                                                await getCurrentLocation(); // This will call getCurrentLocation correctly
+                                            }
+                                            bottomSheetRef.current?.expand();
+                                        } else {
+                                            Alert.alert('คำเตือน', 'โปรดอนุญาตการเข้าถึงตำแหน่งเพื่อใช้ฟังก์ชั่นนี้', [
+                                                {
+                                                    text: 'ยกเลิก',
+                                                    style: 'destructive',
+                                                },
+                                                {
+                                                    text: 'ตั้งค่า',
+                                                    onPress: openAppSettings,
+                                                },
+                                            ]);
+                                        }
+                                    }}
+                                >
+                                    <LinearGradient
+                                        colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 0 }}
+                                        className="rounded-full py-3 shadow-sm"
+                                    >
+                                        {[<StyledText key="scheduleCreate" className="font-custom text-center text-white text-lg font-semibold">นัดหมาย</StyledText>]}
+
+                                    </LinearGradient>
+                                </StyledTouchableOpacity>
+                            </View>
+                        )}
                     </>
                 )
+
             }
 
-            {userProfile?.profile?.id !== userData.id && (
-                <TouchableOpacity
-                    className="w-full px-[15%] mb-4 duration-200 absolute bottom-0"
-                    onPress={async () => {
-                        if (hasLocationPermission) {
-                            if (!pin) {
-                                await getCurrentLocation(); // This will call getCurrentLocation correctly
-                            }
-                            bottomSheetRef.current?.expand();
-                        } else {
-                            Alert.alert('คำเตือน', 'โปรดอนุญาตการเข้าถึงตำแหน่งเพื่อใช้ฟังก์ชั่นนี้', [
-                                {
-                                    text: 'ยกเลิก',
-                                    style: 'destructive',
-                                },
-                                {
-                                    text: 'ตั้งค่า',
-                                    onPress: openAppSettings,
-                                },
-                            ]);
-                        }
-                    }}
-                >
-                    <LinearGradient
-                        colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        className="rounded-full py-3 shadow-sm"
-                    >
-                        {[<StyledText key="scheduleCreate" className="font-custom text-center text-white text-lg font-semibold">นัดหมาย</StyledText>]}
 
-                    </LinearGradient>
-                </TouchableOpacity>
-            )}
 
             <BottomSheet
                 ref={bottomSheetRef}
@@ -841,20 +835,17 @@ export default function ProfileTab() {
                                     </StyledView>
 
                                     <StyledView className="px-6 py-1 rounded-2xl my-2 mt-5 h-[50%]">
-                                        <StyledMapView
+                                        <MapView
                                             initialRegion={{
                                                 latitude: pin ? pin.latitude : 37.78825,
                                                 longitude: pin ? pin.longitude : -122.4324,
                                                 latitudeDelta: 0.0922,
                                                 longitudeDelta: 0.0421,
-
                                             }}
-
                                             onPress={(e) => {
                                                 const { latitude, longitude } = e.nativeEvent.coordinate;
                                                 setPin({ latitude, longitude });
                                             }}
-
                                             style={{
                                                 borderRadius: 20,
                                                 height: "100%",
@@ -863,17 +854,13 @@ export default function ProfileTab() {
                                             {pin && (
                                                 <>
                                                     <Marker
-                                                        coordinate={pin}
+                                                        coordinate={{
+                                                            latitude: pin.latitude,
+                                                            longitude: pin.longitude,
+                                                        }}
                                                         title="Selected Location"
                                                         draggable={true}
-                                                        onDragEnd={(e) => {
-                                                            const { latitude, longitude } = e.nativeEvent.coordinate;
-                                                            setPin({ latitude, longitude });
-                                                        }}
-
-                                                    >
-                                                    </Marker>
-
+                                                    />
                                                     <Circle
                                                         center={pin}
                                                         radius={250} // radius in meters
@@ -882,9 +869,8 @@ export default function ProfileTab() {
                                                     />
                                                 </>
                                             )}
-                                        </StyledMapView>
+                                        </MapView>
                                     </StyledView>
-
 
                                     <TouchableOpacity
                                         className="w-full px-6"

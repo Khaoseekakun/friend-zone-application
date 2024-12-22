@@ -14,14 +14,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from "axios";
 import { JobsList } from "@/types/prismaInterface";
 import FireBaseApp from "@/utils/firebaseConfig";
-import {
-    putFile,
-    ref,
-    getStorage
-} from '@react-native-firebase/storage'
+import { getStorage, uploadBytes, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+
+// import {
+//     putFile,
+//     ref,
+//     getStorage
+// } from '@react-native-firebase/storage'
 
 
-const database = getStorage();
+const database = getStorage(FireBaseApp);
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -30,7 +32,6 @@ const StyledInput = styled(TextInput);
 const StyledIonicons = styled(Ionicons);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledKeyboardAvoidingView = styled(KeyboardAvoidingView);
-
 interface UserProfile {
     id: string;
     username: string;
@@ -50,7 +51,8 @@ interface UserProfile {
     }[],
     previewAllImageUrl: string[];
     previewFirstImageUrl?: string;
-    previrwVideoUrl?: string;
+    previewVideoUrl?: string;
+    type: string;
 }
 
 interface ServiceOption {
@@ -62,18 +64,8 @@ interface ServiceOption {
 const GRADIENT_START = '#ec4899';
 const GRADIENT_END = '#f97316';
 
-const SERVICE_OPTIONS: ServiceOption[] = [
-    { id: 'friend_date', name: 'นัดเพื่อน', icon: 'calendar-outline' },
-    { id: 'friend_service', name: 'บริการเพื่อน', icon: 'people-outline' },
-    { id: 'tour_guide', name: 'ไกด์ท่องเที่ยว', icon: 'map-outline' },
-    { id: 'shopping_friend', name: 'เพื่อนช้อปปิ้ง', icon: 'cart-outline' },
-    { id: 'game_friend', name: 'เพื่อนเล่นเกม', icon: 'game-controller-outline' }
-];
-
 export default function AccountSetting() {
     const navigation = useNavigation<any>();
-
-
     const [profileData, setProfileData] = useState<UserProfile | null>(null);
     const [username, setUsername] = useState("");
     const [bio, setBio] = useState("");
@@ -100,21 +92,68 @@ export default function AccountSetting() {
     const [isUpdated, setIsUpdated] = useState(false);
     const [loading, setLoading] = useState(true);
     const [loadingUpdate, setLoadingUpdate] = useState(false);
+    const [isVideoUpdated, setIsVideoUpdated] = useState(false);
+
+
+    const [userToken, setuUerToken] = useState<any>(null);
+
+    useEffect(() => {
+        (() => {
+            AsyncStorage.getItem('userToken').then((value) => {
+                if (value) {
+                    setuUerToken(value);
+                }
+            })
+        })()
+    }, [])
+
 
     const UploadingVideo = async () => {
         try {
             setUploading(true);
             setUploadProgress(0);
             if (!video) return Alert.alert('ข้อผิดพลาด', 'ไม่พบวิดีโอที่จะอัพโหลด');
-            const refVideo = ref(database, `/video/${profileData?.id}`);
-            const uploadTask = putFile(refVideo, video)
+            const response = await fetch(video);
+            const blob = await response.blob();
+            const extension = video.split('.').pop();
+            const refVideo = ref(database, `/video/${profileData?.id}.${extension}`);
+            const uploadTask = uploadBytesResumable(refVideo, blob);
 
             uploadTask.on("state_changed", (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 setUploadProgress(progress);
-            })
+            });
 
-            await uploadTask;
+            await new Promise((resolve, reject) => {
+                uploadTask.on(
+                    "state_changed",
+                    null,
+                    (error) => reject(error),
+                    async () => {
+                        const downloadURL = await getDownloadURL(refVideo);
+
+                        await axios.put(`https://friendszone.app/api/member/${profileData?.id}/video`, {
+                            downloadUrl : downloadURL
+                        },{
+                            headers: {
+                                'Authorization' : `Member ${userToken}`,
+                                'Content-Type': 'application/json',
+                            }
+                        })
+
+                        setProfileData(profileData => profileData ? ({
+                            ...profileData,
+                            previewVideoUrl: downloadURL
+                        }) : null)
+
+                        setOldVideo(downloadURL);
+                        setVideo(downloadURL);
+                        setIsVideoUpdated(false);
+                        resolve(uploadTask.snapshot);
+                    }
+                );
+            });
+
         } catch (error) {
             console.error('Error uploading video:', error);
             Alert.alert('ข้อผิดพลาด', 'ไม่สามารถอัพโหลดวิดีโอได้ กรุณาลองใหม่อีกครั้ง');
@@ -122,15 +161,6 @@ export default function AccountSetting() {
             setUploading(false);
             setUploadProgress(0);
         }
-    };
-
-    const cancleUpload = () => {
-        if (uploadTimer) {
-            clearInterval(uploadTimer);
-        }
-        setUploading(false);
-        setUploadProgress(0);
-        setUploadTimer(null);
     };
 
     const [theme, setTheme] = useState(Appearance.getColorScheme());
@@ -142,7 +172,6 @@ export default function AccountSetting() {
 
         return () => listener.remove();
     }, []);
-
 
     useEffect(() => {
         fetchUserData();
@@ -160,36 +189,21 @@ export default function AccountSetting() {
             const result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: 'videos',
                 allowsEditing: true,
-                aspect: [9, 16],
-                quality: 1
+                aspect: [9, 12],
+                quality: 1,
+                videoMaxDuration: 60,
             });
 
             if (!result.canceled) {
                 const response = await fetch(result.assets[0].uri);
                 const blob = await response.blob();
                 const fileSize = blob.size / (1024 * 1024);
+                setVideo(result.assets[0].uri);
 
-                if (fileSize > 100) {
+                if (fileSize > 50) {
                     Alert.alert('ข้อผิดพลาด', 'ขนาดไฟล์วิดีโอต้องไม่เกิน 100MB');
                     return;
                 }
-
-                // setVideo(result.assets[0].uri);
-                setUploading(true);
-                setUploadProgress(0);
-
-                const timer = setInterval(() => {
-                    setUploadProgress((prev) => {
-                        if (prev >= 100) {
-                            clearInterval(timer);
-                            setUploading(false);
-                            return prev;
-                        }
-                        return prev + (100 / 5);
-                    });
-                }, 1000);
-
-                setUploadTimer(timer);
             }
         } catch (error) {
             Alert.alert('ข้อผิดพลาด', 'ไม่สามารถเลือกวิดีโอได้ กรุณาลองใหม่อีกครั้ง');
@@ -199,20 +213,39 @@ export default function AccountSetting() {
         }
     };
 
-    // Check for changes in data
     useEffect(() => {
-        const hasChanges =
-            JSON.stringify(images) !== JSON.stringify(oldImages) ||
-            JSON.stringify(selectedServices) !== JSON.stringify(profileData?.JobMembers.map((service) => service.jobId)) ||
-            bio !== profileData?.bio ||
-            (location === "" ? undefined : location) !== profileData?.location ||
-            height !== profileData?.height?.toString() ||
-            weight !== profileData?.weight?.toString() ||
-            username !== profileData?.username ||
-            oldVideo !== video;
+        // check video changes
+        if (video !== oldVideo) {
+            setIsVideoUpdated(true);
+        } else {
+            setIsVideoUpdated(false);
+        }
+    }, [video]);
 
 
-        setIsUpdated(hasChanges);
+    useEffect(() => {
+        if (profileData?.type === "member") {
+            const hasChanges =
+                JSON.stringify(images) !== JSON.stringify(oldImages) ||
+                JSON.stringify(selectedServices) !== JSON.stringify(profileData?.JobMembers?.map((service) => service.jobId)) ||
+                bio !== profileData?.bio ||
+                (location === "" ? undefined : location) !== profileData?.location ||
+                height !== profileData?.height?.toString() ||
+                weight !== profileData?.weight?.toString() ||
+                username !== profileData?.username
+
+            setIsUpdated(hasChanges);
+        } else {
+            const hasChanges =
+                JSON.stringify(images) !== JSON.stringify(oldImages) ||
+                bio !== profileData?.bio ||
+                (location === "" ? undefined : location) !== profileData?.location ||
+                height !== profileData?.height?.toString() ||
+                weight !== profileData?.weight?.toString() ||
+                username !== profileData?.username
+
+            setIsUpdated(hasChanges);
+        }
     }, [images, selectedServices, bio, education, location, height, weight, profileData]);
 
     const fetchUserData = async () => {
@@ -222,7 +255,7 @@ export default function AccountSetting() {
 
             const userList = JSON.parse(userData);
             const response = await axios.get<{ status: number; data: { profile: any } }>(
-                `http://49.231.43.37:3000/api/profile/${userList.id}`,
+                `https://friendszone.app/api/profile/${userList.id}`,
                 {
                     headers: {
                         "Authorization": `All ${userList?.token}`
@@ -238,13 +271,17 @@ export default function AccountSetting() {
                 setLocation(profile.location || "");
                 setHeight(profile.height?.toString() || "");
                 setWeight(profile.weight?.toString() || "");
-                setSelectedServices(profile.services || []);
                 setImages(profile.previewAllImageUrl || []);
                 setOldImages(profile.previewAllImageUrl || []);
-                setJobsList(profile.jobCategory.JobsList || [])
-                if (profile.JobMembers.length > 0) {
-                    for (let i = 0; i < profile.JobMembers.length; i++) {
-                        toggleService(profile.JobMembers[i].jobId)
+
+                if (profile.type === "member") {
+                    setVideo(profile?.previewVideoUrl || null);
+                    setSelectedServices(profile?.services || []);
+                    setJobsList(profile?.jobCategory?.JobsList || [])
+                    if (profile.JobMembers.length > 0) {
+                        for (let i = 0; i < profile.JobMembers.length; i++) {
+                            toggleService(profile.JobMembers[i].jobId)
+                        }
                     }
                 }
             }
@@ -358,7 +395,7 @@ export default function AccountSetting() {
 
             const userList = JSON.parse(userData);
             await axios.put(
-                `http://49.231.43.37:3000/api/profile/${userList.id}`,
+                `https://friendszone.app/api/profile/${userList.id}`,
                 {
                     bio,
                     education,
@@ -393,11 +430,11 @@ export default function AccountSetting() {
             setLocation(profileData.location || "");
             setHeight(profileData.height?.toString() || "");
             setWeight(profileData.weight?.toString() || "");
-            setSelectedServices(profileData.JobMembers.map((service) => service.jobId));
+            setSelectedServices(profileData?.JobMembers?.map((service) => service.jobId));
             setImages(profileData.previewAllImageUrl || []);
             setOldImages(profileData.previewAllImageUrl || []);
             setProfileImage(null);
-            setVideo(profileData.previrwVideoUrl || null);
+            setVideo(profileData.previewVideoUrl || null);
             setUsername(profileData.username || "");
 
         }
@@ -481,7 +518,7 @@ export default function AccountSetting() {
                             รูปภาพน่าสนใจ
                         </StyledText>
                         <StyledView className="flex-row flex-wrap">
-                            {images.map((image, index) => (
+                            {images?.map((image, index) => (
                                 <StyledView key={index} className="w-4/12 aspect-[3/4] p-1">
                                     <StyledImage
                                         source={{
@@ -511,52 +548,69 @@ export default function AccountSetting() {
                             )}
                         </StyledView>
                     </StyledView>
-                    <StyledView>
-                        <StyledText className="font-custom text-neutral-400 text-base mb-2">
-                            วิดีโอแนะนำตัว
-                        </StyledText>
-                        <StyledView className="w-full aspect-video mb-4">
-                            {video ? (
-                                <StyledView className="relative w-full h-full">
-                                    <Video
-                                        source={{ uri: video }}
-                                        resizeMode={ResizeMode.COVER}
-                                        className="w-full h-full rounded-2xl"
-                                        useNativeControls
-                                    />
-                                    {
-                                        isUpdated && (
-                                            <StyledTouchableOpacity
-                                                onPress={() => UploadingVideo}
-                                                className="absolute -top-2 -right-2 bg-blue-500 rounded-full p-1.5 z-10"
-                                            >
-                                                <StyledIonicons name="save-outline" size={18} className="text-white" />
-                                            </StyledTouchableOpacity>
-                                        )
-                                    }
+                    {
+                        profileData?.type === "member" && (
+                            <StyledView>
+                                <StyledText className="font-custom text-neutral-400 text-base mb-2">
+                                    วิดีโอแนะนำตัว
+                                </StyledText>
+                                <StyledView className="w-full aspect-video mb-4">
+                                    {video ? (
+                                        <StyledView className="relative w-full h-full">
+                                            <Video
+                                                source={{ uri: video }}
+                                                resizeMode={ResizeMode.COVER}
+                                                className="w-full h-full rounded-2xl"
+                                                useNativeControls
+                                            />
+                                            {
+                                                isVideoUpdated ? (
+                                                    <StyledView className="absolute -top-2 -right-2 z-10">
+                                                        <StyledTouchableOpacity
+                                                            onPress={() => {
+                                                                // reset stored video
+                                                                setVideo(profileData?.previewVideoUrl || null);
+                                                            }}
+                                                            className="bg-red-500 rounded-full p-1.5"
+                                                        >
+                                                            <StyledIonicons name="reload" size={18} className="text-white" />
+                                                        </StyledTouchableOpacity>
+                                                        <StyledTouchableOpacity
+                                                            onPress={() => UploadingVideo()}
+                                                            className="bg-blue-500 rounded-full p-1.5"
+                                                        >
+                                                            <StyledIonicons name="save-outline" size={18} className="text-white" />
+                                                        </StyledTouchableOpacity>
 
-                                    <StyledTouchableOpacity
-                                        onPress={() => setVideo(null)}
-                                        className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1.5 z-10"
-                                    >
-                                        <StyledIonicons name="close" size={18} className="text-white" />
-                                    </StyledTouchableOpacity>
+                                                    </StyledView>
+                                                ) : (
+                                                    <StyledTouchableOpacity
+                                                        onPress={() => setVideo(null)}
+                                                        className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1.5 z-10"
+                                                    >
+                                                        <StyledIonicons name="close" size={18} className="text-white" />
+                                                    </StyledTouchableOpacity>
+                                                )
+                                            }
+
+                                        </StyledView>
+                                    ) : (
+                                        <TouchableOpacity
+                                            onPress={handleVideoPick}
+                                            className="w-full h-full"
+                                        >
+                                            <StyledView className="flex-1 rounded-xl bg-white dark:bg-neutral-800 items-center justify-center border border-neutral-300 dark:border-neutral-700 border-dashed">
+                                                <StyledIonicons name="videocam-outline" size={40} className="text-black dark:text-white mb-2" />
+                                                <StyledText className="font-custom text-neutral-500 dark:text-neutral-400">
+                                                    อัพโหลดวิดีโอ (ขนาดไม่เกิน 50 MB, ความยาวไม่เกิน 1 นาที)
+                                                </StyledText>
+                                            </StyledView>
+                                        </TouchableOpacity>
+                                    )}
                                 </StyledView>
-                            ) : (
-                                <TouchableOpacity
-                                    onPress={handleVideoPick}
-                                    className="w-full h-full"
-                                >
-                                    <StyledView className="flex-1 rounded-xl bg-white dark:bg-neutral-800 items-center justify-center border border-neutral-300 dark:border-neutral-700 border-dashed">
-                                        <StyledIonicons name="videocam-outline" size={40} className="text-black dark:text-white mb-2" />
-                                        <StyledText className="font-custom text-neutral-500 dark:text-neutral-400">
-                                            อัพโหลดวิดีโอ (ไม่เกิน 100 MB.)
-                                        </StyledText>
-                                    </StyledView>
-                                </TouchableOpacity>
-                            )}
-                        </StyledView>
-                    </StyledView>
+                            </StyledView>
+                        )
+                    }
 
                     <StyledView>
                         <StyledText className="font-custom text-neutral-400 text-base mb-2">
@@ -670,34 +724,41 @@ export default function AccountSetting() {
                             </StyledView>
                         </StyledView>
                     </StyledView>
-                    <StyledView>
-                        <StyledText className="font-custom text-neutral-400 text-base mb-3">
-                            บริการของฉัน
-                        </StyledText>
-                        <StyledView className="flex-row flex-wrap gap-2">
-                            {jobsList.map((service: JobsList) => (
-                                <TouchableOpacity
-                                    key={service.id}
-                                    onPress={() => toggleService(service.id)}
-                                    className={`flex-row items-center rounded-full px-4 py-2 border ${selectedServices.includes(service.id)
-                                        ? 'border-transparent'
-                                        : 'bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700'
-                                        }`}
-                                    style={selectedServices.includes(service.id) ? {
-                                        backgroundColor: GRADIENT_START,
-                                        borderWidth: 0,
-                                    } : {}}
-                                >
-                                    <StyledText className={` ${selectedServices.includes(service.id)
-                                        ? 'text-white'
-                                        : 'text-neutral-600 dark:text-white'
-                                        }`}>
-                                        {service.jobName}
-                                    </StyledText>
-                                </TouchableOpacity>
-                            ))}
-                        </StyledView>
-                    </StyledView>
+
+                    {
+                        // check user type 
+                        profileData?.type === "member" && (
+                            <StyledView>
+                                <StyledText className="font-custom text-neutral-400 text-base mb-3">
+                                    บริการของฉัน
+                                </StyledText>
+                                <StyledView className="flex-row flex-wrap gap-2">
+                                    {jobsList?.map((service: JobsList) => (
+                                        <TouchableOpacity
+                                            key={service.id}
+                                            onPress={() => toggleService(service.id)}
+                                            className={`flex-row items-center rounded-full px-4 py-2 border ${selectedServices.includes(service.id)
+                                                ? 'border-transparent'
+                                                : 'bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700'
+                                                }`}
+                                            style={selectedServices.includes(service.id) ? {
+                                                backgroundColor: GRADIENT_START,
+                                                borderWidth: 0,
+                                            } : {}}
+                                        >
+                                            <StyledText className={` ${selectedServices.includes(service.id)
+                                                ? 'text-white'
+                                                : 'text-neutral-600 dark:text-white'
+                                                }`}>
+                                                {service.jobName}
+                                            </StyledText>
+                                        </TouchableOpacity>
+                                    ))}
+                                </StyledView>
+                            </StyledView>
+                        )
+                    }
+
                 </StyledView>
             </ScrollView>
 
@@ -740,6 +801,27 @@ export default function AccountSetting() {
                     </StyledView>
                 </StyledView>
             )}
+            {
+                uploading && (
+                    <StyledView className="absolute top-0 left-0 w-full h-full bg-black/20 items-center justify-center">
+                        <StyledView className="bg-white dark:bg-neutral-950 p-4 rounded-xl shadow-lg">
+                            <StyledText className="font-custom text-black dark:text-white text-lg text-center mb-4">
+                                กำลังอัพโหลด
+                            </StyledText>
+                            <ActivityIndicator size="large" color="#999" />
+                            <StyledText className="font-custom text-lg text-black dark:text-white text-center mt-4">
+                                {uploadProgress.toFixed(1)}%
+                            </StyledText>
+                            <StyledView className="w-full bg-gray-200 dark:bg-neutral-800 rounded-full h-2.5 mt-2">
+                                <StyledView
+                                    className="bg-blue-500 h-2.5 rounded-full"
+                                    style={{ width: `${uploadProgress}%` }}
+                                />
+                            </StyledView>
+                        </StyledView>
+                    </StyledView>
+                )
+            }
         </StyledKeyboardAvoidingView>
     );
 }

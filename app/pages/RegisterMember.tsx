@@ -7,16 +7,13 @@ import {
     SafeAreaView,
     Platform,
     KeyboardAvoidingView,
-    ActivityIndicator,
-    TouchableWithoutFeedback,
-    Keyboard,
     ScrollView,
-    Dimensions,
     StatusBar,
     Image,
     Alert,
-    Appearance, 
-    useColorScheme 
+    Appearance,
+    useColorScheme,
+    BackHandler
 } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -27,13 +24,13 @@ import RNPickerSelect from 'react-native-picker-select';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { API_SYSTEM_KEY } from '@/components/config';
-import { set } from 'firebase/database';
-import { ImageManipulator } from 'expo-image-manipulator';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledTouchableOpacity = styled(TouchableOpacity);
+
+
 
 interface InputFieldProps {
     label: string;
@@ -53,23 +50,6 @@ interface InputFieldProps {
     maxLength?: number;
     theme?: string;
 }
-
-const optimizeImage = async (uri: string) => {
-    try {
-        const manipResult = await ImageManipulator.manipulateAsync(
-            uri,
-            [{ resize: { width: 800 } }],
-            {
-                compress: 0.7,
-                format: ImageManipulator.SaveFormat.JPEG,
-            }
-        );
-        return manipResult.uri;
-    } catch (error) {
-        console.error("Error optimizing image: ", error);
-        return uri;
-    }
-};
 
 const InputField: React.FC<InputFieldProps> = ({
     label,
@@ -158,7 +138,7 @@ const InputField: React.FC<InputFieldProps> = ({
                         placeholderTextColor="#9CA3AF"
                         secureTextEntry={secureTextEntry}
                         maxLength={maxLength}
-                        
+
                     />
                     {buttonText && (
                         <StyledTouchableOpacity
@@ -185,7 +165,6 @@ const InputField: React.FC<InputFieldProps> = ({
 export default function RegisterMember() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [currentStep, setCurrentStep] = useState(1);
-
     const [theme, setTheme] = useState(Appearance.getColorScheme());
     useEffect(() => {
         const listener = Appearance.addChangeListener(({ colorScheme }) => {
@@ -388,7 +367,7 @@ export default function RegisterMember() {
                     ข้อมูลการติดต่อ
                 </StyledText>
                 <StyledText className="text-gray-500 font-custom dark:text-gray-400">
-                    กรุณากรอกข้อมูลให้ครบถ้วน
+                    {'กรุณากรอกข้อมูลให้ครบถ้วน'}
                 </StyledText>
             </StyledView>
 
@@ -554,7 +533,7 @@ export default function RegisterMember() {
                 icon="call-outline"
             />
 
-            <StyledView className="h-32" /> {/* Spacer for keyboard */}
+            <StyledView className="h-32" />
         </ScrollView>
     );
 
@@ -590,7 +569,7 @@ export default function RegisterMember() {
                         />
                     ) : (
                         <>
-                            <Ionicons name="camera" size={40} color={colorScheme === 'dark' ? '#EB3834': '#69140F'} />
+                            <Ionicons name="camera" size={40} color={colorScheme === 'dark' ? '#EB3834' : '#69140F'} />
                             <StyledText className="text-gray-500 mt-2 font-custom">
                                 แตะเพื่อถ่ายภาพหน้าตรง
                             </StyledText>
@@ -616,7 +595,7 @@ export default function RegisterMember() {
                         />
                     ) : (
                         <>
-                            <Ionicons name="card" size={40} color={colorScheme === 'dark' ? '#EB3834': '#69140F'} />
+                            <Ionicons name="card" size={40} color={colorScheme === 'dark' ? '#EB3834' : '#69140F'} />
                             <StyledText className="text-gray-500 mt-2 font-custom">
                                 แตะเพื่อถ่ายภาพบัตรประชาชน
                             </StyledText>
@@ -640,7 +619,7 @@ export default function RegisterMember() {
                     ข้อมูลการเงิน
                 </StyledText>
                 <StyledText className="text-gray-500 font-custom dark:text-gray-400">
-                    กรุณากรอกข้อมูลบัญชีธนาคารของคุณ
+                    {'กรุณากรอกข้อมูลบัญชีธนาคารของคุณ'}
                 </StyledText>
             </StyledView>
 
@@ -688,7 +667,7 @@ export default function RegisterMember() {
                 <StyledView className="items-center">
                     <StyledView className="w-24 h-24 bg-white dark:bg-neutral-800 rounded-full shadow-lg items-center justify-center mb-4 p-2">
                         <LinearGradient
-                            colors={colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316']}
+                            colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                             className="w-20 h-20 rounded-full items-center justify-center"
                         >
                             <Ionicons name="checkmark-sharp" size={40} color="white" />
@@ -773,7 +752,7 @@ export default function RegisterMember() {
                 {/* Slogan */}
                 <StyledView className="items-center mb-8">
                     <LinearGradient
-                        colors={colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316']}
+                        colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                         className="px-6 py-4 rounded-2xl"
                     >
                         <StyledText className="text-white text-lg font-custom text-center">
@@ -815,7 +794,6 @@ export default function RegisterMember() {
     const handleNext = async (bypass?: boolean) => {
         if (currentStep < 5) {
             if (currentStep === 1) {
-                // check data is empty
                 if (!username || !password || !confirmpassword || !email || !phone) {
                     Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลให้ครบถ้วน');
                     return
@@ -823,6 +801,11 @@ export default function RegisterMember() {
 
                 if (password !== confirmpassword) {
                     Alert.alert('รหัสผ่านไม่ตรงกัน', 'กรุณากรอกรหัสผ่านให้ตรงกัน');
+                    return;
+                }
+
+                if (verifyPhone != true && !bypass) {
+                    Alert.alert('เบอร์โทรศัพท์ไม่ถูกต้อง', 'กรุณายืนยันเบอร์โทรศัพท์ของคุณ');
                     return;
                 }
 
@@ -920,7 +903,7 @@ export default function RegisterMember() {
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            className="flex-1 bg-white dark:bg-neutral-900"
+            className="flex-1 bg-white dark:bg-neutral-900 pt-8"
             keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -500}
         >
             <StatusBar barStyle="dark-content" />
@@ -970,8 +953,8 @@ export default function RegisterMember() {
                     <TouchableOpacity
                         onPress={() => {
                             if (currentStep === 1) {
-                                // handleVerifyOTP();
-                                handleNext();
+                                handleVerifyOTP();
+                                // handleNext();
                             } else {
                                 if (currentStep === 5) {
                                     navigation.navigate('Login', {});
@@ -983,7 +966,7 @@ export default function RegisterMember() {
                         className={`rounded-full overflow-hidden `}
                     >
                         <LinearGradient
-                            colors={colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316']}
+                            colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
                             className="py-4"

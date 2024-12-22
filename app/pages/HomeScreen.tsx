@@ -26,6 +26,7 @@ import AccountStatus from "../screen/AccountStatus";
 import History from "../screen/History";
 import SettingSecurity from "../screen/SettingSecurity";
 import SettingDeleteAccount from "../screen/SettingDeleteAccount";
+import { createStackNavigator } from "@react-navigation/stack";
 
 const Tab = createBottomTabNavigator();
 
@@ -97,7 +98,7 @@ export default function HomeScreen() {
   const checkOtherLogin = async () => {
     if (deviceId && userData.id) {
       try {
-        const res = await axios.get(`http://49.231.43.37:3000/api/oauth/login?deviceId=${deviceId}&userId=${userData.id}`, {
+        const res = await axios.get(`https://friendszone.app/api/oauth/login?deviceId=${deviceId}&userId=${userData.id}`, {
           headers: {
             'Authorization': `All ${userData.token}`,
             'Content-Type': 'application/json'
@@ -127,7 +128,7 @@ export default function HomeScreen() {
   useEffect(() => {
     const interval = setInterval(() => {
       checkOtherLogin();
-    }, 1000*60);
+    }, 1000 * 60);
 
     return () => clearInterval(interval);
   }, [userData]);
@@ -136,31 +137,34 @@ export default function HomeScreen() {
     checkNotificationPermissions();
   }, [userData]);
 
+  const Stack = createStackNavigator();
+
   return (
-    <>
-      <Tab.Navigator tabBar={() => null}>
-        <Tab.Screen name="FeedsTab" component={Feeds} options={{ headerShown: false, animation: "fade" }} />
-        <Tab.Screen name="MessageTab" component={Message} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="SettingTab" component={Setting} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="ProfileTab" component={Profile} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="PostTab" component={Post} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="PostUpdate" component={PostUpdate} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="FastTab" component={Fast} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="SearchCategory" component={SearchCategory} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="SchedulePage" component={SchedulePage} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="Search" component={Search} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="Chat" component={Chat} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="AccountSetting" component={AccountSetting} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="ScheduleList" component={ScheduleList} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="Policy" component={Policy} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="PostView" component={PostView} options={{ headerShown: false, animation: "fade" }} />
-        <Tab.Screen name="Notification" component={NotificationPage} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="SettingPassword" component={SettingPassword} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="AccountStatus" component={AccountStatus} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="History" component={History} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="SettingSecurity" component={SettingSecurity} options={{ headerShown: false, animation: "shift" }} />
-        <Tab.Screen name="SettingDeleteAccount" component={SettingDeleteAccount} options={{ headerShown: false, animation: "shift" }} />
-      </Tab.Navigator>
-    </>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <>
+        <Stack.Screen name="FeedsTab" component={Feeds} />
+        <Stack.Screen name="MessageTab" component={Message} />
+        <Stack.Screen name="SettingTab" component={Setting} />
+        <Stack.Screen name="ProfileTab" component={Profile} />
+        <Stack.Screen name="PostTab" component={Post}/>
+        <Stack.Screen name="PostUpdate" component={PostUpdate}/>
+        <Stack.Screen name="FastTab" component={Fast}/>
+        <Stack.Screen name="SearchCategory" component={SearchCategory}/>
+        <Stack.Screen name="SchedulePage" component={SchedulePage}/>
+        <Stack.Screen name="Search" component={Search}/>
+        <Stack.Screen name="Chat" component={Chat}/>
+        <Stack.Screen name="AccountSetting" component={AccountSetting}/>
+        <Stack.Screen name="ScheduleList" component={ScheduleList}/>
+        <Stack.Screen name="Policy" component={Policy}/>
+        <Stack.Screen name="PostView" component={PostView} />
+        <Stack.Screen name="Notification" component={NotificationPage}/>
+        <Stack.Screen name="SettingPassword" component={SettingPassword}/>
+        <Stack.Screen name="AccountStatus" component={AccountStatus}/>
+        <Stack.Screen name="History" component={History}/>
+        <Stack.Screen name="SettingSecurity" component={SettingSecurity}/>
+        <Stack.Screen name="SettingDeleteAccount" component={SettingDeleteAccount}/>
+
+      </>
+    </Stack.Navigator>
   );
 }

@@ -15,7 +15,7 @@ export default function SelectRegisterPage() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-white dark:bg-neutral-900">
+    <StyledSafeAreaView className="flex-1 bg-white dark:bg-neutral-900 pt-8">
       {/* Header */}
       <StyledView className="flex-row items-center px-4 mt-4">
         <TouchableOpacity 

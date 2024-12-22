@@ -38,7 +38,7 @@ export interface MembersDB {
   reviews: number;
   weight: number;
   height: number;
-  previrwVideoUrl?: string;
+  previewVideoUrl?: string;
   previewFirstImageUrl?: string;
   previewAllImageUrl: string[];
   loggedAt?: string;
@@ -94,7 +94,7 @@ export interface CustomersDB {
   bio?: string;
   weight: number;
   height: number;
-  previrwVideoUrl?: string;
+  previewVideoUrl?: string;
   previewAllImageUrl: string[];
   Comments: Comments[];
   MessagesChat: MessagesChat[];

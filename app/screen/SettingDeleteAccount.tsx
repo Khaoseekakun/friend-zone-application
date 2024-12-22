@@ -48,7 +48,7 @@ export default function SettingDeleteAccount() {
         if (!password) return Alert.alert("ผิดพลาด", "กรุณากรอกรหัสผ่าน")
         try {
             setLoading(true)
-            const response = await axios.put(`http://49.231.43.37:3000/api/account/${userData.id}`, {
+            const response = await axios.put(`https://friendszone.app/api/account/${userData.id}`, {
                 password: password
             }, {
                 headers: {

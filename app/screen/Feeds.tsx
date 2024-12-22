@@ -55,7 +55,6 @@ export default function FeedsTab() {
     const [postAction, setPostAction] = useState('');
     const [refreshing, setRefreshing] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-    const isFocused = useIsFocused();
 
     const [theme, setTheme] = useState(Appearance.getColorScheme());
 
@@ -81,7 +80,6 @@ export default function FeedsTab() {
         }
 
         try {
-
             setLoading(true);
             const response = await axios.get(`https://friendszone.app/api/post?loadLimit=${pageNumber != 1 ? "1" : "10"}&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}&by=${userData?.id}`, {
 
@@ -420,6 +418,11 @@ export default function FeedsTab() {
             </TouchableOpacity>
         )
     }
+
+    useEffect(() => {
+        if(userData?.id == undefined) return;
+        fetchPosts();
+    }, [])
 
     return (
 

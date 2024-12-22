@@ -61,7 +61,7 @@ export default function Login() {
     const loginHandler = async () => {
         setLoading(true);
         try {
-            const loginData = await axios.post('http://49.231.43.37:3000/api/oauth/login', {
+            const loginData = await axios.post('https://friendszone.app/api/oauth/login', {
                 phoneNumber: phone,
                 password: password,
                 deviceId: deviceId

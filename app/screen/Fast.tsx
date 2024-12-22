@@ -6,8 +6,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, FlatList, TextInput } from "react-native-gesture-handler";
 import axios from "axios";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { HeaderApp } from "@/components/Header";
 import { Navigation } from "@/components/Navigation";
+import * as Location from 'expo-location';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import Animated, {
   useSharedValue,
@@ -22,6 +24,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { RootStackParamList } from "@/types";
 import { Feather } from "lucide-react-native";
+import { JobsList } from "@/types/prismaInterface";
 const Icon = require('../../assets/icon/search.gif');
 
 const StyledView = styled(View);
@@ -30,7 +33,7 @@ const StyledTextInput = styled(TextInput);
 const StyledIonIcon = styled(Ionicons);
 const StyledImage = styled(Image);
 const StyledScrollView = styled(ScrollView);
-const StyledMapView = styled(MapView);
+const StyledMapView = styled(MapView)
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 const { width } = Dimensions.get('window');
@@ -56,25 +59,33 @@ export default function Fast() {
   const [search, setSearch] = useState('');
   const [searchloading, setSearchLoading] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [scheduleDate, setScheduleDate] = useState("");
-  const [scheduleTime, setScheduleTime] = useState("");
-  const [scheduleJobs, setScheduleJobs] = useState("");
-  const [scheduleLocation, setScheduleLocation] = useState("");
-  const [pin, setPin] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [pin, setPin] = useState<{ latitude: number; longitude: number }>({ latitude: 37.78825, longitude: -122.4324 });
   const [loading, setLoading] = useState(false);
-  const [searchFocus, setSearchFocus] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15);
   const [dots, setDots] = useState('');
   const router = useRoute<CategorySearch>();
   const { backPage } = router.params;
   const [theme, setTheme] = useState(Appearance.getColorScheme());
 
-  useEffect(() => {
-      const listener = Appearance.addChangeListener(({ colorScheme }) => {
-          setTheme(colorScheme);
-      });
 
-      return () => listener.remove();
+
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("");
+  const [scheduleJobs, setScheduleJobs] = useState("");
+  const [scheduleLocation, setScheduleLocation] = useState("");
+  const [categoryId, setCategoryId] = useState('');
+  const [jobsList, setJobsList] = useState<JobsList[]>([]);
+  const [scheduleNote, setScheduleNote] = useState('');
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
+  const [showSelectJobs, setShowSelectJob] = useState(false);
+
+  useEffect(() => {
+    const listener = Appearance.addChangeListener(({ colorScheme }) => {
+      setTheme(colorScheme);
+    });
+
+    return () => listener.remove();
   }, []);
 
   const backgroundAnim = useSharedValue(0);
@@ -82,7 +93,6 @@ export default function Fast() {
   const _size = 100;
 
   useEffect(() => {
-    // ควรย้าย timer ไปไว้ในเงื่อนไข step === 3 เพื่อป้องกันการทำงานที่ไม่จำเป็น
     if (step === 3) {
       const timer = setInterval(() => {
         setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
@@ -96,6 +106,10 @@ export default function Fast() {
         clearInterval(timer);
         clearInterval(dotsTimer);
       };
+    }
+
+    if(step == 2){
+      getCurrentLocation();
     }
   }, [step]);
 
@@ -141,21 +155,31 @@ export default function Fast() {
     setLoading(false);
   };
 
+  const loadJobsList = async (categoryId: string) => {
+    try {
+      const res = await axios.get(`https://friendszone.app/api/categoryJobs/${categoryId}/jobslist`);
+      setJobsList(res.data.body);
+      setStep(2);
+    } catch (error) {
+      Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
+    }
+  }
+
   const renderCategorySelection = () => (
     <LinearGradient
       colors={['#8B0000', '#4A0404']}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-      className="flex-1"
+      className="flex-1 pt-10"
     >
-      <SafeAreaView style={{flex: 1}}>
+      <SafeAreaView style={{ flex: 1 }}>
         <StyledScrollView className="flex-1">
-        <AnimatedTouchable
-          onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()}
-          className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute left-6 mt-3 z-10"
-        >
-          <Ionicons name="chevron-back" size={24} color="#EB3834" />
-        </AnimatedTouchable>
+          <AnimatedTouchable
+            onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()}
+            className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute left-6 mt-3 z-10 "
+          >
+            <Ionicons name="chevron-back" size={24} color="#EB3834" />
+          </AnimatedTouchable>
           <Animated.View
             className="px-3 pb-20"
           >
@@ -170,7 +194,10 @@ export default function Fast() {
                   width: CARD_WIDTH - 16,
                   height: CARD_HEIGHT,
                 }}
-                onPress={() => setStep(2)}
+                onPress={() => {
+                  setCategoryId('673080a432edea568b2a6554')
+                  loadJobsList('673080a432edea568b2a6554')
+                }}
               >
                 <LinearGradient
                   colors={['#FF4B48', '#AB1815']}
@@ -413,120 +440,286 @@ export default function Fast() {
     </LinearGradient>
   );
 
+  const getCurrentLocation = async () => {
+    const location = await Location.getCurrentPositionAsync({});
+    setPin({
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+    });
+
+  }
+
+  const handleConfirm = (date: Date) => {
+    const formattedDate = date.toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+
+    setScheduleDate(formattedDate);
+    setScheduleTime("");
+    hideDatePicker();
+  };
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleTimeConfirm = (date: Date) => {
+    const timeFormat = date.toLocaleTimeString('th-TH', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    setScheduleTime(timeFormat);
+    hideTimePicker();
+  };
+
+  const showTimePicker = () => {
+    setTimePickerVisibility(true);
+  };
+  const hideTimePicker = () => {
+    setTimePickerVisibility(false);
+  };
+
+  const showSelectJob = () => {
+    setShowSelectJob(true);
+  }
+
+  const hideSelectJob = () => {
+    setShowSelectJob(false);
+  }
+
   const renderAppointmentForm = () => (
-    <SafeAreaView style={{flex: 1}}>
-      <StyledScrollView className="flex-1">
-        <AnimatedTouchable
-          onPress={() => setStep(1)}
-          className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute left-6 mt-3"
-        >
-          <Ionicons name="chevron-back" size={24} color="#EB3834" />
-        </AnimatedTouchable>
-        <StyledView className="flex-row items-center px-6 py-2 mt-10">
-          <StyledView className="w-6/12 px-1">
-            <StyledText className="text-lg font-custom dark:text-neutral-200">วัน/เดือน/ปี</StyledText>
-            <TouchableOpacity>
-              <StyledView className="border border-gray-300 rounded-2xl py-4 px-4">
-                <StyledText className="font-custom text-gray-700 dark:text-white">
-                  {scheduleDate || "03/10/2567"}
-                </StyledText>
+    <SafeAreaView style={{ flex: 1, height: '100%' }}>
+      <StyledScrollView className="flex-1 pt-10">
+        {
+          showSelectJobs ? (
+            <>
+              <StyledView className="flex-row items-center px-6 py-1 pt-5">
+                <StyledView className="w-full px-1">
+                  <StyledView className="flex-row gap-1 items-center w-full mb-2">
+
+                    <StyledIonIcon name="chevron-back" size={24}
+                      onPress={() => hideSelectJob()}
+                      className="text-black dark:text-neutral-200"
+
+                    />
+
+                  </StyledView>
+                  {
+                    jobsList?.map((jobs, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        className="flex-row items-center"
+                        onPress={() => {
+                          setScheduleJobs(jobs.id)
+                          hideSelectJob();
+                        }}
+                      >
+                        <StyledText className="text-lg w-full text-center text-black font-custom dark:text-neutral-200 flex-wrap pr-2 border-gray-200 max-w-[95%] bg-gray-300 dark:bg-neutral-800 px-2 py-2 rounded-xl my-2 ">{jobs.jobName}</StyledText>
+                      </TouchableOpacity>
+                    ))
+                  }
+                </StyledView>
+
               </StyledView>
-            </TouchableOpacity>
-          </StyledView>
+            </>
+          ) : (
+            <>
+              <AnimatedTouchable
+                onPress={() => setStep(1)}
+                className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center left-6 mt-3 "
+              >
+                <Ionicons name="chevron-back" size={24} color="#EB3834" />
+              </AnimatedTouchable>
+              <StyledView className="flex-row items-center px-6 py-1">
+                <StyledView className="w-6/12 px-1">
+                  <StyledText className="text-lg text-black font-custom dark:text-neutral-200">วัน/เดือน/ปี</StyledText>
 
-          <StyledView className="w-6/12 px-1">
-            <StyledText className="text-lg font-custom dark:text-neutral-200">เวลา</StyledText>
-            <TouchableOpacity>
-              <StyledView className="border border-gray-300 rounded-2xl py-4 px-4">
-                <StyledText className="font-custom text-gray-700 dark:text-white">
-                  {scheduleTime || "10:10"}
-                </StyledText>
+                  <TouchableOpacity
+                    onPress={showDatePicker}>
+                    <StyledView
+                      className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                    >
+                      <StyledText className={`font-custom ${scheduleDate ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleDate ? scheduleDate : "03/10/2567"}</StyledText>
+                    </StyledView>
+                  </TouchableOpacity>
+                </StyledView>
+
+                <StyledView className="w-6/12 px-1">
+                  <StyledText className="text-lg text-black font-custom dark:text-neutral-200">เวลา</StyledText>
+
+                  <TouchableOpacity
+                    onPress={showTimePicker}>
+                    <StyledView
+                      className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                    >
+                      <StyledText className={`font-custom ${scheduleTime ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleTime ? scheduleTime : "10:10"}</StyledText>
+                    </StyledView>
+                  </TouchableOpacity>
+                </StyledView>
               </StyledView>
-            </TouchableOpacity>
-          </StyledView>
-        </StyledView>
-
-        {/* Job Type Selection */}
-        <StyledView className="flex-row items-center px-6 py-2">
-          <StyledView className="w-full px-1">
-            <StyledText className="text-lg font-custom dark:text-neutral-200">
-              ประเภทงาน
-            </StyledText>
-            <TouchableOpacity>
-              <StyledView className="border border-gray-300 rounded-2xl py-4 px-4">
-                <StyledText className="font-custom text-gray-700 dark:text-white">
-                  {scheduleJobs ? joblist.find(j => j.value === scheduleJobs)?.label : "เลือกประเภทงาน"}
-                </StyledText>
+              <StyledView className="flex-row items-center px-6 py-1">
+                <StyledView className="w-full px-1">
+                  <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
+                    ประเภทงาน
+                  </StyledText>
+                  <TouchableOpacity
+                    onPress={showSelectJob}>
+                    <StyledView
+                      className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                    >
+                      <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? jobsList.find((j) => j.id == scheduleJobs)?.jobName : "เลือกประเภทงาน"}</StyledText>
+                    </StyledView>
+                  </TouchableOpacity>
+                </StyledView>
               </StyledView>
-            </TouchableOpacity>
-          </StyledView>
-        </StyledView>
 
-        {/* Location */}
-        <StyledView className="items-center px-6 py-2">
-          <StyledView className="w-full px-1">
-            <StyledText className="text-lg font-custom dark:text-neutral-200">จุดนัดหมาย</StyledText>
-            <TouchableOpacity onPress={() => setSearchFocus(true)}>
-              <StyledView className="border border-gray-300 rounded-2xl py-4 px-4">
-                <StyledText className="font-custom text-gray-700 dark:text-white">
-                  {scheduleLocation || "ค้นหาสถานที่"}
-                </StyledText>
+              <StyledView className="flex-row items-center px-6 py-1">
+                <StyledView className="w-full px-1">
+                  <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
+                    หมายเหตุ
+                  </StyledText>
+
+                  <StyledView
+                    className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
+                  >
+                    <TextInput
+                      placeholder="กรอกหมายเหตุ (ถ้ามี)"
+                      value={scheduleNote}
+                      onChangeText={setScheduleNote}
+                      multiline={true}
+                      numberOfLines={3}
+                      className="font-custom text-gray-700 dark:text-white"
+                      placeholderTextColor="#d1d5db"
+                      style={{
+                        textAlignVertical: 'top',
+                        minHeight: 40,
+                      }}
+                    />
+                  </StyledView>
+                </StyledView>
               </StyledView>
-            </TouchableOpacity>
-          </StyledView>
-        </StyledView>
 
-        {/* Map */}
-        <StyledView className="px-6 py-2 rounded-2xl my-2 mt-5 h-[300px]">
-          <StyledMapView
-            initialRegion={{
-              latitude: 13.7563,
-              longitude: 100.5018,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
-            className="w-full h-full rounded-2xl"
-            onPress={(e) => {
-              const { latitude, longitude } = e.nativeEvent.coordinate;
-              setPin({ latitude, longitude });
-            }}
-          >
-            {pin && (
-              <>
-                <Marker coordinate={pin} />
-                <Circle
-                  center={pin}
-                  radius={250}
-                  strokeColor="rgba(255, 0, 0, 0.5)"
-                  fillColor="rgba(255, 0, 0, 0.2)"
-                />
-              </>
-            )}
-          </StyledMapView>
-        </StyledView>
+              <StyledView className="items-center px-6 py-1">
+                <StyledView className="w-full px-1">
+                  <StyledText className="text-lg text-black font-custom dark:text-neutral-200">จุดนัดหมาย</StyledText>
+                  <StyledView
+                    className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
+                  >
+                    <TextInput
+                      placeholder="จุดนัดหมาย"
+                      value={scheduleLocation}
+                      onChangeText={setScheduleLocation}
+                      className="font-custom text-gray-700 dark:text-white"
+                      placeholderTextColor="#d1d5db"
+                      style={{
+                        textAlignVertical: 'top',
+                        minHeight: 40,
+                      }}
+                    />
+                  </StyledView>
 
-        {/* Submit Button */}
-        <TouchableOpacity
-          className="w-full px-6 my-6"
-          onPress={handleCreateSchedule}
-          disabled={loading}
-        >
-          <LinearGradient
-            colors={theme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            className="rounded-full py-3 shadow-sm"
-          >
-            {loading ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <StyledText className="font-custom text-center text-white text-lg font-semibold">
-                นัดหมายแบบเร่งด่วน
-              </StyledText>
-            )}
-          </LinearGradient>
-        </TouchableOpacity>
+
+                </StyledView>
+              </StyledView>
+
+              <StyledView className="px-6 py-1 rounded-2xl my-2 mt-5 h-[50%]">
+                <MapView
+                  initialRegion={{
+                    latitude: pin ? pin.latitude : 37.78825,
+                    longitude: pin ? pin.longitude : -122.4324,
+                    latitudeDelta: 0.0922,
+                    longitudeDelta: 0.0421,
+                  }}
+                  onPress={(e) => {
+                    const { latitude, longitude } = e.nativeEvent.coordinate;
+                    setPin({ latitude, longitude });
+                  }}
+                  style={{
+                    borderRadius: 20,
+                    height: "100%",
+                  }}
+                >
+                  {pin && (
+                    <>
+                      <Marker
+                        coordinate={{
+                          latitude: pin.latitude,
+                          longitude: pin.longitude,
+                        }}
+                        title="Selected Location"
+                        draggable={true}
+                      />
+                      <Circle
+                        center={pin}
+                        radius={250} // radius in meters
+                        strokeColor="rgba(255, 0, 0, 0.5)" // Border color
+                        fillColor="rgba(255, 0, 0, 0.2)" // Fill color
+                      />
+                    </>
+                  )}
+                </MapView>
+              </StyledView>
+            </>
+          )
+        }
       </StyledScrollView>
+      {
+        !showSelectJobs && (
+          <TouchableOpacity
+            className="w-full px-6 absolute bottom-4"
+            onPress={handleCreateSchedule}
+            disabled={loading}
+          >
+            <LinearGradient
+              colors={theme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              className="rounded-full py-3 shadow-sm"
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <StyledText className="font-custom text-center text-white text-lg font-semibold">
+                  นัดหมายแบบเร่งด่วน
+                </StyledText>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        )
+      }
+
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible}
+        mode="date"
+        onConfirm={handleConfirm}
+        onCancel={hideDatePicker}
+        locale="th-TH"
+        minimumDate={new Date(Date.now())}
+        shouldRasterizeIOS
+      />
+
+      <DateTimePickerModal
+        isVisible={isTimePickerVisible}
+        mode="time"
+        onConfirm={handleTimeConfirm}
+        onCancel={hideTimePicker}
+        locale="th-TH"
+        shouldRasterizeIOS
+        minimumDate={
+          scheduleDate
+            ?
+            new Date(Date.now()).getDate() == new Date(`${scheduleDate.split("/")[2]}-${scheduleDate.split("/")[1]}-${scheduleDate.split("/")[0]}`).getDate()
+              ? new Date(Date.now() + 60 * 60 * 1000)
+              : undefined
+            : new Date(Date.now() + 60 * 60 * 1000)
+        }
+      />
     </SafeAreaView>
   );
 
@@ -553,12 +746,12 @@ export default function Fast() {
   const renderWaitingScreen = () => {
     return (
       <LinearGradient
-        colors={['#8B0000', '#4A0404']} 
+        colors={['#8B0000', '#4A0404']}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         className="flex-1 justify-center items-center px-6"
       >
-        <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Animated.View
             entering={FadeInUp.delay(300).duration(1000)}
             className="items-center"
@@ -574,7 +767,7 @@ export default function Fast() {
                   { position: 'absolute', transform: [{ scale: 1.5 }] },
                 ]}
               />
-              <Animated.View 
+              <Animated.View
                 className="w-[120px] h-[120px] bg-red-400/20 rounded-full items-center justify-center"
                 style={{
                   shadowColor: "#FF4B48",
@@ -587,9 +780,9 @@ export default function Fast() {
                   elevation: 10
                 }}
               >
-                <Image 
-                  source={Icon} 
-                  style={{ width: 60, height: 60 }} 
+                <Image
+                  source={Icon}
+                  style={{ width: 60, height: 60 }}
                   className="opacity-90"
                 />
               </Animated.View>
