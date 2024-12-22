@@ -653,14 +653,13 @@ export default function ProfileTab() {
                             </StyledView>
                         </StyledScrollView>
                         {!userData.id || userProfile?.profile?.id !== userData.id && (
-                            <View style={{ zIndex: 0 }}>
-                                <StyledTouchableOpacity
-                                    disabled={false}
-                                    className="w-full px-[15%] mb-4 duration-200 absolute bottom-1"
+                            <StyledView className="absolute bottom-4 left-0 right-0 px-[15%]">
+                                <TouchableOpacity
+                                    activeOpacity={0.8}
                                     onPress={async () => {
                                         if (hasLocationPermission) {
                                             if (!pin) {
-                                                await getCurrentLocation(); // This will call getCurrentLocation correctly
+                                                await getCurrentLocation();
                                             }
                                             bottomSheetRef.current?.expand();
                                         } else {
@@ -681,13 +680,14 @@ export default function ProfileTab() {
                                         colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                                         start={{ x: 0, y: 0 }}
                                         end={{ x: 1, y: 0 }}
-                                        className="rounded-full py-3 shadow-sm"
+                                        className="rounded-full py-3"
                                     >
-                                        {[<StyledText key="scheduleCreate" className="font-custom text-center text-white text-lg font-semibold">นัดหมาย</StyledText>]}
-
+                                        <StyledText className="font-custom text-center text-white text-lg font-semibold">
+                                            นัดหมาย
+                                        </StyledText>
                                     </LinearGradient>
-                                </StyledTouchableOpacity>
-                            </View>
+                                </TouchableOpacity>
+                            </StyledView>
                         )}
                     </>
                 )
