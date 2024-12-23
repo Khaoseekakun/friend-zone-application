@@ -82,10 +82,12 @@ export default function Search() {
     const [genderFilter, setGenderFilter] = useState<string[]>([]);
     const [isUserDataLoaded, setIsUserDataLoaded] = useState(false);
     const [hasLocationPermission, setHasLocationPermission] = useState(false);
-    const [selfPin, setSelfPin] = useState<LatLng | null>(null);
     const [distance, setDistance] = useState<number>(0);
     const [saveSearchType, setSaveSearchType] = useState<string>('');
     const colorScheme = useColorScheme();
+
+    const [currentLatitude, setCurrentLatitude] = useState<number>(0);
+    const [currentLongitude, setCurrentLongitude] = useState<number>(0);
 
     const isFoucs = useIsFocused()
 
@@ -100,6 +102,11 @@ export default function Search() {
         name: string;
     }[]>([]);
 
+    const getCurrentLocation = async () => {
+        const location = await Location.getCurrentPositionAsync({});
+        setCurrentLatitude(location.coords.latitude);
+        setCurrentLongitude(location.coords.longitude);
+    }
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -114,15 +121,12 @@ export default function Search() {
                 setIsUserDataLoaded(true);
             }
         };
+
         const requestLocationPermission = async () => {
             const { status } = await Location.requestForegroundPermissionsAsync();
             if (status === 'granted') { // แก้ == เป็น ===
                 setHasLocationPermission(true);
-                const location = await Location.getCurrentPositionAsync({}); // แก้จาก requestCurrentPermissionsAsync เป็น getCurrentPositionAsync
-                setSelfPin({
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
-                });
+                getCurrentLocation();
             }
         };
 
@@ -266,7 +270,7 @@ export default function Search() {
     async function handlerSearch(filterSearch: boolean, options: SearchOption) {
         try {
             setSearchLoading(true);
-            let url = `https://friendszone.app/api/search/members?jobsCategory=${searchType == undefined ? saveSearchType : searchType}`
+            let url = `http://49.231.43.37:3000/api/search/members?jobsCategory=${searchType == undefined ? saveSearchType : searchType}&latitude=${currentLatitude}&longitude=${currentLongitude}`;
             let deafult_age = '18-99'
 
             if (filterSearch == true) {

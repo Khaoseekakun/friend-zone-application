@@ -15,6 +15,7 @@ import axios from "axios";
 import { JobsList } from "@/types/prismaInterface";
 import FireBaseApp from "@/utils/firebaseConfig";
 import { getStorage, uploadBytes, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import * as Location from 'expo-location';
 
 // import {
 //     putFile,
@@ -38,7 +39,6 @@ interface UserProfile {
     images: string[];
     bio: string;
     education: string;
-    location: string;
     height: number;
     weight: number;
     profileUrl: string;
@@ -53,6 +53,8 @@ interface UserProfile {
     previewFirstImageUrl?: string;
     previewVideoUrl?: string;
     type: string;
+    longitude: number;
+    latitude: number;
 }
 
 interface ServiceOption {
@@ -70,7 +72,6 @@ export default function AccountSetting() {
     const [username, setUsername] = useState("");
     const [bio, setBio] = useState("");
     const [education, setEducation] = useState("");
-    const [location, setLocation] = useState("");
     const [height, setHeight] = useState("");
     const [weight, setWeight] = useState("");
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -93,6 +94,8 @@ export default function AccountSetting() {
     const [loading, setLoading] = useState(true);
     const [loadingUpdate, setLoadingUpdate] = useState(false);
     const [isVideoUpdated, setIsVideoUpdated] = useState(false);
+    const [longitude, setLongitude] = useState(0);
+    const [latitude, setLatitude] = useState(0);
 
 
     const [userToken, setuUerToken] = useState<any>(null);
@@ -132,11 +135,11 @@ export default function AccountSetting() {
                     async () => {
                         const downloadURL = await getDownloadURL(refVideo);
 
-                        await axios.put(`https://friendszone.app/api/member/${profileData?.id}/video`, {
-                            downloadUrl : downloadURL
-                        },{
+                        await axios.put(`http://49.231.43.37:3000/api/member/${profileData?.id}/video`, {
+                            downloadUrl: downloadURL
+                        }, {
                             headers: {
-                                'Authorization' : `Member ${userToken}`,
+                                'Authorization': `Member ${userToken}`,
                                 'Content-Type': 'application/json',
                             }
                         })
@@ -229,24 +232,30 @@ export default function AccountSetting() {
                 JSON.stringify(images) !== JSON.stringify(oldImages) ||
                 JSON.stringify(selectedServices) !== JSON.stringify(profileData?.JobMembers?.map((service) => service.jobId)) ||
                 bio !== profileData?.bio ||
-                (location === "" ? undefined : location) !== profileData?.location ||
+                latitude !== profileData?.latitude ||
+                longitude !== profileData?.longitude ||
                 height !== profileData?.height?.toString() ||
                 weight !== profileData?.weight?.toString() ||
-                username !== profileData?.username
+                username !== profileData?.username ||
+                profileImage !== profileData?.profileUrl
+
+
 
             setIsUpdated(hasChanges);
         } else {
             const hasChanges =
                 JSON.stringify(images) !== JSON.stringify(oldImages) ||
                 bio !== profileData?.bio ||
-                (location === "" ? undefined : location) !== profileData?.location ||
+                latitude !== profileData?.latitude ||
+                longitude !== profileData?.longitude ||
                 height !== profileData?.height?.toString() ||
                 weight !== profileData?.weight?.toString() ||
-                username !== profileData?.username
+                username !== profileData?.username ||
+                profileImage !== profileData?.profileUrl
 
             setIsUpdated(hasChanges);
         }
-    }, [images, selectedServices, bio, education, location, height, weight, profileData]);
+    }, [images, selectedServices, bio, education, longitude, latitude, height, weight, profileData, profileImage, username]);
 
     const fetchUserData = async () => {
         try {
@@ -255,7 +264,7 @@ export default function AccountSetting() {
 
             const userList = JSON.parse(userData);
             const response = await axios.get<{ status: number; data: { profile: any } }>(
-                `https://friendszone.app/api/profile/${userList.id}`,
+                `http://49.231.43.37:3000/api/profile/${userList.id}`,
                 {
                     headers: {
                         "Authorization": `All ${userList?.token}`
@@ -268,11 +277,13 @@ export default function AccountSetting() {
                 setUsername(profile.username || "");
                 setBio(profile.bio || "");
                 setEducation(profile.education || "");
-                setLocation(profile.location || "");
                 setHeight(profile.height?.toString() || "");
                 setWeight(profile.weight?.toString() || "");
                 setImages(profile.previewAllImageUrl || []);
                 setOldImages(profile.previewAllImageUrl || []);
+                setLatitude(profile.latitude);
+                setLongitude(profile.longitude);
+
 
                 if (profile.type === "member") {
                     setVideo(profile?.previewVideoUrl || null);
@@ -342,6 +353,11 @@ export default function AccountSetting() {
         }
     };
 
+    const getCurrentLocation = async () => {
+        const location = await Location.getCurrentPositionAsync({});
+        setLatitude(location.coords.latitude);
+        setLongitude(location.coords.longitude);
+    }
 
     const handleImagePick = async (useCamera = false) => {
         try {
@@ -394,16 +410,18 @@ export default function AccountSetting() {
             if (!userData) return;
 
             const userList = JSON.parse(userData);
-            await axios.put(
-                `https://friendszone.app/api/profile/${userList.id}`,
+            const res = await axios.put(
+                `http://49.231.43.37:3000/api/profile/${userList.id}`,
                 {
                     bio,
                     education,
-                    location,
+                    longitude: Number(longitude),
+                    latitude: Number(latitude),
                     height: Number(height),
                     weight: Number(weight),
                     images,
-                    services: selectedServices
+                    services: selectedServices,
+                    imageProfile: profileImage,
                 },
                 {
                     headers: {
@@ -412,9 +430,27 @@ export default function AccountSetting() {
                 }
             );
 
-            setIsUpdated(false);
-            setOldImages(images);
-            await fetchUserData();
+            if (res.status === 200) {
+
+                if (images != oldImages) {
+                    await axios.put(`http://49.231.43.37:3000/api/preview/${userList.id}`, {
+                        previewAllImages: images,
+                    }, {
+                        headers: {
+                            "Authorization": `All ${userList?.token}`
+                        }
+                    })
+                }
+
+                setIsUpdated(false);
+                setOldImages(images);
+                await fetchUserData();
+            } else {
+                Alert.alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+            }
+
+
+
         } catch (error) {
             console.error('Error saving profile:', error);
             alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
@@ -427,7 +463,6 @@ export default function AccountSetting() {
         if (profileData) {
             setBio(profileData.bio || "");
             setEducation(profileData.education || "");
-            setLocation(profileData.location || "");
             setHeight(profileData.height?.toString() || "");
             setWeight(profileData.weight?.toString() || "");
             setSelectedServices(profileData?.JobMembers?.map((service) => service.jobId));
@@ -436,6 +471,9 @@ export default function AccountSetting() {
             setProfileImage(null);
             setVideo(profileData.previewVideoUrl || null);
             setUsername(profileData.username || "");
+            setIsUpdated(false);
+            setLatitude(profileData.latitude || 0);
+            setLongitude(profileData.longitude || 0);
 
         }
     };
@@ -466,16 +504,6 @@ export default function AccountSetting() {
                 <StyledText className="dark:text-white  text-lg font-custom">
                     แก้ไข
                 </StyledText>
-
-                <TouchableOpacity
-                    className="absolute right-4"
-                    onPress={saveProfile}
-                    disabled={!isUpdated || loadingUpdate}
-                >
-                    <StyledText className={`font-custom text-lg ${(!isUpdated || loadingUpdate) ? 'text-gray-400' : 'text-blue-500'}`}>
-                        เสร็จสิ้น
-                    </StyledText>
-                </TouchableOpacity>
             </StyledView>
 
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -566,15 +594,17 @@ export default function AccountSetting() {
                                             {
                                                 isVideoUpdated ? (
                                                     <StyledView className="absolute -top-2 -right-2 z-10">
-                                                        <StyledTouchableOpacity
-                                                            onPress={() => {
-                                                                // reset stored video
-                                                                setVideo(profileData?.previewVideoUrl || null);
-                                                            }}
-                                                            className="bg-red-500 rounded-full p-1.5"
-                                                        >
-                                                            <StyledIonicons name="reload" size={18} className="text-white" />
-                                                        </StyledTouchableOpacity>
+                                                        {video !== profileData.previewVideoUrl && (
+                                                            <StyledTouchableOpacity
+                                                                onPress={() => {
+                                                                    // reset stored video
+                                                                    setVideo(profileData?.previewVideoUrl || null);
+                                                                }}
+                                                                className="bg-red-500 rounded-full p-1.5"
+                                                            >
+                                                                <StyledIonicons name="reload" size={18} className="text-white" />
+                                                            </StyledTouchableOpacity>
+                                                        )}
                                                         <StyledTouchableOpacity
                                                             onPress={() => UploadingVideo()}
                                                             className="bg-blue-500 rounded-full p-1.5"
@@ -643,7 +673,15 @@ export default function AccountSetting() {
                                 ที่อยู่ปัจจุบัน
                             </StyledText>
 
-                            <TouchableOpacity className="bg-white dark:bg-neutral-800 rounded-xl overflow-hidden">
+                            <TouchableOpacity
+
+                                onPress={(() => {
+                                    getCurrentLocation()
+                                })}
+
+
+
+                                className="bg-white dark:bg-neutral-800 rounded-xl overflow-hidden">
                                 <StyledView className="flex-row items-center p-3 border-l-4 border-pink-500">
                                     <StyledView className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-full items-center justify-center">
                                         <StyledIonicons
@@ -654,8 +692,15 @@ export default function AccountSetting() {
                                     </StyledView>
 
                                     <StyledView className="flex-1 ml-3">
+                                        {
+                                            (longitude != 0 && latitude != 0) && (
+                                                <StyledText
+                                                    className="dark:text-white font-custom text-base"
+                                                >พิกัด : {latitude?.toFixed(5)}... , {longitude?.toFixed(5)}...</StyledText>
+                                            )
+                                        }
                                         <StyledText
-                                            className="dark:text-white font-custom text-base"
+                                            className="text-gray-500 dark:text-white font-custom text-base "
                                         >คลิกที่นี่เพิ่มตั้งค่าที่อยู่ของคุณตาม GPS</StyledText>
                                     </StyledView>
 

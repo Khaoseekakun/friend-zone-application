@@ -379,7 +379,7 @@ export default function ProfileTab() {
                                 <StyledView className="absolute pl-2 py-2">
                                     <StyledTouchableOpacity onPress={() => setShowVideo(false)}
                                         className="bg-white dark:bg-neutral-900 rounded-full p-1 px-2 flex-row items-center">
-                                        <StyledIonIcon name="chevron-back" size={24} className="text-black dark:text-white"/>
+                                        <StyledIonIcon name="chevron-back" size={24} className="text-black dark:text-white" />
                                         <StyledText className="font-custom text-black dark:text-white text-lg">กลับ</StyledText>
                                     </StyledTouchableOpacity>
                                 </StyledView>
@@ -416,16 +416,20 @@ export default function ProfileTab() {
 
                                     <StyledView className="absolute bottom-2 flex-row items-center left-2">
                                         <StyledIonIcon name="heart" color={'#ad2722'} size={40} />
-                                        <StyledText className="text-[30px] text-white font-custom">{(reviewList.reduce((acc, review) => acc + review.star, 0) / reviewList.length).toFixed(1)}</StyledText>
+                                        <StyledText className="text-[30px] text-white font-custom">{(isNaN(reviewList.reduce((acc, review) => acc + review.star, 0) / reviewList.length) ? 0 : reviewList.reduce((acc, review) => acc + review.star, 0) / reviewList.length).toFixed(1)}</StyledText>
                                         <StyledText className="text-[20px] text-gray-200 font-custom ml-1 mt-2">({reviewList.length})</StyledText>
                                     </StyledView>
 
-                                    <StyledTouchableOpacity
-                                        onPress={() => setShowVideo(true)}
-                                        className="absolute bottom-2 flex-row items-center right-2 rounded-full bg-[#ad2722] p-2">
-                                        <StyledIonIcon name="play" className="text-white pr-2" size={20} />
-                                        <StyledText className="text-white font-custom">วิดีโอ</StyledText>
-                                    </StyledTouchableOpacity>
+                                    {
+                                        userProfile?.profile?.previewVideoUrl && (
+                                            <StyledTouchableOpacity
+                                                onPress={() => setShowVideo(true)}
+                                                className="absolute bottom-2 flex-row items-center right-2 rounded-full bg-[#ad2722] p-2">
+                                                <StyledIonIcon name="play" className="text-white pr-2" size={20} />
+                                                <StyledText className="text-white font-custom">วิดีโอ</StyledText>
+                                            </StyledTouchableOpacity>
+                                        )
+                                    }
                                 </StyledView>
 
                                 <StyledView id="Image Dot" className="absolute top-2 w-full flex-row justify-between px-2 gap-1">
