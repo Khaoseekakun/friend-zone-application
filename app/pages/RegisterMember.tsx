@@ -49,7 +49,9 @@ interface InputFieldProps {
     disable?: boolean;
     maxLength?: number;
     theme?: string;
+    setProvince?: (province: { id: string; label: string }[]) => void;
 }
+
 
 const InputField: React.FC<InputFieldProps> = ({
     label,
@@ -76,6 +78,7 @@ const InputField: React.FC<InputFieldProps> = ({
         >
             {label}
         </StyledText>
+        
         <StyledView className="font-custom w-full relative">
             {isPicker && pickerItems ? (
                 <StyledView className="relative">
@@ -212,6 +215,9 @@ export default function RegisterMember() {
     const [cooldownMessage, setCooldownMessage] = useState('');
     const [isPhoneValid, setIsPhoneValid] = useState<boolean | null>(false);
 
+    const [province, setProvince] = useState(''); // สำหรับเก็บค่าที่เลือก
+    const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]); // สำหรับเก็บรายการจังหวัด
+
 
     const banks = [
         { label: 'ธนาคารกสิกรไทย', value: 'kbank' },
@@ -230,6 +236,38 @@ export default function RegisterMember() {
         { label: 'หญิง', value: 'female' },
         { label: 'lqbtq+', value: 'lgbtq' }
     ];
+
+
+    // const provinces = [
+    //     { label: 'กรุงเทพมหานคร', value: '1' },
+    //     { label: 'กระบี่', value: '2' },
+    //     { label: 'กาญจนบุรี', value: '3' }
+    // ];
+
+    const fetchProvinces = async () => {
+        try {
+            const response = await axios.get('https://friendszone.app/api/province', {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+    
+            const provincesData = response.data.body.map(
+                (province: any) => ({
+                    value: province.id || 'test',
+                    label: province.name || 'test',
+                })
+            );
+            setProvinces(provincesData);
+            // console.log(provincesData);
+        } catch (error) {
+            console.error('Error fetching provinces:', error);
+            Alert.alert('Error', 'ไม่สามารถโหลดข้อมูลจังหวัดได้');
+        }
+    };
+    useEffect(() => {
+        fetchProvinces();
+    }, []);
 
     const handleBack = () => {
         if (currentStep > 1) {
@@ -499,6 +537,17 @@ export default function RegisterMember() {
                 isPicker={true}
                 pickerItems={genders}
                 icon="people-outline"
+            />
+
+            <InputField
+                theme={theme ?? 'light'}
+                label="จังหวัด"
+                placeholder="เลือกจังหวัด"
+                value={province}
+                onChangeText={(value) => setProvince(value)}
+                isPicker={true}
+                pickerItems={provinces}
+                icon="location-outline"
             />
 
             <InputField
@@ -953,8 +1002,8 @@ export default function RegisterMember() {
                     <TouchableOpacity
                         onPress={() => {
                             if (currentStep === 1) {
-                                handleVerifyOTP();
-                                // handleNext();
+                                // handleVerifyOTP();
+                                handleNext();
                             } else {
                                 if (currentStep === 5) {
                                     navigation.navigate('Login', {});

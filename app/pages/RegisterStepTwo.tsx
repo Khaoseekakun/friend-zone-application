@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, InputModeOptions, Alert, Animated, ActivityIndicator, Appearance, TouchableWithoutFeedback, Keyboard, useColorScheme  } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, InputModeOptions, Alert, Animated, ActivityIndicator, Appearance, TouchableWithoutFeedback, Keyboard, useColorScheme } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
@@ -40,6 +40,10 @@ interface InputFieldProps {
     wrong?: boolean;
     theme?: string;
 }
+interface Province {
+    id: string;
+    name: string;
+}
 
 type RegisterStepTwoRouteProp = RouteProp<RootStackParamList, 'RegisterStepTwo'>;
 const InputField: React.FC<InputFieldProps> = ({
@@ -65,37 +69,47 @@ const InputField: React.FC<InputFieldProps> = ({
         <StyledView className="flex-row items-center">
             {isPicker && pickerItems && (
                 <StyledView className="w-full border-[1px] border-gray-300 rounded-full">
-                    <RNPickerSelect
-                        onValueChange={onChangeText}
-                        items={pickerItems}
-                        value={value}
-                        placeholder={{ label: placeholder, value: null }}
-                        darkTheme={theme == "dark" ? true : false}
-                        style={
-                            {
-                                inputIOS: {
-                                    fontFamily: 'Kanit',
-                                    borderColor: theme == "dark" ? '#d1d5db' : '#d1d5db',
-                                    width: '100%',
-                                    color: theme == "dark" ? '#fff' : '#000',
-                                    padding: 16,
-                                },
-                                inputAndroid: {
-                                    fontFamily: 'Kanit',
-                                    borderWidth: 1,
-                                    borderRadius: 25,
-                                    borderColor: theme == "dark" ? '#d1d5db' : '#d1d5db',
-                                    width: '100%',
-                                },
-                                placeholder: {
-                                    fontFamily: 'Kanit',
-                                },
-
-                            }
+                <RNPickerSelect
+                    onValueChange={onChangeText}
+                    items={pickerItems}
+                    value={value ?? ''}
+                    useNativeAndroidPickerStyle={false}
+                    placeholder={{ label: placeholder, value: null }}
+                    style={{
+                        inputIOS: {
+                            fontFamily: 'Kanit',
+                            fontSize: 16,
+                            paddingVertical: 16,
+                            paddingHorizontal: 16,
+                            borderWidth: 1,
+                            borderRadius: 25,
+                            borderColor: wrong ? '#EF4444' : '#E5E7EB',
+                            color: theme == "dark" ? "#FFF" : "#1F2937",
+                            width: '100%',
+                        },
+                        inputAndroid: {
+                            fontFamily: 'Kanit',
+                            fontSize: 16,
+                            paddingHorizontal: 16,
+                            paddingVertical: 16,
+                            borderWidth: 1,
+                            borderRadius: 25,
+                            borderColor: wrong ? '#EF4444' : '#E5E7EB',
+                            color: theme == "dark" ? "#FFF" : "#1F2937",
+                            width: '100%',
+                        },
+                        placeholder: {
+                            color: '#9CA3AF',
+                            fontFamily: 'Kanit',
+                        },
+                        iconContainer: {
+                            top: 18,
+                            right: 12,
                         }
-
-                    />
-                </StyledView>
+                    }}
+                    Icon={() => <Ionicons name="chevron-down" size={20} color="#9CA3AF" />}
+                />
+            </StyledView>
             )}
 
             {!isPicker && (
@@ -146,7 +160,6 @@ export default function RegisterStepTwo() {
     const [gender, setGender] = useState('');
     const [birthdate, setBirthdate] = useState('');
     const [showBirthdate, setShowBirthdate] = useState<Date>();
-    const [province, setProvince] = useState('');
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [otpButtonDisabled, setOtpButtonDisabled] = useState(false);
     const [cooldownMessage, setCooldownMessage] = useState('');
@@ -161,6 +174,9 @@ export default function RegisterStepTwo() {
     const today = new Date();
     const maxDate = new Date(today.setFullYear(today.getFullYear() - 18));
     const minDate = new Date(today.setFullYear(today.getFullYear() - 70));
+
+    const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]); // สำหรับเก็บรายการจังหวัด
+    const [province, setProvince] = useState(''); // สำหรับเก็บค่าที่เลือก
 
     const [theme, setTheme] = useState(Appearance.getColorScheme());
     useEffect(() => {
@@ -224,9 +240,9 @@ export default function RegisterStepTwo() {
         { label: 'lgbtq+', value: 'lgbtl+' },
     ];
 
-    const provinceOptions = [
-        { label: 'Nakhon Ratchasima', value: 'Nakhon Ratchasima' }
-    ];
+    // const provinceOptions = [
+    //     { label: 'Nakhon Ratchasima', value: 'Nakhon Ratchasima' }
+    // ];
 
     const handlePhoneVerification = async () => {
         if (!phone) return Alert.alert("เตือน", "กรุณากรอกหมายเลขมือถือ", [{ text: "ตกลง" }]);
@@ -266,6 +282,36 @@ export default function RegisterStepTwo() {
             console.error(error);
         }
     };
+
+    // const provinces = [
+    //     { label: 'กรุงเทพมหานคร', value: '1' },
+    //     { label: 'กระบี่', value: '2' },
+    //     { label: 'กาญจนบุรี', value: '3' }
+    // ];
+    const fetchProvinces = async () => {
+        try {
+            const response = await axios.get('https://friendszone.app/api/province', {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+    
+            const provincesData = response.data.body.map((province: any) => ({
+                value: province.id || 'test',
+                label: province.name || 'test',
+            }));
+            setProvinces(provincesData);
+            console.log('Provinces loaded:', provincesData);
+        } catch (error) {
+            console.error('Error fetching provinces:', error);
+            Alert.alert('Error', 'ไม่สามารถโหลดข้อมูลจังหวัดได้');
+        }
+    };
+    useEffect(() => {
+        fetchProvinces();
+    }, []);
+
+
     const handleVerifyOTP = async () => {
         setLoading(true);
         try {
@@ -342,6 +388,8 @@ export default function RegisterStepTwo() {
         alert(fallbackMessage);
     };
 
+
+
     return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}
@@ -357,7 +405,7 @@ export default function RegisterStepTwo() {
                         <StyledText className="font-custom text-3xl text-[#1e3a8a] dark:text-white mb-2">ข้อมูลส่วนตัว</StyledText>
                         <StyledText className="font-custom text-base text-gray-400">กรอกเบอร์มือถือและยืนยันเบอร์มือถือของคุณ</StyledText>
                     </StyledView>
-                    
+
                     <StyledView className='flex-1'>
                         <InputField
                             theme={theme ?? "light"}
@@ -377,15 +425,14 @@ export default function RegisterStepTwo() {
                             onChangeText={setBirthdate}
                             onPress={showDatePicker}
                         />
-
                         <InputField
-                            theme={theme ?? "light"}
+                            theme={theme ?? 'light'}
                             label="จังหวัด"
-                            placeholder="เลือกจังหวัดของคุณ"
+                            placeholder="เลือกจังหวัด"
                             value={province}
-                            onChangeText={setProvince}
+                            onChangeText={(value) => setProvince(value)}
                             isPicker={true}
-                            pickerItems={provinceOptions}
+                            pickerItems={provinces}
                         />
 
                         <InputField
@@ -418,7 +465,7 @@ export default function RegisterStepTwo() {
                         <TouchableOpacity className="w-full mt-8" onPress={() => handleVerifyOTP()}>
                             <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
                                 <LinearGradient
-                                    colors={colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316']}
+                                    colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                                     start={{ x: 0, y: 0 }}
                                     end={{ x: 1, y: 0 }}
                                     className="rounded-full py-3 shadow-sm"
