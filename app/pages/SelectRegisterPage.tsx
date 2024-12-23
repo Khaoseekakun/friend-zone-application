@@ -3,8 +3,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { NavigationProp } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
 import { styled } from "nativewind";
-import React from "react";
-import { Text, TouchableOpacity, View, SafeAreaView } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Text, TouchableOpacity, View, SafeAreaView, Alert, Linking } from "react-native";
+import * as Location from 'expo-location';
 
 const StyledView = styled(View)
 const StyledText = styled(Text)
@@ -12,14 +13,29 @@ const StyledIonicons = styled(Ionicons)
 const StyledSafeAreaView = styled(SafeAreaView)
 
 export default function SelectRegisterPage() {
+
+  const [hasLocationPermission, setHasLocationPermission] = useState(false);
+
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const requestLocationPermission = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status === 'granted') {
+      setHasLocationPermission(true);
+    }
+  };
+
+  
+
+  useEffect(() => {
+    requestLocationPermission();
+  }, [])
 
   return (
     <StyledSafeAreaView className="flex-1 bg-white dark:bg-neutral-900 pt-8">
       {/* Header */}
       <StyledView className="flex-row items-center px-4 mt-4">
-        <TouchableOpacity 
-          onPress={() => navigation.goBack()} 
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
           className="p-2 rounded-full bg-gray-100 dark:bg-neutral-800"
         >
           <StyledIonicons name="chevron-back" size={24} className="text-black dark:text-neutral-200" />
@@ -37,7 +53,7 @@ export default function SelectRegisterPage() {
             สมัครการใช้บริการ
           </StyledText>
         </StyledView>
-        
+
         <StyledView className="items-center justify-center my-12">
         </StyledView>
 
@@ -58,7 +74,22 @@ export default function SelectRegisterPage() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => navigation.navigate("RegisterMember", {})}
+            onPress={() => {
+              if (!hasLocationPermission) return Alert.alert(
+                'คำเตือน',
+                'แอพพลิเคชั่นต้องการเข้าถึงตำแหน่งของคุณหากคุณไม่อนุญาต \nคุณจะไม่สามารถสมัครใช้งานได้',
+                [
+                  { text: 'ยกเลิก', style: 'destructive' }, {
+                    text: 'อนุญาต',
+                    onPress: async () => {
+                      Linking.openSettings()
+                    }
+                  }
+                ]
+              )
+
+              navigation.navigate("RegisterMember", {})
+            }}
             className="w-full"
           >
             <StyledView className="bg-white dark:bg-neutral-800 border-2 border-red-500 rounded-2xl p-4">

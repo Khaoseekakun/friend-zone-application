@@ -4,7 +4,7 @@ import { AppNavigator } from '@/components/Navigator/App';
 import 'react-native-gesture-handler';
 import * as Font from 'expo-font';
 import { Entypo } from '@expo/vector-icons';
-import { Alert, AppRegistry } from 'react-native';
+import { Alert, AppRegistry, BackHandler, Linking } from 'react-native';
 import * as Location from 'expo-location';
 import 'react-native-get-random-values';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -13,7 +13,6 @@ import ErrorBoundary from '@/utils/ErrorBoundary';
 
 export default function App() {
 
-    const [appIsReady, setAppIsReady] = useState(false);
     async function prepare() {
         try {
             await Font.loadAsync({
@@ -21,23 +20,8 @@ export default function App() {
                 ...Entypo.font,
             });
             await new Promise(resolve => setTimeout(resolve, 5000));
-
-            const requestLocationPermission = async () => {
-                const { status } = await Location.requestForegroundPermissionsAsync();
-                if (status != 'granted') {
-                    Alert.alert(
-                        'คำเตือน',
-                        'แอพพลิเคชั่นต้องการเข้าถึงตำแหน่งของคุณหากคุณไม่อนุญาต \nคุณจะไม่สามารถใช้งานบางระบบได้',
-                        [{ text: 'ฉันเข้าใจ', style: 'destructive' }]
-                    );
-                } 
-            };
-
-            requestLocationPermission();
         } catch (e) {
             console.warn(e);
-        } finally {
-            setAppIsReady(true);
         }
     }
 
@@ -52,16 +36,12 @@ export default function App() {
             console.error('Error fetching or generating UUID:', error);
         }
     }
-    
+
     useEffect(() => {
-        
         DeviceUUID();
         prepare();
     }, []);
 
-    if (!appIsReady) {
-        return null;
-    }
 
     return (
         <ErrorBoundary>
@@ -73,5 +53,3 @@ export default function App() {
 }
 
 AppRegistry.registerComponent("Friend Zone", () => App);
-
-

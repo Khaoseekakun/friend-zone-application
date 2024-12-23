@@ -283,6 +283,7 @@ export default function AccountSetting() {
                 setOldImages(profile.previewAllImageUrl || []);
                 setLatitude(profile.latitude);
                 setLongitude(profile.longitude);
+                setOldVideo(profile.previewVideoUrl || null);
 
 
                 if (profile.type === "member") {
@@ -594,23 +595,24 @@ export default function AccountSetting() {
                                             {
                                                 isVideoUpdated ? (
                                                     <StyledView className="absolute -top-2 -right-2 z-10">
+                                                        <StyledTouchableOpacity
+                                                            onPress={() => {
+                                                                // reset stored video
+                                                                setVideo(profileData?.previewVideoUrl || null);
+                                                            }}
+                                                            className="bg-red-500 rounded-full p-1.5"
+                                                        >
+                                                            <StyledIonicons name="reload" size={18} className="text-white" />
+                                                        </StyledTouchableOpacity>
                                                         {video !== profileData.previewVideoUrl && (
                                                             <StyledTouchableOpacity
-                                                                onPress={() => {
-                                                                    // reset stored video
-                                                                    setVideo(profileData?.previewVideoUrl || null);
-                                                                }}
-                                                                className="bg-red-500 rounded-full p-1.5"
+                                                                onPress={() => UploadingVideo()}
+                                                                className="bg-blue-500 rounded-full p-1.5"
                                                             >
-                                                                <StyledIonicons name="reload" size={18} className="text-white" />
+                                                                <StyledIonicons name="save-outline" size={18} className="text-white" />
                                                             </StyledTouchableOpacity>
                                                         )}
-                                                        <StyledTouchableOpacity
-                                                            onPress={() => UploadingVideo()}
-                                                            className="bg-blue-500 rounded-full p-1.5"
-                                                        >
-                                                            <StyledIonicons name="save-outline" size={18} className="text-white" />
-                                                        </StyledTouchableOpacity>
+
 
                                                     </StyledView>
                                                 ) : (
@@ -630,10 +632,22 @@ export default function AccountSetting() {
                                             className="w-full h-full"
                                         >
                                             <StyledView className="flex-1 rounded-xl bg-white dark:bg-neutral-800 items-center justify-center border border-neutral-300 dark:border-neutral-700 border-dashed">
+
                                                 <StyledIonicons name="videocam-outline" size={40} className="text-black dark:text-white mb-2" />
                                                 <StyledText className="font-custom text-neutral-500 dark:text-neutral-400">
                                                     อัพโหลดวิดีโอ (ขนาดไม่เกิน 50 MB, ความยาวไม่เกิน 1 นาที)
                                                 </StyledText>
+                                                {isVideoUpdated && (
+                                                    <StyledTouchableOpacity
+                                                        onPress={() => {
+                                                            // reset stored video
+                                                            setVideo(profileData?.previewVideoUrl || null);
+                                                        }}
+                                                        className="bg-red-500 rounded-full p-1.5 absolute -top-2 -right-2"
+                                                    >
+                                                        <StyledIonicons name="reload" size={18} className="text-white" />
+                                                    </StyledTouchableOpacity>
+                                                )}
                                             </StyledView>
                                         </TouchableOpacity>
                                     )}

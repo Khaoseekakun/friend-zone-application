@@ -12,8 +12,7 @@ import {
     Image,
     Alert,
     Appearance,
-    useColorScheme,
-    BackHandler
+    useColorScheme
 } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -167,7 +166,7 @@ const InputField: React.FC<InputFieldProps> = ({
 
 export default function RegisterMember() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const [currentStep, setCurrentStep] = useState(1);
+    const [currentStep, setCurrentStep] = useState(2);
     const [theme, setTheme] = useState(Appearance.getColorScheme());
     useEffect(() => {
         const listener = Appearance.addChangeListener(({ colorScheme }) => {
@@ -196,6 +195,7 @@ export default function RegisterMember() {
     const [address, setAddress] = useState('');
     const [emergencyName, setEmergencyName] = useState('');
     const [emergencyPhone, setEmergencyPhone] = useState('');
+    const [province, setProvince] = useState(''); // สำหรับเก็บค่าที่เลือก
 
     // Step 3: Identity Verification
     const [selfieImage, setSelfieImage] = useState<string | null>(null);
@@ -215,7 +215,6 @@ export default function RegisterMember() {
     const [cooldownMessage, setCooldownMessage] = useState('');
     const [isPhoneValid, setIsPhoneValid] = useState<boolean | null>(false);
 
-    const [province, setProvince] = useState(''); // สำหรับเก็บค่าที่เลือก
     const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]); // สำหรับเก็บรายการจังหวัด
 
 
@@ -885,7 +884,7 @@ export default function RegisterMember() {
             }
 
             if (currentStep === 2) {
-                if (!fullName || !age || !gender || !address || !emergencyName || !emergencyPhone) {
+                if (!fullName || !age || !gender || !address || !emergencyName || !emergencyPhone || !province) {
                     Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลให้ครบถ้วน');
                     return;
                 }
@@ -921,7 +920,8 @@ export default function RegisterMember() {
                             selfieImage: selfieImage,
                             idCardImage: idCardImage,
                             bankAccount: bankAccount,
-                            bankName: bankName
+                            bankName: bankName,
+                            provinceId : province
                         }, {
                             headers: {
                                 Authorization: `System ${API_SYSTEM_KEY}`,
