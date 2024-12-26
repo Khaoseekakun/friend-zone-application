@@ -56,11 +56,13 @@ type IMembersDB = {
     deleted: boolean;
     province: string[];
     birthday?: Date;
-    pinLocation: number[];
+    longitude: number;
+    latitude: number;
     bio?: string;
     rating: number;
     reviews: number;
     previewFirstImageUrl: string;
+    distance: number;
 }
 
 
@@ -326,7 +328,13 @@ export default function Search() {
                 setData([]);
             } else {
                 const membersData = response.data.data.members.map(
-                    (member: any) => member.MembersDB
+                    (member: any) => {
+                        console.log(member)
+                        return {
+                            ...member.MembersDB,
+                            distance: member.distance
+                        }
+                    }                    
                 );
 
                 setData(membersData);
@@ -370,6 +378,7 @@ export default function Search() {
     }
 
     const renderGridItem = ({ item }: { item: IMembersDB[] }) => {
+
         return !searchloading ? (
             <StyledView style={styles.row}>
                 {item.map((data) => (
@@ -408,10 +417,7 @@ export default function Search() {
                                     </StyledView>
                                     <StyledView>
                                         <StyledText className="font-custom text-gray-300 text-sm ml-1">
-                                            ( 10{distance > 0 && `(${distance > 1000
-                                                ? `${(distance / 1000).toFixed(1)} Km`
-                                                : `${distance.toFixed(0)} M`
-                                                })`} km.)
+                                            {data.distance <= 10000 ? '10 Km' : `${(data.distance / 1000).toFixed(1)} Km`}
                                         </StyledText>
                                     </StyledView>
                                 </StyledView>

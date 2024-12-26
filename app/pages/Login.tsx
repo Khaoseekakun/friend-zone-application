@@ -194,11 +194,11 @@ export default function Login() {
 
                     <StyledView className="flex-row justify-between w-full mb-10">
                         <StyledView className="flex-row items-center">
-                            <StyledTouchableOpacity onPress={() => navigation.navigate('Agreement', { nextScreen: 'Register' })}>
+                            <StyledTouchableOpacity onPress={() => navigation.navigate('Policy', { backPage: 'Login' })}>
                                 <StyledText className='font-custom text-blue-500'>ข้อกำหนด</StyledText>
                             </StyledTouchableOpacity>
                             <StyledText className='font-custom text-gray-500'>และ</StyledText>
-                            <StyledTouchableOpacity onPress={() => navigation.navigate('Agreement', { nextScreen: 'Register' })}>
+                            <StyledTouchableOpacity onPress={() => navigation.navigate('Privacy', { backPage: 'Login' })}>
                                 <StyledText className='font-custom text-blue-500'>ข้อตกลง</StyledText>
                             </StyledTouchableOpacity>
                             <StyledText className='font-custom text-gray-500'>ของเรา</StyledText>

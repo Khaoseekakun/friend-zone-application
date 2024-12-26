@@ -27,6 +27,8 @@ import History from "../screen/History";
 import SettingSecurity from "../screen/SettingSecurity";
 import SettingDeleteAccount from "../screen/SettingDeleteAccount";
 import { createStackNavigator } from "@react-navigation/stack";
+import Privacy from "../screen/Privacy";
+import FastRequest from "../screen/FastRequest";
 
 const Tab = createBottomTabNavigator();
 
@@ -146,23 +148,25 @@ export default function HomeScreen() {
         <Stack.Screen name="MessageTab" component={Message} />
         <Stack.Screen name="SettingTab" component={Setting} />
         <Stack.Screen name="ProfileTab" component={Profile} />
-        <Stack.Screen name="PostTab" component={Post}/>
-        <Stack.Screen name="PostUpdate" component={PostUpdate}/>
-        <Stack.Screen name="FastTab" component={Fast}/>
-        <Stack.Screen name="SearchCategory" component={SearchCategory}/>
-        <Stack.Screen name="SchedulePage" component={SchedulePage}/>
-        <Stack.Screen name="Search" component={Search}/>
-        <Stack.Screen name="Chat" component={Chat}/>
-        <Stack.Screen name="AccountSetting" component={AccountSetting}/>
-        <Stack.Screen name="ScheduleList" component={ScheduleList}/>
-        <Stack.Screen name="Policy" component={Policy}/>
+        <Stack.Screen name="PostTab" component={Post} />
+        <Stack.Screen name="PostUpdate" component={PostUpdate} />
+        <Stack.Screen name="FastTab" component={Fast} />
+        <Stack.Screen name="SearchCategory" component={SearchCategory} />
+        <Stack.Screen name="SchedulePage" component={SchedulePage} />
+        <Stack.Screen name="Search" component={Search} />
+        <Stack.Screen name="Chat" component={Chat} />
+        <Stack.Screen name="AccountSetting" component={AccountSetting} />
+        <Stack.Screen name="ScheduleList" component={ScheduleList} />
+        <Stack.Screen name="Policy" component={Policy} />
+        <Stack.Screen name="Privacy" component={Privacy} />
         <Stack.Screen name="PostView" component={PostView} />
-        <Stack.Screen name="Notification" component={NotificationPage}/>
-        <Stack.Screen name="SettingPassword" component={SettingPassword}/>
-        <Stack.Screen name="AccountStatus" component={AccountStatus}/>
-        <Stack.Screen name="History" component={History}/>
-        <Stack.Screen name="SettingSecurity" component={SettingSecurity}/>
-        <Stack.Screen name="SettingDeleteAccount" component={SettingDeleteAccount}/>
+        <Stack.Screen name="Notification" component={NotificationPage} />
+        <Stack.Screen name="SettingPassword" component={SettingPassword} />
+        <Stack.Screen name="AccountStatus" component={AccountStatus} />
+        <Stack.Screen name="History" component={History} />
+        <Stack.Screen name="SettingSecurity" component={SettingSecurity} />
+        <Stack.Screen name="SettingDeleteAccount" component={SettingDeleteAccount} />
+        <Stack.Screen name="FastRequest" component={FastRequest} />
 
       </>
     </Stack.Navigator>

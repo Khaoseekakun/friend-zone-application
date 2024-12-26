@@ -9,30 +9,30 @@ import { Ionicons } from '@expo/vector-icons';
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledIonicons = styled(Ionicons);
-type PolicyParam = RouteProp<RootStackParamList, 'Policy'>;
+type PrivacyParam = RouteProp<RootStackParamList, 'Privacy'>;
 
-export default function Policy() {
-    const [policyContent, setPolicyContent] = useState<string[]>([]);
+export default function Privacy() {
+    const [PrivacyContent, setPrivacyContent] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const router = useRoute<PolicyParam>()
+    const router = useRoute<PrivacyParam>()
     const { backPage } = router.params;
 
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     useEffect(() => {
-        const fetchPolicyContent = async () => {
+        const fetchPrivacyContent = async () => {
             try {
-                const response = await axios.get('https://friendszone.app/api/policy');
-                const policyData = response.data.body.map((item: any) => item.content);
-                setPolicyContent(policyData);
+                const response = await axios.get('https://friendszone.app/api/privacy');
+                const PrivacyData = response.data.body.map((item: any) => item.content);
+                setPrivacyContent(PrivacyData);
                 setLoading(false);
             } catch (err) {
-                setError('Failed to load policy content. Please try again later.');
+                setError('Failed to load Privacy content. Please try again later.');
                 setLoading(false);
             }
         };
-        fetchPolicyContent();
+        fetchPrivacyContent();
     }, []);
 
     if (loading) {
@@ -54,15 +54,15 @@ export default function Policy() {
     return (
         <StyledView className="bg-white dark:bg-neutral-900 flex-1">
 
-            <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center mt-16">เงื่อนไขและข้อตกลง</StyledText>
-            <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center">Friend Zone</StyledText>
+            <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center mt-16">ประกาศความเป็นส่วนตัว</StyledText>
+            <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center">(Privacy Notice)</StyledText>
             <StyledView className="absolute mt-[70px] left-5">
                 <TouchableOpacity onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()} className="absolute ml-4">
                     <StyledIonicons name="chevron-back" size={24} className='text-black dark:text-neutral-200' />
                 </TouchableOpacity>
             </StyledView>
-            <ScrollView className="flex-1 w-10/12 mt-6 p-2 mb-6 rounded-xl self-center bg-gray-100 dark:bg-neutral-800">
-                {policyContent.map((item, index) => (
+            <ScrollView className="flex-1 w-10/12 mt-6 mb-6 p-2 rounded-xl self-center bg-gray-100 dark:bg-neutral-800">
+                {PrivacyContent.map((item, index) => (
                     <StyledView key={`${index}`}>
                         {item.split('\n').map((line, lineIndex) => (
                             <StyledView key={lineIndex} className='mb-2'>

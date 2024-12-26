@@ -9,13 +9,15 @@ import React from 'react';
 import SelectRegisterPage from '@/app/pages/SelectRegisterPage';
 import RegisterMember from '@/app/pages/RegisterMember';
 import ForgotPassword from '@/app/screen/ForgotPassword';
+import Policy from '@/app/screen/Policy';
+import Privacy from '@/app/screen/Privacy';
 
 const Stack = createStackNavigator();
 export function AppNavigator() {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <>
-                <Stack.Screen name="SplashScreen" component={SplashScreen}/>
+                <Stack.Screen name="SplashScreen" component={SplashScreen} />
                 <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
                 <Stack.Screen name="Login" component={Login} />
                 <Stack.Screen name="HomeScreen" component={HomeScreen} />
@@ -24,6 +26,8 @@ export function AppNavigator() {
                 <Stack.Screen name="Agreement" component={PolicyFirst} />
                 <Stack.Screen name="SelectRegisterPage" component={SelectRegisterPage} />
                 <Stack.Screen name="RegisterMember" component={RegisterMember} />
+                <Stack.Screen name="Policy" component={Policy} />
+                <Stack.Screen name="Privacy" component={Privacy} />
             </>
         </Stack.Navigator>
     );

@@ -71,6 +71,11 @@ export type RootStackParamList = {
     backPage?: string,
     searchType?: string
   },
+  FastRequest: {
+    requestId: string,
+    notificationId: string,
+    backPage?: string;
+  },
   FeedsTab: {
     backPage?: string;
   },
@@ -91,6 +96,9 @@ export type RootStackParamList = {
     backPage?: string;
   },
   Policy: {
+    backPage?: string;
+  },
+  Privacy :{
     backPage?: string;
   },
   SettingImagePreview: {
@@ -136,7 +144,7 @@ interface Post {
 }
 
 
-export type NotificationType = 'like' | 'comment' | 'appointment' | 'message' | 'system' | "review";
+export type NotificationType = 'like' | 'comment' | 'appointment' | 'message' | 'system' | "review" | "fastRequest";
 
 export interface Notification {
     id?: string;
@@ -149,6 +157,7 @@ export interface Notification {
         appointmentId?: string;
         chatId?: string;
         userId?: string;
+        requestId?: string;
     };
     user?: {
         id: string;

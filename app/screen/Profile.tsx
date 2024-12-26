@@ -656,7 +656,7 @@ export default function ProfileTab() {
                                 </StyledView>
                             </StyledView>
                         </StyledScrollView>
-                        {!userData.id || userProfile?.profile?.id !== userData.id && (
+                        {(userData.id && userProfile?.profile?.id !== userData.id && userProfile?.type == "member") && (
                             <StyledView className="absolute bottom-4 left-0 right-0 px-[15%]">
                                 <TouchableOpacity
                                     activeOpacity={0.8}

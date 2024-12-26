@@ -8,6 +8,7 @@ import {
     Platform,
     KeyboardAvoidingView,
     Appearance,
+    ActivityIndicator,
 } from 'react-native';
 import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
 import { styled } from 'nativewind';
@@ -86,6 +87,8 @@ export default function NotificationsScreen() {
                 return 'mail';
             case 'system':
                 return 'notifications';
+            case 'fastRequest':
+                return 'rocket';
             case 'review':
                 return 'star';
             default:
@@ -107,6 +110,8 @@ export default function NotificationsScreen() {
                 return '#FFA726';
             case 'review':
                 return '#FFD700';
+            case 'fastRequest':
+                return '#FFA726';
             default:
                 return '#FFA726';
         }
@@ -141,6 +146,13 @@ export default function NotificationsScreen() {
                 break;
             case 'like':
             case 'review':
+            case 'fastRequest':
+                navigation.navigate('FastRequest', {
+                    requestId: notification.data.requestId as string,
+                    backPage: 'Notification',
+                    notificationId: notification.id as string
+                });
+                break;
             case 'comment':
                 navigation.navigate('PostView', {
                     postId: notification.data.postId as string
@@ -190,21 +202,31 @@ export default function NotificationsScreen() {
                 backPage
             } />
 
-            <StyledView className="px-4 py-3">
-                <StyledText className="font-custom text-2xl dark:text-white">
-                    การแจ้งเตือน
-                </StyledText>
-            </StyledView>
-
             <StyledScrollView
                 className="flex-1"
                 showsVerticalScrollIndicator={false}
             >
-                {notifications.map((notification) => (
-                    <React.Fragment key={notification.id}>
-                        {renderNotification({ item: notification })}
-                    </React.Fragment>
-                ))}
+                {
+                    notifications.length > 0 ? notifications.map((notification) => (
+                        <React.Fragment key={notification.id}>
+                            {renderNotification({ item: notification })}
+                        </React.Fragment>
+                    )) : (
+                        <>
+                            {loading ? (
+                                <StyledView className="flex-1 justify-center items-center">
+                                    <ActivityIndicator size="large" color="#EB3834" />
+                                </StyledView>
+                            ) : (
+                                <StyledView className="flex-1 justify-center items-center h-full">
+                                    <StyledText className="text-gray-500 dark:text-white font-custom mt-5">
+                                        ไม่มีการแจ้งเตือนใดๆ
+                                    </StyledText>
+                                </StyledView>
+                            )}
+                        </>
+                    )
+                } 
                 <StyledView className="h-32" />
             </StyledScrollView>
         </StyledView>

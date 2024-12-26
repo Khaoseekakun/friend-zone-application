@@ -416,7 +416,7 @@ export default function SearchCategory() {
       </StyledScrollView>
 
       <AnimatedTouchable
-        onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()}
+        onPress={() => backPage ? navigation.navigate(backPage == "FastTab" ? "FeedsTab" : backPage as any, {}) : navigation.goBack()}
         className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute top-6 left-6 mt-14"
       >
         <Ionicons name="chevron-back" size={24} color="#fff" />
