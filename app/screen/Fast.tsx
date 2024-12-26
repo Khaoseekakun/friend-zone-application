@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, StyleSheet, ActivityIndicator, Alert, Pressable, useAnimatedValue, SafeAreaView, useColorScheme, Appearance } from "react-native";
-import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { NavigationProp, RouteProp, useIsFocused, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,6 +20,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { RootStackParamList } from "@/types";
 import { JobsList } from "@/types/prismaInterface";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { HeaderApp } from "@/components/Header";
+import { getDatabase, onValue, ref } from "firebase/database";
+import FireBaseApp from "@/utils/firebaseConfig";
 const Icon = require('../../assets/icon/search.gif');
 
 const StyledView = styled(View);
@@ -28,6 +32,7 @@ const StyledTextInput = styled(TextInput);
 const StyledIonIcon = styled(Ionicons);
 const StyledImage = styled(Image);
 const StyledScrollView = styled(ScrollView);
+const StyledTouchableOpacity = styled(TouchableOpacity);
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 const { width } = Dimensions.get('window');
@@ -47,7 +52,13 @@ const iconCar1 = require("../../assets/icon/A8.png");
 const iconCar2 = require("../../assets/icon/A9.png");
 
 type CategorySearch = RouteProp<RootStackParamList, 'SearchCategory'>;
+type FastData = {
+  id: string;
+  userId: string;
+  timeout: string;
+  requestId: string;
 
+}
 export default function Fast() {
   const navigation = useNavigation<NavigationProp<any>>();
   const [search, setSearch] = useState('');
@@ -55,12 +66,12 @@ export default function Fast() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [pin, setPin] = useState<{ latitude: number; longitude: number }>({ latitude: 37.78825, longitude: -122.4324 });
   const [loading, setLoading] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(15);
+  const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [dots, setDots] = useState('');
   const router = useRoute<CategorySearch>();
   const { backPage } = router.params;
   const [theme, setTheme] = useState(Appearance.getColorScheme());
-
+  const isFocus = useIsFocused()
 
 
   const [scheduleDate, setScheduleDate] = useState("");
@@ -74,11 +85,22 @@ export default function Fast() {
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
   const [showSelectJobs, setShowSelectJob] = useState(false);
 
+  const [userData, setUserData] = useState<any>({});
+  const [fastRequest, setFastRequest] = useState<FastData>();
+  const [fastList, setFastList] = useState<string[]>([]);
+  const [memberAccept, setMemberAccept] = useState<any[]>([]);
+
+  const fetchUserData = async () => {
+    const userData = await AsyncStorage.getItem('userData');
+    setUserData(JSON.parse(userData || '{}'));
+  }
+
   useEffect(() => {
     const listener = Appearance.addChangeListener(({ colorScheme }) => {
       setTheme(colorScheme);
     });
-
+    fetchUserData();
+    fetchFastRequest();
     return () => listener.remove();
   }, []);
 
@@ -87,34 +109,11 @@ export default function Fast() {
   const _size = 100;
 
   useEffect(() => {
-    if (step === 3) {
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-      }, 60000);
-
-      const dotsTimer = setInterval(() => {
-        setDots(prev => prev?.length < 3 ? prev + '.' : '');
-      }, 500);
-
-      return () => {
-        clearInterval(timer);
-        clearInterval(dotsTimer);
-      };
-    }
-
     if (step == 2) {
       getCurrentLocation();
     }
   }, [step]);
 
-  const styleRipple = StyleSheet.create({
-    dot: {
-      width: _size,
-      height: _size,
-      borderRadius: _size / 2,
-      backgroundColor: _color,
-    },
-  })
 
   const handleCreateSchedule = async () => {
     // if (!scheduleDate || !scheduleTime || !scheduleJobs || !scheduleLocation || !pin) {
@@ -634,13 +633,13 @@ export default function Fast() {
                 {
                   (!pin.latitude && !pin.longitude) ? (
                     <>
-                    <StyledText className="text-lg text-black font-custom dark:text-neutral-200">กำลังโหลดแผนที่</StyledText>
+                      <StyledText className="text-lg text-black font-custom dark:text-neutral-200">กำลังโหลดแผนที่</StyledText>
                     </>
                   ) : (
                     <MapView
                       initialRegion={{
-                        latitude:  pin.latitude,
-                        longitude:  pin.longitude ,
+                        latitude: pin.latitude,
+                        longitude: pin.longitude,
                         latitudeDelta: 15.5136445,
                         longitudeDelta: 100.6519383,
                       }}
@@ -733,19 +732,6 @@ export default function Fast() {
     </SafeAreaView >
   );
 
-  useEffect(() => {
-    if (step === 3) {
-      backgroundAnim.value = withRepeat(
-        withTiming(1, {
-          duration: 2000,
-          easing: Easing.linear,
-        }),
-        -1,
-        false
-      );
-    }
-  }, [step]);
-
   const rStyle = useAnimatedStyle(() => {
     return {
       transform: [{ scale: interpolate(backgroundAnim.value, [0, 1], [1, 2]) }],
@@ -753,121 +739,194 @@ export default function Fast() {
     };
   });
 
+  const loadProfile = async (profileId: string) => {
+    try {
+      const res = await axios.get(`https://friendszone.app/api/profile/${profileId}`, {
+        headers: {
+          Authorization: `All ${userData?.token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (res.data.status == 200) {
+        return res.data.data.profile
+      } else {
+        return null
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+
+  // Call RenderAcceptList within the component
+  useEffect(() => {
+    const unsubscribe = onValue(fastUpdate, (snapshot) => {
+      const val = snapshot.val();
+      if (val) {
+        setFastList(val.split(',').filter((item: string) => item !== ''));
+      } else {
+        setFastList([]);
+      }
+    });
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => {
+      unsubscribe()
+      clearInterval(timer);
+    };
+  }, [])
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      const members = await Promise.all(fastList.map(async (member) => {
+        const data = await loadProfile(member);
+        return data;
+      }));
+      setMemberAccept(members);
+    };
+
+    fetchMembers();
+  }, [fastList]);
+
+  const RenderAcceptList = () => {
+    return (
+      <StyledView className="items-center justify-center w-full px-4 space-y-2">
+        {
+          memberAccept.map((member, index) => {
+            return (
+              <StyledView key={index} className="justify-start bg-red-500 mx-2 p-2 rounded-lg w-full ">
+                <StyledView className="flex-row items-center justify-between w-full ">
+                  <StyledView className="flex-row items-center">
+                    <StyledImage
+                      source={{ uri: member?.profileUrl }}
+                      className="w-12 h-12 rounded-full"
+                    />
+                    <StyledText className="font-custom text-white text-lg ml-2">{member?.username}</StyledText>
+                  </StyledView>
+                  <StyledView className="flex-row items-center space-x-2 ">
+                    <StyledTouchableOpacity className="flex-row mr-2 items-center">
+                      <StyledText className="font-custom text-white">ลบ</StyledText>
+                    </StyledTouchableOpacity>
+                    <StyledTouchableOpacity className="flex-row ml-2 bg-red-800 rounded-lg p-3 items-center">
+                      <StyledText className="font-custom text-white">เลือก</StyledText>
+                    </StyledTouchableOpacity>
+                  </StyledView>
+                </StyledView>
+
+                <StyledView className="flex-row items-center justify-between w-full  ">
+                  <StyledView className="flex-row justify-between items-center">
+                    <StyledText className="font-custom text-white">ทำเนียบนัดหมาย</StyledText>
+                    <StyledText className="font-custom text-white">1000</StyledText>
+                  </StyledView>
+                </StyledView>
+
+
+
+
+              </StyledView>
+            )
+          })
+        }
+      </StyledView>
+    )
+  }
+
+
   const renderWaitingScreen = () => {
     return (
       <StyledView
-        className="flex-1 justify-center items-center px-6"
+        className="flex-1 justify-center items-center"
       >
+        <HeaderApp />
         <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Animated.View
-            entering={FadeInUp.delay(300).duration(1000)}
-            className="items-center"
-          >
-            <StyledView className="relative">
-              <Animated.View
-                style={[styleRipple.dot, rStyle, { position: 'absolute' }]}
-              />
-              <Animated.View
-                style={[
-                  styleRipple.dot,
-                  rStyle,
-                  { position: 'absolute', transform: [{ scale: 1.5 }] },
-                ]}
-              />
-              <Animated.View
-                className="w-[120px] h-[120px] bg-red-400/20 rounded-full items-center justify-center"
-                style={{
-                  shadowColor: "#FF4B48",
-                  shadowOffset: {
-                    width: 0,
-                    height: 0,
-                  },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 20,
-                  elevation: 10
-                }}
-              >
-                <Image
-                  source={Icon}
-                  style={{ width: 60, height: 60 }}
-                  className="opacity-90"
-                />
-              </Animated.View>
-            </StyledView>
 
-            <StyledText className="font-custom text-white text-4xl mb-2 text-center mt-10 p-1">
-              กำลังค้นหา{dots}
-            </StyledText>
-
-            <StyledText className="font-custom text-white/70 text-lg mb-12 text-center">
-              ระบบกำลังค้นหาเพื่อนที่ว่างให้คุณ{'\n'}โปรดรอสักครู่
-            </StyledText>
-
-            <LinearGradient
-              colors={['#FF4B48', '#AB1815']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              className="w-full h-3 rounded-full mb-4 overflow-hidden"
-              style={{
-                shadowColor: "#FF4B48",
-                shadowOffset: {
-                  width: 0,
-                  height: 4,
-                },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 5
-              }}
-            >
-              <Animated.View
-                className="h-full bg-white/90"
-                style={{
-                  width: `${(timeLeft / 15) * 100}%`,
-                }}
-              />
-            </LinearGradient>
-
-            <StyledView className="flex-row items-center bg-white/10 px-6 py-3 rounded-full">
-              <StyledIonIcon name="time-outline" size={24} color="white" style={{ opacity: 0.8 }} />
-              <StyledText className="font-custom text-white/80 text-lg text-center ml-2">
-                เหลือเวลาอีก {timeLeft} นาที
-              </StyledText>
-            </StyledView>
-
-            <TouchableOpacity
-              className="mt-12"
-              onPress={() => setStep(1)}
-            >
-              <LinearGradient
-                colors={['#ffffff40', '#ffffff15']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                className="px-10 py-4 rounded-full"
-                style={{
-                  shadowColor: "#000",
-                  shadowOffset: {
-                    width: 0,
-                    height: 4,
-                  },
-                  shadowOpacity: 0.2,
-                  shadowRadius: 8,
-                  elevation: 5
-                }}
-              >
-                <StyledText className="font-custom text-white text-lg">
-                  ยกเลิกการค้นหา
-                </StyledText>
-              </LinearGradient>
-            </TouchableOpacity>
-          </Animated.View>
+          {
+            RenderAcceptList()
+          }
 
           <StyledText className="font-custom text-neutral-700 dark:text-white/40  text-base text-center mt-12 px-6">
-            กำลังค้นหาเพื่อนที่ว่างให้คุณ{'\n'}เหลือเวลาอีก {timeLeft} นาที
+            กำลังค้นหาเพื่อนที่ว่างให้คุณ{'\n'}เหลือเวลาอีก {
+              Math.floor(timeLeft / 60) > 0
+                ? `${Math.floor(timeLeft / 60)} ` + 'นาที '
+                : ''
+            }{timeLeft % 60} นาที
           </StyledText>
+          <TouchableOpacity
+            onPress={() => {
+              Alert.alert(
+                "ยกเลิกการค้นหา",
+                "คุณต้องการยกเลิกการค้นหาหรือไม่",
+                [
+                  {
+                    text: "ยกเลิกการค้นหา",
+                    onPress: () => cancelFastRequest(),
+                    style: "cancel"
+                  },
+                  { text: "กลับ" }
+                ]
+              );
+            }}
+          >
+            <StyledText className="font-custom text-white dark:text-neutral-800 dark:text-white/40 dark:bg-white bg-red-500 rounded-full px-4 py-2 mt-4">
+              ยกเลิกการค้นหา
+            </StyledText>
+          </TouchableOpacity>
         </SafeAreaView>
       </StyledView>
     );
   };
+
+
+  const cancelFastRequest = async () => {
+    try {
+      const res = await axios.put(`http://49.231.43.37:3000/api/fast/${userData?.id}`, {
+        id: userData?.id
+      }, {
+        headers: {
+          Authorization: `All ${userData?.token}`,
+          "Content-Type": "application/json"
+        }
+      });
+    } catch (error) {
+
+    }
+  }
+
+  const fetchFastRequest = async () => {
+    try {
+      const res = await axios.get(`http://49.231.43.37:3000/api/fast/${userData?.id}`, {
+        headers: {
+          Authorization: `All ${userData?.token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (res.data) {
+        if (res.data.data) {
+          setFastRequest(res.data.data);
+          setStep(3);
+          if (res.data.data.timeout) {
+            const time = res.data.data.timeout;
+            const timeLeft = Math.floor((new Date(time).getTime() - new Date().getTime()) / 1000 / 60);
+            setTimeLeft(timeLeft);
+          }
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    if (isFocus) {
+      fetchFastRequest();
+    }
+  }, [isFocus])
+
+  const database = getDatabase(FireBaseApp);
+  const fastUpdate = ref(database, `fast-request/test-fast-request-1/acceptList`);
 
   return (
     <StyledView className="flex-1">
