@@ -7,23 +7,18 @@ import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, FlatList, TextInput } from "react-native-gesture-handler";
 import axios from "axios";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { HeaderApp } from "@/components/Header";
-import { Navigation } from "@/components/Navigation";
 import * as Location from 'expo-location';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import Animated, {
   useSharedValue,
   FadeInUp,
-  FadeInDown,
   withTiming,
   Easing,
   useAnimatedStyle,
-  withDelay,
   withRepeat,
   interpolate
 } from 'react-native-reanimated';
 import { RootStackParamList } from "@/types";
-import { Feather } from "lucide-react-native";
 import { JobsList } from "@/types/prismaInterface";
 const Icon = require('../../assets/icon/search.gif');
 
@@ -33,7 +28,6 @@ const StyledTextInput = styled(TextInput);
 const StyledIonIcon = styled(Ionicons);
 const StyledImage = styled(Image);
 const StyledScrollView = styled(ScrollView);
-const StyledMapView = styled(MapView)
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 const { width } = Dimensions.get('window');
@@ -522,14 +516,14 @@ export default function Fast() {
                       }}
                     >
                       <StyledView className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm active:scale-95 transform transition-all flex-row items-center justify-between">
-                          <StyledText className="text-base font-custom font-semibold text-gray-800 dark:text-white">
-                            {jobs.jobName}
-                          </StyledText>
-                          <StyledIonIcon
-                            name="chevron-forward"
-                            size={20}
-                            className="text-[#8B0000]/50 dark:text-orange-500/50"
-                          />
+                        <StyledText className="text-base font-custom font-semibold text-gray-800 dark:text-white">
+                          {jobs.jobName}
+                        </StyledText>
+                        <StyledIonIcon
+                          name="chevron-forward"
+                          size={20}
+                          className="text-[#8B0000]/50 dark:text-orange-500/50"
+                        />
                       </StyledView>
                     </TouchableOpacity>
                   ))}
@@ -581,7 +575,7 @@ export default function Fast() {
                     <StyledView
                       className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
                     >
-                      <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? jobsList.find((j) => j.id == scheduleJobs)?.jobName : "เลือกประเภทงาน"}</StyledText>
+                      <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? scheduleJobs : "เลือกประเภทงาน"}</StyledText>
                     </StyledView>
                   </TouchableOpacity>
                 </StyledView>
@@ -637,41 +631,49 @@ export default function Fast() {
               </StyledView>
 
               <StyledView className="px-6 py-1 rounded-2xl my-2 mt-5 h-[50%]">
-                <MapView
-                  initialRegion={{
-                    latitude: pin ? pin.latitude : 37.78825,
-                    longitude: pin ? pin.longitude : -122.4324,
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0421,
-                  }}
-                  onPress={(e) => {
-                    const { latitude, longitude } = e.nativeEvent.coordinate;
-                    setPin({ latitude, longitude });
-                  }}
-                  style={{
-                    borderRadius: 20,
-                    height: "70%",
-                  }}
-                >
-                  {pin && (
+                {
+                  (!pin.latitude && !pin.longitude) ? (
                     <>
-                      <Marker
-                        coordinate={{
-                          latitude: pin.latitude,
-                          longitude: pin.longitude,
-                        }}
-                        title="Selected Location"
-                        draggable={true}
-                      />
-                      <Circle
-                        center={pin}
-                        radius={250} // radius in meters
-                        strokeColor="rgba(255, 0, 0, 0.5)" // Border color
-                        fillColor="rgba(255, 0, 0, 0.2)" // Fill color
-                      />
+                    <StyledText className="text-lg text-black font-custom dark:text-neutral-200">กำลังโหลดแผนที่</StyledText>
                     </>
-                  )}
-                </MapView>
+                  ) : (
+                    <MapView
+                      initialRegion={{
+                        latitude:  pin.latitude,
+                        longitude:  pin.longitude ,
+                        latitudeDelta: 15.5136445,
+                        longitudeDelta: 100.6519383,
+                      }}
+                      onPress={(e) => {
+                        const { latitude, longitude } = e.nativeEvent.coordinate;
+                        setPin({ latitude, longitude });
+                      }}
+                      style={{
+                        borderRadius: 20,
+                        height: "70%",
+                      }}
+                    >
+                      {pin && (
+                        <>
+                          <Marker
+                            coordinate={{
+                              latitude: pin.latitude,
+                              longitude: pin.longitude,
+                            }}
+                            title="Selected Location"
+                            draggable={true}
+                          />
+                          <Circle
+                            center={pin}
+                            radius={250} // radius in meters
+                            strokeColor="rgba(255, 0, 0, 0.5)" // Border color
+                            fillColor="rgba(255, 0, 0, 0.2)" // Fill color
+                          />
+                        </>
+                      )}
+                    </MapView>
+                  )
+                }
               </StyledView>
             </>
           )
@@ -728,7 +730,7 @@ export default function Fast() {
             : new Date(Date.now() + 60 * 60 * 1000)
         }
       />
-    </SafeAreaView>
+    </SafeAreaView >
   );
 
   useEffect(() => {
@@ -753,10 +755,7 @@ export default function Fast() {
 
   const renderWaitingScreen = () => {
     return (
-      <LinearGradient
-        colors={['#8B0000', '#4A0404']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+      <StyledView
         className="flex-1 justify-center items-center px-6"
       >
         <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -862,11 +861,11 @@ export default function Fast() {
             </TouchableOpacity>
           </Animated.View>
 
-          <StyledText className="font-custom text-white/40 text-base text-center mt-12 px-6">
-            ระบบจะค้นหาเพื่อนที่ใกล้เคียงและว่างในเวลาที่คุณต้องการ
+          <StyledText className="font-custom text-neutral-700 dark:text-white/40  text-base text-center mt-12 px-6">
+            กำลังค้นหาเพื่อนที่ว่างให้คุณ{'\n'}เหลือเวลาอีก {timeLeft} นาที
           </StyledText>
         </SafeAreaView>
-      </LinearGradient>
+      </StyledView>
     );
   };
 
@@ -876,7 +875,7 @@ export default function Fast() {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <StyledView className="flex-1 bg-white dark:bg-black">
+        <StyledView className="flex-1 bg-white dark:bg-neutral-900">
           {step === 1 && renderCategorySelection()}
           {step === 2 && renderAppointmentForm()}
           {step === 3 && renderWaitingScreen()}

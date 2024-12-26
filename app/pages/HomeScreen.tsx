@@ -110,12 +110,10 @@ export default function HomeScreen() {
         if (res.data.status == 200) {
           // no other login
         } else {
+          Logout()
           Alert.alert('บัญชีของคุณถูกใช้งานจากอุปกรณ์อื่น', 'กรุณาเข้าสู่ระบบใหม่', [
             {
               text: 'ตกลง',
-              onPress: async () => {
-                Logout()
-              }
             }
           ])
         }

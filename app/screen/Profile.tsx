@@ -802,7 +802,7 @@ export default function ProfileTab() {
                                                 <StyledView
                                                     className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
                                                 >
-                                                    <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? joblist.find((j) => j.value == scheduleJobs)?.label : "เลือกประเภทงาน"}</StyledText>
+                                                    <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? scheduleJobs : "เลือกประเภทงาน"}</StyledText>
                                                 </StyledView>
                                             </TouchableOpacity>
                                         </StyledView>
@@ -860,10 +860,10 @@ export default function ProfileTab() {
                                     <StyledView className="px-6 py-1 rounded-2xl my-2 mt-5 h-[50%]">
                                         <MapView
                                             initialRegion={{
-                                                latitude: pin ? pin.latitude : 37.78825,
-                                                longitude: pin ? pin.longitude : -122.4324,
-                                                latitudeDelta: 0.0922,
-                                                longitudeDelta: 0.0421,
+                                                latitude: pin?.latitude as number,
+                                                longitude: pin?.longitude as number,
+                                                latitudeDelta: 15.5136445,
+                                                longitudeDelta: 100.6519383,
                                             }}
                                             onPress={(e) => {
                                                 const { latitude, longitude } = e.nativeEvent.coordinate;
