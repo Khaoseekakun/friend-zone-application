@@ -455,9 +455,17 @@ export default function ProfileTab() {
                                         <StyledView className="flex-row items-center justify-between mb-3">
                                             <StyledView className="flex-row items-center">
                                                 <StyledIonIcon
-                                                    name={userProfile?.profile?.gender === "ชาย" ? "male" : "female"}
+                                                    name={
+                                                        userProfile?.profile?.gender === "ชาย" ? "male" :
+                                                            userProfile?.profile?.gender === "หญิง" ? "female" :
+                                                                "transgender"
+                                                    }
                                                     size={20}
-                                                    className={userProfile?.profile?.gender === "ชาย" ? "text-blue-500" : "text-pink-500"}
+                                                    className={
+                                                        userProfile?.profile?.gender === "ชาย" ? "text-blue-500" :
+                                                            userProfile?.profile?.gender === "หญิง" ? "text-pink-500" :
+                                                                "text-purple-500"
+                                                    }
                                                     style={{ marginRight: 8 }}
                                                 />
                                                 <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-base">
