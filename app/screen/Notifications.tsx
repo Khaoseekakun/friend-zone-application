@@ -5,9 +5,6 @@ import {
     ScrollView,
     TouchableOpacity,
     useColorScheme,
-    Platform,
-    KeyboardAvoidingView,
-    Appearance,
     ActivityIndicator,
 } from 'react-native';
 import { NavigationProp, RouteProp, useRoute } from '@react-navigation/native';
@@ -15,7 +12,6 @@ import { styled } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { HeaderApp } from '@/components/Header';
-import { Navigation } from '@/components/Navigation';
 import { getDatabase, ref, onValue } from 'firebase/database';
 import FireBaseApp from '@/utils/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -197,13 +193,13 @@ export default function NotificationsScreen() {
     );
 
     return (
-        <StyledView className="flex-1 bg-gray-50 dark:bg-black">
+        <StyledView className="flex-1 bg-gray-50 dark:bg-neutral-900">
             <HeaderApp back={
                 backPage
             } />
 
             <StyledScrollView
-                className="flex-1"
+                className="flex-1 pt-5"
                 showsVerticalScrollIndicator={false}
             >
                 {

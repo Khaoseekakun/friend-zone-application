@@ -34,19 +34,19 @@ const StyledScrollView = styled(ScrollView);
 const database = getDatabase(FireBaseApp);
 
 const InfoItem = ({ icon, label, value, theme }: { icon: any; label: string; value: string; theme: string | null }) => (
-    <StyledView className="flex-row items-center bg-gray-50/50 dark:bg-gray-800/50 p-4 rounded-2xl mb-3">
+    <StyledView className="flex-row items-center bg-gray-50/50 dark:bg-gray-800/50 rounded-2xl mb-3">
         <StyledView className="bg-white dark:bg-gray-700 p-2 rounded-xl">
-            <Ionicons 
-                name={icon} 
-                size={22} 
+            <Ionicons
+                name={icon}
+                size={22}
                 color={theme === 'dark' ? gradientColors.dark[0] : gradientColors.light[1]}
             />
         </StyledView>
         <StyledView className="ml-3 flex-1">
-            <StyledText className="text-gray-500 dark:text-gray-400 text-sm">
+            <StyledText className="text-gray-500 dark:text-gray-400 text-sm font-custom">
                 {label}
             </StyledText>
-            <StyledText className="text-gray-900 dark:text-white text-base font-semibold mt-1">
+            <StyledText className="text-gray-900 dark:text-white text-base font-custom mt-1">
                 {value}
             </StyledText>
         </StyledView>
@@ -62,7 +62,7 @@ export default function FastRequest() {
     const colorScheme = useColorScheme();
     const [theme, setTheme] = useState(colorScheme);
     const currentGradient = theme === 'dark' ? gradientColors.dark : gradientColors.light;
-    
+
     const route = useRoute<RouteProp<RootStackParamList, 'FastRequest'>>();
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const isFocus = useIsFocused();
@@ -126,10 +126,10 @@ export default function FastRequest() {
             <StyledView className="flex-1 justify-center items-center bg-white dark:bg-gray-900 px-6">
                 <StyledView className="items-center">
                     <Ionicons name="alert-circle" size={64} color={currentGradient[0]} />
-                    <StyledText className="text-gray-600 dark:text-gray-300 text-lg text-center mt-4">
+                    <StyledText className="text-gray-600 dark:text-gray-300 font-custom text-lg text-center mt-4">
                         ไม่พบข้อมูลคำขอนี้
                     </StyledText>
-                    <StyledText className="text-gray-500 dark:text-gray-400 text-center mt-2">
+                    <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-center mt-2">
                         คำขอนี้อาจถูกลบไปแล้วหรือไม่มีอยู่ในระบบ
                     </StyledText>
                 </StyledView>
@@ -157,11 +157,11 @@ export default function FastRequest() {
                             className="w-20 h-20 rounded-2xl"
                         />
                         <StyledView className="ml-4 flex-1">
-                            <StyledText className="text-white text-xl font-bold">
+                            <StyledText className="text-white text-xl font-custom">
                                 {request.requester.username}
                             </StyledText>
                             <StyledView className="bg-white/20 self-start px-4 py-1 rounded-full mt-2">
-                                <StyledText className="text-white capitalize">
+                                <StyledText className="text-white capitalize font-custom">
                                     {request.requester.gender}
                                 </StyledText>
                             </StyledView>
@@ -171,23 +171,23 @@ export default function FastRequest() {
 
                 <StyledView className="px-4 -mt-12">
                     <StyledView className="bg-white dark:bg-gray-800 rounded-3xl p-5 shadow-lg">
-                        <StyledText className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                        <StyledText className="text-xl text-gray-900 dark:text-white mb-4 font-custom">
                             รายละเอียดงาน
                         </StyledText>
 
-                        <InfoItem 
+                        <InfoItem
                             icon="calendar-outline"
                             label="วันที่"
                             value={request.date}
                             theme={theme ?? 'light'}
                         />
-                        <InfoItem 
+                        <InfoItem
                             icon="briefcase-outline"
                             label="ประเภทงาน"
                             value={request.jobsType}
                             theme={theme ?? 'light'}
                         />
-                        <InfoItem 
+                        <InfoItem
                             icon="location-outline"
                             label="สถานที่"
                             value={request.location}
@@ -195,23 +195,29 @@ export default function FastRequest() {
                         />
 
                         {request.description && (
-                            <StyledView className="mt-2">
-                                <StyledView className="flex-row items-center mb-3">
-                                    <StyledView className="bg-white dark:bg-gray-700 p-2 rounded-xl">
-                                        <Ionicons 
-                                            name="document-text-outline" 
-                                            size={22}
-                                            color={theme === 'dark' ? currentGradient[0] : '#f97316'}
-                                        />
-                                    </StyledView>
-                                    <StyledText className="text-gray-900 dark:text-white font-semibold ml-3">
-                                        รายละเอียดเพิ่มเติม
-                                    </StyledText>
-                                </StyledView>
-                                <StyledText className="text-gray-700 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/50 p-4 rounded-2xl">
-                                    {request.description}
-                                </StyledText>
-                            </StyledView>
+                            <InfoItem
+                                icon="document-text-outline"
+                                label="รายละเอียดเพิ่มเติม"
+                                value={`${request.description}`}
+                                theme={theme ?? 'light'}
+                            />
+                            // <StyledView className="mt-2">
+                            //     <StyledView className="flex-row items-center mb-3">
+                            //         <StyledView className="bg-white dark:bg-gray-700 p-2 rounded-xl">
+                            //             <Ionicons 
+                            //                 name="document-text-outline" 
+                            //                 size={22}
+                            //                 color={theme === 'dark' ? currentGradient[0] : '#f97316'}
+                            //             />
+                            //         </StyledView>
+                            //         <StyledText className="text-gray-900 dark:text-white font-custom ml-3">
+                            //             รายละเอียดเพิ่มเติม
+                            //         </StyledText>
+                            //     </StyledView>
+                            //     <StyledText className="text-gray-700 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/50 p-4 rounded-2xl font-custom">
+                            //         {request.description}
+                            //     </StyledText>
+                            // </StyledView>
                         )}
 
                         <StyledView className="flex-row space-x-4 mt-8">
@@ -230,9 +236,9 @@ export default function FastRequest() {
                             >
                                 <LinearGradient
                                     colors={currentGradient}
-                                    className="py-4 rounded-2xl"
+                                    className="py-2 rounded-xl"
                                 >
-                                    <StyledText className="text-white text-center font-bold text-lg">
+                                    <StyledText className="text-white text-center text-lg font-custom">
                                         รับงาน
                                     </StyledText>
                                 </LinearGradient>
@@ -251,8 +257,8 @@ export default function FastRequest() {
                                     );
                                 }}
                             >
-                                <StyledView className="bg-gray-500 py-4 rounded-2xl">
-                                    <StyledText className="text-white text-center font-bold text-lg">
+                                <StyledView className="bg-gray-500 py-2 rounded-xl">
+                                    <StyledText className="text-white text-center text-lg font-custom">
                                         ลบ
                                     </StyledText>
                                 </StyledView>
