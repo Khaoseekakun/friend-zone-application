@@ -122,12 +122,6 @@ export default function Fast() {
     },
   })
 
-  const joblist = [
-    { label: "นั่งคุย", value: "talk" },
-    { label: "ทานข้าว", value: "dinner" },
-    { label: "ท่องเที่ยว", value: "travel" },
-  ];
-
   const handleCreateSchedule = async () => {
     // if (!scheduleDate || !scheduleTime || !scheduleJobs || !scheduleLocation || !pin) {
     //   Alert.alert("กรุณากรอกข้อมูลให้ครบ");
@@ -495,7 +489,7 @@ export default function Fast() {
 
   const renderAppointmentForm = () => (
     <SafeAreaView style={{ flex: 1, height: '100%' }}>
-      <StyledScrollView className="flex-1 pt-10">
+      <StyledView className="flex-1">
         {
           showSelectJobs ? (
             <>
@@ -532,7 +526,7 @@ export default function Fast() {
             <>
               <AnimatedTouchable
                 onPress={() => setStep(1)}
-                className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center left-6 mt-3 "
+                className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center left-3 mt-10 "
               >
                 <Ionicons name="chevron-back" size={24} color="#EB3834" />
               </AnimatedTouchable>
@@ -642,7 +636,7 @@ export default function Fast() {
                   }}
                   style={{
                     borderRadius: 20,
-                    height: "100%",
+                    height: "70%",
                   }}
                 >
                   {pin && (
@@ -668,7 +662,7 @@ export default function Fast() {
             </>
           )
         }
-      </StyledScrollView>
+      </StyledView>
       {
         !showSelectJobs && (
           <TouchableOpacity
