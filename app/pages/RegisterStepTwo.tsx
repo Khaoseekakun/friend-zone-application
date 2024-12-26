@@ -150,7 +150,6 @@ const InputField: React.FC<InputFieldProps> = ({
 );
 
 export default function RegisterStepTwo() {
-    const colorScheme = useColorScheme();
 
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [phone, setPhone] = useState('');
@@ -178,6 +177,7 @@ export default function RegisterStepTwo() {
     const [provinces, setProvinces] = useState<{ value: string; label: string }[]>([]); // สำหรับเก็บรายการจังหวัด
     const [province, setProvince] = useState(''); // สำหรับเก็บค่าที่เลือก
 
+    const colorScheme = useColorScheme();
     const [theme, setTheme] = useState(Appearance.getColorScheme());
     useEffect(() => {
         const listener = Appearance.addChangeListener(({ colorScheme }) => {
