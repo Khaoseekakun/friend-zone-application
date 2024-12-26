@@ -723,35 +723,51 @@ export default function ProfileTab() {
                         {
                             showSelectJobs ? (
                                 <>
-                                    <StyledView className="flex-row items-center px-6 py-1">
-                                        <StyledView className="w-full px-1">
-                                            <StyledView className="flex-row gap-1 items-center w-full mb-2">
-
-                                                <StyledIonIcon name="chevron-back" size={24}
-                                                    onPress={() => hideSelectJob()}
-                                                    className="text-black dark:text-neutral-200"
-
+                                    <LinearGradient
+                                        colors={['rgba(236,72,153,0.03)', 'rgba(249,115,22,0.03)']}
+                                        className="flex-1 px-4 pt-4"
+                                    >
+                                        <TouchableOpacity
+                                            onPress={hideSelectJob}
+                                            className="flex-row items-center mb-8"
+                                        >
+                                            <StyledView className="bg-white dark:bg-gray-800 p-2 rounded-full">
+                                                <StyledIonIcon
+                                                    name="chevron-back"
+                                                    size={24}
+                                                    className="text-[#8B0000] dark:text-orange-500"
                                                 />
-
                                             </StyledView>
-                                            {
-                                                joblist?.map((jobs, index) => (
-                                                    <TouchableOpacity
-                                                        key={index}
-                                                        className="flex-row items-center"
-                                                        onPress={() => {
-                                                            setScheduleJobs(jobs.value)
-                                                            hideSelectJob();
-                                                        }}
-                                                    >
-                                                        <StyledText className="text-lg text-black font-custom dark:text-neutral-200 flex-wrap pr-2 border-gray-200 max-w-[95%] bg-gray-300 dark:bg-neutral-600 px-2 py-2 rounded-xl my-2 ">{jobs.label}</StyledText>
-                                                    </TouchableOpacity>
-                                                ))
-                                            }
-                                        </StyledView>
+                                            <StyledText className="ml-3 text-xl font-semibold text-gray-800 dark:text-white">
+                                                เลือกประเภทงาน
+                                            </StyledText>
+                                        </TouchableOpacity>
 
-                                    </StyledView>
+                                        <StyledView className="space-y-3">
+                                            {jobsList?.map((jobs, index) => (
+                                                <TouchableOpacity
+                                                    key={index}
+                                                    onPress={() => {
+                                                        setScheduleJobs(jobs.id);
+                                                        hideSelectJob();
+                                                    }}
+                                                >
+                                                    <StyledView className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm active:scale-95 transform transition-all flex-row items-center justify-between">
+                                                        <StyledText className="text-base font-semibold text-gray-800 dark:text-white">
+                                                            {jobs.jobName}
+                                                        </StyledText>
+                                                        <StyledIonIcon
+                                                            name="chevron-forward"
+                                                            size={20}
+                                                            className="text-[#8B0000]/50 dark:text-orange-500/50"
+                                                        />
+                                                    </StyledView>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </StyledView>
+                                    </LinearGradient>
                                 </>
+
                             ) : (
                                 <>
                                     <StyledView className="flex-row items-center px-6 py-1">
