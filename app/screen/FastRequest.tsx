@@ -39,7 +39,7 @@ const InfoItem = ({ icon, label, value, theme }: { icon: any; label: string; val
             <Ionicons 
                 name={icon} 
                 size={22} 
-                color={theme === 'dark' ? gradientColors[0] : '#f97316'} 
+                color={theme === 'dark' ? gradientColors.dark[0] : gradientColors.light[1]}
             />
         </StyledView>
         <StyledView className="ml-3 flex-1">
@@ -54,8 +54,8 @@ const InfoItem = ({ icon, label, value, theme }: { icon: any; label: string; val
 );
 
 const gradientColors = {
-    dark: ['#EB3834', '#69140F'],
-    light: ['#ec4899', '#f97316']
+    dark: ['#EB3834', '#69140F'] as const,
+    light: ['#ec4899', '#f97316'] as const
 };
 
 export default function FastRequest() {
@@ -179,19 +179,19 @@ export default function FastRequest() {
                             icon="calendar-outline"
                             label="วันที่"
                             value={request.date}
-                            theme={theme}
+                            theme={theme ?? 'light'}
                         />
                         <InfoItem 
                             icon="briefcase-outline"
                             label="ประเภทงาน"
                             value={request.jobsType}
-                            theme={theme}
+                            theme={theme ?? 'light'}
                         />
                         <InfoItem 
                             icon="location-outline"
                             label="สถานที่"
                             value={request.location}
-                            theme={theme}
+                            theme={theme ?? 'light'}
                         />
 
                         {request.description && (
