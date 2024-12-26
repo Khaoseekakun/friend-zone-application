@@ -59,10 +59,21 @@ export default function Message() {
         setUserData(JSON.parse(storedUserData || '{}'));
     };
 
-    const fetchChannelsForUser = useCallback(async () => {
-        setLoading(true);
+    useEffect(() => {
+        if (isFocused) {
+            if(!userData.id) {
+                fetchUserData();
+            }
+            fetchChannelsForUser();
+        }
+    }, [isFocused, userData]);
 
-        const database = getDatabase(FireBaseApp);
+    const database = getDatabase(FireBaseApp);
+
+    const fetchChannelsForUser = async () => {
+
+        if (!userData.id) return;
+
         const messagePath = '/channels';
         const channelsRef = ref(database, messagePath);
 
@@ -73,6 +84,8 @@ export default function Message() {
         );
 
         try {
+
+            setLoading(true);
             const snapshot = await get(channelsQuery);
             const data = snapshot.val() || {};
             const fetchedChannels = Object.keys(data).map((key) => ({ channel_id: key, ...data[key] }));
@@ -83,10 +96,12 @@ export default function Message() {
                 const receiver = await loadReceiver(receiverId);
                 return { channel_id: channel.channel_id, receiver, last_message: channel.last_message };
             }));
+
             const receiverDataMap = receivers.reduce((acc: { [key: string]: any }, { channel_id, receiver, last_message }) => {
                 acc[channel_id] = { ...receiver, last_message };
                 return acc;
             }, {});
+
             setReceiverData(receiverDataMap);
 
         } catch (error) {
@@ -94,16 +109,8 @@ export default function Message() {
         } finally {
             setLoading(false);
         }
-    }, [userData, isCustomer]);
+    }
 
-    useEffect(() => {
-        if (isFocused == true) {
-            (async () => {
-                await fetchUserData();
-                fetchChannelsForUser();
-            })()
-        }
-    }, [isFocused]);
 
     const handleChannelPress = (item: Channel) => {
         const receiver = receiverData[item.channel_id];
@@ -147,7 +154,7 @@ export default function Message() {
                                 <ActivityIndicator size="small" color="#999" />
                             ) : (
                                 <FlatList
-                                    refreshing={true}
+                                    refreshing={loading}
                                     onRefresh={fetchChannelsForUser}
                                     data={channels}
                                     keyExtractor={(item) => item.channel_id}

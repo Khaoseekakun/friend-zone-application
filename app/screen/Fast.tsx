@@ -123,28 +123,27 @@ export default function Fast() {
   })
 
   const handleCreateSchedule = async () => {
-    if (!scheduleDate || !scheduleTime || !scheduleJobs || !scheduleLocation || !pin) {
-      Alert.alert("กรุณากรอกข้อมูลให้ครบ");
-      return;
-    }
+    // if (!scheduleDate || !scheduleTime || !scheduleJobs || !scheduleLocation || !pin) {
+    //   Alert.alert("กรุณากรอกข้อมูลให้ครบ");
+    //   return;
+    // }
 
+    // setLoading(true);
+    // try {
+    //   await axios.post("https://friendszone.app/api/schedule", {
+    //     date: scheduleDate,
+    //     time: scheduleTime,
+    //     job: scheduleJobs,
+    //     location: scheduleLocation,
+    //     pin: pin
+    //   });
+    //   setStep(3);
+    // } catch (error) {
+    //   Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
+    // } finally {
+    //   setLoading(false);
+    // }
     setLoading(true);
-    try {
-      await axios.post("https://friendszone.app/api/schedule", {
-        date: scheduleDate,
-        time: scheduleTime,
-        job: scheduleJobs,
-        location: scheduleLocation,
-        pin: pin
-      });
-      setStep(3);
-    } catch (error) {
-      Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
-    } finally {
-      setLoading(false);
-    }
-    setLoading(true);
-    console.log('create!')
     setStep(3);
     setLoading(false);
   };
@@ -169,7 +168,7 @@ export default function Fast() {
       <SafeAreaView style={{ flex: 1 }}>
         <StyledScrollView className="flex-1">
           <AnimatedTouchable
-            onPress={() => navigation.goBack()}
+            onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()}
             className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute left-6 mt-3 z-10 "
           >
             <Ionicons name="chevron-back" size={24} color="#EB3834" />
@@ -518,7 +517,7 @@ export default function Fast() {
                     <TouchableOpacity
                       key={index}
                       onPress={() => {
-                        setScheduleJobs(jobs.id);
+                        setScheduleJobs(jobs.jobName);
                         hideSelectJob();
                       }}
                     >

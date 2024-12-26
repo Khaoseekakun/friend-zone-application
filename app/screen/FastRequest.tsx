@@ -36,6 +36,7 @@ const database = getDatabase(FireBaseApp);
 const InfoItem = ({ icon, label, value, theme }: { icon: any; label: string; value: string; theme: string | null }) => (
     <StyledView className="flex-row items-center bg-gray-50/50 dark:bg-gray-800/50 rounded-2xl mb-3">
         <StyledView className="bg-white dark:bg-gray-700 p-2 rounded-xl">
+
             <Ionicons
                 name={icon}
                 size={22}
@@ -54,8 +55,8 @@ const InfoItem = ({ icon, label, value, theme }: { icon: any; label: string; val
 );
 
 const gradientColors = {
-    dark: ['#EB3834', '#69140F'] as const,
-    light: ['#ec4899', '#f97316'] as const
+    dark: ['#EB3834', '#69140F'],
+    light: ['#ec4899', '#f97316']
 };
 
 export default function FastRequest() {
@@ -142,7 +143,7 @@ export default function FastRequest() {
             <HeaderApp back={backPage} />
             <StyledScrollView className="flex-1">
                 <LinearGradient
-                    colors={currentGradient}
+                    colors={[currentGradient[0], currentGradient[1]]}
                     className="px-4 pt-4 pb-16"
                 >
                     <TouchableOpacity
@@ -235,7 +236,7 @@ export default function FastRequest() {
                                 }}
                             >
                                 <LinearGradient
-                                    colors={currentGradient}
+                                    colors={currentGradient as any}
                                     className="py-2 rounded-xl"
                                 >
                                     <StyledText className="text-white text-center text-lg font-custom">
