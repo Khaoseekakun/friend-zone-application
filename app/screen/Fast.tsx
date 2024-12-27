@@ -1,30 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, StyleSheet, ActivityIndicator, Alert, Pressable, useAnimatedValue, SafeAreaView, useColorScheme, Appearance } from "react-native";
+import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, ActivityIndicator, Alert, SafeAreaView, Appearance } from "react-native";
 import { NavigationProp, RouteProp, useIsFocused, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { ScrollView, FlatList, TextInput } from "react-native-gesture-handler";
+import { ScrollView, TextInput } from "react-native-gesture-handler";
 import axios from "axios";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import * as Location from 'expo-location';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import Animated, {
-  useSharedValue,
-  FadeInUp,
-  withTiming,
-  Easing,
-  useAnimatedStyle,
-  withRepeat,
-  interpolate
+  FadeInUp
 } from 'react-native-reanimated';
 import { RootStackParamList } from "@/types";
 import { JobsList } from "@/types/prismaInterface";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { HeaderApp } from "@/components/Header";
-import { getDatabase, onValue, ref } from "firebase/database";
+import { getDatabase, onValue, ref, set } from "firebase/database";
 import FireBaseApp from "@/utils/firebaseConfig";
-const Icon = require('../../assets/icon/search.gif');
+import { getAge } from "@/utils/Date";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -61,17 +55,14 @@ type FastData = {
 }
 export default function Fast() {
   const navigation = useNavigation<NavigationProp<any>>();
-  const [search, setSearch] = useState('');
-  const [searchloading, setSearchLoading] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [pin, setPin] = useState<{ latitude: number; longitude: number }>({ latitude: 37.78825, longitude: -122.4324 });
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15 * 60);
-  const [dots, setDots] = useState('');
   const router = useRoute<CategorySearch>();
   const { backPage } = router.params;
   const [theme, setTheme] = useState(Appearance.getColorScheme());
-  const isFocus = useIsFocused()
+  const isFocus = useIsFocused();
 
 
   const [scheduleDate, setScheduleDate] = useState("");
@@ -99,20 +90,25 @@ export default function Fast() {
     const listener = Appearance.addChangeListener(({ colorScheme }) => {
       setTheme(colorScheme);
     });
+
     fetchUserData();
-    fetchFastRequest();
     return () => listener.remove();
   }, []);
-
-  const backgroundAnim = useSharedValue(0);
-  const _color = "#AB1815";
-  const _size = 100;
 
   useEffect(() => {
     if (step == 2) {
       getCurrentLocation();
     }
   }, [step]);
+
+
+  useEffect(() => {
+    if (userData?.id) {
+      fetchFastRequest();
+    }
+  }, [userData])
+
+
 
 
   const handleCreateSchedule = async () => {
@@ -732,13 +728,6 @@ export default function Fast() {
     </SafeAreaView >
   );
 
-  const rStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: interpolate(backgroundAnim.value, [0, 1], [1, 2]) }],
-      opacity: interpolate(backgroundAnim.value, [0, 1], [0.7, 0]),
-    };
-  });
-
   const loadProfile = async (profileId: string) => {
     try {
       const res = await axios.get(`https://friendszone.app/api/profile/${profileId}`, {
@@ -758,8 +747,12 @@ export default function Fast() {
   }
 
 
-  // Call RenderAcceptList within the component
+  
+  const database = getDatabase(FireBaseApp);
+  const fastUpdate = ref(database, `fast-request/test-fast-request-1/acceptList`);
+
   useEffect(() => {
+
     const unsubscribe = onValue(fastUpdate, (snapshot) => {
       const val = snapshot.val();
       if (val) {
@@ -769,15 +762,10 @@ export default function Fast() {
       }
     });
 
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-
     return () => {
-      unsubscribe()
-      clearInterval(timer);
+      unsubscribe();
     };
-  }, [])
+  }, []);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -802,7 +790,7 @@ export default function Fast() {
             entering={FadeInUp.delay(index * 100).springify()}
             className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg rounded-3xl shadow-xl border border-neutral-100 dark:border-neutral-700"
           >
-            <StyledTouchableOpacity 
+            <StyledTouchableOpacity
               className="p-4"
               onPress={() => navigation.navigate('Profile', { userId: member.id })}
             >
@@ -826,7 +814,7 @@ export default function Fast() {
                                                     className="text-gray-500 dark:text-gray-400 mr-2"
                                                 />
                       <StyledText className="font-custom text-sm text-neutral-500">
-                        {member?.age || 10} ปี
+                        {getAge(member?.birthday)} ปี
                       </StyledText>
                       <StyledView className="w-1 h-1 rounded-full bg-neutral-300" />
                       <StyledIonIcon
@@ -848,35 +836,68 @@ export default function Fast() {
                     </StyledView>
                   </StyledView>
                 </StyledView>
-                
+
                 <StyledView className="items-end">
                   <StyledText className="font-custom text-xl font-semibold text-red-500">
                     ฿{member?.amount?.toLocaleString() || '00.00'}
                   </StyledText>
                   <StyledView className="flex-row items-center mt-1">
+<<<<<<< Updated upstream
                     <StyledIonIcon name="star" size={12} color="#FCD34D" />
                     <StyledText className="font-custom text-xs dark:text-neutral-400 text-neutral-800 ml-1">
                       ทำเนียบนัดหมาย {member?.appointments}
+=======
+                    <StyledIonIcon name="star" size={24} color="#FCD34D" />
+                    <StyledText className="font-custom text-lg text-neutral-400 ml-1">
+                      {
+                        member?.rating
+                      }
+>>>>>>> Stashed changes
                     </StyledText>
                   </StyledView>
                 </StyledView>
               </StyledView>
-    
+
               <StyledView className="flex-row justify-end space-x-3 mt-4">
-                <StyledTouchableOpacity 
-                  className="bg-neutral-100 dark:bg-neutral-700/50 px-5 py-2.5 rounded-2xl flex-row items-center"
+                <StyledTouchableOpacity
+                  onPress={() => {
+                    Alert.alert(
+                      "ยืนยันการลบสมาชิก",
+                      `คุณต้องการลบ ${member?.username} ออกจากรายการหรือไม่`,
+                      [
+                        {
+                          text: "ลบ",
+                          onPress: () => {
+                            const newFastList = fastList.filter((item) => item !== member.id);
+                            setFastList(newFastList);
+                            setMemberAccept(memberAccept.filter((item) => item.id !== member.id));
+                            set(ref(database, `fast-request/test-fast-request-1/acceptList`), newFastList.join(','));
+                          },
+                          style: "cancel"
+                        },
+                        { text: "ยกเลิก" }
+                      ]
+                    )
+                  }}
+                  className=" px-5 py-2.5 rounded-2xl flex-row items-center"
                 >
                   <StyledIonIcon name="close-outline" size={18} className="text-red-600" />
                   <StyledText className="font-custom text-red-600 dark:text-red-300 ml-1">
                     ลบ
                   </StyledText>
                 </StyledTouchableOpacity>
-                <StyledTouchableOpacity 
-                  className="bg-gradient-to-r from-red-500 to-red-600 px-5 py-2.5 rounded-2xl flex-row items-center"
+                <StyledTouchableOpacity
+                  className="bg-neutral-100 dark:bg-neutral-700/50 px-5 py-2.5 rounded-2xl flex-row items-center"
                 >
+<<<<<<< Updated upstream
                   <StyledIonIcon name="checkmark-outline" size={18} className="text-neutral-800 dark:text-white" />
                   <StyledText className="font-custom text-neutral-800 dark:text-white ml-1">
                     เลือก
+=======
+                  <StyledIonIcon name="checkmark-outline" size={18} className="text-black dark:text-white" />
+                  <StyledText className="font-custom text-black dark:text-white ml-1">
+                    เลือกและชำค่าบริการ
+>>>>>>> Stashed changes
                   </StyledText>
                 </StyledTouchableOpacity>
               </StyledView>
@@ -891,11 +912,16 @@ export default function Fast() {
 
 
   const renderWaitingScreen = () => {
+
+
+
+
     return (
       <StyledView
         className="flex-1 justify-center items-center"
       >
         <HeaderApp />
+<<<<<<< Updated upstream
         <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 
           {
@@ -929,6 +955,48 @@ export default function Fast() {
               ยกเลิกการค้นหา
             </StyledText>
           </TouchableOpacity>
+=======
+        <SafeAreaView className="flex-1">
+          <RenderAcceptList />
+
+          <StyledView className="items-center px-6 py-8">
+            <StyledText className="font-custom text-neutral-600 dark:text-neutral-400 text-base text-center">
+              {/* timeout = 2020-12-28T00:00:00.000Z  i want to 28/12/2024 00:00:00*/}
+              กำลังค้นหาเพื่อนที่ว่างให้คุณ{'\n'}หมดเวลาตอน {
+                new Date(fastRequest?.timeout as string).toLocaleString('th-TH', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit'
+                })
+              }
+            </StyledText>
+
+            <StyledTouchableOpacity
+              className="bg-red-500 rounded-full px-6 py-3 mt-4"
+              onPress={() => {
+                Alert.alert(
+                  "ยกเลิกการค้นหา",
+                  "คุณต้องการยกเลิกการค้นหาหรือไม่",
+                  [
+                    {
+                      text: "ยกเลิก",
+                      onPress: () => cancelFastRequest(),
+                      style: "cancel"
+                    },
+                    { text: "กลับ" }
+                  ]
+                );
+              }}
+            >
+              <StyledText className="font-custom text-white">
+                ยกเลิกการค้นหา
+              </StyledText>
+            </StyledTouchableOpacity>
+          </StyledView>
+>>>>>>> Stashed changes
         </SafeAreaView>
       </StyledView>
     );
@@ -973,15 +1041,6 @@ export default function Fast() {
       console.log(error);
     }
   }
-
-  useEffect(() => {
-    if (isFocus) {
-      fetchFastRequest();
-    }
-  }, [isFocus])
-
-  const database = getDatabase(FireBaseApp);
-  const fastUpdate = ref(database, `fast-request/test-fast-request-1/acceptList`);
 
   return (
     <StyledView className="flex-1">
