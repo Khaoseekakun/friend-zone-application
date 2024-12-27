@@ -793,43 +793,65 @@ export default function Fast() {
 
   const RenderAcceptList = () => {
     return (
-      <StyledView className="items-center justify-center w-full px-4 space-y-2">
-        {
-          memberAccept.map((member, index) => {
-            return (
-              <StyledView key={index} className="justify-start bg-red-500 mx-2 p-2 rounded-lg w-full ">
-                <StyledView className="flex-row items-center justify-between w-full ">
-                  <StyledView className="flex-row items-center">
-                    <StyledImage
-                      source={{ uri: member?.profileUrl }}
-                      className="w-12 h-12 rounded-full"
-                    />
-                    <StyledText className="font-custom text-white text-lg ml-2">{member?.username}</StyledText>
-                  </StyledView>
-                  <StyledView className="flex-row items-center space-x-2 ">
-                    <StyledTouchableOpacity className="flex-row mr-2 items-center">
-                      <StyledText className="font-custom text-white">ลบ</StyledText>
-                    </StyledTouchableOpacity>
-                    <StyledTouchableOpacity className="flex-row ml-2 bg-red-800 rounded-lg p-3 items-center">
-                      <StyledText className="font-custom text-white">เลือก</StyledText>
-                    </StyledTouchableOpacity>
-                  </StyledView>
-                </StyledView>
-
-                <StyledView className="flex-row items-center justify-between w-full  ">
-                  <StyledView className="flex-row justify-between items-center">
-                    <StyledText className="font-custom text-white">ทำเนียบนัดหมาย</StyledText>
-                    <StyledText className="font-custom text-white">1000</StyledText>
+      <StyledView className="w-full px-4 py-2 space-y-3">
+        {memberAccept.map((member, index) => (
+          <StyledTouchableOpacity 
+            key={index} 
+            className="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg p-4"
+            onPress={() => navigation.navigate('Profile', { userId: member.id })}
+          >
+            <StyledView className="flex-row items-center justify-between">
+              <StyledView className="flex-row items-center space-x-3">
+                <StyledImage
+                  source={{ uri: member?.profileUrl }}
+                  className="w-14 h-14 rounded-full border-2 border-red-500"
+                />
+                <StyledView>
+                  <StyledText className="font-custom text-lg text-neutral-800 dark:text-white">
+                    {member?.username}
+                  </StyledText>
+                  <StyledView className="flex-row items-center space-x-2 mt-1">
+                    <StyledText className="font-custom text-sm text-neutral-500">
+                      {member?.age || 10} ปี
+                    </StyledText>
+                    <StyledView className="w-1.5 h-1.5 rounded-full bg-neutral-300" />
+                    <StyledText className="font-custom text-sm text-neutral-500">
+                      {member?.gender}
+                    </StyledText>
                   </StyledView>
                 </StyledView>
-
-
-
-
               </StyledView>
-            )
-          })
-        }
+              
+              <StyledView className="items-end">
+                <StyledText className="font-custom text-lg font-semibold text-red-500">
+                  ฿{member?.amount?.toLocaleString() || '00.00'}
+                </StyledText>
+                <StyledText className="font-custom text-xs text-neutral-400 mt-1">
+                  ทำเนียบนัดหมาย {member?.appointments}
+                </StyledText>
+              </StyledView>
+            </StyledView>
+  
+            <StyledView className="flex-row justify-end space-x-2 mt-4">
+              <StyledTouchableOpacity 
+                className="bg-neutral-100 dark:bg-neutral-700 px-4 py-2 rounded-full"
+                // onPress={() => handleRemove(member.id)}
+              >
+                <StyledText className="font-custom text-neutral-600 dark:text-neutral-300">
+                  ลบ
+                </StyledText>
+              </StyledTouchableOpacity>
+              <StyledTouchableOpacity 
+                className="bg-red-500 px-4 py-2 rounded-full"
+                // onPress={() => handleSelect(member.id)}
+              >
+                <StyledText className="font-custom text-white">
+                  เลือก
+                </StyledText>
+              </StyledTouchableOpacity>
+            </StyledView>
+          </StyledTouchableOpacity>
+        ))}
       </StyledView>
     )
   }
@@ -837,43 +859,40 @@ export default function Fast() {
 
   const renderWaitingScreen = () => {
     return (
-      <StyledView
-        className="flex-1 justify-center items-center"
-      >
+      <StyledView className="flex-1 bg-neutral-50 dark:bg-neutral-900">
         <HeaderApp />
-        <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-
-          {
-            RenderAcceptList()
-          }
-
-          <StyledText className="font-custom text-neutral-700 dark:text-white/40  text-base text-center mt-12 px-6">
-            กำลังค้นหาเพื่อนที่ว่างให้คุณ{'\n'}เหลือเวลาอีก {
-              Math.floor(timeLeft / 60) > 0
-                ? `${Math.floor(timeLeft / 60)} ` + 'นาที '
-                : ''
-            }{timeLeft % 60} นาที
-          </StyledText>
-          <TouchableOpacity
-            onPress={() => {
-              Alert.alert(
-                "ยกเลิกการค้นหา",
-                "คุณต้องการยกเลิกการค้นหาหรือไม่",
-                [
-                  {
-                    text: "ยกเลิกการค้นหา",
-                    onPress: () => cancelFastRequest(),
-                    style: "cancel"
-                  },
-                  { text: "กลับ" }
-                ]
-              );
-            }}
-          >
-            <StyledText className="font-custom text-white dark:text-neutral-800 dark:text-white/40 dark:bg-white bg-red-500 rounded-full px-4 py-2 mt-4">
-              ยกเลิกการค้นหา
+        <SafeAreaView className="flex-1">
+          <RenderAcceptList />
+          
+          <StyledView className="items-center px-6 py-8">
+            <StyledText className="font-custom text-neutral-600 dark:text-neutral-400 text-base text-center">
+              กำลังค้นหาเพื่อนที่ว่างให้คุณ{'\n'}เหลือเวลาอีก{' '}
+              {Math.floor(timeLeft / 60) > 0 ? `${Math.floor(timeLeft / 60)} นาที ` : ''}
+              {timeLeft % 60} วินาที
             </StyledText>
-          </TouchableOpacity>
+            
+            <StyledTouchableOpacity
+              className="bg-red-500 rounded-full px-6 py-3 mt-4"
+              onPress={() => {
+                Alert.alert(
+                  "ยกเลิกการค้นหา",
+                  "คุณต้องการยกเลิกการค้นหาหรือไม่",
+                  [
+                    {
+                      text: "ยกเลิก",
+                      onPress: () => cancelFastRequest(),
+                      style: "cancel"
+                    },
+                    { text: "กลับ" }
+                  ]
+                );
+              }}
+            >
+              <StyledText className="font-custom text-white">
+                ยกเลิกการค้นหา
+              </StyledText>
+            </StyledTouchableOpacity>
+          </StyledView>
         </SafeAreaView>
       </StyledView>
     );
@@ -935,9 +954,9 @@ export default function Fast() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <StyledView className="flex-1 bg-white dark:bg-neutral-900">
-          {step === 1 && renderCategorySelection()}
+          {step === 3 && renderCategorySelection()}
           {step === 2 && renderAppointmentForm()}
-          {step === 3 && renderWaitingScreen()}
+          {step === 1 && renderWaitingScreen()}
         </StyledView>
       </KeyboardAvoidingView>
     </StyledView>
