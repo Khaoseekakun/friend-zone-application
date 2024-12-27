@@ -793,9 +793,11 @@ export default function Fast() {
 
   const RenderAcceptList = () => {
     return (
-      <StyledView className="w-full px-4 py-2 space-y-4">
-        {memberAccept.map((member, index) => (
-          <Animated.View
+      <StyledView className="w-screen px-2 py-2 space-y-2">
+        {
+          memberAccept.map((member, index) => {
+            return (
+              <Animated.View
             key={index}
             entering={FadeInUp.delay(index * 100).springify()}
             className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg rounded-3xl shadow-xl border border-neutral-100 dark:border-neutral-700"
@@ -818,12 +820,28 @@ export default function Fast() {
                       {member?.username}
                     </StyledText>
                     <StyledView className="flex-row items-center space-x-2 mt-1">
-                      <StyledIonIcon name="happy-outline" size={14} color="#9CA3AF" />
+                    <StyledIonIcon
+                                                    name="calendar-outline"
+                                                    size={20}
+                                                    className="text-gray-500 dark:text-gray-400 mr-2"
+                                                />
                       <StyledText className="font-custom text-sm text-neutral-500">
                         {member?.age || 10} ปี
                       </StyledText>
                       <StyledView className="w-1 h-1 rounded-full bg-neutral-300" />
-                      <StyledIonIcon name="person-outline" size={14} color="#9CA3AF" />
+                      <StyledIonIcon
+                                                    name={
+                                                        member?.gender === "ชาย" ? "male" :
+                                                            member?.gender === "หญิง" ? "female" :
+                                                                "transgender"
+                                                    }
+                                                    size={20}
+                                                    className={
+                                                        member?.gender === "ชาย" ? "text-blue-500" :
+                                                            member?.gender === "หญิง" ? "text-pink-500" :
+                                                                "text-purple-500"
+                                                    }
+                                                />
                       <StyledText className="font-custom text-sm text-neutral-500">
                         {member?.gender}
                       </StyledText>
@@ -837,7 +855,7 @@ export default function Fast() {
                   </StyledText>
                   <StyledView className="flex-row items-center mt-1">
                     <StyledIonIcon name="star" size={12} color="#FCD34D" />
-                    <StyledText className="font-custom text-xs text-neutral-400 ml-1">
+                    <StyledText className="font-custom text-xs dark:text-neutral-400 text-neutral-800 ml-1">
                       ทำเนียบนัดหมาย {member?.appointments}
                     </StyledText>
                   </StyledView>
@@ -848,7 +866,7 @@ export default function Fast() {
                 <StyledTouchableOpacity 
                   className="bg-neutral-100 dark:bg-neutral-700/50 px-5 py-2.5 rounded-2xl flex-row items-center"
                 >
-                  <StyledIonIcon name="close-outline" size={18} className="text-red-700 dark:text-red-300" />
+                  <StyledIonIcon name="close-outline" size={18} className="text-red-600" />
                   <StyledText className="font-custom text-red-600 dark:text-red-300 ml-1">
                     ลบ
                   </StyledText>
@@ -856,15 +874,17 @@ export default function Fast() {
                 <StyledTouchableOpacity 
                   className="bg-gradient-to-r from-red-500 to-red-600 px-5 py-2.5 rounded-2xl flex-row items-center"
                 >
-                  <StyledIonIcon name="checkmark-outline" size={18} className="text-black dark:text-white" />
-                  <StyledText className="font-custom text-black dark:text-white ml-1">
+                  <StyledIonIcon name="checkmark-outline" size={18} className="text-neutral-800 dark:text-white" />
+                  <StyledText className="font-custom text-neutral-800 dark:text-white ml-1">
                     เลือก
                   </StyledText>
                 </StyledTouchableOpacity>
               </StyledView>
             </StyledTouchableOpacity>
           </Animated.View>
-        ))}
+            )
+          })
+        }
       </StyledView>
     )
   }
@@ -872,40 +892,43 @@ export default function Fast() {
 
   const renderWaitingScreen = () => {
     return (
-      <StyledView className="flex-1 bg-neutral-50 dark:bg-neutral-900">
+      <StyledView
+        className="flex-1 justify-center items-center"
+      >
         <HeaderApp />
-        <SafeAreaView className="flex-1">
-          <RenderAcceptList />
-          
-          <StyledView className="items-center px-6 py-8">
-            <StyledText className="font-custom text-neutral-600 dark:text-neutral-400 text-base text-center">
-              กำลังค้นหาเพื่อนที่ว่างให้คุณ{'\n'}เหลือเวลาอีก{' '}
-              {Math.floor(timeLeft / 60) > 0 ? `${Math.floor(timeLeft / 60)} นาที ` : ''}
-              {timeLeft % 60} วินาที
+        <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+
+          {
+            RenderAcceptList()
+          }
+
+          <StyledText className="font-custom text-neutral-700 dark:text-white/40  text-base text-center mt-12 px-6">
+            กำลังค้นหาเพื่อนที่ว่างให้คุณ{'\n'}เหลือเวลาอีก {
+              Math.floor(timeLeft / 60) > 0
+                ? `${Math.floor(timeLeft / 60)} ` + 'นาที '
+                : ''
+            }{timeLeft % 60} นาที
+          </StyledText>
+          <TouchableOpacity
+            onPress={() => {
+              Alert.alert(
+                "ยกเลิกการค้นหา",
+                "คุณต้องการยกเลิกการค้นหาหรือไม่",
+                [
+                  {
+                    text: "ยกเลิกการค้นหา",
+                    onPress: () => cancelFastRequest(),
+                    style: "cancel"
+                  },
+                  { text: "กลับ" }
+                ]
+              );
+            }}
+          >
+            <StyledText className="font-custom text-white dark:text-neutral-800 dark:text-white/40 dark:bg-white bg-red-500 rounded-full px-4 py-2 mt-4">
+              ยกเลิกการค้นหา
             </StyledText>
-            
-            <StyledTouchableOpacity
-              className="bg-red-500 rounded-full px-6 py-3 mt-4"
-              onPress={() => {
-                Alert.alert(
-                  "ยกเลิกการค้นหา",
-                  "คุณต้องการยกเลิกการค้นหาหรือไม่",
-                  [
-                    {
-                      text: "ยกเลิก",
-                      onPress: () => cancelFastRequest(),
-                      style: "cancel"
-                    },
-                    { text: "กลับ" }
-                  ]
-                );
-              }}
-            >
-              <StyledText className="font-custom text-white">
-                ยกเลิกการค้นหา
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
+          </TouchableOpacity>
         </SafeAreaView>
       </StyledView>
     );
@@ -967,9 +990,9 @@ export default function Fast() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <StyledView className="flex-1 bg-white dark:bg-neutral-900">
-          {step === 3 && renderCategorySelection()}
+          {step === 1 && renderCategorySelection()}
           {step === 2 && renderAppointmentForm()}
-          {step === 1 && renderWaitingScreen()}
+          {step === 3 && renderWaitingScreen()}
         </StyledView>
       </KeyboardAvoidingView>
     </StyledView>
