@@ -81,7 +81,7 @@ export default function FeedsTab() {
 
         try {
             setLoading(true);
-            const response = await axios.get(`https://friendszone.app/api/post?loadLimit=${pageNumber != 1 ? "1" : "10"}&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}&by=${userData?.id ?? null}`, {
+            const response = await axios.get(`https://friendszone.app/api/post?loadLimit=${pageNumber != 1 ? "1" : "10"}&orderBy=${!refreshing ? "desc" : "none"}&page=${pageNumber}&by=${userData?.id}`, {
 
                 headers: {
                     'Content-Type': 'application/json'
