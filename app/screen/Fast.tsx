@@ -842,17 +842,12 @@ export default function Fast() {
                     ฿{member?.amount?.toLocaleString() || '00.00'}
                   </StyledText>
                   <StyledView className="flex-row items-center mt-1">
-<<<<<<< Updated upstream
-                    <StyledIonIcon name="star" size={12} color="#FCD34D" />
-                    <StyledText className="font-custom text-xs dark:text-neutral-400 text-neutral-800 ml-1">
-                      ทำเนียบนัดหมาย {member?.appointments}
-=======
+
                     <StyledIonIcon name="star" size={24} color="#FCD34D" />
                     <StyledText className="font-custom text-lg text-neutral-400 ml-1">
                       {
                         member?.rating
                       }
->>>>>>> Stashed changes
                     </StyledText>
                   </StyledView>
                 </StyledView>
@@ -889,15 +884,9 @@ export default function Fast() {
                 <StyledTouchableOpacity
                   className="bg-neutral-100 dark:bg-neutral-700/50 px-5 py-2.5 rounded-2xl flex-row items-center"
                 >
-<<<<<<< Updated upstream
-                  <StyledIonIcon name="checkmark-outline" size={18} className="text-neutral-800 dark:text-white" />
-                  <StyledText className="font-custom text-neutral-800 dark:text-white ml-1">
-                    เลือก
-=======
                   <StyledIonIcon name="checkmark-outline" size={18} className="text-black dark:text-white" />
                   <StyledText className="font-custom text-black dark:text-white ml-1">
                     เลือกและชำค่าบริการ
->>>>>>> Stashed changes
                   </StyledText>
                 </StyledTouchableOpacity>
               </StyledView>
@@ -921,41 +910,6 @@ export default function Fast() {
         className="flex-1 justify-center items-center"
       >
         <HeaderApp />
-<<<<<<< Updated upstream
-        <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-
-          {
-            RenderAcceptList()
-          }
-
-          <StyledText className="font-custom text-neutral-700 dark:text-white/40  text-base text-center mt-12 px-6">
-            กำลังค้นหาเพื่อนที่ว่างให้คุณ{'\n'}เหลือเวลาอีก {
-              Math.floor(timeLeft / 60) > 0
-                ? `${Math.floor(timeLeft / 60)} ` + 'นาที '
-                : ''
-            }{timeLeft % 60} นาที
-          </StyledText>
-          <TouchableOpacity
-            onPress={() => {
-              Alert.alert(
-                "ยกเลิกการค้นหา",
-                "คุณต้องการยกเลิกการค้นหาหรือไม่",
-                [
-                  {
-                    text: "ยกเลิกการค้นหา",
-                    onPress: () => cancelFastRequest(),
-                    style: "cancel"
-                  },
-                  { text: "กลับ" }
-                ]
-              );
-            }}
-          >
-            <StyledText className="font-custom text-white dark:text-neutral-800 dark:text-white/40 dark:bg-white bg-red-500 rounded-full px-4 py-2 mt-4">
-              ยกเลิกการค้นหา
-            </StyledText>
-          </TouchableOpacity>
-=======
         <SafeAreaView className="flex-1">
           <RenderAcceptList />
 
@@ -996,7 +950,6 @@ export default function Fast() {
               </StyledText>
             </StyledTouchableOpacity>
           </StyledView>
->>>>>>> Stashed changes
         </SafeAreaView>
       </StyledView>
     );
