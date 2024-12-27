@@ -664,7 +664,7 @@ export default function ProfileTab() {
                                 </StyledView>
                             </StyledView>
                         </StyledScrollView>
-                            {(userData.id && userProfile?.profile?.id !== userData.id && userProfile?.profile?.type == "member") && (
+                        {(userData.id && userProfile?.profile?.id !== userData.id && userProfile?.profile?.type == "member") && (
                             <StyledView className="absolute bottom-4 left-0 right-0 px-[15%]">
                                 <TouchableOpacity
                                     activeOpacity={0.8}
@@ -708,162 +708,139 @@ export default function ProfileTab() {
 
 
 
-            <BottomSheet
-                ref={bottomSheetRef}
-                snapPoints={snapPoints}
-                enablePanDownToClose={true}
-                index={-1}
-                backgroundStyle={{
-                    borderRadius: 10,
-                    backgroundColor: theme == "dark" ? "#262626" : "#fff"
-                }}
-            >
-                <BottomSheetScrollView>
-                    <StyledView className="flex-1 mb-20">
-                        {
-                            showSelectJobs ? (
+            <>
+                <BottomSheet
+                    ref={bottomSheetRef}
+                    snapPoints={snapPoints}
+                    enablePanDownToClose={true}
+                    index={-1}
+                    backgroundStyle={{
+                        borderRadius: 10,
+                        backgroundColor: theme === 'dark' ? '#262626' : '#fff',
+                    }}
+                >
+                    <BottomSheetScrollView>
+                        <StyledView className="flex-1 mb-20">
+                            {showSelectJobs ? (
                                 <>
                                     <StyledView className="flex-row items-center px-6 py-1">
                                         <StyledView className="w-full px-1">
                                             <StyledView className="flex-row gap-1 items-center mb-2">
-
-                                                <StyledIonIcon name="chevron-back" size={24}
-                                                    onPress={() => hideSelectJob()}
+                                                <StyledIonIcon
+                                                    name="chevron-back"
+                                                    size={24}
+                                                    onPress={hideSelectJob}
                                                     className="text-black dark:text-neutral-200"
-
                                                 />
-
                                             </StyledView>
-                                            {
-                                                userProfile?.profile?.JobMembers.map((jobs: JobMembers, index: number) => (
-                                                    <StyledTouchableOpacity
-                                                        key={index}
-                                                        className="flex-row items-center w-full"
-                                                        onPress={() => {
-                                                            setScheduleJobs(jobs.jobs.jobName)
-                                                            hideSelectJob();
-                                                        }}
-                                                    >
-                                                        <StyledView className="bg-white w-full dark:bg-gray-800 p-4 rounded-2xl shadow-sm active:scale-95 transform transition-all flex-row items-center justify-between">
-                                                            <StyledText className="text-base font-custom font-semibold text-gray-800 dark:text-white">
-                                                                {jobs.jobs.jobName}
-                                                            </StyledText>
-                                                            <StyledIonIcon
-                                                                name="chevron-forward"
-                                                                size={20}
-                                                                className="text-[#8B0000]/50 dark:text-orange-500/50"
-                                                            />
-                                                        </StyledView>
-                                                    </StyledTouchableOpacity>
-                                                ))
-                                            }
+                                            {userProfile?.profile?.JobMembers?.map((jobs: JobMembers, index: number) => (
+                                                <StyledTouchableOpacity
+                                                    key={index}
+                                                    className="flex-row items-center w-full"
+                                                    onPress={() => {
+                                                        setScheduleJobs(jobs.jobs.jobName);
+                                                        hideSelectJob();
+                                                    }}
+                                                >
+                                                    <StyledView className="bg-white w-full dark:bg-gray-800 p-4 rounded-2xl shadow-sm active:scale-95 transform transition-all flex-row items-center justify-between">
+                                                        <StyledText className="text-base font-custom font-semibold text-gray-800 dark:text-white">
+                                                            {jobs.jobs.jobName}
+                                                        </StyledText>
+                                                        <StyledIonIcon
+                                                            name="chevron-forward"
+                                                            size={20}
+                                                            className="text-[#8B0000]/50 dark:text-orange-500/50"
+                                                        />
+                                                    </StyledView>
+                                                </StyledTouchableOpacity>
+                                            ))}
                                         </StyledView>
-
                                     </StyledView>
-
                                 </>
-
                             ) : (
                                 <>
+                                    {/* Date and Time Input */}
                                     <StyledView className="flex-row items-center px-6 py-1">
                                         <StyledView className="w-6/12 px-1">
                                             <StyledText className="text-lg text-black font-custom dark:text-neutral-200">วัน/เดือน/ปี</StyledText>
-
-                                            <TouchableOpacity
-                                                onPress={showDatePicker}>
-                                                <StyledView
-                                                    className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
-                                                >
-                                                    <StyledText className={`font-custom ${scheduleDate ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleDate ? scheduleDate : "03/10/2567"}</StyledText>
+                                            <TouchableOpacity onPress={showDatePicker}>
+                                                <StyledView className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200">
+                                                    <StyledText className={`font-custom ${scheduleDate ? 'text-gray-700 dark:text-white' : 'text-[#d1d5db]'}`}>
+                                                        {scheduleDate || '03/10/2567'}
+                                                    </StyledText>
                                                 </StyledView>
                                             </TouchableOpacity>
                                         </StyledView>
-
                                         <StyledView className="w-6/12 px-1">
                                             <StyledText className="text-lg text-black font-custom dark:text-neutral-200">เวลา</StyledText>
-
-                                            <TouchableOpacity
-                                                onPress={showTimePicker}>
-                                                <StyledView
-                                                    className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
-                                                >
-                                                    <StyledText className={`font-custom ${scheduleTime ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleTime ? scheduleTime : "10:10"}</StyledText>
-                                                </StyledView>
-                                            </TouchableOpacity>
-                                        </StyledView>
-                                    </StyledView>
-                                    <StyledView className="flex-row items-center px-6 py-1">
-                                        <StyledView className="w-full px-1">
-                                            <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
-                                                ประเภทงาน
-                                            </StyledText>
-                                            <TouchableOpacity
-                                                onPress={showSelectJob}>
-                                                <StyledView
-                                                    className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
-                                                >
-                                                    <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? scheduleJobs : "เลือกประเภทงาน"}</StyledText>
+                                            <TouchableOpacity onPress={showTimePicker}>
+                                                <StyledView className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200">
+                                                    <StyledText className={`font-custom ${scheduleTime ? 'text-gray-700 dark:text-white' : 'text-[#d1d5db]'}`}>
+                                                        {scheduleTime || '10:10'}
+                                                    </StyledText>
                                                 </StyledView>
                                             </TouchableOpacity>
                                         </StyledView>
                                     </StyledView>
 
+                                    {/* Job Type Selector */}
                                     <StyledView className="flex-row items-center px-6 py-1">
                                         <StyledView className="w-full px-1">
-                                            <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
-                                                หมายเหตุ
-                                            </StyledText>
+                                            <StyledText className="text-lg text-black font-custom dark:text-neutral-200">ประเภทงาน</StyledText>
+                                            <TouchableOpacity onPress={showSelectJob}>
+                                                <StyledView className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200">
+                                                    <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : 'text-[#d1d5db]'}`}>
+                                                        {scheduleJobs || 'เลือกประเภทงาน'}
+                                                    </StyledText>
+                                                </StyledView>
+                                            </TouchableOpacity>
+                                        </StyledView>
+                                    </StyledView>
 
-                                            <StyledView
-                                                className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
-                                            >
+                                    {/* Notes */}
+                                    <StyledView className="flex-row items-center px-6 py-1">
+                                        <StyledView className="w-full px-1">
+                                            <StyledText className="text-lg text-black font-custom dark:text-neutral-200">หมายเหตุ</StyledText>
+                                            <StyledView className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200">
                                                 <TextInput
                                                     placeholder="กรอกหมายเหตุ (ถ้ามี)"
                                                     value={scheduleNote}
                                                     onChangeText={setScheduleNote}
-                                                    multiline={true}
+                                                    multiline
                                                     numberOfLines={3}
                                                     className="font-custom text-gray-700 dark:text-white"
                                                     placeholderTextColor="#d1d5db"
-                                                    style={{
-                                                        textAlignVertical: 'top',
-                                                        minHeight: 40,
-                                                    }}
+                                                    style={{ textAlignVertical: 'top', minHeight: 40 }}
                                                 />
                                             </StyledView>
                                         </StyledView>
                                     </StyledView>
 
+                                    {/* Location */}
                                     <StyledView className="items-center px-6 py-1">
                                         <StyledView className="w-full px-1">
                                             <StyledText className="text-lg text-black font-custom dark:text-neutral-200">จุดนัดหมาย</StyledText>
-                                            <StyledView
-                                                className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
-                                            >
+                                            <StyledView className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200">
                                                 <TextInput
                                                     placeholder="จุดนัดหมาย"
                                                     value={scheduleLocation}
                                                     onChangeText={setScheduleLocation}
                                                     className="font-custom text-gray-700 dark:text-white"
                                                     placeholderTextColor="#d1d5db"
-                                                    style={{
-                                                        textAlignVertical: 'top',
-                                                        minHeight: 40,
-                                                    }}
+                                                    style={{ textAlignVertical: 'top', minHeight: 40 }}
                                                 />
                                             </StyledView>
-
-
                                         </StyledView>
                                     </StyledView>
 
+                                    {/* Map View */}
                                     <StyledView className="px-6 py-1 rounded-2xl my-2 mt-5 h-[50%]">
                                         <MapView
                                             initialRegion={{
-                                                latitude: pin?.latitude as number,
-                                                longitude: pin?.longitude as number,
-                                                latitudeDelta: 15.5136445,
-                                                longitudeDelta: 100.6519383,
+                                                latitude: pin?.latitude || 13.7563,
+                                                longitude: pin?.longitude || 100.5018,
+                                                latitudeDelta: 0.05,
+                                                longitudeDelta: 0.05,
                                             }}
                                             onPress={(e) => {
                                                 const { latitude, longitude } = e.nativeEvent.coordinate;
@@ -871,39 +848,32 @@ export default function ProfileTab() {
                                             }}
                                             style={{
                                                 borderRadius: 20,
-                                                height: "100%",
+                                                height: '100%',
                                             }}
                                         >
                                             {pin && (
                                                 <>
-                                                    <Marker
-                                                        coordinate={{
-                                                            latitude: pin.latitude,
-                                                            longitude: pin.longitude,
-                                                        }}
-                                                        title="Selected Location"
-                                                        draggable={true}
-                                                    />
+                                                    <Marker coordinate={pin} title="Selected Location" draggable />
                                                     <Circle
                                                         center={pin}
-                                                        radius={250} // radius in meters
-                                                        strokeColor="rgba(255, 0, 0, 0.5)" // Border color
-                                                        fillColor="rgba(255, 0, 0, 0.2)" // Fill color
+                                                        radius={250}
+                                                        strokeColor="rgba(255, 0, 0, 0.5)"
+                                                        fillColor="rgba(255, 0, 0, 0.2)"
                                                     />
                                                 </>
                                             )}
                                         </MapView>
                                     </StyledView>
 
+                                    {/* Submit Button */}
                                     <TouchableOpacity
                                         className="w-full px-6"
                                         onPress={() => {
-                                            if (userProfile?.profile?.JobMembers.length == 0) {
-                                                Alert.alert("ข้อผิดพลาด", "สมาชิกนี้ยังไม่มีประเภทงานที่รองรับ", [{ text: "OK" }])
+                                            if (!userProfile?.profile?.JobMembers?.length) {
+                                                Alert.alert('ข้อผิดพลาด', 'สมาชิกนี้ยังไม่มีประเภทงานที่รองรับ', [{ text: 'OK' }]);
                                                 return;
-                                            } else {
-                                                createSchedule();
                                             }
+                                            createSchedule();
                                         }}
                                         disabled={loading}
                                     >
@@ -921,11 +891,11 @@ export default function ProfileTab() {
                                         </LinearGradient>
                                     </TouchableOpacity>
                                 </>
-                            )
-                        }
-                    </StyledView>
-                </BottomSheetScrollView>
-            </BottomSheet>
+                            )}
+                        </StyledView>
+                    </BottomSheetScrollView>
+                </BottomSheet>
+            </>
 
             <DateTimePickerModal
                 isVisible={isDatePickerVisible}
@@ -953,6 +923,8 @@ export default function ProfileTab() {
                         : new Date(Date.now() + 60 * 60 * 1000)
                 }
             />
-        </StyledView>
+        </StyledView >
     );
+
+
 }
