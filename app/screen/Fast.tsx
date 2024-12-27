@@ -793,64 +793,77 @@ export default function Fast() {
 
   const RenderAcceptList = () => {
     return (
-      <StyledView className="w-full px-4 py-2 space-y-3">
+      <StyledView className="w-full px-4 py-2 space-y-4">
         {memberAccept.map((member, index) => (
-          <StyledTouchableOpacity 
-            key={index} 
-            className="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg p-4"
-            onPress={() => navigation.navigate('Profile', { userId: member.id })}
+          <Animated.View
+            key={index}
+            entering={FadeInUp.delay(index * 100).springify()}
+            className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg rounded-3xl shadow-xl border border-neutral-100 dark:border-neutral-700"
           >
-            <StyledView className="flex-row items-center justify-between">
-              <StyledView className="flex-row items-center space-x-3">
-                <StyledImage
-                  source={{ uri: member?.profileUrl }}
-                  className="w-14 h-14 rounded-full border-2 border-red-500"
-                />
-                <StyledView>
-                  <StyledText className="font-custom text-lg text-neutral-800 dark:text-white">
-                    {member?.username}
-                  </StyledText>
-                  <StyledView className="flex-row items-center space-x-2 mt-1">
-                    <StyledText className="font-custom text-sm text-neutral-500">
-                      {member?.age || 10} ปี
+            <StyledTouchableOpacity 
+              className="p-4"
+              onPress={() => navigation.navigate('Profile', { userId: member.id })}
+            >
+              <StyledView className="flex-row items-center justify-between">
+                <StyledView className="flex-row items-center space-x-4">
+                  <StyledView className="relative">
+                    <StyledImage
+                      source={{ uri: member?.profileUrl }}
+                      className="w-16 h-16 rounded-2xl border-2 border-red-500/50"
+                    />
+                    <StyledView className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white" />
+                  </StyledView>
+                  <StyledView>
+                    <StyledText className="font-custom text-xl text-neutral-800 dark:text-white">
+                      {member?.username}
                     </StyledText>
-                    <StyledView className="w-1.5 h-1.5 rounded-full bg-neutral-300" />
-                    <StyledText className="font-custom text-sm text-neutral-500">
-                      {member?.gender}
+                    <StyledView className="flex-row items-center space-x-2 mt-1">
+                      <StyledIonIcon name="happy-outline" size={14} color="#9CA3AF" />
+                      <StyledText className="font-custom text-sm text-neutral-500">
+                        {member?.age || 10} ปี
+                      </StyledText>
+                      <StyledView className="w-1 h-1 rounded-full bg-neutral-300" />
+                      <StyledIonIcon name="person-outline" size={14} color="#9CA3AF" />
+                      <StyledText className="font-custom text-sm text-neutral-500">
+                        {member?.gender}
+                      </StyledText>
+                    </StyledView>
+                  </StyledView>
+                </StyledView>
+                
+                <StyledView className="items-end">
+                  <StyledText className="font-custom text-xl font-semibold text-red-500">
+                    ฿{member?.amount?.toLocaleString() || '00.00'}
+                  </StyledText>
+                  <StyledView className="flex-row items-center mt-1">
+                    <StyledIonIcon name="star" size={12} color="#FCD34D" />
+                    <StyledText className="font-custom text-xs text-neutral-400 ml-1">
+                      ทำเนียบนัดหมาย {member?.appointments}
                     </StyledText>
                   </StyledView>
                 </StyledView>
               </StyledView>
-              
-              <StyledView className="items-end">
-                <StyledText className="font-custom text-lg font-semibold text-red-500">
-                  ฿{member?.amount?.toLocaleString() || '00.00'}
-                </StyledText>
-                <StyledText className="font-custom text-xs text-neutral-400 mt-1">
-                  ทำเนียบนัดหมาย {member?.appointments}
-                </StyledText>
+    
+              <StyledView className="flex-row justify-end space-x-3 mt-4">
+                <StyledTouchableOpacity 
+                  className="bg-neutral-100 dark:bg-neutral-700/50 px-5 py-2.5 rounded-2xl flex-row items-center"
+                >
+                  <StyledIonIcon name="close-outline" size={18} className="text-red-700 dark:text-red-300" />
+                  <StyledText className="font-custom text-red-600 dark:text-red-300 ml-1">
+                    ลบ
+                  </StyledText>
+                </StyledTouchableOpacity>
+                <StyledTouchableOpacity 
+                  className="bg-gradient-to-r from-red-500 to-red-600 px-5 py-2.5 rounded-2xl flex-row items-center"
+                >
+                  <StyledIonIcon name="checkmark-outline" size={18} className="text-black dark:text-white" />
+                  <StyledText className="font-custom text-black dark:text-white ml-1">
+                    เลือก
+                  </StyledText>
+                </StyledTouchableOpacity>
               </StyledView>
-            </StyledView>
-  
-            <StyledView className="flex-row justify-end space-x-2 mt-4">
-              <StyledTouchableOpacity 
-                className="bg-neutral-100 dark:bg-neutral-700 px-4 py-2 rounded-full"
-                // onPress={() => handleRemove(member.id)}
-              >
-                <StyledText className="font-custom text-neutral-600 dark:text-neutral-300">
-                  ลบ
-                </StyledText>
-              </StyledTouchableOpacity>
-              <StyledTouchableOpacity 
-                className="bg-red-500 px-4 py-2 rounded-full"
-                // onPress={() => handleSelect(member.id)}
-              >
-                <StyledText className="font-custom text-white">
-                  เลือก
-                </StyledText>
-              </StyledTouchableOpacity>
-            </StyledView>
-          </StyledTouchableOpacity>
+            </StyledTouchableOpacity>
+          </Animated.View>
         ))}
       </StyledView>
     )
