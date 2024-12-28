@@ -172,7 +172,7 @@ export default function ProfileTab() {
     }
 
 
-    const fetchUserData = async() => {
+    const fetchUserData = async () => {
         try {
             setLoading(true);
             const storedUserData = await AsyncStorage.getItem('userData');
@@ -189,7 +189,7 @@ export default function ProfileTab() {
                 return;
             }
 
-            const user = await axios.get(`http://49.231.43.37:3000/api/profile/${profileId}`, {
+            const user = await axios.get(`https://friendszone.app/api/profile/${profileId}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `All ${parsedData?.token}`
@@ -313,7 +313,7 @@ export default function ProfileTab() {
                 jobs: scheduleJobs,
                 latitude: pin?.latitude,
                 longtitude: pin?.longitude,
-                price : price
+                price: price
             }, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -752,27 +752,30 @@ export default function ProfileTab() {
                                                     className="text-black dark:text-neutral-200"
                                                 />
                                             </StyledView>
-                                            {userProfile?.profile?.JobMembers?.map((jobs: JobMembers, index: number) => (
-                                                <StyledTouchableOpacity
-                                                    key={index}
-                                                    className="flex-row items-center w-full"
-                                                    onPress={() => {
-                                                        setScheduleJobs(jobs.jobs.jobName);
-                                                        hideSelectJob();
-                                                    }}
-                                                >
-                                                    <StyledView className="bg-white w-full dark:bg-gray-800 p-4 rounded-2xl shadow-sm active:scale-95 transform transition-all flex-row items-center justify-between">
-                                                        <StyledText className="text-base font-custom font-semibold text-gray-800 dark:text-white">
-                                                            {jobs.jobs.jobName}
-                                                        </StyledText>
-                                                        <StyledIonIcon
-                                                            name="chevron-forward"
-                                                            size={20}
-                                                            className="text-[#8B0000]/50 dark:text-orange-500/50"
-                                                        />
-                                                    </StyledView>
-                                                </StyledTouchableOpacity>
-                                            ))}
+                                            <StyledView className="space-y-3">
+
+                                                {userProfile?.profile?.JobMembers?.map((jobs: JobMembers, index: number) => (
+                                                    <StyledTouchableOpacity
+                                                        key={index}
+                                                        className=""
+                                                        onPress={() => {
+                                                            setScheduleJobs(jobs.jobs.jobName);
+                                                            hideSelectJob();
+                                                        }}
+                                                    >
+                                                        <StyledView className="bg-white dark:bg-neutral-600 p-4 rounded-2xl shadow-sm active:scale-95 transform transition-all flex-row items-center justify-between">
+                                                            <StyledText className="text-base font-custom font-semibold text-neutral-950 dark:text-white">
+                                                                {jobs.jobs.jobName}
+                                                            </StyledText>
+                                                            <StyledIonIcon
+                                                                name="chevron-forward"
+                                                                size={20}
+                                                                className="text-[#8B0000]/50 dark:text-orange-500/50"
+                                                            />
+                                                        </StyledView>
+                                                    </StyledTouchableOpacity>
+                                                ))}
+                                            </StyledView>
                                         </StyledView>
                                     </StyledView>
                                 </>
