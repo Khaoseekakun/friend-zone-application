@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, ActivityIndicator, Alert, SafeAreaView, Appearance, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, ActivityIndicator, Alert, SafeAreaView, Appearance, TouchableWithoutFeedback, Keyboard, ScrollView } from "react-native";
 import { NavigationProp, RouteProp, useIsFocused, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { ScrollView, TextInput } from "react-native-gesture-handler";
+import { TextInput } from "react-native-gesture-handler";
 import axios from "axios";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import * as Location from 'expo-location';
@@ -766,149 +766,159 @@ export default function Fast() {
               </>
             ) : (
               <>
-                <AnimatedTouchable
-                  onPress={() => setStep(1)}
-                  className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center left-3 mt-10 "
+                <KeyboardAvoidingView
+                  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                  style={{ flex: 1 }}
+                  keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
                 >
-                  <Ionicons name="chevron-back" size={24} color="#EB3834" />
-                </AnimatedTouchable>
-                <StyledView className="flex-row items-center px-6 py-1">
-                  <StyledView className="w-6/12 px-1">
-                    <StyledText className="text-lg text-black font-custom dark:text-neutral-200">วัน/เดือน/ปี</StyledText>
-
-                    <TouchableOpacity
-                      onPress={showDatePicker}>
-                      <StyledView
-                        className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
-                      >
-                        <StyledText className={`font-custom ${scheduleDate ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleDate ? scheduleDate : "03/10/2567"}</StyledText>
-                      </StyledView>
-                    </TouchableOpacity>
-                  </StyledView>
-
-                  <StyledView className="w-6/12 px-1">
-                    <StyledText className="text-lg text-black font-custom dark:text-neutral-200">เวลา</StyledText>
-
-                    <TouchableOpacity
-                      onPress={showTimePicker}>
-                      <StyledView
-                        className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
-                      >
-                        <StyledText className={`font-custom ${scheduleTime ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleTime ? scheduleTime : "10:10"}</StyledText>
-                      </StyledView>
-                    </TouchableOpacity>
-                  </StyledView>
-                </StyledView>
-                <StyledView className="flex-row items-center px-6 py-1">
-                  <StyledView className="w-full px-1">
-                    <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
-                      ประเภทงาน
-                    </StyledText>
-                    <TouchableOpacity
-                      onPress={showSelectJob}>
-                      <StyledView
-                        className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
-                      >
-                        <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? scheduleJobs : "เลือกประเภทงาน"}</StyledText>
-                      </StyledView>
-                    </TouchableOpacity>
-                  </StyledView>
-                </StyledView>
-
-                <StyledView className="flex-row items-center px-6 py-1">
-                  <StyledView className="w-full px-1">
-                    <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
-                      หมายเหตุ
-                    </StyledText>
-
-                    <StyledView
-                      className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
+                  <ScrollView
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    keyboardShouldPersistTaps="handled">
+                    <AnimatedTouchable
+                      onPress={() => setStep(1)}
+                      className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center left-3 mt-10 "
                     >
-                      <TextInput
-                        placeholder="กรอกหมายเหตุ (ถ้ามี)"
-                        value={scheduleNote}
-                        onChangeText={setScheduleNote}
-                        multiline={true}
-                        numberOfLines={3}
-                        className="font-custom text-gray-700 dark:text-white"
-                        placeholderTextColor="#d1d5db"
-                        style={{
-                          textAlignVertical: 'top',
-                          minHeight: 40,
-                        }}
-                      />
+                      <Ionicons name="chevron-back" size={24} color="#EB3834" />
+                    </AnimatedTouchable>
+                    <StyledView className="flex-row items-center px-6 py-1">
+                      <StyledView className="w-6/12 px-1">
+                        <StyledText className="text-lg text-black font-custom dark:text-neutral-200">วัน/เดือน/ปี</StyledText>
+
+                        <TouchableOpacity
+                          onPress={showDatePicker}>
+                          <StyledView
+                            className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                          >
+                            <StyledText className={`font-custom ${scheduleDate ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleDate ? scheduleDate : "03/10/2567"}</StyledText>
+                          </StyledView>
+                        </TouchableOpacity>
+                      </StyledView>
+
+                      <StyledView className="w-6/12 px-1">
+                        <StyledText className="text-lg text-black font-custom dark:text-neutral-200">เวลา</StyledText>
+
+                        <TouchableOpacity
+                          onPress={showTimePicker}>
+                          <StyledView
+                            className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                          >
+                            <StyledText className={`font-custom ${scheduleTime ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleTime ? scheduleTime : "10:10"}</StyledText>
+                          </StyledView>
+                        </TouchableOpacity>
+                      </StyledView>
                     </StyledView>
-                  </StyledView>
-                </StyledView>
-
-                <StyledView className="items-center px-6 py-1">
-                  <StyledView className="w-full px-1">
-                    <StyledText className="text-lg text-black font-custom dark:text-neutral-200">จุดนัดหมาย</StyledText>
-                    <StyledView
-                      className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
-                    >
-                      <TextInput
-                        placeholder="จุดนัดหมาย"
-                        value={scheduleLocation}
-                        onChangeText={setScheduleLocation}
-                        className="font-custom text-gray-700 dark:text-white"
-                        placeholderTextColor="#d1d5db"
-                        style={{
-                          textAlignVertical: 'top',
-                          minHeight: 40,
-                        }}
-                      />
+                    <StyledView className="flex-row items-center px-6 py-1">
+                      <StyledView className="w-full px-1">
+                        <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
+                          ประเภทงาน
+                        </StyledText>
+                        <TouchableOpacity
+                          onPress={showSelectJob}>
+                          <StyledView
+                            className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                          >
+                            <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? scheduleJobs : "เลือกประเภทงาน"}</StyledText>
+                          </StyledView>
+                        </TouchableOpacity>
+                      </StyledView>
                     </StyledView>
 
+                    <StyledView className="flex-row items-center px-6 py-1">
+                      <StyledView className="w-full px-1">
+                        <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
+                          หมายเหตุ
+                        </StyledText>
 
-                  </StyledView>
-                </StyledView>
+                        <StyledView
+                          className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
+                        >
+                          <TextInput
+                            placeholder="กรอกหมายเหตุ (ถ้ามี)"
+                            value={scheduleNote}
+                            onChangeText={setScheduleNote}
+                            multiline={true}
+                            numberOfLines={3}
+                            className="font-custom text-gray-700 dark:text-white"
+                            placeholderTextColor="#d1d5db"
+                            style={{
+                              textAlignVertical: 'top',
+                              minHeight: 40,
+                            }}
+                          />
+                        </StyledView>
+                      </StyledView>
+                    </StyledView>
 
-                <StyledView className="px-6 py-1 rounded-2xl my-2 mt-5 h-[50%]">
-                  {
-                    (!pin?.latitude && !pin?.longitude) ? (
-                      <>
-                        <StyledText className="text-lg text-black font-custom dark:text-neutral-200">กำลังโหลดแผนที่</StyledText>
-                      </>
-                    ) : (
-                      <MapView
-                        initialRegion={{
-                          latitude: pin?.latitude,
-                          longitude: pin?.longitude,
-                          latitudeDelta: 15.5136445,
-                          longitudeDelta: 100.6519383,
-                        }}
-                        onPress={(e) => {
-                          const { latitude, longitude } = e.nativeEvent.coordinate;
-                          setPin({ latitude, longitude });
-                        }}
-                        style={{
-                          borderRadius: 20,
-                          height: "70%",
-                        }}
-                      >
-                        {pin && (
+                    <StyledView className="items-center px-6 py-1">
+                      <StyledView className="w-full px-1">
+                        <StyledText className="text-lg text-black font-custom dark:text-neutral-200">จุดนัดหมาย</StyledText>
+                        <StyledView
+                          className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
+                        >
+                          <TextInput
+                            placeholder="จุดนัดหมาย"
+                            value={scheduleLocation}
+                            onChangeText={setScheduleLocation}
+                            className="font-custom text-gray-700 dark:text-white"
+                            placeholderTextColor="#d1d5db"
+                            style={{
+                              textAlignVertical: 'top',
+                              minHeight: 40,
+                            }}
+                          />
+                        </StyledView>
+
+
+                      </StyledView>
+                    </StyledView>
+
+                    <StyledView className="px-6 py-1 rounded-2xl my-2 mt-5 h-[50%]">
+                      {
+                        (!pin?.latitude && !pin?.longitude) ? (
                           <>
-                            <Marker
-                              coordinate={{
-                                latitude: pin?.latitude,
-                                longitude: pin?.longitude,
-                              }}
-                              title="Selected Location"
-                              draggable={true}
-                            />
-                            <Circle
-                              center={pin}
-                              radius={250} // radius in meters
-                              strokeColor="rgba(255, 0, 0, 0.5)" // Border color
-                              fillColor="rgba(255, 0, 0, 0.2)" // Fill color
-                            />
+                            <StyledText className="text-lg text-black font-custom dark:text-neutral-200">กำลังโหลดแผนที่</StyledText>
                           </>
-                        )}
-                      </MapView>
-                    )
-                  }
-                </StyledView>
+                        ) : (
+                          <MapView
+                            initialRegion={{
+                              latitude: pin?.latitude,
+                              longitude: pin?.longitude,
+                              latitudeDelta: 15.5136445,
+                              longitudeDelta: 100.6519383,
+                            }}
+                            onPress={(e) => {
+                              const { latitude, longitude } = e.nativeEvent.coordinate;
+                              setPin({ latitude, longitude });
+                            }}
+                            style={{
+                              borderRadius: 20,
+                              height: "70%",
+                            }}
+                          >
+                            {pin && (
+                              <>
+                                <Marker
+                                  coordinate={{
+                                    latitude: pin?.latitude,
+                                    longitude: pin?.longitude,
+                                  }}
+                                  title="Selected Location"
+                                  draggable={true}
+                                />
+                                <Circle
+                                  center={pin}
+                                  radius={250} // radius in meters
+                                  strokeColor="rgba(255, 0, 0, 0.5)" // Border color
+                                  fillColor="rgba(255, 0, 0, 0.2)" // Fill color
+                                />
+                              </>
+                            )}
+                          </MapView>
+                        )
+                      }
+                    </StyledView>
+                  </ScrollView>
+                </KeyboardAvoidingView>
               </>
             )
           }
