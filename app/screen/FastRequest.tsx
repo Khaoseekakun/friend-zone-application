@@ -10,7 +10,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { styled } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type FastRequest = {
     id: string;
@@ -25,6 +25,7 @@ type FastRequest = {
         username: string;
         gender: 'male' | 'female' | 'lgbtq';
     };
+    acceptList?: string;
 };
 
 const StyledView = styled(View);
@@ -34,7 +35,7 @@ const StyledScrollView = styled(ScrollView);
 const database = getDatabase(FireBaseApp);
 
 const InfoItem = ({ icon, label, value, theme }: { icon: any; label: string; value: string; theme: string | null }) => (
-    <StyledView className="flex-row items-center bg-gray-50/50 dark:bg-gray-800/50 rounded-2xl mb-3">
+    <StyledView className="flex-row items-center bg-gray-50/50 dark:bg-gray-800/50 rounded-2xl mb-3 px-2">
         <StyledView className="bg-white dark:bg-gray-700 p-2 rounded-xl">
 
             <Ionicons
@@ -43,11 +44,11 @@ const InfoItem = ({ icon, label, value, theme }: { icon: any; label: string; val
                 color={theme === 'dark' ? gradientColors.dark[0] : gradientColors.light[1]}
             />
         </StyledView>
-        <StyledView className="ml-3 flex-1">
+        <StyledView className="ml-3 flex-1 py-2">
             <StyledText className="text-gray-500 dark:text-gray-400 text-sm font-custom">
                 {label}
             </StyledText>
-            <StyledText className="text-gray-900 dark:text-white text-base font-custom mt-1">
+            <StyledText className="text-gray-900 dark:text-white text-base font-custom">
                 {value}
             </StyledText>
         </StyledView>
@@ -67,7 +68,7 @@ export default function FastRequest() {
     const route = useRoute<RouteProp<RootStackParamList, 'FastRequest'>>();
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const isFocus = useIsFocused();
-
+    const [userData, setUserData] = useState<any>({});
     const { requestId, backPage, notificationId } = route.params;
     const [request, setRequest] = useState<FastRequest>();
     const [loading, setLoading] = useState(true);
@@ -76,11 +77,20 @@ export default function FastRequest() {
         const subscription = Appearance.addChangeListener(({ colorScheme }) => {
             setTheme(colorScheme);
         });
-        return () => subscription.remove();
+        return () => {
+            subscription.remove();
+        }
     }, []);
 
+    const fetchUserData = async () => {
+        const userData = await AsyncStorage.getItem('userData');
+        setUserData(JSON.parse(userData || '{}'));
+    }
+
     useEffect(() => {
-        if (isFocus) {
+        if (isFocus == true) {
+            
+            fetchUserData();
             (async () => {
                 try {
                     setLoading(true);
@@ -95,7 +105,7 @@ export default function FastRequest() {
 
     const handleAcceptRequest = async () => {
         try {
-            await set(ref(database, `fast-request/${requestId}/status`), 'accepted');
+            await set(ref(database, `fast-request/${requestId}/acceptList`), request?.acceptList ? `${request.acceptList},${userData.id}` : userData.id);
             navigation.goBack();
         } catch (error) {
             Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถรับงานได้ในขณะนี้');
@@ -105,10 +115,9 @@ export default function FastRequest() {
     const handleDeleteRequest = async () => {
         try {
             await Promise.all([
-                set(ref(database, `notifications/${request?.requester.id}/${notificationId}`), null),
-                set(ref(database, `fast-request/${requestId}/status`), 'deleted')
+                set(ref(database, `notifications/${userData.id}/${notificationId}`), null)
             ]);
-            backPage ? navigation.navigate(backPage as any) : navigation.goBack();
+            navigation.goBack();
         } catch (error) {
             Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถลบงานได้ในขณะนี้');
         }
@@ -221,50 +230,62 @@ export default function FastRequest() {
                             // </StyledView>
                         )}
 
-                        <StyledView className="flex-row space-x-4 mt-8">
-                            <TouchableOpacity
-                                className="flex-1"
-                                onPress={() => {
-                                    Alert.alert(
-                                        "ยืนยันการรับงาน",
-                                        "คุณแน่ใจหรือไม่ว่าต้องการรับงานนี้?",
-                                        [
-                                            { text: "ยกเลิก", style: "cancel" },
-                                            { text: "ยืนยัน", onPress: handleAcceptRequest }
-                                        ]
-                                    );
-                                }}
-                            >
-                                <LinearGradient
-                                    colors={currentGradient as any}
-                                    className="py-2 rounded-xl"
-                                >
-                                    <StyledText className="text-white text-center text-lg font-custom">
-                                        รับงาน
-                                    </StyledText>
-                                </LinearGradient>
-                            </TouchableOpacity>
 
-                            <TouchableOpacity
-                                className="flex-1"
-                                onPress={() => {
-                                    Alert.alert(
-                                        "ยืนยันการลบ",
-                                        "คุณแน่ใจหรือไม่ว่าต้องการลบงานนี้?",
-                                        [
-                                            { text: "ยกเลิก", style: "cancel" },
-                                            { text: "ยืนยัน", onPress: handleDeleteRequest }
-                                        ]
-                                    );
-                                }}
-                            >
-                                <StyledView className="bg-gray-500 py-2 rounded-xl">
-                                    <StyledText className="text-white text-center text-lg font-custom">
-                                        ลบ
+                        {
+                            userData.id ? ((request.acceptList) && request.acceptList.split(',').includes(userData.id)) ? (
+                                <StyledView className="bg-green-500/10 p-4 rounded-2xl mt-4">
+                                    <StyledText className="text-green-500 font-custom text-center">
+                                        คุณได้รับงานนี้แล้ว
                                     </StyledText>
                                 </StyledView>
-                            </TouchableOpacity>
-                        </StyledView>
+                            ) : (
+
+                                <StyledView className="flex-row space-x-4 mt-8">
+                                    <TouchableOpacity
+                                        className="flex-1"
+                                        onPress={() => {
+                                            Alert.alert(
+                                                "ยืนยันการรับงาน",
+                                                "คุณแน่ใจหรือไม่ว่าต้องการรับงานนี้?",
+                                                [
+                                                    { text: "ยกเลิก", style: "cancel" },
+                                                    { text: "ยืนยัน", onPress: handleAcceptRequest }
+                                                ]
+                                            );
+                                        }}
+                                    >
+                                        <LinearGradient
+                                            colors={currentGradient as any}
+                                            className="py-2 rounded-xl"
+                                        >
+                                            <StyledText className="text-white text-center text-lg font-custom">
+                                                รับงาน
+                                            </StyledText>
+                                        </LinearGradient>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        className="flex-1"
+                                        onPress={() => {
+                                            Alert.alert(
+                                                "ยืนยันการลบ",
+                                                "คุณแน่ใจหรือไม่ว่าต้องการลบงานนี้?",
+                                                [
+                                                    { text: "ยกเลิก", style: "cancel" },
+                                                    { text: "ยืนยัน", onPress: handleDeleteRequest }
+                                                ]
+                                            );
+                                        }}
+                                    >
+                                        <StyledView className="bg-gray-500 py-2 rounded-xl">
+                                            <StyledText className="text-white text-center text-lg font-custom">
+                                                ลบ
+                                            </StyledText>
+                                        </StyledView>
+                                    </TouchableOpacity>
+                                </StyledView>
+                            ) : null
+                        }
                     </StyledView>
                 </StyledView>
             </StyledScrollView>

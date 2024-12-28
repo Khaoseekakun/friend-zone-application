@@ -886,7 +886,12 @@ export default function ProfileTab() {
                                             {loading ? (
                                                 <ActivityIndicator size="small" color="#fff" />
                                             ) : (
-                                                <StyledText className="font-custom text-center text-white text-lg font-semibold">ส่ง</StyledText>
+                                                <StyledText className="font-custom text-center text-white text-lg font-semibold">{
+                                                    `ส่ง 
+                                                    
+                                                    
+                                                    `
+                                                }</StyledText>
                                             )}
                                         </LinearGradient>
                                     </TouchableOpacity>

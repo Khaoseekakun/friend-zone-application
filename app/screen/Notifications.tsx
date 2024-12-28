@@ -12,7 +12,7 @@ import { styled } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { HeaderApp } from '@/components/Header';
-import { getDatabase, ref, onValue } from 'firebase/database';
+import { getDatabase, ref, onValue, set } from 'firebase/database';
 import FireBaseApp from '@/utils/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Notification, NotificationType, RootStackParamList } from '@/types';
@@ -63,7 +63,7 @@ export default function NotificationsScreen() {
                         id: key,
                         ...data[key],
                     }));
-                    setNotifications(notificationsArray);
+                    setNotifications(notificationsArray.reverse());
                 }
             });
 
@@ -141,7 +141,9 @@ export default function NotificationsScreen() {
             case 'message':
                 break;
             case 'like':
+                break;
             case 'review':
+                break;
             case 'fastRequest':
                 navigation.navigate('FastRequest', {
                     requestId: notification.data.requestId as string,
@@ -160,7 +162,15 @@ export default function NotificationsScreen() {
     const renderNotification = ({ item }: { item: Notification }) => (
         <StyledTouchableOpacity
             className={`mx-3 my-1 rounded-2xl overflow-hidden ${item.isRead ? 'bg-white dark:bg-neutral-900' : 'bg-red-50 dark:bg-neutral-800'}`}
-            onPress={() => handlePress(item)}
+            onPress={() => {
+                //set notification to read
+                if (item.isRead === false) {
+                    set(ref(database, `notifications/${userData.id}/${item.id}/isRead`), true);
+                }
+                handlePress(item);
+
+
+            }}
         >
             <LinearGradient
                 colors={colorScheme === 'dark' ?
@@ -222,7 +232,7 @@ export default function NotificationsScreen() {
                             )}
                         </>
                     )
-                } 
+                }
                 <StyledView className="h-32" />
             </StyledScrollView>
         </StyledView>

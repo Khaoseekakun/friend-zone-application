@@ -8,17 +8,18 @@ import { ScrollView, TextInput } from "react-native-gesture-handler";
 import axios from "axios";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import * as Location from 'expo-location';
-import MapView, { Marker, Circle } from 'react-native-maps';
+import MapView, { Marker, Circle, LatLng } from 'react-native-maps';
 import Animated, {
   FadeInUp
 } from 'react-native-reanimated';
 import { RootStackParamList } from "@/types";
-import { JobsList } from "@/types/prismaInterface";
+import { JobsList, MembersDB } from "@/types/prismaInterface";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { HeaderApp } from "@/components/Header";
-import { getDatabase, onValue, ref, set } from "firebase/database";
+import { getDatabase, onValue, push, ref, set } from "firebase/database";
 import FireBaseApp from "@/utils/firebaseConfig";
 import { getAge } from "@/utils/Date";
+import { addNotification, sendPushNotification } from "@/utils/Notification";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -56,19 +57,21 @@ type FastData = {
 export default function Fast() {
   const navigation = useNavigation<NavigationProp<any>>();
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [pin, setPin] = useState<{ latitude: number; longitude: number }>({ latitude: 37.78825, longitude: -122.4324 });
+  const [pin, setPin] = useState<{ latitude: number; longitude: number }>();
   const [loading, setLoading] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(15 * 60);
   const router = useRoute<CategorySearch>();
   const { backPage } = router.params;
   const [theme, setTheme] = useState(Appearance.getColorScheme());
   const isFocus = useIsFocused();
 
+  const [serviceRate, setServiceRate] = useState<serviceRateData>();
 
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
   const [scheduleJobs, setScheduleJobs] = useState("");
   const [scheduleLocation, setScheduleLocation] = useState("");
+  const [scheduleJobsId, setScheduleJobsId] = useState("");
+
   const [categoryId, setCategoryId] = useState('');
   const [jobsList, setJobsList] = useState<JobsList[]>([]);
   const [scheduleNote, setScheduleNote] = useState('');
@@ -80,6 +83,12 @@ export default function Fast() {
   const [fastRequest, setFastRequest] = useState<FastData>();
   const [fastList, setFastList] = useState<string[]>([]);
   const [memberAccept, setMemberAccept] = useState<any[]>([]);
+  const [memberInCondition, setMemberInCondition] = useState<MembersDB[]>([]);
+
+
+  const [fastId, setFastId] = useState<string>('');
+
+
 
   const fetchUserData = async () => {
     const userData = await AsyncStorage.getItem('userData');
@@ -90,7 +99,7 @@ export default function Fast() {
     const listener = Appearance.addChangeListener(({ colorScheme }) => {
       setTheme(colorScheme);
     });
-
+    fast_service_rate()
     fetchUserData();
     return () => listener.remove();
   }, []);
@@ -108,30 +117,86 @@ export default function Fast() {
     }
   }, [userData])
 
-
-
+  const database = getDatabase(FireBaseApp);
 
   const handleCreateSchedule = async () => {
-    // if (!scheduleDate || !scheduleTime || !scheduleJobs || !scheduleLocation || !pin) {
-    //   Alert.alert("กรุณากรอกข้อมูลให้ครบ");
-    //   return;
-    // }
+    if (!scheduleDate || !scheduleTime || !scheduleJobs || !scheduleLocation || !pin) {
+      Alert.alert("กรุณากรอกข้อมูลให้ครบ");
+      return;
+    }
+    const refCreate = ref(database, '/fast-request')
+    try {
+      setLoading(true);
+      const newPostKey = push(refCreate, {
+        date: scheduleDate,
+        description: scheduleNote,
+        jobsType: scheduleJobs,
+        location: scheduleLocation,
+        pinLongitude: pin?.longitude,
+        pinLatitude: pin?.latitude,
+        requester: {
+          gender: userData?.gender,
+          id: userData?.id,
+          profileUrl: userData?.profileUrl,
+          username: userData?.username
+        },
+        status: "pending",
+      }).key;
 
-    // setLoading(true);
-    // try {
-    //   await axios.post("https://friendszone.app/api/schedule", {
-    //     date: scheduleDate,
-    //     time: scheduleTime,
-    //     job: scheduleJobs,
-    //     location: scheduleLocation,
-    //     pin: pin
-    //   });
-    //   setStep(3);
-    // } catch (error) {
-    //   Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
-    // } finally {
-    //   setLoading(false);
-    // }
+      if (!newPostKey) return Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
+
+      try {
+        const createFastData = await axios.post(`http://49.231.43.37:3000/api/fast`, {
+          userId: userData?.id,
+          requestId: newPostKey,
+          categoryId: categoryId,
+          proviceId: userData?.provinceId,
+          jobsId: scheduleJobsId,
+          status: "pending",
+        }, {
+          headers: {
+            'Authorization': `All ${userData.token}`
+          }
+        })
+
+
+        setFastId(newPostKey);
+        setFastRequest(createFastData.data.data);
+        setStep(3);
+
+
+        if (createFastData.data.member.length > 0) {
+          for (let i = 0; i < createFastData.data.member.length; i++) {
+            const member = createFastData.data.member[i];
+            if (member.id !== userData.id) {
+              addNotification(member.id, {
+                content: `มีการนัดหมายด่วนจาก ${userData.username} คุณต้องการที่จะรับงานนี้หรือไม่`,
+                data: {
+                  requestId: newPostKey,
+                },
+                isRead: false,
+                timestamp: new Date().toISOString(),
+                type: 'fastRequest'
+              })
+            }
+          }
+        }
+
+      } catch (error) {
+        // delete fast request
+        const refDelete = ref(database, `/fast-request/${newPostKey}`);
+        set(refDelete, null)
+        Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
+
+      }
+    } catch (error) {
+      console.log(error)
+      Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
+    } finally {
+      setLoading(false);
+    }
+
+
     setLoading(true);
     setStep(3);
     setLoading(false);
@@ -179,6 +244,7 @@ export default function Fast() {
                 onPress={() => {
                   setCategoryId('673080a432edea568b2a6554')
                   loadJobsList('673080a432edea568b2a6554')
+                  jobService('673080a432edea568b2a6554')
                 }}
               >
                 <LinearGradient
@@ -475,6 +541,166 @@ export default function Fast() {
     setShowSelectJob(false);
   }
 
+  type serviceRateData = {
+    id: string,
+    jobCategoryId: string,
+    off_time: number,
+    off_time_per_hour: number,
+    start: number,
+    start_per_hour: number,
+  }
+
+  type distanceRateData = {
+    id: string,
+    distance: number,
+    price: number
+  }
+
+  const [priceService, setPriceService] = useState<number>(0);
+
+  const fast_service_rate = async () => {
+    try {
+      const price = await axios.get('http://49.231.43.37:3000/api/fast-service')
+
+      if (price.status == 200) {
+        if (price.data.status == 200) {
+          setPriceService(price.data.data)
+        }
+      }
+    } catch (error) {
+
+    }
+  }
+
+
+  const jobService = async (category: string) => {
+    try {
+      const res = await axios.get(`http://49.231.43.37:3000/api/jobs/?categoryId=${category}`, {
+        headers: {
+          'Authorization': `All ${userData.token}`
+        }
+      });
+
+      if (res.data.status == 200) {
+        console.log('serviceRate', res.data.data.serviceRate)
+        setServiceRate(res.data.data.serviceRate[0]);
+      }
+    } catch (error) {
+
+    }
+  }
+
+  const createScheduleReal = async (member: MembersDB, total: number) => {
+    if (!scheduleDate || !scheduleTime) {
+      return Alert.alert('ข้อมูลไม่ครบ', 'โปรดกรอกข้อมูลให้ครบถ้วน', [{ text: 'OK' }]);
+    }
+
+    const [day, month, year] = scheduleDate.split("/").map(Number);
+    const [hour, minute] = scheduleTime.split(":").map(Number);
+
+
+    const scheduleDateTime = new Date(year, month - 1, day, hour, minute);
+    if (isNaN(scheduleDateTime.getTime())) {
+      return Alert.alert('ผิดพลาด', 'ข้อมูลเวลาไม่ถูกต้องโปรดระบุใหม่อีกครั้ง')
+    }
+
+    const now: Date = new Date();
+
+    const diffInMilliseconds = scheduleDateTime.getTime() - now.getTime();
+    const diffInHours = diffInMilliseconds / (1000 * 60 * 60);
+
+    if (diffInHours < 2) {
+      return Alert.alert('ผิดพลาด', 'โปรดระบุเวลานัดหมายล่วงหน้า 2 ชั่วโมงขึ้นไป')
+    }
+
+
+    try {
+      const response = await axios.post('https://friendszone.app/api/schedule', {
+        customerId: userData.id,
+        memberId: member.id,
+        date: scheduleDateTime,
+        location: scheduleLocation,
+        jobs: scheduleJobs,
+        latitude: pin?.latitude,
+        longtitude: pin?.longitude,
+        price: total,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Customer ${userData.token}`
+        }
+      })
+
+      if (response.data.status != 200) {
+        Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
+      } else {
+        Alert.alert(`สำเร็จ`, `สร้างนัดหมายสำเร็จ`, [{ text: 'OK' }]);
+        sendPushNotification(userData?.token, member.id, {
+          title: `นัดหมายใหม่`,
+          body: `${userData.username} ต้องนัดหมายกับคุณ โปรดตรวจสอบนัดหมาย`,
+          imageUrl: `${userData.profileUrl}`,
+          screen: {
+            name: "SchedulePage",
+            data: {}
+          }
+        })
+
+        addNotification(member.id, {
+          content: `${userData.username} ต้องการนัดหมายกับคุณ ที่ ${scheduleLocation}`,
+          data: {
+            appointmentId: response.data.data.id
+          },
+          timestamp: `${new Date().toISOString()}`,
+          type: "appointment",
+          user: {
+            id: userData.id,
+            name: userData.username,
+            avatar: userData.profileUrl
+          },
+          isRead: false
+        })
+
+        navigation.navigate("SchedulePage", {});
+      }
+    } catch (error) {
+      Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
+    }
+    finally {
+    }
+  }
+
+
+  /**
+  * @param {LatLng} point1 
+  * @param {LatLng} point2 
+  * @returns {number}
+  */
+  const getDistance = (point1: LatLng, point2: LatLng): number => {
+    const toRadians = (degree: number) => (degree * Math.PI) / 180;
+
+    const R = 6371;
+    const lat1 = toRadians(point1.latitude);
+    const lon1 = toRadians(point1.longitude);
+    const lat2 = toRadians(point2.latitude);
+    const lon2 = toRadians(point2.longitude);
+
+    const deltaLat = lat2 - lat1;
+    const deltaLon = lon2 - lon1;
+
+    const a =
+      Math.sin(deltaLat / 2) ** 2 +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) ** 2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const distance = R * c;
+    return distance;
+  };
+
+  const getDistanceMemberToPinLocation = (locationPin: LatLng, memberPin: LatLng): number => {
+    return getDistance(locationPin, memberPin);
+  }
+
   const renderAppointmentForm = () => (
     <SafeAreaView style={{ flex: 1, height: '100%' }}>
       <StyledView className="flex-1">
@@ -507,6 +733,7 @@ export default function Fast() {
                       key={index}
                       onPress={() => {
                         setScheduleJobs(jobs.jobName);
+                        setScheduleJobsId(jobs.id);
                         hideSelectJob();
                       }}
                     >
@@ -627,15 +854,15 @@ export default function Fast() {
 
               <StyledView className="px-6 py-1 rounded-2xl my-2 mt-5 h-[50%]">
                 {
-                  (!pin.latitude && !pin.longitude) ? (
+                  (!pin?.latitude && !pin?.longitude) ? (
                     <>
                       <StyledText className="text-lg text-black font-custom dark:text-neutral-200">กำลังโหลดแผนที่</StyledText>
                     </>
                   ) : (
                     <MapView
                       initialRegion={{
-                        latitude: pin.latitude,
-                        longitude: pin.longitude,
+                        latitude: pin?.latitude,
+                        longitude: pin?.longitude,
                         latitudeDelta: 15.5136445,
                         longitudeDelta: 100.6519383,
                       }}
@@ -652,8 +879,8 @@ export default function Fast() {
                         <>
                           <Marker
                             coordinate={{
-                              latitude: pin.latitude,
-                              longitude: pin.longitude,
+                              latitude: pin?.latitude,
+                              longitude: pin?.longitude,
                             }}
                             title="Selected Location"
                             draggable={true}
@@ -746,26 +973,25 @@ export default function Fast() {
     }
   }
 
-
-  
-  const database = getDatabase(FireBaseApp);
-  const fastUpdate = ref(database, `fast-request/test-fast-request-1/acceptList`);
-
   useEffect(() => {
 
-    const unsubscribe = onValue(fastUpdate, (snapshot) => {
-      const val = snapshot.val();
-      if (val) {
-        setFastList(val.split(',').filter((item: string) => item !== ''));
-      } else {
-        setFastList([]);
-      }
-    });
+    if (fastId) {
+      const fastUpdate = ref(database, `fast-request/${fastId}/acceptList`);
 
-    return () => {
-      unsubscribe();
-    };
-  }, []);
+      const unsubscribe = onValue(fastUpdate, (snapshot) => {
+        const val = snapshot.val();
+        if (val) {
+          setFastList(val.split(',').filter((item: string) => item !== ''));
+        } else {
+          setFastList([]);
+        }
+      });
+
+      return () => {
+        unsubscribe();
+      };
+    }
+  }, [fastId]);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -780,139 +1006,186 @@ export default function Fast() {
   }, [fastList]);
 
   const RenderAcceptList = () => {
-    return (
-      <StyledView className="w-screen px-2 py-2 space-y-2">
-        {
-          memberAccept.map((member, index) => {
-            return (
-              <Animated.View
-            key={index}
-            entering={FadeInUp.delay(index * 100).springify()}
-            className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg rounded-3xl shadow-xl border border-neutral-100 dark:border-neutral-700"
+    return memberAccept.map((member, index) => {
+
+      let total = 0 + priceService;
+
+      console.log(serviceRate)
+
+      if (serviceRate) {
+        total += serviceRate.start;
+        console.log(serviceRate.start)
+      }
+
+      const distance = getDistanceMemberToPinLocation({ latitude: pin?.latitude || 0, longitude: pin?.longitude || 0 }, { latitude: member?.latitude || 0, longitude: member?.longitude || 0 });
+
+      if (distance / 1000 >= 120) {
+        total += (distance / 1000 * 2) * 7
+      } else if (distance / 1000 >= 60 && distance / 1000 < 120) {
+        total += 500
+      } else if (distance / 1000 >= 30 && distance / 1000 < 60) {
+        total += 0
+      } else {
+        total += 0
+      }
+
+      return (
+        <Animated.View
+          key={index}
+          entering={FadeInUp.delay(index * 100).springify()}
+          className="bg-white dark:bg-neutral-800/90 backdrop-blur-lg rounded-3xl shadow-xl border border-neutral-100 dark:border-neutral-700"
+        >
+          <StyledTouchableOpacity
+            className="p-4"
+            onPress={() => navigation.navigate('Profile', { userId: member.id })}
           >
-            <StyledTouchableOpacity
-              className="p-4"
-              onPress={() => navigation.navigate('Profile', { userId: member.id })}
-            >
-              <StyledView className="flex-row items-center justify-between">
-                <StyledView className="flex-row items-center space-x-4">
-                  <StyledView className="relative">
-                    <StyledImage
-                      source={{ uri: member?.profileUrl }}
-                      className="w-16 h-16 rounded-2xl border-2 border-red-500/50"
-                    />
-                    <StyledView className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white" />
-                  </StyledView>
-                  <StyledView>
-                    <StyledText className="font-custom text-xl text-neutral-800 dark:text-white">
-                      {member?.username}
-                    </StyledText>
-                    <StyledView className="flex-row items-center space-x-2 mt-1">
+            <StyledView className="flex-row items-center justify-between">
+              <StyledView className="flex-row items-center space-x-4">
+                <StyledView className="relative">
+                  <StyledImage
+                    source={{ uri: member?.profileUrl }}
+                    className="w-16 h-16 rounded-2xl border-2 border-red-500/50"
+                  />
+                  <StyledView className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white" />
+                </StyledView>
+                <StyledView>
+                  <StyledText className="font-custom text-xl text-neutral-800 dark:text-white">
+                    {member?.username}
+                  </StyledText>
+                  <StyledView className="flex-row items-center space-x-2 mt-1">
                     <StyledIonIcon
-                                                    name="calendar-outline"
-                                                    size={20}
-                                                    className="text-gray-500 dark:text-gray-400 mr-2"
-                                                />
-                      <StyledText className="font-custom text-sm text-neutral-500">
-                        {getAge(member?.birthday)} ปี
-                      </StyledText>
-                      <StyledView className="w-1 h-1 rounded-full bg-neutral-300" />
-                      <StyledIonIcon
-                                                    name={
-                                                        member?.gender === "ชาย" ? "male" :
-                                                            member?.gender === "หญิง" ? "female" :
-                                                                "transgender"
-                                                    }
-                                                    size={20}
-                                                    className={
-                                                        member?.gender === "ชาย" ? "text-blue-500" :
-                                                            member?.gender === "หญิง" ? "text-pink-500" :
-                                                                "text-purple-500"
-                                                    }
-                                                />
-                      <StyledText className="font-custom text-sm text-neutral-500">
-                        {member?.gender}
-                      </StyledText>
-                    </StyledView>
-                  </StyledView>
-                </StyledView>
-
-                <StyledView className="items-end">
-                  <StyledText className="font-custom text-xl font-semibold text-red-500">
-                    ฿{member?.amount?.toLocaleString() || '00.00'}
-                  </StyledText>
-                  <StyledView className="flex-row items-center mt-1">
-
-                    <StyledIonIcon name="star" size={24} color="#FCD34D" />
-                    <StyledText className="font-custom text-lg text-neutral-400 ml-1">
-                      {
-                        member?.rating
+                      name="calendar-outline"
+                      size={20}
+                      className="text-gray-500 dark:text-gray-400 mr-2"
+                    />
+                    <StyledText className="font-custom text-sm text-neutral-500">
+                      {getAge(member?.birthday)} ปี
+                    </StyledText>
+                    <StyledView className="w-1 h-1 rounded-full bg-neutral-300" />
+                    <StyledIonIcon
+                      name={
+                        member?.gender === "ชาย" ? "male" :
+                          member?.gender === "หญิง" ? "female" :
+                            "transgender"
                       }
+                      size={20}
+                      className={
+                        member?.gender === "ชาย" ? "text-blue-500" :
+                          member?.gender === "หญิง" ? "text-pink-500" :
+                            "text-purple-500"
+                      }
+                    />
+                    <StyledText className="font-custom text-sm text-neutral-500">
+                      {member?.gender}
                     </StyledText>
                   </StyledView>
                 </StyledView>
               </StyledView>
 
-              <StyledView className="flex-row justify-end space-x-3 mt-4">
-                <StyledTouchableOpacity
-                  onPress={() => {
-                    Alert.alert(
-                      "ยืนยันการลบสมาชิก",
-                      `คุณต้องการลบ ${member?.username} ออกจากรายการหรือไม่`,
-                      [
-                        {
-                          text: "ลบ",
-                          onPress: () => {
-                            const newFastList = fastList.filter((item) => item !== member.id);
-                            setFastList(newFastList);
-                            setMemberAccept(memberAccept.filter((item) => item.id !== member.id));
-                            set(ref(database, `fast-request/test-fast-request-1/acceptList`), newFastList.join(','));
-                          },
-                          style: "cancel"
-                        },
-                        { text: "ยกเลิก" }
-                      ]
-                    )
-                  }}
-                  className=" px-5 py-2.5 rounded-2xl flex-row items-center"
-                >
-                  <StyledIonIcon name="close-outline" size={18} className="text-red-600" />
-                  <StyledText className="font-custom text-red-600 dark:text-red-300 ml-1">
-                    ลบ
+              <StyledView className="items-end">
+                <StyledText className="font-custom text-xl font-semibold text-red-500">
+                  ฿{
+
+                    Number(total.toFixed(0)).toLocaleString()
+
+
+
+                    // member?.amount?.toLocaleString() || '00.00'
+                  }
+                </StyledText>
+                <StyledView className="flex-row items-center mt-1">
+
+                  <StyledIonIcon name="star" size={24} color="#FCD34D" />
+                  <StyledText className="font-custom text-lg text-neutral-400 ml-1">
+                    {
+                      member?.rating
+                    }
                   </StyledText>
-                </StyledTouchableOpacity>
-                <StyledTouchableOpacity
-                  className="bg-neutral-100 dark:bg-neutral-700/50 px-5 py-2.5 rounded-2xl flex-row items-center"
-                >
-                  <StyledIonIcon name="checkmark-outline" size={18} className="text-black dark:text-white" />
-                  <StyledText className="font-custom text-black dark:text-white ml-1">
-                    เลือกและชำค่าบริการ
-                  </StyledText>
-                </StyledTouchableOpacity>
+                </StyledView>
               </StyledView>
-            </StyledTouchableOpacity>
-          </Animated.View>
-            )
-          })
-        }
-      </StyledView>
-    )
+            </StyledView>
+
+            <StyledView className="flex-row justify-end space-x-3 mt-4">
+              <StyledTouchableOpacity
+                onPress={() => {
+                  Alert.alert(
+                    "ยืนยันการลบสมาชิก",
+                    `คุณต้องการลบ ${member?.username} ออกจากรายการหรือไม่`,
+                    [
+                      {
+                        text: "ลบ",
+                        onPress: () => {
+                          const newFastList = fastList.filter((item) => item !== member.id);
+                          setFastList(newFastList);
+                          setMemberAccept(memberAccept.filter((item) => item.id !== member.id));
+                          set(ref(database, `fast-request/${fastId}/acceptList`), newFastList.join(','));
+                        },
+                        style: "cancel"
+                      },
+                      { text: "ยกเลิก" }
+                    ]
+                  )
+                }}
+                className=" px-5 py-2.5 rounded-2xl flex-row items-center"
+              >
+                <StyledIonIcon name="close-outline" size={18} className="text-red-600" />
+                <StyledText className="font-custom text-red-600 dark:text-red-300 ml-1">
+                  ลบ
+                </StyledText>
+              </StyledTouchableOpacity>
+              <StyledTouchableOpacity
+                className="bg-neutral-100 dark:bg-neutral-700/50 px-5 py-2.5 rounded-2xl flex-row items-center"
+
+                onPress={() => {
+                  Alert.alert(
+                    "ยืนยันการเลือก",
+                    `คุณต้องการเลือก ${member?.username} เป็นคู่หรือไม่`,
+                    [
+                      {
+                        text: "เลือก",
+                        onPress: () => {
+                          //delete all acceptList and add confirmUser
+                          set(ref(database, `fast-request/${fastId}/acceptList`), '');
+                          set(ref(database, `fast-request/${fastId}/confirmMember`), member.id);
+
+
+                          //create schedule
+                          createScheduleReal(member, total);
+
+                        },
+                        style: "cancel"
+                      },
+                      { text: "ยกเลิก" }
+                    ]
+                  )
+                }}
+
+
+              >
+                <StyledIonIcon name="checkmark-outline" size={18} className="text-black dark:text-white" />
+                <StyledText className="font-custom text-black dark:text-white ml-1">
+                  เลือกและชำค่าบริการ
+                </StyledText>
+              </StyledTouchableOpacity>
+            </StyledView>
+          </StyledTouchableOpacity>
+        </Animated.View>
+      )
+    })
   }
 
 
   const renderWaitingScreen = () => {
-
-
-
-
     return (
       <StyledView
         className="flex-1 justify-center items-center"
       >
         <HeaderApp />
         <SafeAreaView className="flex-1">
-          <RenderAcceptList />
 
+          <StyledScrollView className="w-screen px-2 py-2 space-y-2">
+            <RenderAcceptList />
+          </StyledScrollView>
           <StyledView className="items-center px-6 py-8">
             <StyledText className="font-custom text-neutral-600 dark:text-neutral-400 text-base text-center">
               {/* timeout = 2020-12-28T00:00:00.000Z  i want to 28/12/2024 00:00:00*/}
@@ -971,9 +1244,11 @@ export default function Fast() {
     }
   }
 
+
+
   const fetchFastRequest = async () => {
     try {
-      const res = await axios.get(`http://49.231.43.37:3000/api/fast/${userData?.id}`, {
+      const res = await axios.get(`http://49.231.43.37:3000/api/fast/${userData?.id}?status=pending`, {
         headers: {
           Authorization: `All ${userData?.token}`,
           "Content-Type": "application/json"
@@ -982,12 +1257,10 @@ export default function Fast() {
       if (res.data) {
         if (res.data.data) {
           setFastRequest(res.data.data);
+          setFastId(res.data.data.requestId);
+          jobService(res.data.data.categoryId);
+          setCategoryId(res.data.data.categoryId);
           setStep(3);
-          if (res.data.data.timeout) {
-            const time = res.data.data.timeout;
-            const timeLeft = Math.floor((new Date(time).getTime() - new Date().getTime()) / 1000 / 60);
-            setTimeLeft(timeLeft);
-          }
         }
       }
     } catch (error) {

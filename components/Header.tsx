@@ -8,6 +8,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { LinearGradient } from "expo-linear-gradient";
 import { RootStackParamList } from "@/types";
+import { getDatabase, ref, onValue } from "firebase/database";
+import FireBaseApp from "@/utils/firebaseConfig";
 const WhiteLogo = require("../assets/images/guesticon.jpg")
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -18,10 +20,10 @@ interface HeaderAppProps {
     searchType?: string;
 }
 
-export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType } ) => {
+export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType }) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [userData, setuserData] = useState<any>();
-
+    const database = getDatabase(FireBaseApp);
     useEffect(() => {
         const fetchUserData = async () => {
             const userData = await AsyncStorage.getItem('userData');
@@ -29,6 +31,22 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType } ) => {
         };
         fetchUserData();
     }, []);
+    const [notReadNotificationCount, setNotReadNotificationCount] = useState(0);
+
+    useEffect(() => {
+        //firebase realtime database notification
+        if (userData?.id) {
+            const refNoti = ref(database, `notifications/${userData?.id}`);
+            //check notification is isRead is have false 
+            onValue(refNoti, (snapshot: any) => {
+                const data = snapshot.val();
+                if (data) {
+                    const noti = Object.values(data).filter((item: any) => item.isRead == false);
+                    setNotReadNotificationCount(noti.length);
+                }
+            });
+        }
+    }, [userData])
 
     return (
         <LinearGradient
@@ -73,15 +91,24 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType } ) => {
                 </TouchableOpacity>
 
                 <StyledView className="mr-3 flex-row items-center gap-2">
-                    <StyledIonicons
-                        name="notifications"
-                        size={24}
-                        color="white"
-                        onPress={() => navigation.navigate('Notification', {
-                            backPage: navigation.getState().routes[navigation.getState().index].name
-                        })}
-                        accessibilityLabel="Settings"
-                    />
+                    <StyledView>
+                        <StyledIonicons
+                            name="notifications"
+                            size={24}
+                            color="white"
+                            onPress={() => navigation.navigate('Notification', {
+                                backPage: navigation.getState().routes[navigation.getState().index].name
+                            })}
+                            accessibilityLabel="Settings"
+                        />
+                        {
+                            notReadNotificationCount > 0 && (
+                                <StyledView className="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center">
+                                    <StyledText className="text-white text-xs font-bold">{notReadNotificationCount}</StyledText>
+                                </StyledView>
+                            )
+                        }
+                    </StyledView>
                     <StyledIonicons
                         name="settings"
                         size={24}
