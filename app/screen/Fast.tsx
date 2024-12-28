@@ -67,7 +67,7 @@ export default function Fast() {
   const [theme, setTheme] = useState(Appearance.getColorScheme());
   const isFocus = useIsFocused();
 
-  const [serviceRate, setServiceRate] = useState<serviceRateData>();
+  const [serviceRate, setServiceRate] = useState(0);
 
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
@@ -590,8 +590,7 @@ export default function Fast() {
       });
 
       if (res.data.status == 200) {
-        console.log('serviceRate', res.data.data.serviceRate)
-        setServiceRate(res.data.data.serviceRate[0]);
+        setServiceRate(res.data.data.serviceRate[0].start);
       }
     } catch (error) {
 
@@ -1030,25 +1029,25 @@ export default function Fast() {
   const RenderAcceptList = () => {
     return memberAccept.map((member, index) => {
 
-      let total = 0 + priceService;
+      let total = 500
 
-      console.log(serviceRate)
-
-      if (serviceRate) {
-        total += serviceRate.start;
-        console.log(serviceRate.start)
-      }
-
-      const distance = getDistanceMemberToPinLocation({ latitude: pin?.latitude || 0, longitude: pin?.longitude || 0 }, { latitude: member?.latitude || 0, longitude: member?.longitude || 0 });
-
-      if (distance / 1000 >= 120) {
-        total += (distance / 1000 * 2) * 7
-      } else if (distance / 1000 >= 60 && distance / 1000 < 120) {
-        total += 500
-      } else if (distance / 1000 >= 30 && distance / 1000 < 60) {
-        total += 0
+      const distance = Number((getDistanceMemberToPinLocation({ latitude: pin?.latitude as number, longitude: pin?.longitude as number }, {
+        latitude: member.latitude,
+        longitude: member.longitude
+      }) / 1000).toFixed(0))
+      const jobsPrice = serviceRate
+      if (jobsPrice) {
+        if (distance < 30) {
+          total += priceService + 0
+        } else if (distance >= 30 && distance < 60) {
+          total += priceService + 500
+        } else if (distance >= 60 && distance < 120) {
+          total += priceService + 1000
+        } else if (distance >= 120) {
+          total += priceService + Number(((distance * 2) * 7).toFixed(0))
+        }
       } else {
-        total += 0
+        Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถคำนวณราคาได้', [{ text: 'OK' }])
       }
 
       return (

@@ -228,8 +228,6 @@ export default function ProfileTab() {
             longitude: userProfile?.profile.longitude
         }) / 1000).toFixed(0))
         const jobsPrice = serviceRate
-        console.log(distance)
-        console.log(pin)
         if (jobsPrice) {
             //check distance
             if (distance < 30) {
