@@ -59,25 +59,23 @@ export default function ProfileTab() {
     const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
     const [distance, setDistance] = useState<number>(0);
     const [scheduleNote, setScheduleNote] = useState('');
-    const [joblist, setJobList] = useState<{
-        label: string;
-        value: string;
-    }[]>([]);
-    const [geoLocation, setGeoLocation] = useState<{
-        latitude: number,
-        longitude: number,
-        locationName: string
-    }[]>([])
+
+    const [serviceRate, setServiceRate] = useState<{
+        id: string;
+        start: number;
+        start_per_hour: number;
+        off_time: number;
+        off_time_per_hour: number;
+        jobCategoryId: string;
+    }[]>()
+    const [price, setPrice] = useState<number>(0)
 
     const [showSelectJobs, setShowSelectJob] = useState(false);
 
-    const [searchFocus, setSearchFocus] = useState<boolean>(false);
     const [reviewList, setReviewList] = useState<Review[]>([]);
 
-    const [locationSearch, setLocationSearch] = useState<string>("");
     const [showVideo, setShowVideo] = useState(false);
 
-    const [isLoading, setIsLoading] = useState(false);
 
 
     const [pin, setPin] = useState<{
@@ -109,7 +107,6 @@ export default function ProfileTab() {
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
             });
-            console.log(location.coords.latitude, location.coords.longitude);
             if (userProfile?.profile?.pinLocation) {
                 setDistance(getDistanceMemberToCustomer({ latitude: location.coords.latitude, longitude: location.coords.longitude }, {
                     latitude: parseFloat(userProfile.profile.pinLocation[0]),
@@ -175,7 +172,7 @@ export default function ProfileTab() {
     }
 
 
-    const fetchUserData = useCallback(async () => {
+    const fetchUserData = async() => {
         try {
             setLoading(true);
             const storedUserData = await AsyncStorage.getItem('userData');
@@ -192,7 +189,7 @@ export default function ProfileTab() {
                 return;
             }
 
-            const user = await axios.get(`https://friendszone.app/api/profile/${profileId}`, {
+            const user = await axios.get(`http://49.231.43.37:3000/api/profile/${profileId}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `All ${parsedData?.token}`
@@ -200,13 +197,14 @@ export default function ProfileTab() {
             });
 
             setUserProfile(user.data.data);
+            setServiceRate(user.data.data.profile.jobCategory?.serviceRate[0].start)
             setImages(user.data.data?.profile.previewAllImageUrl)
             setIsActive(0);
         } catch (error) {
         } finally {
             setLoading(false);
         }
-    }, [profileId, navigation]);
+    }
 
     useEffect(() => {
         if (isFoucs != false) {
@@ -229,6 +227,30 @@ export default function ProfileTab() {
 
         return () => listener.remove();
     }, [])
+
+    useEffect(() => {
+        if (!pin || !scheduleLocation) return
+        const distance = Number((getDistanceMemberToPinLocation({ latitude: pin?.latitude as number, longitude: pin?.longitude as number }, {
+            latitude: userProfile?.profile.pinLocation[0],
+            longitude: userProfile?.profile.pinLocation[1]
+        }) / 1000).toFixed(0))
+        const jobsPrice = serviceRate ? serviceRate[0] : null;
+        if (jobsPrice) {
+            //check distance
+            if (distance < 30) {
+                setPrice(jobsPrice.start + 0);
+            } else if (distance >= 30 && distance < 60) {
+                setPrice(jobsPrice.start + 500);
+            } else if (distance >= 60 && distance < 120) {
+                setPrice(jobsPrice.start + 1000);
+            } else if (distance >= 120) {
+                setPrice(jobsPrice.start + (distance * 2) * 7);
+            }
+        } else {
+            Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถคำนวณราคาได้', [{ text: 'OK' }])
+        }
+    }, [pin])
+
 
     /**
     * @param {LatLng} point1 
@@ -283,7 +305,6 @@ export default function ProfileTab() {
 
 
         try {
-            setIsLoading(true);
             const response = await axios.post('https://friendszone.app/api/schedule', {
                 customerId: userData.id,
                 memberId: userProfile?.profile.id,
@@ -292,6 +313,7 @@ export default function ProfileTab() {
                 jobs: scheduleJobs,
                 latitude: pin?.latitude,
                 longtitude: pin?.longitude,
+                price : price
             }, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -333,9 +355,6 @@ export default function ProfileTab() {
             }
         } catch (error) {
             Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
-        }
-        finally {
-            setIsLoading(false);
         }
     }
     const loadReview = async () => {
@@ -886,11 +905,8 @@ export default function ProfileTab() {
                                             {loading ? (
                                                 <ActivityIndicator size="small" color="#fff" />
                                             ) : (
-                                                <StyledText className="font-custom text-center text-white text-lg font-semibold">{
-                                                    `ส่ง 
-                                                    
-                                                    
-                                                    `
+                                                <StyledText className="font-custom text-center text-white text-lg">นัดหมาย ฿ {
+                                                    price.toLocaleString()
                                                 }</StyledText>
                                             )}
                                         </LinearGradient>
