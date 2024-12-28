@@ -879,7 +879,7 @@ export default function Chat() {
 
 
     return (
-        <StyledView className="flex-1 bg-gray-200 dark:bg-neutral-900">
+        <StyledView className="flex-1 bg-gray-50 dark:bg-neutral-900">
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

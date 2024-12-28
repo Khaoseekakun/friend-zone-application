@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, ActivityIndicator, Alert, SafeAreaView, Appearance } from "react-native";
+import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, ActivityIndicator, Alert, SafeAreaView, Appearance, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { NavigationProp, RouteProp, useIsFocused, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { LinearGradient } from "expo-linear-gradient";
@@ -29,6 +29,7 @@ const StyledImage = styled(Image);
 const StyledScrollView = styled(ScrollView);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+const StyledActivityIndicator = styled(ActivityIndicator);
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 32) / 2;
@@ -52,6 +53,8 @@ type FastData = {
   userId: string;
   timeout: string;
   requestId: string;
+  time: string;
+  date: string;
 
 }
 export default function Fast() {
@@ -85,6 +88,7 @@ export default function Fast() {
   const [memberAccept, setMemberAccept] = useState<any[]>([]);
   const [memberInCondition, setMemberInCondition] = useState<MembersDB[]>([]);
 
+  const [firstLoading, setFirstLoading] = useState(true);
 
   const [fastId, setFastId] = useState<string>('');
 
@@ -99,8 +103,6 @@ export default function Fast() {
     const listener = Appearance.addChangeListener(({ colorScheme }) => {
       setTheme(colorScheme);
     });
-    fast_service_rate()
-    fetchUserData();
     return () => listener.remove();
   }, []);
 
@@ -109,6 +111,11 @@ export default function Fast() {
       getCurrentLocation();
     }
   }, [step]);
+
+  useEffect(() => {
+    fast_service_rate()
+    fetchUserData();
+  }, [])
 
 
   useEffect(() => {
@@ -123,85 +130,94 @@ export default function Fast() {
     if (!scheduleDate || !scheduleTime || !scheduleJobs || !scheduleLocation || !pin) {
       Alert.alert("กรุณากรอกข้อมูลให้ครบ");
       return;
-    }
-    const refCreate = ref(database, '/fast-request')
-    try {
-      setLoading(true);
-      const newPostKey = push(refCreate, {
-        date: scheduleDate,
-        description: scheduleNote,
-        jobsType: scheduleJobs,
-        location: scheduleLocation,
-        pinLongitude: pin?.longitude,
-        pinLatitude: pin?.latitude,
-        requester: {
-          gender: userData?.gender,
-          id: userData?.id,
-          profileUrl: userData?.profileUrl,
-          username: userData?.username
-        },
-        status: "pending",
-      }).key;
+    } else {
 
-      if (!newPostKey) return Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
-
+      const refCreate = ref(database, '/fast-request')
       try {
-        const createFastData = await axios.post(`http://49.231.43.37:3000/api/fast`, {
-          userId: userData?.id,
-          requestId: newPostKey,
-          categoryId: categoryId,
-          proviceId: userData?.provinceId,
-          jobsId: scheduleJobsId,
+        setLoading(true);
+        const newPostKey = push(refCreate, {
+          date: scheduleDate,
+          time: scheduleTime,
+          description: scheduleNote,
+          jobsType: scheduleJobs,
+          location: scheduleLocation,
+          pinLongitude: pin?.longitude,
+          pinLatitude: pin?.latitude,
+          requester: {
+            gender: userData?.gender,
+            id: userData?.id,
+            profileUrl: userData?.profileUrl,
+            username: userData?.username
+          },
           status: "pending",
-        }, {
-          headers: {
-            'Authorization': `All ${userData.token}`
-          }
-        })
+        }).key;
 
+        if (!newPostKey) return Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
 
-        setFastId(newPostKey);
-        setFastRequest(createFastData.data.data);
-        setStep(3);
-
-
-        if (createFastData.data.member.length > 0) {
-          for (let i = 0; i < createFastData.data.member.length; i++) {
-            const member = createFastData.data.member[i];
-            if (member.id !== userData.id) {
-              addNotification(member.id, {
-                content: `มีการนัดหมายด่วนจาก ${userData.username} คุณต้องการที่จะรับงานนี้หรือไม่`,
-                data: {
-                  requestId: newPostKey,
-                },
-                isRead: false,
-                timestamp: new Date().toISOString(),
-                type: 'fastRequest'
-              })
+        try {
+          const createFastData = await axios.post(`http://49.231.43.37:3000/api/fast`, {
+            userId: userData?.id,
+            time: scheduleTime,
+            date: scheduleDate,
+            requestId: newPostKey,
+            categoryId: categoryId,
+            proviceId: userData?.province.id,
+            jobsId: scheduleJobsId,
+            location: scheduleLocation,
+            jobs: scheduleJobs,
+            latitude: pin?.latitude,
+            longitude: pin?.longitude,
+            status: "pending",
+          }, {
+            headers: {
+              'Authorization': `All ${userData.token}`
             }
+          })
+
+          if (createFastData.data.status != 200) {
+            console.log(createFastData.data)
+            const refDelete = ref(database, `/fast-request/${newPostKey}`);
+            set(refDelete, null)
+            Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
+
+          } else {
+            if (createFastData.data.member && createFastData.data.member.length > 0) {
+              for (let i = 0; i < createFastData.data.member.length; i++) {
+                const member = createFastData.data.member[i];
+                if (member.id !== userData.id) {
+                  addNotification(member.id, {
+                    content: `มีการนัดหมายด่วนจาก ${userData.username} คุณต้องการที่จะรับงานนี้หรือไม่`,
+                    data: {
+                      requestId: newPostKey,
+                    },
+                    isRead: false,
+                    timestamp: new Date().toISOString(),
+                    type: 'fastRequest'
+                  })
+                }
+              }
+            }
+
+            setFastId(newPostKey);
+            setFastRequest(createFastData.data.data);
+            setStep(3);
           }
+        } catch (error) {
+          // delete fast request
+          console.log(error)
+          const refDelete = ref(database, `/fast-request/${newPostKey}`);
+          set(refDelete, null)
+          Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
+
         }
-
       } catch (error) {
-        // delete fast request
-        const refDelete = ref(database, `/fast-request/${newPostKey}`);
-        set(refDelete, null)
+        console.log(error)
         Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
-
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.log(error)
-      Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
-    } finally {
-      setLoading(false);
     }
-
-
-    setLoading(true);
-    setStep(3);
-    setLoading(false);
   };
-
   const loadJobsList = async (categoryId: string) => {
     try {
       const res = await axios.get(`https://friendszone.app/api/categoryJobs/${categoryId}/jobslist`);
@@ -211,7 +227,6 @@ export default function Fast() {
       Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
     }
   }
-
   const renderCategorySelection = () => (
     <LinearGradient
       colors={['#8B0000', '#4A0404']}
@@ -487,7 +502,6 @@ export default function Fast() {
       </SafeAreaView>
     </LinearGradient>
   );
-
   const getCurrentLocation = async () => {
     const location = await Location.getCurrentPositionAsync({});
     setPin({
@@ -496,7 +510,6 @@ export default function Fast() {
     });
 
   }
-
   const handleConfirm = (date: Date) => {
     const formattedDate = date.toLocaleDateString('th-TH', {
       year: 'numeric',
@@ -508,14 +521,12 @@ export default function Fast() {
     setScheduleTime("");
     hideDatePicker();
   };
-
   const showDatePicker = () => {
     setDatePickerVisibility(true);
   };
   const hideDatePicker = () => {
     setDatePickerVisibility(false);
   };
-
   const handleTimeConfirm = (date: Date) => {
     const timeFormat = date.toLocaleTimeString('th-TH', {
       hour: '2-digit',
@@ -525,18 +536,15 @@ export default function Fast() {
     setScheduleTime(timeFormat);
     hideTimePicker();
   };
-
   const showTimePicker = () => {
     setTimePickerVisibility(true);
   };
   const hideTimePicker = () => {
     setTimePickerVisibility(false);
   };
-
   const showSelectJob = () => {
     setShowSelectJob(true);
   }
-
   const hideSelectJob = () => {
     setShowSelectJob(false);
   }
@@ -591,15 +599,16 @@ export default function Fast() {
   }
 
   const createScheduleReal = async (member: MembersDB, total: number) => {
-    if (!scheduleDate || !scheduleTime) {
+    if (!fastRequest || !fastRequest.time || !fastRequest.date) {
       return Alert.alert('ข้อมูลไม่ครบ', 'โปรดกรอกข้อมูลให้ครบถ้วน', [{ text: 'OK' }]);
     }
 
-    const [day, month, year] = scheduleDate.split("/").map(Number);
-    const [hour, minute] = scheduleTime.split(":").map(Number);
+    const [day, month, year] = fastRequest.date.split("/").map(Number);
+    const [hour, minute] = fastRequest.time.split(":").map(Number);
 
 
     const scheduleDateTime = new Date(year, month - 1, day, hour, minute);
+
     if (isNaN(scheduleDateTime.getTime())) {
       return Alert.alert('ผิดพลาด', 'ข้อมูลเวลาไม่ถูกต้องโปรดระบุใหม่อีกครั้ง')
     }
@@ -613,9 +622,8 @@ export default function Fast() {
       return Alert.alert('ผิดพลาด', 'โปรดระบุเวลานัดหมายล่วงหน้า 2 ชั่วโมงขึ้นไป')
     }
 
-
     try {
-      const response = await axios.post('https://friendszone.app/api/schedule', {
+      const response = await axios.post('http://49.231.43.37:3000/api/schedule', {
         customerId: userData.id,
         memberId: member.id,
         date: scheduleDateTime,
@@ -632,10 +640,12 @@ export default function Fast() {
       })
 
       if (response.data.status != 200) {
+        console.log(response.data)
         Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
       } else {
         Alert.alert(`สำเร็จ`, `สร้างนัดหมายสำเร็จ`, [{ text: 'OK' }]);
-        sendPushNotification(userData?.token, member.id, {
+
+        await sendPushNotification(userData?.token, member.id, {
           title: `นัดหมายใหม่`,
           body: `${userData.username} ต้องนัดหมายกับคุณ โปรดตรวจสอบนัดหมาย`,
           imageUrl: `${userData.profileUrl}`,
@@ -645,7 +655,7 @@ export default function Fast() {
           }
         })
 
-        addNotification(member.id, {
+        await addNotification(member.id, {
           content: `${userData.username} ต้องการนัดหมายกับคุณ ที่ ${scheduleLocation}`,
           data: {
             appointmentId: response.data.data.id
@@ -663,6 +673,7 @@ export default function Fast() {
         navigation.navigate("SchedulePage", {});
       }
     } catch (error) {
+      console.log(error)
       Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
     }
     finally {
@@ -702,257 +713,258 @@ export default function Fast() {
   }
 
   const renderAppointmentForm = () => (
-    <SafeAreaView style={{ flex: 1, height: '100%' }}>
-      <StyledView className="flex-1">
-        {
-          showSelectJobs ? (
-            <>
-              <LinearGradient
-                colors={['rgba(236,72,153,0.03)', 'rgba(249,115,22,0.03)']}
-                className="flex-1 px-4 pt-4 font-custom"
-              >
-                <TouchableOpacity
-                  onPress={hideSelectJob}
-                  className="flex-row items-center mb-8"
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <SafeAreaView style={{ flex: 1, height: '100%' }}>
+        <StyledView className="flex-1">
+          {
+            showSelectJobs ? (
+              <>
+                <LinearGradient
+                  colors={['rgba(236,72,153,0.03)', 'rgba(249,115,22,0.03)']}
+                  className="flex-1 px-4 pt-4 font-custom"
                 >
-                  <StyledView className="bg-white dark:bg-gray-800 p-2 rounded-full">
-                    <StyledIonIcon
-                      name="chevron-back"
-                      size={24}
-                      className="text-[#8B0000] font-custom dark:text-orange-500"
-                    />
-                  </StyledView>
-                  <StyledText className="ml-3 text-xl font-custom font-semibold text-gray-800 dark:text-white">
-                    เลือกประเภทงาน
-                  </StyledText>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={hideSelectJob}
+                    className="flex-row items-center mb-8"
+                  >
+                    <StyledView className="bg-white dark:bg-gray-800 p-2 rounded-full">
+                      <StyledIonIcon
+                        name="chevron-back"
+                        size={24}
+                        className="text-[#8B0000] font-custom dark:text-orange-500"
+                      />
+                    </StyledView>
+                    <StyledText className="ml-3 text-xl font-custom font-semibold text-gray-800 dark:text-white">
+                      เลือกประเภทงาน
+                    </StyledText>
+                  </TouchableOpacity>
 
-                <StyledView className="space-y-3">
-                  {jobsList?.map((jobs, index) => (
+                  <StyledView className="space-y-3">
+                    {jobsList?.map((jobs, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => {
+                          setScheduleJobs(jobs.jobName);
+                          setScheduleJobsId(jobs.id);
+                          hideSelectJob();
+                        }}
+                      >
+                        <StyledView className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm active:scale-95 transform transition-all flex-row items-center justify-between">
+                          <StyledText className="text-base font-custom font-semibold text-gray-800 dark:text-white">
+                            {jobs.jobName}
+                          </StyledText>
+                          <StyledIonIcon
+                            name="chevron-forward"
+                            size={20}
+                            className="text-[#8B0000]/50 dark:text-orange-500/50"
+                          />
+                        </StyledView>
+                      </TouchableOpacity>
+                    ))}
+                  </StyledView>
+                </LinearGradient>
+              </>
+            ) : (
+              <>
+                <AnimatedTouchable
+                  onPress={() => setStep(1)}
+                  className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center left-3 mt-10 "
+                >
+                  <Ionicons name="chevron-back" size={24} color="#EB3834" />
+                </AnimatedTouchable>
+                <StyledView className="flex-row items-center px-6 py-1">
+                  <StyledView className="w-6/12 px-1">
+                    <StyledText className="text-lg text-black font-custom dark:text-neutral-200">วัน/เดือน/ปี</StyledText>
+
                     <TouchableOpacity
-                      key={index}
-                      onPress={() => {
-                        setScheduleJobs(jobs.jobName);
-                        setScheduleJobsId(jobs.id);
-                        hideSelectJob();
-                      }}
-                    >
-                      <StyledView className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm active:scale-95 transform transition-all flex-row items-center justify-between">
-                        <StyledText className="text-base font-custom font-semibold text-gray-800 dark:text-white">
-                          {jobs.jobName}
-                        </StyledText>
-                        <StyledIonIcon
-                          name="chevron-forward"
-                          size={20}
-                          className="text-[#8B0000]/50 dark:text-orange-500/50"
-                        />
+                      onPress={showDatePicker}>
+                      <StyledView
+                        className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                      >
+                        <StyledText className={`font-custom ${scheduleDate ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleDate ? scheduleDate : "03/10/2567"}</StyledText>
                       </StyledView>
                     </TouchableOpacity>
-                  ))}
+                  </StyledView>
+
+                  <StyledView className="w-6/12 px-1">
+                    <StyledText className="text-lg text-black font-custom dark:text-neutral-200">เวลา</StyledText>
+
+                    <TouchableOpacity
+                      onPress={showTimePicker}>
+                      <StyledView
+                        className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                      >
+                        <StyledText className={`font-custom ${scheduleTime ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleTime ? scheduleTime : "10:10"}</StyledText>
+                      </StyledView>
+                    </TouchableOpacity>
+                  </StyledView>
                 </StyledView>
-              </LinearGradient>
-            </>
-          ) : (
-            <>
-              <AnimatedTouchable
-                onPress={() => setStep(1)}
-                className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center left-3 mt-10 "
+                <StyledView className="flex-row items-center px-6 py-1">
+                  <StyledView className="w-full px-1">
+                    <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
+                      ประเภทงาน
+                    </StyledText>
+                    <TouchableOpacity
+                      onPress={showSelectJob}>
+                      <StyledView
+                        className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
+                      >
+                        <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? scheduleJobs : "เลือกประเภทงาน"}</StyledText>
+                      </StyledView>
+                    </TouchableOpacity>
+                  </StyledView>
+                </StyledView>
+
+                <StyledView className="flex-row items-center px-6 py-1">
+                  <StyledView className="w-full px-1">
+                    <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
+                      หมายเหตุ
+                    </StyledText>
+
+                    <StyledView
+                      className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
+                    >
+                      <TextInput
+                        placeholder="กรอกหมายเหตุ (ถ้ามี)"
+                        value={scheduleNote}
+                        onChangeText={setScheduleNote}
+                        multiline={true}
+                        numberOfLines={3}
+                        className="font-custom text-gray-700 dark:text-white"
+                        placeholderTextColor="#d1d5db"
+                        style={{
+                          textAlignVertical: 'top',
+                          minHeight: 40,
+                        }}
+                      />
+                    </StyledView>
+                  </StyledView>
+                </StyledView>
+
+                <StyledView className="items-center px-6 py-1">
+                  <StyledView className="w-full px-1">
+                    <StyledText className="text-lg text-black font-custom dark:text-neutral-200">จุดนัดหมาย</StyledText>
+                    <StyledView
+                      className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
+                    >
+                      <TextInput
+                        placeholder="จุดนัดหมาย"
+                        value={scheduleLocation}
+                        onChangeText={setScheduleLocation}
+                        className="font-custom text-gray-700 dark:text-white"
+                        placeholderTextColor="#d1d5db"
+                        style={{
+                          textAlignVertical: 'top',
+                          minHeight: 40,
+                        }}
+                      />
+                    </StyledView>
+
+
+                  </StyledView>
+                </StyledView>
+
+                <StyledView className="px-6 py-1 rounded-2xl my-2 mt-5 h-[50%]">
+                  {
+                    (!pin?.latitude && !pin?.longitude) ? (
+                      <>
+                        <StyledText className="text-lg text-black font-custom dark:text-neutral-200">กำลังโหลดแผนที่</StyledText>
+                      </>
+                    ) : (
+                      <MapView
+                        initialRegion={{
+                          latitude: pin?.latitude,
+                          longitude: pin?.longitude,
+                          latitudeDelta: 15.5136445,
+                          longitudeDelta: 100.6519383,
+                        }}
+                        onPress={(e) => {
+                          const { latitude, longitude } = e.nativeEvent.coordinate;
+                          setPin({ latitude, longitude });
+                        }}
+                        style={{
+                          borderRadius: 20,
+                          height: "70%",
+                        }}
+                      >
+                        {pin && (
+                          <>
+                            <Marker
+                              coordinate={{
+                                latitude: pin?.latitude,
+                                longitude: pin?.longitude,
+                              }}
+                              title="Selected Location"
+                              draggable={true}
+                            />
+                            <Circle
+                              center={pin}
+                              radius={250} // radius in meters
+                              strokeColor="rgba(255, 0, 0, 0.5)" // Border color
+                              fillColor="rgba(255, 0, 0, 0.2)" // Fill color
+                            />
+                          </>
+                        )}
+                      </MapView>
+                    )
+                  }
+                </StyledView>
+              </>
+            )
+          }
+        </StyledView>
+        {
+          !showSelectJobs && (
+            <TouchableOpacity
+              className="w-full px-6 absolute bottom-4"
+              onPress={handleCreateSchedule}
+              disabled={loading}
+            >
+              <LinearGradient
+                colors={theme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                className="rounded-full py-3 shadow-sm"
               >
-                <Ionicons name="chevron-back" size={24} color="#EB3834" />
-              </AnimatedTouchable>
-              <StyledView className="flex-row items-center px-6 py-1">
-                <StyledView className="w-6/12 px-1">
-                  <StyledText className="text-lg text-black font-custom dark:text-neutral-200">วัน/เดือน/ปี</StyledText>
-
-                  <TouchableOpacity
-                    onPress={showDatePicker}>
-                    <StyledView
-                      className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
-                    >
-                      <StyledText className={`font-custom ${scheduleDate ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleDate ? scheduleDate : "03/10/2567"}</StyledText>
-                    </StyledView>
-                  </TouchableOpacity>
-                </StyledView>
-
-                <StyledView className="w-6/12 px-1">
-                  <StyledText className="text-lg text-black font-custom dark:text-neutral-200">เวลา</StyledText>
-
-                  <TouchableOpacity
-                    onPress={showTimePicker}>
-                    <StyledView
-                      className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
-                    >
-                      <StyledText className={`font-custom ${scheduleTime ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleTime ? scheduleTime : "10:10"}</StyledText>
-                    </StyledView>
-                  </TouchableOpacity>
-                </StyledView>
-              </StyledView>
-              <StyledView className="flex-row items-center px-6 py-1">
-                <StyledView className="w-full px-1">
-                  <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
-                    ประเภทงาน
+                {loading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <StyledText className="font-custom text-center text-white text-lg font-semibold">
+                    นัดหมายแบบเร่งด่วน
                   </StyledText>
-                  <TouchableOpacity
-                    onPress={showSelectJob}>
-                    <StyledView
-                      className="font-custom border border-gray-300 rounded-2xl py-4 px-4 text-gray-700 w-full dark:text-neutral-200"
-                    >
-                      <StyledText className={`font-custom ${scheduleJobs ? 'text-gray-700 dark:text-white' : "text-[#d1d5db]"}`}>{scheduleJobs ? scheduleJobs : "เลือกประเภทงาน"}</StyledText>
-                    </StyledView>
-                  </TouchableOpacity>
-                </StyledView>
-              </StyledView>
-
-              <StyledView className="flex-row items-center px-6 py-1">
-                <StyledView className="w-full px-1">
-                  <StyledText className="text-lg text-black font-custom dark:text-neutral-200">
-                    หมายเหตุ
-                  </StyledText>
-
-                  <StyledView
-                    className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
-                  >
-                    <TextInput
-                      placeholder="กรอกหมายเหตุ (ถ้ามี)"
-                      value={scheduleNote}
-                      onChangeText={setScheduleNote}
-                      multiline={true}
-                      numberOfLines={3}
-                      className="font-custom text-gray-700 dark:text-white"
-                      placeholderTextColor="#d1d5db"
-                      style={{
-                        textAlignVertical: 'top',
-                        minHeight: 40,
-                      }}
-                    />
-                  </StyledView>
-                </StyledView>
-              </StyledView>
-
-              <StyledView className="items-center px-6 py-1">
-                <StyledView className="w-full px-1">
-                  <StyledText className="text-lg text-black font-custom dark:text-neutral-200">จุดนัดหมาย</StyledText>
-                  <StyledView
-                    className="font-custom border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 w-full dark:text-neutral-200"
-                  >
-                    <TextInput
-                      placeholder="จุดนัดหมาย"
-                      value={scheduleLocation}
-                      onChangeText={setScheduleLocation}
-                      className="font-custom text-gray-700 dark:text-white"
-                      placeholderTextColor="#d1d5db"
-                      style={{
-                        textAlignVertical: 'top',
-                        minHeight: 40,
-                      }}
-                    />
-                  </StyledView>
-
-
-                </StyledView>
-              </StyledView>
-
-              <StyledView className="px-6 py-1 rounded-2xl my-2 mt-5 h-[50%]">
-                {
-                  (!pin?.latitude && !pin?.longitude) ? (
-                    <>
-                      <StyledText className="text-lg text-black font-custom dark:text-neutral-200">กำลังโหลดแผนที่</StyledText>
-                    </>
-                  ) : (
-                    <MapView
-                      initialRegion={{
-                        latitude: pin?.latitude,
-                        longitude: pin?.longitude,
-                        latitudeDelta: 15.5136445,
-                        longitudeDelta: 100.6519383,
-                      }}
-                      onPress={(e) => {
-                        const { latitude, longitude } = e.nativeEvent.coordinate;
-                        setPin({ latitude, longitude });
-                      }}
-                      style={{
-                        borderRadius: 20,
-                        height: "70%",
-                      }}
-                    >
-                      {pin && (
-                        <>
-                          <Marker
-                            coordinate={{
-                              latitude: pin?.latitude,
-                              longitude: pin?.longitude,
-                            }}
-                            title="Selected Location"
-                            draggable={true}
-                          />
-                          <Circle
-                            center={pin}
-                            radius={250} // radius in meters
-                            strokeColor="rgba(255, 0, 0, 0.5)" // Border color
-                            fillColor="rgba(255, 0, 0, 0.2)" // Fill color
-                          />
-                        </>
-                      )}
-                    </MapView>
-                  )
-                }
-              </StyledView>
-            </>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
           )
         }
-      </StyledView>
-      {
-        !showSelectJobs && (
-          <TouchableOpacity
-            className="w-full px-6 absolute bottom-4"
-            onPress={handleCreateSchedule}
-            disabled={loading}
-          >
-            <LinearGradient
-              colors={theme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              className="rounded-full py-3 shadow-sm"
-            >
-              {loading ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <StyledText className="font-custom text-center text-white text-lg font-semibold">
-                  นัดหมายแบบเร่งด่วน
-                </StyledText>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
-        )
-      }
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="date"
+          onConfirm={handleConfirm}
+          onCancel={hideDatePicker}
+          locale="th-TH"
+          minimumDate={new Date(Date.now())}
+          shouldRasterizeIOS
+        />
 
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="date"
-        onConfirm={handleConfirm}
-        onCancel={hideDatePicker}
-        locale="th-TH"
-        minimumDate={new Date(Date.now())}
-        shouldRasterizeIOS
-      />
-
-      <DateTimePickerModal
-        isVisible={isTimePickerVisible}
-        mode="time"
-        onConfirm={handleTimeConfirm}
-        onCancel={hideTimePicker}
-        locale="th-TH"
-        shouldRasterizeIOS
-        minimumDate={
-          scheduleDate
-            ?
-            new Date(Date.now()).getDate() == new Date(`${scheduleDate.split("/")[2]}-${scheduleDate.split("/")[1]}-${scheduleDate.split("/")[0]}`).getDate()
-              ? new Date(Date.now() + 60 * 60 * 1000)
-              : undefined
-            : new Date(Date.now() + 60 * 60 * 1000)
-        }
-      />
-    </SafeAreaView >
+        <DateTimePickerModal
+          isVisible={isTimePickerVisible}
+          mode="time"
+          onConfirm={handleTimeConfirm}
+          onCancel={hideTimePicker}
+          locale="th-TH"
+          shouldRasterizeIOS
+          minimumDate={
+            scheduleDate
+              ?
+              new Date(Date.now()).getDate() == new Date(`${scheduleDate.split("/")[2]}-${scheduleDate.split("/")[1]}-${scheduleDate.split("/")[0]}`).getDate()
+                ? new Date(Date.now() + 60 * 60 * 1000)
+                : undefined
+              : new Date(Date.now() + 60 * 60 * 1000)
+          }
+        />
+      </SafeAreaView >
+    </TouchableWithoutFeedback>
   );
 
   const loadProfile = async (profileId: string) => {
@@ -1147,7 +1159,7 @@ export default function Fast() {
                           //delete all acceptList and add confirmUser
                           set(ref(database, `fast-request/${fastId}/acceptList`), '');
                           set(ref(database, `fast-request/${fastId}/confirmMember`), member.id);
-
+                          set(ref(database, `fast-request/${fastId}/status`), 'confirm');
 
                           //create schedule
                           createScheduleReal(member, total);
@@ -1243,9 +1255,6 @@ export default function Fast() {
 
     }
   }
-
-
-
   const fetchFastRequest = async () => {
     try {
       const res = await axios.get(`http://49.231.43.37:3000/api/fast/${userData?.id}?status=pending`, {
@@ -1256,15 +1265,25 @@ export default function Fast() {
       });
       if (res.data) {
         if (res.data.data) {
+          console.log(res.data.data)
           setFastRequest(res.data.data);
           setFastId(res.data.data.requestId);
           jobService(res.data.data.categoryId);
           setCategoryId(res.data.data.categoryId);
+          setPin({
+            latitude: res.data.data.latitude,
+            longitude: res.data.data.longitude
+          })
+          setScheduleJobs(res.data.data.jobs);
+          setScheduleJobsId(res.data.data.jobsId);
+          setScheduleLocation(res.data.data.location);
           setStep(3);
         }
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setFirstLoading(false);
     }
   }
 
@@ -1275,9 +1294,17 @@ export default function Fast() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <StyledView className="flex-1 bg-white dark:bg-neutral-900">
-          {step === 1 && renderCategorySelection()}
-          {step === 2 && renderAppointmentForm()}
-          {step === 3 && renderWaitingScreen()}
+          {
+            firstLoading ? (
+              <>
+                <StyledView className="flex-1 justify-center items-center">
+                  <StyledActivityIndicator size="large" className="text-black dark:text-white" />
+                </StyledView>
+              </>
+            ) : step === 1 ? renderCategorySelection() :
+              step === 2 ? renderAppointmentForm() :
+                renderWaitingScreen()
+          }
         </StyledView>
       </KeyboardAvoidingView>
     </StyledView>

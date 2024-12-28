@@ -238,9 +238,7 @@ export default function AccountSetting() {
                 weight !== profileData?.weight?.toString() ||
                 username !== profileData?.username ||
                 profileImage !== profileData?.profileUrl
-
-
-
+            
             setIsUpdated(hasChanges);
         } else {
             const hasChanges =
@@ -284,6 +282,7 @@ export default function AccountSetting() {
                 setLatitude(profile.latitude);
                 setLongitude(profile.longitude);
                 setOldVideo(profile.previewVideoUrl || null);
+                setProfileImage(profile.profileUrl || null);
 
 
                 if (profile.type === "member") {
@@ -469,7 +468,7 @@ export default function AccountSetting() {
             setSelectedServices(profileData?.JobMembers?.map((service) => service.jobId));
             setImages(profileData.previewAllImageUrl || []);
             setOldImages(profileData.previewAllImageUrl || []);
-            setProfileImage(null);
+            setProfileImage(profileData.profileUrl || null);
             setVideo(profileData.previewVideoUrl || null);
             setUsername(profileData.username || "");
             setIsUpdated(false);
@@ -516,7 +515,7 @@ export default function AccountSetting() {
                         >
                             {profileImage ? (
                                 <StyledImage
-                                    source={{ uri: `data:image/jpeg;base64,${profileImage}` }}
+                                    source={{ uri: profileImage.includes("http") ? profileImage : `data:image/jpeg;base64,${profileImage}` }}
                                     className="w-24 h-24 rounded-full"
                                 />
                             ) : (
@@ -808,7 +807,7 @@ export default function AccountSetting() {
                                             <StyledText className={` ${selectedServices.includes(service.id)
                                                 ? 'text-white'
                                                 : 'text-neutral-600 dark:text-white'
-                                                }`}>
+                                                } font-custom`}>
                                                 {service.jobName}
                                             </StyledText>
                                         </TouchableOpacity>

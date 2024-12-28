@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 type FastRequest = {
     id: string;
     date: string;
+    time: string;
     jobsType: string;
     location: string;
     status: 'pending' | 'accepted' | 'deleted';
@@ -143,6 +144,23 @@ export default function FastRequest() {
                         คำขอนี้อาจถูกลบไปแล้วหรือไม่มีอยู่ในระบบ
                     </StyledText>
                 </StyledView>
+
+
+                <TouchableOpacity
+                    onPress={() => navigation.navigate("Notification", {})}
+                    className="mt-8"
+                >
+                    <LinearGradient
+                        colors={currentGradient as any}
+                        className="py-2 px-4 rounded-xl w-5/12"
+                    >
+                        <StyledText className="text-white text-lg font-custom text-center">
+                            กลับ
+                        </StyledText>
+                    </LinearGradient>
+                </TouchableOpacity>
+
+
             </StyledView>
         );
     }
@@ -191,6 +209,14 @@ export default function FastRequest() {
                             value={request.date}
                             theme={theme ?? 'light'}
                         />
+
+                        <InfoItem
+                            icon="time-outline"
+                            label="เวลา"
+                            value={request.time}
+                            theme={theme ?? 'light'}
+                        />
+
                         <InfoItem
                             icon="briefcase-outline"
                             label="ประเภทงาน"
