@@ -274,7 +274,7 @@ export default function Search() {
             setSearchLoading(true);
             let url = `http://49.231.43.37:3000/api/search/members?jobsCategory=${searchType == undefined ? saveSearchType : searchType}&latitude=${currentLatitude}&longitude=${currentLongitude}`;
             let deafult_age = '18-99'
-            
+
 
             if (filterSearch == true) {
                 url += '&filter=true'
@@ -335,7 +335,7 @@ export default function Search() {
                             ...member.MembersDB,
                             distance: member.distance
                         }
-                    }                    
+                    }
                 );
 
                 setData(membersData);
@@ -382,9 +382,9 @@ export default function Search() {
 
         return !searchloading ? (
             <StyledView style={styles.row}>
-                {item.map((data) => (
+                {item.map((data, index) => (
                     <TouchableOpacity
-                        key={data.id}
+                        key={`${data.id}-${index}`}
                         style={styles.gridCard}
                         activeOpacity={0.8}
                         onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "Search", backOptions: { searchType } })}
