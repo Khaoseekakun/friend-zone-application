@@ -60,14 +60,7 @@ export default function ProfileTab() {
     const [distance, setDistance] = useState<number>(0);
     const [scheduleNote, setScheduleNote] = useState('');
 
-    const [serviceRate, setServiceRate] = useState<{
-        id: string;
-        start: number;
-        start_per_hour: number;
-        off_time: number;
-        off_time_per_hour: number;
-        jobCategoryId: string;
-    }[]>()
+    const [serviceRate, setServiceRate] = useState()
     const [price, setPrice] = useState<number>(0)
 
     const [showSelectJobs, setShowSelectJob] = useState(false);
@@ -229,22 +222,24 @@ export default function ProfileTab() {
     }, [])
 
     useEffect(() => {
-        if (!pin || !scheduleLocation) return
+        if (!pin) return
         const distance = Number((getDistanceMemberToPinLocation({ latitude: pin?.latitude as number, longitude: pin?.longitude as number }, {
-            latitude: userProfile?.profile.pinLocation[0],
-            longitude: userProfile?.profile.pinLocation[1]
+            latitude: userProfile?.profile.latitude,
+            longitude: userProfile?.profile.longitude
         }) / 1000).toFixed(0))
-        const jobsPrice = serviceRate ? serviceRate[0] : null;
+        const jobsPrice = serviceRate
+        console.log(distance)
+        console.log(pin)
         if (jobsPrice) {
             //check distance
             if (distance < 30) {
-                setPrice(jobsPrice.start + 0);
+                setPrice(jobsPrice + 0);
             } else if (distance >= 30 && distance < 60) {
-                setPrice(jobsPrice.start + 500);
+                setPrice(jobsPrice + 500);
             } else if (distance >= 60 && distance < 120) {
-                setPrice(jobsPrice.start + 1000);
+                setPrice(jobsPrice + 1000);
             } else if (distance >= 120) {
-                setPrice(jobsPrice.start + (distance * 2) * 7);
+                setPrice(jobsPrice + (distance * 2) * 7);
             }
         } else {
             Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถคำนวณราคาได้', [{ text: 'OK' }])
