@@ -206,7 +206,7 @@ export default function ScheduleList() {
                                             <StyledView className="w-full h-[1px] bg-gray-600 my-2"></StyledView>
 
                                             <StyledText className="font-custom text-gray-600 dark:text-gray-300 mt-2">
-                                                รูปแบบงาน: {jobsList.find(j => j.id === item.jobs)?.jobName}
+                                                รูปแบบงาน: {item.jobs}
                                             </StyledText>
 
                                             <StyledView className="flex-row py-2 justify-between mt-5">

@@ -11,6 +11,8 @@ import FireBaseApp from "../../utils/firebaseConfig";
 import { HeaderApp } from "@/components/Header";
 import { Navigation } from "@/components/Navigation";
 import { Ionicons } from "@expo/vector-icons";
+import { openMap } from "@/utils/Gps";
+import { addNotification, sendPushNotification } from "@/utils/Notification";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -24,7 +26,7 @@ interface Schedule {
     location: string;
     jobs: string;
     latitude: number;
-    longitude: number;
+    longtitude: number;
     status: string;
     price: number;
     paymentId?: string;
@@ -185,12 +187,87 @@ export default function SchedulePage() {
                 await update(ref(database, `schedules/${scheduleId}`), {
                     status: newStatus
                 });
+
+                const memberId = schedules.find(s => s.id === scheduleId)?.memberId
+                const userId = schedules.find(s => s.id === scheduleId)?.customerId
+                if(memberId){
+                    if(newStatus === 'schedule_cancel_after_payment') {
+                        addNotification(
+                            memberId, {
+                                type : "alert",
+                                content : "การนัดหมายถูกยกเลิกจากลูกค้า",
+                                timestamp : new Date().toISOString(),
+                                isRead : false,
+                                data : {
+
+                                }
+                            }
+                        )
+
+                        sendPushNotification(userData.token, memberId, {
+                            title: "การนัดหมายถูกยกเลิก",
+                            body: "การนัดหมายถูกยกเลิกจากลูกค้า",
+                            screen: {
+                                name: "SchedulePage",
+                                data: {}
+                            }
+                        })
+                    }
+
+                    if(newStatus === 'schedule_cancel') {
+                        addNotification(
+                            memberId, {
+                                type : "alert",
+                                content : "การนัดหมายถูกยกเลิก",
+                                timestamp : new Date().toISOString(),
+                                isRead : false,
+                                data : {
+
+                                }
+                            }
+                        )
+
+                        sendPushNotification(userData.token, memberId, {
+                            title: "การนัดหมายถูกยกเลิก",
+                            body: "การนัดหมายถูกยกเลิก",
+                            screen: {
+                                name: "SchedulePage",
+                                data: {}
+                            }
+                        })
+                    }
+                }
+
+                if(userId){
+                    if(newStatus === 'wait_payment') {
+                        addNotification(
+                            userId, {
+                                type : "alert",
+                                content : "สมาชิกได้ยืนยันการนัดหมาย กรุณาชำระเงิน ในหน้านัดหมาย",
+                                timestamp : new Date().toISOString(),
+                                isRead : false,
+                                data : {
+
+                                }
+                            }
+                        )
+
+                        sendPushNotification(userData.token, userId, {
+                            title: "สมาชิกได้ยืนยันการนัดหมาย",
+                            body: "กรุณาชำระเงิน ในหน้านัดหมาย",
+                            screen: {
+                                name: "SchedulePage",
+                                data: {}
+                            }
+                        })
+                    }
+                }
             } catch (error) {
                 console.error('Status update error:', error);
                 Alert.alert('ข้อผิดพลาด', 'ไม่สามารถอัพเดทสถานะได้ กรุณาลองใหม่');
             }
         };
-
+        
         if (message) {
             Alert.alert(message, content, [
                 { text: 'ยกเลิก', style: 'cancel' },
@@ -250,12 +327,22 @@ export default function SchedulePage() {
                         {formatDate(schedule.date)}
                     </StyledText>
 
-                    <StyledText className="font-custom text-gray-600 dark:text-gray-300 mt-2">
-                        สถานที่: {schedule.location}
-                    </StyledText>
+                    <TouchableOpacity
+                        onPress={() => {
+                            openMap({
+                                lat: schedule.latitude,
+                                lng: schedule.longtitude,
+                                label: schedule.location
+                            })
+                        }}>
+
+                        <StyledText className="font-custom text-gray-600 dark:text-gray-300 mt-2">
+                            สถานที่: {schedule.location}
+                        </StyledText>
+                    </TouchableOpacity>
 
                     <StyledText className="font-custom text-gray-600 dark:text-gray-300 mt-2">
-                        รูปแบบงาน: {jobsList.find(j => j.id === schedule.jobs)?.jobName}
+                        รูปแบบงาน: {schedule.jobs}
                     </StyledText>
 
                     <StyledView className="flex-row justify-between items-center mt-4">

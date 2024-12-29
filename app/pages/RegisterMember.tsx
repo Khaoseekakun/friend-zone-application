@@ -166,7 +166,7 @@ const InputField: React.FC<InputFieldProps> = ({
 
 export default function RegisterMember() {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const [currentStep, setCurrentStep] = useState(2);
+    const [currentStep, setCurrentStep] = useState(1);
     const [theme, setTheme] = useState(Appearance.getColorScheme());
     useEffect(() => {
         const listener = Appearance.addChangeListener(({ colorScheme }) => {

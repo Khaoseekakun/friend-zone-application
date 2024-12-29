@@ -60,7 +60,7 @@ export default function ProfileTab() {
     const [distance, setDistance] = useState<number>(0);
     const [scheduleNote, setScheduleNote] = useState('');
 
-    const [serviceRate, setServiceRate] = useState()
+    const [serviceRate, setServiceRate] = useState(0)
     const [price, setPrice] = useState<number>(0)
 
     const [showSelectJobs, setShowSelectJob] = useState(false);
@@ -228,8 +228,6 @@ export default function ProfileTab() {
             longitude: userProfile?.profile.longitude
         }) / 1000).toFixed(0))
         const jobsPrice = serviceRate
-        console.log(distance)
-        console.log(pin)
         if (jobsPrice) {
             //check distance
             if (distance < 30) {

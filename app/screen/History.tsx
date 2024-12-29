@@ -1,32 +1,36 @@
 import { Ionicons } from '@expo/vector-icons';
 import { styled } from 'nativewind';
-import React, { useState } from 'react';
-import { Image, ScrollView, Text, TextInput, View, TouchableOpacity, useColorScheme, Platform } from 'react-native';
-import { HeaderApp } from '@/components/Header';
-import { Navigation } from '@/components/Navigation';
+import React, { useEffect, useState } from 'react';
+import { Image, ScrollView, Text, View, TouchableOpacity, useColorScheme, Platform, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { useNavigation, NavigationProp, useIsFocused } from "@react-navigation/native";
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
-const StyledTextInput = styled(TextInput);
 const StyledIonIcon = styled(Ionicons);
 const StyledImage = styled(Image);
 const StyledScrollView = styled(ScrollView);
+const Icon = require('../../assets/images/logo.png');
 
 type HistoryTab = 'transactions' | 'appointments';
-type BankType = 'PROMPTPAY' | 'TRUEMONEY' | 'SCB' | 'KBANK' | 'KTB' | 'BAY' | 'BBL' | 'TMB' | 'CIMB' | 'CITI' | 'GHB' | 'GSB' | 'HSBC' | 'IBANK' | 'ICBC' | 'KKP' | 'LHB' | 'TCRB' | 'TISCO' | 'UOB' | 'BAAC';
 
 interface Transaction {
     id: string;
     amount: number;
-    date: string;
-    time: string;
-    type: 'incoming' | 'outgoing';
-    bank: BankType;
-    bankAccount?: string;
-    sender: string;
-    status: 'completed' | 'pending' | 'cancelled';
+    to: 'member' | 'customer' | 'system',
+    fromAccountId: string,
+    fromSystem: boolean,
+    accountType: 'member' | 'customer',
+    actionType: 'deposit' | 'withdraw',
+    memberId: string,
+    customerId: string,
+    refId: string,
+    status: 'completed' | 'pending',
+    bankAccountId?: string,
+    createdAt: string,
+    updatedAt: string,
 }
 
 interface Appointment {
@@ -40,149 +44,25 @@ interface Appointment {
     price: number;
 }
 
-const promptpay = require('../../assets/banks/PromptPay.png');
-const scb = require('../../assets/banks/SCB.png');
-const kbank = require('../../assets/banks/KBANK.png');
-
-const bankInfo: Record<BankType, { name: string; logo: any }> = {
-    PROMPTPAY: {
-        name: 'พร้อมเพย์',
-        logo: promptpay,
-    },
-    SCB: {
-        name: 'ไทยพาณิชย์',
-        logo: scb,
-    },
-    KBANK: {
-        name: 'กสิกรไทย',
-        logo: kbank,
-    },
-    TRUEMONEY: {
-        name: 'ทรูมันนี่',
-        logo: null,
-    },
-    KTB: {
-        name: 'กรุงไทย',
-        logo: null,
-    },
-    BAY: {
-        name: 'กรุงศรีอยุธยา',
-        logo: null,
-    },
-    BBL: {
-        name: 'กรุงเทพ',
-        logo: null,
-    },
-    TMB: {
-        name: 'ทหารไทย',
-        logo: null,
-    },
-    CIMB: {
-        name: 'ซีไอเอ็มบี',
-        logo: null,
-    },
-    CITI: {
-        name: 'ซิตี้แบงก์',
-        logo: null,
-    },
-    GHB: {
-        name: 'อาคารสงเคราะห์',
-        logo: null,
-    },
-    GSB: {
-        name: 'ออมสิน',
-        logo: null,
-    },
-    HSBC: {
-        name: 'เอชเอสบีซี',
-        logo: null,
-    },
-    IBANK: {
-        name: 'อิสลามแห่งประเทศไทย',
-        logo: null,
-    },
-    ICBC: {
-        name: 'ไอซีบีซี',
-        logo: null,
-    },
-    KKP: {
-        name: 'เกียรตินาคินภัทร',
-        logo: null,
-    },
-    LHB: {
-        name: 'แลนด์ แอนด์ เฮ้าส์',
-        logo: null,
-    },
-    TCRB: {
-        name: 'ไทยเครดิตเพื่อรายย่อย',
-        logo: null,
-    },
-    TISCO: {
-        name: 'ทิสโก้',
-        logo: null,
-    },
-    UOB: {
-        name: 'ยูโอบี',
-        logo: null,
-    },
-    BAAC: {
-        name: 'ธ.ก.ส.',
-        logo: null,
-    },
-};
-
 export default function History() {
     const navigation = useNavigation<NavigationProp<any>>();
     const [activeTab, setActiveTab] = useState<HistoryTab>('transactions');
     const colorScheme = useColorScheme();
+    const isFocus = useIsFocused()
+    const [userData, setUserData] = useState<any>({});
 
-    const groupTransactionsByDate = (transactions: Transaction[]) => {
-        const groups = transactions.reduce((groups: Record<string, Transaction[]>, transaction) => {
-            const date = new Date(transaction.date).toLocaleDateString('th-TH', { month: 'short', year: '2-digit' });
-            if (!groups[date]) {
-                groups[date] = [];
-            }
-            groups[date].push(transaction);
-            return groups;
-        }, {});
 
-        return Object.entries(groups);
-    };
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const userData = await AsyncStorage.getItem('userData');
+            setUserData(JSON.parse(userData as string) || {});
+        };
 
-    const mockTransactions: Transaction[] = [
-        {
-            id: '1',
-            amount: 1500,
-            date: '2024-03-18',
-            time: '14:30',
-            type: 'incoming',
-            bank: 'KBANK',
-            sender: 'นายสมชาย ใจดี',
-            status: 'completed'
-        },
-        {
-            id: '2',
-            amount: 800,
-            date: '2024-03-18',
-            time: '13:45',
-            type: 'outgoing',
-            bank: 'SCB',
-            bankAccount: 'xxx-x-x4589',
-            sender: 'Friend Zone',
-            status: 'completed'
-        },
-        {
-            id: '3',
-            amount: 2500,
-            date: '2024-03-17',
-            time: '16:20',
-            type: 'incoming',
-            bank: 'KBANK',
-            bankAccount: 'xxx-x-x7823',
-            sender: 'นายสมชาย ใจดี',
-            status: 'pending'
-        }
-    ];
+        fetchUserData();
+    }, [])
+
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
 
     const mockAppointments: Appointment[] = [
         {
@@ -208,40 +88,44 @@ export default function History() {
     ];
 
     const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }) => {
-        const bank = bankInfo[transaction.bank];
-        const isIncoming = transaction.type === 'incoming';
-
+        // const bank = bankInfo[transaction.bank];
+        const isIncoming = transaction.actionType === 'deposit';
         return (
             <StyledView className="bg-white dark:bg-neutral-800 rounded-xl p-3 mb-3 shadow-sm">
                 <StyledView className={`flex-row items-center ${isIncoming ? 'justify-start' : 'justify-end'}`}>
                     <StyledView className="flex-row items-center flex-1">
                         <StyledImage
-                            source={bank.logo}
+                            source={Icon}
                             className="w-12 h-12 rounded-full"
                         />
                         <StyledView className="ml-3 flex-1">
                             <StyledText className="font-custom text-base text-gray-900 dark:text-gray-100">
-                                {transaction.type === 'incoming' ? 'ได้รับเงินโอน' : 'โอน'}
+                                {isIncoming ? 'ได้รับเงินเข้าบัญชี' : 'ชำระค่าบริการ FriendZone'}
                             </StyledText>
                             <StyledText className="font-custom text-sm text-gray-500 dark:text-gray-400">
-                                {bank.name} {transaction.bankAccount ? `(${transaction.bankAccount})` : ''}
+                                {
+                                    transaction.to === "system" ? `เข้า บัญชีของ Friendzone` : `เข้าบัญชีในรายการของคุณ`
+                                }
                             </StyledText>
                             <StyledText className="font-custom text-sm text-gray-500 dark:text-gray-400">
-                                {transaction.sender}
+                                {transaction.fromSystem ? 'จากระบบ' : 'จากสมาชิก'}
                             </StyledText>
                         </StyledView>
                     </StyledView>
 
                     <StyledView className="items-end">
                         <StyledText
-                            className={`font-custom text-lg ${transaction.type === 'incoming' ? 'text-green-600 dark:text-green-400' : 'text-red-500'
+                            className={`font-custom text-lg ${isIncoming ? 'text-green-600 dark:text-green-400' : 'text-red-500'
                                 }`}
                         >
-                            {transaction.type === 'incoming' ? '+' : '-'}
+                            {isIncoming ? '+' : '-'}
                             {transaction.amount.toLocaleString()}.00
                         </StyledText>
                         <StyledText className="font-custom text-xs text-gray-500 dark:text-gray-400">
-                            {new Date(transaction.date).toLocaleDateString('th-TH')} {transaction.time}
+                            {new Date(transaction.createdAt).toLocaleDateString('th-TH')}
+                        </StyledText>
+                        <StyledText className="font-custom text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(transaction.createdAt).toLocaleTimeString('th-TH')}
                         </StyledText>
                     </StyledView>
                 </StyledView>
@@ -277,8 +161,8 @@ export default function History() {
                     </StyledView>
                     <StyledText
                         className={`font-custom ${appointment.status === 'completed' ? 'text-green-600' :
-                                appointment.status === 'upcoming' ? 'text-blue-600' :
-                                    'text-red-600'
+                            appointment.status === 'upcoming' ? 'text-blue-600' :
+                                'text-red-600'
                             }`}
                     >
                         {appointment.status === 'completed' ? 'เสร็จสิ้น' :
@@ -312,6 +196,29 @@ export default function History() {
         );
     };
 
+    const fetchTransactions = async () => {
+        try {
+            const response = await axios.get(`http://49.231.43.37:3000/api/transaction/${userData?.id}?accountType=${userData?.role}`, {
+                headers: {
+                    Authorization: `All ${userData?.token}`,
+                }
+            });
+            if (response.data.status == 200) {
+                setTransactions(response.data.data);
+            } else {
+                Alert.alert('ผิดพลาด', 'ไม่สามารถดึงข้อมูลได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
+            }
+        } catch (error) {
+            Alert.alert('ผิดพลาด', 'ไม่สามารถดึงข้อมูลได้ กรุณาลองใหม่อีกครั้ง', [{ text: 'OK' }]);
+        }
+    };
+
+    useEffect(() => {
+        if (userData?.id) {
+            fetchTransactions();
+        }
+    }, [isFocus, activeTab, userData])
+
     return (
         <StyledView className="flex-1 bg-gray-100 dark:bg-black">
             {/* <HeaderApp /> */}
@@ -329,7 +236,7 @@ export default function History() {
                         <StyledIonIcon
                             name="chevron-back"
                             size={24}
-                            color={'#FFFFFF'}
+                            color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'}
                         />
                     </TouchableOpacity>
                     <StyledText className="font-custom text-xl text-white">
@@ -348,21 +255,23 @@ export default function History() {
                     </StyledText>
                 </TouchableOpacity>
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     className={`flex-1 py-3 ${activeTab === 'appointments' ? 'border-b-2 border-red-500' : ''}`}
                     onPress={() => setActiveTab('appointments')}
                 >
                     <StyledText className={`font-custom text-center text-lg ${activeTab === 'appointments' ? 'text-red-500' : 'text-gray-500'}`}>
                         นัดหมาย
                     </StyledText>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </StyledView>
 
             <StyledScrollView className="flex-1 px-4">
                 {activeTab === 'transactions' ? (
-                    mockTransactions.map(transaction => (
-                        <TransactionItem key={transaction.id} transaction={transaction} />
-                    ))
+                    transactions.length > 0 ? transactions.map(transaction => (
+                        <TransactionItem key={transaction?.id} transaction={transaction} />
+                    )) : (
+                        <StyledText className="text-center mt-4 text-gray-500 dark:text-gray-400 font-custom">ไม่พบข้อมูล</StyledText>
+                    )
                 ) : (
                     mockAppointments.map(appointment => (
                         <AppointmentItem key={appointment.id} appointment={appointment} />

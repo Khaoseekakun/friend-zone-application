@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from "axios";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { addNotification } from "@/utils/Notification";
+import { openMap } from "@/utils/Gps";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -41,8 +42,8 @@ export default function Chat() {
             date: string;
             location: string;
             pin: {
-                latitude: number;
-                longtitude: number;
+                lat: number;
+                lng: number;
             };
             jobsType: string;
         };
@@ -648,7 +649,16 @@ export default function Chat() {
                             </StyledView>
 
                             <StyledView className="mt-2  border-t-[1px] border-neutral-700 pt-1">
-                                <StyledTouchableOpacity>
+                                <StyledTouchableOpacity
+                                onPress={() => {
+                                    openMap({
+                                        lat: item.details.pin.lat,
+                                        lng: item.details.pin.lng,
+                                        label: item.details.location
+                                    })
+                                }}
+                                
+                                >
                                     <StyledText className={`text-black dark:text-gray-300 font-custom text-base`}>
                                         สถานที่ (คลิกเพื่อเปิด)
                                     </StyledText>
