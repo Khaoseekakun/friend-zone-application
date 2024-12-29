@@ -79,7 +79,7 @@ export default function Setting() {
                 >
                     <StyledView className={`${Platform.OS == "ios" ? "mt-14" : "mt-8"} flex-row items-center px-4`}>
                         <TouchableOpacity
-                            onPress={() => navigation.goBack()}
+                            onPress={() => navigation.navigate('FeedsTab', {})}
                             className="pr-4"
                         >
                             <Ionicons

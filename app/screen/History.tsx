@@ -236,7 +236,7 @@ export default function History() {
                         <StyledIonIcon
                             name="chevron-back"
                             size={24}
-                            color="#FFFFFF"
+                            color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'}
                         />
                     </TouchableOpacity>
                     <StyledText className="font-custom text-xl text-white">

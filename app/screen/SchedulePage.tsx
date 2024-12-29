@@ -13,6 +13,7 @@ import { Navigation } from "@/components/Navigation";
 import { Ionicons } from "@expo/vector-icons";
 import { openMap } from "@/utils/Gps";
 import { addNotification, sendPushNotification } from "@/utils/Notification";
+import { MapPin, Briefcase, Calendar, AlertCircle } from 'lucide-react-native';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -190,18 +191,18 @@ export default function SchedulePage() {
 
                 const memberId = schedules.find(s => s.id === scheduleId)?.memberId
                 const userId = schedules.find(s => s.id === scheduleId)?.customerId
-                if(memberId){
-                    if(newStatus === 'schedule_cancel_after_payment') {
+                if (memberId) {
+                    if (newStatus === 'schedule_cancel_after_payment') {
                         addNotification(
                             memberId, {
-                                type : "alert",
-                                content : "การนัดหมายถูกยกเลิกจากลูกค้า",
-                                timestamp : new Date().toISOString(),
-                                isRead : false,
-                                data : {
+                            type: "alert",
+                            content: "การนัดหมายถูกยกเลิกจากลูกค้า",
+                            timestamp: new Date().toISOString(),
+                            isRead: false,
+                            data: {
 
-                                }
                             }
+                        }
                         )
 
                         sendPushNotification(userData.token, memberId, {
@@ -214,17 +215,17 @@ export default function SchedulePage() {
                         })
                     }
 
-                    if(newStatus === 'schedule_cancel') {
+                    if (newStatus === 'schedule_cancel') {
                         addNotification(
                             memberId, {
-                                type : "alert",
-                                content : "การนัดหมายถูกยกเลิก",
-                                timestamp : new Date().toISOString(),
-                                isRead : false,
-                                data : {
+                            type: "alert",
+                            content: "การนัดหมายถูกยกเลิก",
+                            timestamp: new Date().toISOString(),
+                            isRead: false,
+                            data: {
 
-                                }
                             }
+                        }
                         )
 
                         sendPushNotification(userData.token, memberId, {
@@ -238,18 +239,18 @@ export default function SchedulePage() {
                     }
                 }
 
-                if(userId){
-                    if(newStatus === 'wait_payment') {
+                if (userId) {
+                    if (newStatus === 'wait_payment') {
                         addNotification(
                             userId, {
-                                type : "alert",
-                                content : "สมาชิกได้ยืนยันการนัดหมาย กรุณาชำระเงิน ในหน้านัดหมาย",
-                                timestamp : new Date().toISOString(),
-                                isRead : false,
-                                data : {
+                            type: "alert",
+                            content: "สมาชิกได้ยืนยันการนัดหมาย กรุณาชำระเงิน ในหน้านัดหมาย",
+                            timestamp: new Date().toISOString(),
+                            isRead: false,
+                            data: {
 
-                                }
                             }
+                        }
                         )
 
                         sendPushNotification(userData.token, userId, {
@@ -267,7 +268,7 @@ export default function SchedulePage() {
                 Alert.alert('ข้อผิดพลาด', 'ไม่สามารถอัพเดทสถานะได้ กรุณาลองใหม่');
             }
         };
-        
+
         if (message) {
             Alert.alert(message, content, [
                 { text: 'ยกเลิก', style: 'cancel' },
@@ -321,119 +322,177 @@ export default function SchedulePage() {
         const status = STATUS_DISPLAY[schedule.status as keyof typeof STATUS_DISPLAY];
 
         return (
-            <>
-                <StyledView className="mb-1 bg-white dark:bg-neutral-800 rounded-xl p-4 shadow-sm">
-                    <StyledText className="font-custom text-gray-600 dark:text-gray-300">
-                        {formatDate(schedule.date)}
-                    </StyledText>
+            <StyledView className="mb-3">
+                {/* Modern Glass Card Container */}
+                <StyledView
+                    className="bg-white/80 dark:bg-neutral-900/90 backdrop-blur-lg rounded-3xl p-6 shadow-xl
+                              border border-gray-100/20 dark:border-neutral-700/30">
 
-                    <TouchableOpacity
-                        onPress={() => {
-                            openMap({
-                                lat: schedule.latitude,
-                                lng: schedule.longtitude,
-                                label: schedule.location
-                            })
-                        }}>
-
-                        <StyledText className="font-custom text-gray-600 dark:text-gray-300 mt-2">
-                            สถานที่: {schedule.location}
+                    {/* Date Header with Gradient */}
+                    <LinearGradient
+                        colors={['#1a1a1a', '#333333']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        className="rounded-2xl px-4 py-3 mb-6"
+                    >
+                        <StyledText className="font-custom text-base text-gray-100">
+                            {formatDate(schedule.date)}
                         </StyledText>
-                    </TouchableOpacity>
+                    </LinearGradient>
 
-                    <StyledText className="font-custom text-gray-600 dark:text-gray-300 mt-2">
-                        รูปแบบงาน: {schedule.jobs}
-                    </StyledText>
+                    {/* Content Container */}
+                    <StyledView className="space-y-5">
+                        {/* Location Section */}
+                        <TouchableOpacity
+                            className="flex-row items-center"
+                            onPress={() => {
+                                openMap({
+                                    lat: schedule.latitude,
+                                    lng: schedule.longtitude,
+                                    label: schedule.location
+                                })
+                            }}>
+                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-800/50 
+                                                 rounded-full items-center justify-center mr-3">
+                                <MapPin size={20} color="#FF4B45" />
+                            </StyledView>
+                            <StyledText className="font-custom flex-1 text-gray-700 dark:text-gray-300 text-base">
+                                {schedule.location}
+                            </StyledText>
+                        </TouchableOpacity>
 
-                    <StyledView className="flex-row justify-between items-center mt-4">
-                        <StyledText className="font-custom text-gray-700 dark:text-gray-300">
-                            ค่าธรรมเนียม
-                        </StyledText>
-                        <StyledText className="font-custom text-xl text-gray-800 dark:text-gray-200">
-                            ฿{(schedule.price)?.toLocaleString()}
-                        </StyledText>
+                        {/* Job Type Section */}
+                        <StyledView className="flex-row items-center">
+                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-800/50 
+                                                 rounded-full items-center justify-center mr-3">
+                                <Briefcase size={20} color="#FF4B45" />
+                            </StyledView>
+                            <StyledText className="font-custom text-gray-700 dark:text-gray-300 text-base">
+                                {schedule.jobs}
+                            </StyledText>
+                        </StyledView>
+
+                        {/* Price Section with Glass Effect */}
+                        <StyledView className="bg-gray-900/10 dark:bg-white/5 backdrop-blur-md rounded-2xl p-2 mt-1 flex-row justify-between items-end">
+                            <StyledText className="font-custom text-gray-500 dark:text-gray-400 text-sm">
+                                ค่าธรรมเนียม
+                            </StyledText>
+                            <StyledText className="font-custom text-lg text-gray-800 dark:text-gray-100 font-semibold">
+                                ฿{(schedule.price)?.toLocaleString()}
+                            </StyledText>
+                        </StyledView>
                     </StyledView>
 
-                    {((schedule.status === 'wait_payment' && userData.role === 'customer') || (schedule.status === 'wait_approve' && userData.role === 'member')) && (
-                        <StyledView className="flex-row justify-end mt-4 space-x-3">
-                            <StyledTouchableOpacity
-                                className="bg-gray-200 dark:bg-neutral-700 px-4 py-2 rounded-full"
-                                onPress={() => updateStatus(schedule.id, 'schedule_cancel', 'ยืนยันการยกเลิกการนัดหมาย?')}
-                            >
-                                <StyledText className="font-custom text-gray-700 dark:text-gray-300">
-                                    ยกเลิก
-                                </StyledText>
-                            </StyledTouchableOpacity>
-
-                            <StyledTouchableOpacity
-                                onPress={() => {
-                                    if (schedule.status === 'wait_payment') {
-                                        createPayment(schedule.id);
-                                    } else {
-                                        updateStatus(schedule.id, 'wait_payment', 'ยืนยันการนัดหมาย?');
-                                    }
-                                }}
-                            >
-                                <LinearGradient
-                                    colors={['#EB3834', '#69140F']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 0 }}
-                                    className="rounded-full px-6 py-2"
-                                >
-                                    <StyledText className="font-custom text-white">
-                                        {schedule.status === 'wait_payment' ? 'ชำระเงิน' : 'ยืนยัน'}
-                                    </StyledText>
-                                </LinearGradient>
-                            </StyledTouchableOpacity>
-                        </StyledView>
-                    )}
-
-                    {
-                        (schedule.status === "payment_success" && userData.role == 'customer') && (
-                            <StyledView className="flex-row justify-end mt-4 space-x-3">
+                    {/* Action Buttons */}
+                    {((schedule.status === 'wait_payment' && userData.role === 'customer') ||
+                        (schedule.status === 'wait_approve' && userData.role === 'member')) && (
+                            <StyledView className="flex-row justify-end space-x-3 mt-2">
                                 <StyledTouchableOpacity
-                                    className="bg-red-500 dark:bg-neutral-700 px-4 py-2 rounded-full"
-                                    onPress={() => updateStatus(schedule.id, 'schedule_cancel_after_payment', 'ยืนยันการยกเลิกการนัดหมาย?', 'การยกเลิกนี้คุณจะไม่ได้รับเงินคืน')}
+                                    className="bg-gray-900/10 dark:bg-white/5 backdrop-blur-md px-6 py-3.5 
+                                         rounded-2xl border border-gray-200/20 dark:border-neutral-700/30"
+                                    onPress={() => updateStatus(schedule.id, 'schedule_cancel', 'ยืนยันการยกเลิกการนัดหมาย?')}
                                 >
-                                    <StyledText className="font-custom text-gray-200 dark:text-gray-300">
+                                    <StyledText className="font-custom text-gray-700 dark:text-gray-300 font-medium">
                                         ยกเลิก
                                     </StyledText>
                                 </StyledTouchableOpacity>
+
+                                <StyledTouchableOpacity
+                                    onPress={() => {
+                                        if (schedule.status === 'wait_payment') {
+                                            createPayment(schedule.id);
+                                        } else {
+                                            updateStatus(schedule.id, 'wait_payment', 'ยืนยันการนัดหมาย?');
+                                        }
+                                    }}
+                                >
+                                    <LinearGradient
+                                        colors={['#FF4B45', '#FF1500']}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 1 }}
+                                        className="rounded-2xl px-8 py-3.5 shadow-lg"
+                                    >
+                                        <StyledText className="font-custom text-white font-semibold">
+                                            {schedule.status === 'wait_payment' ? 'ชำระเงิน' : 'ยืนยัน'}
+                                        </StyledText>
+                                    </LinearGradient>
+                                </StyledTouchableOpacity>
                             </StyledView>
-                        )
-                    }
+                        )}
+
+                    {/* Cancel After Payment Button */}
+                    {(schedule.status === "payment_success" && userData.role === 'customer') && (
+                        <StyledView className="flex-row justify-end mt-2">
+                            <LinearGradient
+                                colors={['#991B1B', '#7F1D1D']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                className="rounded-2xl shadow-lg"
+                            >
+                                <StyledTouchableOpacity
+                                    className="px-6 py-3.5"
+                                    onPress={() => updateStatus(
+                                        schedule.id,
+                                        'schedule_cancel_after_payment',
+                                        'ยืนยันการยกเลิกการนัดหมาย?',
+                                        'การยกเลิกนี้คุณจะไม่ได้รับเงินคืน'
+                                    )}
+                                >
+                                    <StyledText className="font-custom text-white font-semibold">
+                                        ยกเลิก
+                                    </StyledText>
+                                </StyledTouchableOpacity>
+                            </LinearGradient>
+                        </StyledView>
+                    )}
                 </StyledView>
 
-                <StyledText className={`text-right font-custom mb-2 ${status?.color}`}>
+                {/* Status Text */}
+                <StyledText
+                    className={`text-right font-custom mt-2 mb-3 ${status?.color}`}
+                >
                     {userData.role === 'customer' ? status?.customer : status?.member}
                 </StyledText>
-            </>
+            </StyledView>
         );
     };
 
     return (
-        <StyledView className="flex-1 bg-gray-100 dark:bg-neutral-900">
+        <StyledView className="flex-1 bg-gray-50 dark:bg-neutral-900">
             <HeaderApp />
 
-            <StyledView className="flex-1 px-4 pt-4">
+            <StyledView className="flex-1 px-5 pt-4 mb-11">
                 {loading ? (
+                    // Loading State with Smooth Animation
                     <StyledView className="flex-1 justify-center items-center">
-                        <ActivityIndicator size="large" color="#EB3834" />
-                        <StyledText className="font-custom mt-4 text-gray-600 dark:text-gray-300">
-                            กำลังโหลดข้อมูล...
-                        </StyledText>
+                        <StyledView className="bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md 
+                                     rounded-2xl p-8 shadow-xl items-center">
+                            <ActivityIndicator size="large" color="#FF4B45" />
+                            <StyledText className="font-custom mt-4 text-gray-600 dark:text-gray-300">
+                                กำลังโหลดข้อมูล...
+                            </StyledText>
+                        </StyledView>
                     </StyledView>
                 ) : error ? (
-                    <StyledView className="flex-1 justify-center items-center">
-                        <Ionicons name="alert-circle-outline" size={48} color="#EB3834" />
-                        <StyledText className="font-custom text-lg text-red-500 mt-4 text-center">
-                            {error}
-                        </StyledText>
+                    // Error State with Modern Design
+                    <StyledView className="flex-1 justify-center items-center px-6">
+                        <StyledView className="bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md 
+                                     rounded-2xl p-8 shadow-xl items-center w-full max-w-sm">
+                            <StyledView className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full 
+                                       items-center justify-center mb-4">
+                                <AlertCircle size={32} color="#EF4444" />
+                            </StyledView>
+                            <StyledText className="font-custom text-base text-red-500 text-center">
+                                {error}
+                            </StyledText>
+                        </StyledView>
                     </StyledView>
                 ) : schedules?.length > 0 ? (
+                    // Schedule List with Enhanced Scroll
                     <ScrollView
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ paddingBottom: 80 }}
+                        className="space-y-2"
                     >
                         {schedules.map((schedule) => (
                             <ScheduleItem
@@ -443,24 +502,35 @@ export default function SchedulePage() {
                         ))}
                     </ScrollView>
                 ) : (
-                    <StyledView className="flex-1 justify-center items-center">
-                        <Ionicons name="calendar-outline" size={48} color="#666" />
-                        <StyledText className="font-custom text-lg text-gray-600 dark:text-gray-300 mt-4">
-                            ไม่พบการนัดหมาย
-                        </StyledText>
+                    // Empty State with Elegant Design
+                    <StyledView className="flex-1 justify-center items-center px-6">
+                        <StyledView className="bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md 
+                                     rounded-2xl p-8 shadow-xl items-center w-full max-w-sm">
+                            <StyledView className="w-16 h-16 bg-gray-100 dark:bg-neutral-700 rounded-full 
+                                       items-center justify-center mb-4">
+                                <Calendar size={32} color="#6B7280" />
+                            </StyledView>
+                            <StyledText className="font-custom text-base text-gray-600 dark:text-gray-300">
+                                ไม่พบการนัดหมาย
+                            </StyledText>
+                        </StyledView>
                     </StyledView>
                 )}
             </StyledView>
 
             <Navigation current="SchedulePage" />
 
+            {/* Payment Loading Modal with Glass Effect */}
             <Modal visible={paymentLoading} transparent animationType="fade">
-                <StyledView className="flex-1 bg-black/50 justify-center items-center">
-                    <StyledView className="bg-white dark:bg-neutral-800 rounded-xl p-6 w-4/5 max-w-sm">
-                        <ActivityIndicator size="large" color="#EB3834" />
-                        <StyledText className="font-custom text-center mt-4 text-gray-700 dark:text-gray-300">
-                            กำลังสร้างรายการชำระเงิน...
-                        </StyledText>
+                <StyledView className="flex-1 bg-black/60 backdrop-blur-sm justify-center items-center px-6">
+                    <StyledView className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md 
+                                   rounded-3xl p-8 w-full max-w-sm shadow-2xl">
+                        <StyledView className="items-center">
+                            <ActivityIndicator size="large" color="#FF4B45" />
+                            <StyledText className="font-custom text-center mt-4 text-gray-700 dark:text-gray-300">
+                                กำลังสร้างรายการชำระเงิน...
+                            </StyledText>
+                        </StyledView>
                     </StyledView>
                 </StyledView>
             </Modal>
