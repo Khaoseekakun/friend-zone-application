@@ -1053,7 +1053,6 @@ export default function Fast() {
         return data;
       }));
       setMemberAccept(members);
-      console.log(members[0].jobCategory.serviceRate[0].start_per_hour)
       setServicePerCount(members[0].jobCategory.serviceRate[0].start_per_hour)
     };
 
@@ -1324,7 +1323,6 @@ export default function Fast() {
       });
       if (res.data) {
         if (res.data.data) {
-          console.log(res.data.data)
           setFastRequest(res.data.data);
           setFastId(res.data.data.requestId);
           setCategoryId(res.data.data.categoryId);

@@ -301,7 +301,6 @@ export default function RegisterStepTwo() {
                 label: province.name || 'test',
             }));
             setProvinces(provincesData);
-            console.log('Provinces loaded:', provincesData);
         } catch (error) {
             console.error('Error fetching provinces:', error);
             Alert.alert('Error', 'ไม่สามารถโหลดข้อมูลจังหวัดได้');
@@ -380,7 +379,6 @@ export default function RegisterStepTwo() {
             }
         });
 
-        console.log(response.data);
         if (response.data.status !== 200) throw new Error('ไม่สามารถสร้างบัญชีได้');
     };
 

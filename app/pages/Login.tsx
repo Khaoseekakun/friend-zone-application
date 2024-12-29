@@ -72,7 +72,6 @@ export default function Login() {
                 }
             });
 
-            console.log(loginData.data);
             if (loginData.data.data.code !== "LOGIN_SUCCESS") {
                 if (loginData.data.data.code === "ALREADY_LOGGED_IN") {
                     return Alert.alert("ไม่สำเร็จ", "บัญชีนี้กำลังเข้าสู่ระบบในเครื่องอื่นโปรดออกจากระบบก่อน", [{ text: "ลองอีกครั้ง" }]);

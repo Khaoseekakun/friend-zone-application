@@ -934,7 +934,6 @@ export default function RegisterMember() {
                         if (registerResponse.data.status === 200) {
                             return setCurrentStep(currentStep + 1);
                         } else {
-                            console.log(registerResponse.data)
                             return Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถลงทะเบียนได้ โปรดตรวจสอบข้อมูลให้ถูกต้อง');
                         }
                     } catch (error) {

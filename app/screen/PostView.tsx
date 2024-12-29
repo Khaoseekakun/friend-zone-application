@@ -103,7 +103,6 @@ export default function PostView() {
                 }
             });
             
-            console.log(response.data)
 
             if(response.data.status === 404){
                 return Alert.alert('ไม่พบโพสต์', 'โพสต์นี้ไม่มีอยู่ในระบบ', [{ text: 'ตกลง', onPress: () => navigation.navigate('FeedsTab', {}) }])

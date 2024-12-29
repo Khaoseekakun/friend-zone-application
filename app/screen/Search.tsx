@@ -331,7 +331,6 @@ export default function Search() {
             } else {
                 const membersData = response.data.data.members.map(
                     (member: any) => {
-                        console.log(member)
                         return {
                             ...member.MembersDB,
                             distance: member.distance
@@ -360,7 +359,6 @@ export default function Search() {
     }
 
     const renderGridItem = ({ item }: { item: IMembersDB[] }) => {
-        console.log(currentLatitude, currentLongitude)
         return !searchloading ? (
             <StyledView style={styles.row}>
 

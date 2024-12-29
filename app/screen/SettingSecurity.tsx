@@ -90,7 +90,6 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
             if (response.data.status === 200) {
                 setStep(step);
             } else {
-                console.log(response.data);
             }
         } catch (error) {
             Alert.alert("ข้อผิดพลาด", "ไม่สามารถส่งรหัส OTP ได้");
@@ -126,7 +125,6 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
                     setStep(3);
                 }
             } else {
-                console.log(response.data);
             }
         } catch (error) {
             Alert.alert("ข้อผิดพลาด", "รหัส OTP ไม่ถูกต้อง");

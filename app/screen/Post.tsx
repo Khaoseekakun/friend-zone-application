@@ -187,7 +187,6 @@ export default function Post() {
             });
     
             if (result.canceled) {
-                console.log('Camera use was canceled');
                 return;
             }
     
