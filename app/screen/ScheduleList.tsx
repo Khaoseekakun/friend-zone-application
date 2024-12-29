@@ -12,8 +12,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { getDatabase, ref, onValue, update } from "firebase/database";
 import { StyleSheet } from "react-native";
-import { makeid } from "@/utils/Date";
-import { MapPin, Briefcase, Calendar, AlertCircle } from 'lucide-react-native';
+import { DateFormat, makeid } from "@/utils/Date";
+import { MapPin, Briefcase, Calendar, AlertCircle, DollarSign } from 'lucide-react-native';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -146,17 +146,6 @@ export default function ScheduleList() {
         });
     };
 
-    const DateFromat = (date_value: string) => {
-        const dateObj = new Date(date_value);
-        const day = dateObj.toLocaleDateString('th-TH', { weekday: 'long' });
-        const date = dateObj.getDate();
-        const month = dateObj.toLocaleDateString('th-TH', { month: 'long' });
-        const year = dateObj.getFullYear() + 543;
-        const time = dateObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-
-        return `${day} ที่ ${date} ${month} พ.ศ.${year} เวลา ${time} น.`;
-    };
-
     function updateScheduleStatus(scheduleId: string, status: string, alertMessage?: string) {
         if (!alertMessage) return updateStatus();
 
@@ -200,7 +189,7 @@ export default function ScheduleList() {
                         </StyledView>
                     </StyledView>
                 ) : schedule?.length > 0 ? (
-                    <ScrollView 
+                    <ScrollView
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ paddingBottom: 80 }}
                     >
@@ -220,16 +209,15 @@ export default function ScheduleList() {
                                             รายละเอียดการนัดหมาย
                                         </StyledText>
                                         <StyledText className="font-custom text-gray-300">
-                                            {DateFromat(item.date)}
+                                            {DateFormat(item.date)}
                                         </StyledText>
                                     </LinearGradient>
 
                                     {/* Content Section */}
                                     <StyledView className="p-5 space-y-4">
                                         {/* Location */}
-                                        <StyledView className="flex-row items-center">
-                                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-700/50 
-                                                               rounded-full items-center justify-center mr-3">
+                                        <StyledView className="flex-row items-center bg-gray-300 dark:bg-neutral-800/80 p-1 rounded-full">
+                                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-800/50 rounded-full items-center justify-center mr-1">
                                                 <MapPin size={20} color="#FF4B45" />
                                             </StyledView>
                                             <StyledText className="font-custom text-gray-600 dark:text-gray-300 flex-1">
@@ -238,9 +226,8 @@ export default function ScheduleList() {
                                         </StyledView>
 
                                         {/* Job Type */}
-                                        <StyledView className="flex-row items-center">
-                                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-700/50 
-                                                               rounded-full items-center justify-center mr-3">
+                                        <StyledView className="flex-row items-center bg-gray-300 dark:bg-neutral-800/80 p-1 rounded-full">
+                                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-800/50 rounded-full items-center justify-center mr-1">
                                                 <Briefcase size={20} color="#FF4B45" />
                                             </StyledView>
                                             <StyledText className="font-custom text-gray-600 dark:text-gray-300">
@@ -249,12 +236,12 @@ export default function ScheduleList() {
                                         </StyledView>
 
                                         {/* Price Section */}
-                                        <StyledView className="bg-gray-900/10 dark:bg-white/5 backdrop-blur-md rounded-2xl p-2 mt-1 flex-row justify-between items-end">
-                                            <StyledText className="font-custom text-gray-500 dark:text-gray-400 text-sm mb-1">
-                                                ค่าธรรมเนียม
-                                            </StyledText>
-                                            <StyledText className="font-custom text-lg text-gray-800 dark:text-gray-100 font-semibold">
-                                                ฿{item.price?.toLocaleString()}
+                                        <StyledView className="flex-row items-center bg-gray-300 dark:bg-neutral-800/80 p-1 rounded-full">
+                                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-800/50 rounded-full items-center justify-center mr-1">
+                                                <DollarSign size={20} color="#FF4B45" />
+                                            </StyledView>
+                                            <StyledText className="font-custom text-gray-600 dark:text-gray-300 flex-1">
+                                                {item.price} บาท
                                             </StyledText>
                                         </StyledView>
 

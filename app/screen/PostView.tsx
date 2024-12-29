@@ -68,7 +68,7 @@ export default function PostView() {
     const bottomSheetRef = useRef<BottomSheet>(null);
     const bottomSheetRefComment = useRef<BottomSheet>(null);
     const snapPoints = ['30%']
-    const [userData, setuserData] = useState<any>();
+    const [userData, setuserData] = useState<any>({});
     const [postAction, setPostAction] = useState('');
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [newComment, setNewComment] = useState("")
@@ -90,6 +90,7 @@ export default function PostView() {
     useEffect(() => {
         setComment([])
     }, [])
+
     const fetchPosts = async () => {
         try {
 
@@ -102,6 +103,8 @@ export default function PostView() {
                 }
             });
             
+            console.log(response.data)
+
             if(response.data.status === 404){
                 return Alert.alert('ไม่พบโพสต์', 'โพสต์นี้ไม่มีอยู่ในระบบ', [{ text: 'ตกลง', onPress: () => navigation.navigate('FeedsTab', {}) }])
             }else  if(response.data.status == 400){
@@ -165,8 +168,10 @@ export default function PostView() {
     }, [isFocus]);
 
     useEffect(() => {
-        fetchComent()
-        fetchPosts()
+        if(userData.id) {
+            fetchComent()
+            fetchPosts()
+        }
     }, [userData])
 
     const fetchUserData = async () => {
@@ -552,7 +557,7 @@ export default function PostView() {
                                 </TouchableOpacity>
                             </StyledView>
 
-                            {
+                            {/* {
                                 posts?.member?.id === userData?.id ? null :
                                     (
                                         <>
@@ -568,7 +573,7 @@ export default function PostView() {
                                                 </TouchableOpacity>
                                             </StyledView></>
                                     )
-                            }
+                            } */}
                         </StyledView>
 
                         {

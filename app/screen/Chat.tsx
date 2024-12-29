@@ -13,6 +13,7 @@ import axios from "axios";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { addNotification } from "@/utils/Notification";
 import { openMap } from "@/utils/Gps";
+import { DateFormat } from "@/utils/Date";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -414,7 +415,7 @@ export default function Chat() {
                 addNotification(userData.id, {
                     content: `${userData.username} ได้รีวิวคุณ`,
                     data: {},
-                    timestamp: `${new Date().toISOString()}`,
+                    timestamp: new Date().toISOString(),
                     type: "review",
                     user: {
                         id: userData.id,
@@ -635,7 +636,7 @@ export default function Chat() {
                                         เวลาเริ่ม
                                     </StyledText>
                                     <StyledText className={`text-black dark:text-white font-custom text-base`}>
-                                        {new Date(item.details.startTime).toLocaleDateString('th-TH', {})} {new Date(item.details.startTime).getHours()} {new Date(item.details.startTime).getMinutes() > 0 ? `: ${new Date(item.details.startTime).getMinutes()}` : '00'}
+                                        {DateFormat(item.details.startTime)}
                                     </StyledText>
                                 </StyledView>
                                 <StyledView className="flex-row justify-between items-center ">
@@ -643,7 +644,7 @@ export default function Chat() {
                                         เวลาสิ้นสุด
                                     </StyledText>
                                     <StyledText className={`text-black dark:text-white font-custom text-base`}>
-                                        {new Date(item.details.endTime).toLocaleDateString('th-TH', {})} {new Date(item.details.endTime).getHours()} {new Date(item.details.endTime).getMinutes() > 0 ? `: ${new Date(item.details.endTime).getMinutes()}` : '00'}
+                                        {DateFormat(item.details.endTime)}
                                     </StyledText>
                                 </StyledView>
                             </StyledView>

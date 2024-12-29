@@ -4,6 +4,17 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 dayjs.locale('th');
 
+export const DateFormat = (date_value: string) => {
+    const dateObj = new Date(date_value);
+
+    const day = dateObj.toLocaleDateString('th-TH', { weekday: 'long' ,timeZone: 'Asia/Bangkok' });
+    const date = dateObj.getDate();
+    const month = dateObj.toLocaleDateString('th-TH', { month: 'short' ,timeZone: 'Asia/Bangkok' });
+    const year = dateObj.getFullYear();
+    const time = dateObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' ,timeZone: 'Asia/Bangkok' });
+    return `${day} ${date} ${month} ${year} | ${time}`;
+};
+
 export function formatTimeDifference(timestamp: string): string {
     const now = dayjs();
     const createdAt = dayjs(timestamp); 

@@ -135,7 +135,7 @@ export default function AccountSetting() {
                     async () => {
                         const downloadURL = await getDownloadURL(refVideo);
 
-                        await axios.put(`http://49.231.43.37:3000/api/member/${profileData?.id}/video`, {
+                        await axios.put(`https://friendszone.app/api/member/${profileData?.id}/video`, {
                             downloadUrl: downloadURL
                         }, {
                             headers: {
@@ -262,7 +262,7 @@ export default function AccountSetting() {
 
             const userList = JSON.parse(userData);
             const response = await axios.get<{ status: number; data: { profile: any } }>(
-                `http://49.231.43.37:3000/api/profile/${userList.id}`,
+                `https://friendszone.app/api/profile/${userList.id}`,
                 {
                     headers: {
                         "Authorization": `All ${userList?.token}`
@@ -411,7 +411,7 @@ export default function AccountSetting() {
 
             const userList = JSON.parse(userData);
             const res = await axios.put(
-                `http://49.231.43.37:3000/api/profile/${userList.id}`,
+                `https://friendszone.app/api/profile/${userList.id}`,
                 {
                     bio,
                     education,
@@ -433,7 +433,7 @@ export default function AccountSetting() {
             if (res.status === 200) {
 
                 if (images != oldImages) {
-                    await axios.put(`http://49.231.43.37:3000/api/preview/${userList.id}`, {
+                    await axios.put(`https://friendszone.app/api/preview/${userList.id}`, {
                         previewAllImages: images,
                     }, {
                         headers: {

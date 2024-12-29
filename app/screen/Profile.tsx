@@ -62,6 +62,7 @@ export default function ProfileTab() {
     const [scheduleNote, setScheduleNote] = useState('');
 
     const [serviceRate, setServiceRate] = useState(0)
+    const [servicePerCount, setServicePerCount] = useState(1)
     const [price, setPrice] = useState<number>(0)
 
     const [showSelectJobs, setShowSelectJob] = useState(false);
@@ -192,6 +193,7 @@ export default function ProfileTab() {
 
             setUserProfile(user.data.data);
             setServiceRate(user.data.data.profile.jobCategory?.serviceRate[0].start)
+            setServicePerCount(user.data.data.profile.jobCategory?.serviceRate[0].start_per_hour)
             setImages(user.data.data?.profile.previewAllImageUrl)
             setIsActive(0);
         } catch (error) {
@@ -258,9 +260,13 @@ export default function ProfileTab() {
             return Alert.alert('ข้อมูลไม่ครบ', 'โปรดกรอกข้อมูลให้ครบถ้วน', [{ text: 'OK' }]);
         }
 
-        const [day, month, year] = scheduleDate.split("/").map(Number);
+        let [day, month, year] = scheduleDate.split("/").map(Number);
         const [hour, minute] = scheduleTime.split(":").map(Number);
 
+        // ตรวจสอบ พศ และ คศ
+        if (year > 2500) {
+            year -= 543;
+        }
 
         const scheduleDateTime = new Date(year, month - 1, day, hour, minute);
         if (isNaN(scheduleDateTime.getTime())) {
@@ -286,7 +292,9 @@ export default function ProfileTab() {
                 jobs: scheduleJobs,
                 latitude: pin?.latitude,
                 longtitude: pin?.longitude,
-                price: price
+                price: price,
+                end_time: servicePerCount
+
             }, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -313,7 +321,7 @@ export default function ProfileTab() {
                     data: {
                         appointmentId: response.data.data.id
                     },
-                    timestamp: `${new Date().toISOString()}`,
+                    timestamp: new Date().toISOString(),
                     type: "appointment",
                     user: {
                         id: userData.id,
@@ -900,8 +908,7 @@ export default function ProfileTab() {
                 onConfirm={handleConfirm}
                 onCancel={hideDatePicker}
                 locale="th-TH"
-                minimumDate={new Date(Date.now())}
-                shouldRasterizeIOS
+                minimumDate={new Date(Date.now() + 2 * 60 * 60 * 1000)}
             />
 
             <DateTimePickerModal
@@ -910,14 +917,13 @@ export default function ProfileTab() {
                 onConfirm={handleTimeConfirm}
                 onCancel={hideTimePicker}
                 locale="th-TH"
-                shouldRasterizeIOS
                 minimumDate={
                     scheduleDate
                         ?
                         new Date(Date.now()).getDate() == new Date(`${scheduleDate.split("/")[2]}-${scheduleDate.split("/")[1]}-${scheduleDate.split("/")[0]}`).getDate()
-                            ? new Date(Date.now() + 60 * 60 * 1000)
+                            ? new Date(Date.now() + 2 * 60 * 60 * 1000)
                             : undefined
-                        : new Date(Date.now() + 60 * 60 * 1000)
+                        : new Date(Date.now() + 2 * 60 * 60 * 1000)
                 }
             />
         </StyledView >

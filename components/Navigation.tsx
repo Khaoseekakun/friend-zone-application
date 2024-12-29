@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
+import axios from "axios";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -44,7 +45,7 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
 
   const navigation = useNavigation<NavigationProp<any>>();
 
-  const handlePress = (index: number, screen: string) => {
+  const handlePress = async(index: number, screen: string) => {
     navigation.navigate(screen, { backPage: current });
   };
 

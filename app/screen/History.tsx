@@ -198,7 +198,7 @@ export default function History() {
 
     const fetchTransactions = async () => {
         try {
-            const response = await axios.get(`http://49.231.43.37:3000/api/transaction/${userData?.id}?accountType=${userData?.role}`, {
+            const response = await axios.get(`https://friendszone.app/api/transaction/${userData?.id}?accountType=${userData?.role}`, {
                 headers: {
                     Authorization: `All ${userData?.token}`,
                 }

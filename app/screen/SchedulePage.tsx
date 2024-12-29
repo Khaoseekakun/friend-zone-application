@@ -13,7 +13,8 @@ import { Navigation } from "@/components/Navigation";
 import { Ionicons } from "@expo/vector-icons";
 import { openMap } from "@/utils/Gps";
 import { addNotification, sendPushNotification } from "@/utils/Notification";
-import { MapPin, Briefcase, Calendar, AlertCircle } from 'lucide-react-native';
+import { MapPin, Briefcase, Calendar, AlertCircle, DollarSign } from 'lucide-react-native';
+import { DateFormat } from "@/utils/Date";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -31,6 +32,8 @@ interface Schedule {
     status: string;
     price: number;
     paymentId?: string;
+    start_time: number;
+    end_time: number;
 }
 
 const STATUS_DISPLAY = {
@@ -78,38 +81,14 @@ export default function SchedulePage() {
     const [userData, setUserData] = useState<any>(null);
     const [paymentLoading, setPaymentLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [jobsList, setJobList] = useState<{
-        id: string;
-        jobName: string;
-        jobCategoryId: string;
-    }[]>([]);
 
     const database = getDatabase(FireBaseApp);
 
     useEffect(() => {
         (async () => {
             await loadUserData();
-            await loadJobsList();
         })();
     }, []);
-
-    const loadJobsList = async () => {
-        try {
-            const response = await axios.get('https://friendszone.app/api/jobs/all', {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `All ${userData?.token}`
-                }
-            });
-
-
-            if (response.data.status === 200) {
-                setJobList(response.data.data);
-            }
-        } catch (error) {
-            console.error('Jobs list error:', error);
-        }
-    }
 
     const loadUserData = async () => {
         try {
@@ -165,22 +144,7 @@ export default function SchedulePage() {
         }
     };
 
-    const formatDate = (dateString: string) => {
-        try {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('th-TH', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        } catch (error) {
-            console.error('Date formatting error:', error);
-            return dateString;
-        }
-    };
+
 
     const updateStatus = async (scheduleId: string, newStatus: string, message?: string, content?: string) => {
         const updateScheduleStatus = async () => {
@@ -220,6 +184,7 @@ export default function SchedulePage() {
                             memberId, {
                             type: "alert",
                             content: "การนัดหมายถูกยกเลิก",
+
                             timestamp: new Date().toISOString(),
                             isRead: false,
                             data: {
@@ -245,6 +210,7 @@ export default function SchedulePage() {
                             userId, {
                             type: "alert",
                             content: "สมาชิกได้ยืนยันการนัดหมาย กรุณาชำระเงิน ในหน้านัดหมาย",
+
                             timestamp: new Date().toISOString(),
                             isRead: false,
                             data: {
@@ -325,7 +291,7 @@ export default function SchedulePage() {
             <StyledView className="mb-3">
                 {/* Modern Glass Card Container */}
                 <StyledView
-                    className="bg-white/80 dark:bg-neutral-900/90 backdrop-blur-lg rounded-3xl p-6 shadow-xl
+                    className="bg-gray-200/70 dark:bg-neutral-900/90 backdrop-blur-lg rounded-3xl p-6 shadow-xl
                               border border-gray-100/20 dark:border-neutral-700/30">
 
                     {/* Date Header with Gradient */}
@@ -333,18 +299,18 @@ export default function SchedulePage() {
                         colors={['#1a1a1a', '#333333']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
-                        className="rounded-2xl px-4 py-3 mb-6"
+                        className="rounded-2xl px-4 py-3 mb-3"
                     >
                         <StyledText className="font-custom text-base text-gray-100">
-                            {formatDate(schedule.date)}
+                            {DateFormat(schedule.date)}
                         </StyledText>
                     </LinearGradient>
 
                     {/* Content Container */}
-                    <StyledView className="space-y-5">
+                    <StyledView className="space-y-2">
                         {/* Location Section */}
                         <TouchableOpacity
-                            className="flex-row items-center"
+                            className="flex-row items-center bg-gray-300 dark:bg-neutral-800/80 p-1 rounded-full"
                             onPress={() => {
                                 openMap({
                                     lat: schedule.latitude,
@@ -352,8 +318,7 @@ export default function SchedulePage() {
                                     label: schedule.location
                                 })
                             }}>
-                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-800/50 
-                                                 rounded-full items-center justify-center mr-3">
+                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-800/50 rounded-full items-center justify-center mr-1">
                                 <MapPin size={20} color="#FF4B45" />
                             </StyledView>
                             <StyledText className="font-custom flex-1 text-gray-700 dark:text-gray-300 text-base">
@@ -362,9 +327,8 @@ export default function SchedulePage() {
                         </TouchableOpacity>
 
                         {/* Job Type Section */}
-                        <StyledView className="flex-row items-center">
-                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-800/50 
-                                                 rounded-full items-center justify-center mr-3">
+                        <StyledView className="flex-row items-center bg-gray-300 dark:bg-neutral-800/80 p-1 rounded-full">
+                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-800/50 rounded-full items-center justify-center mr-1">
                                 <Briefcase size={20} color="#FF4B45" />
                             </StyledView>
                             <StyledText className="font-custom text-gray-700 dark:text-gray-300 text-base">
@@ -373,12 +337,12 @@ export default function SchedulePage() {
                         </StyledView>
 
                         {/* Price Section with Glass Effect */}
-                        <StyledView className="bg-gray-900/10 dark:bg-white/5 backdrop-blur-md rounded-2xl p-2 mt-1 flex-row justify-between items-end">
-                            <StyledText className="font-custom text-gray-500 dark:text-gray-400 text-sm">
-                                ค่าธรรมเนียม
-                            </StyledText>
-                            <StyledText className="font-custom text-lg text-gray-800 dark:text-gray-100 font-semibold">
-                                ฿{(schedule.price)?.toLocaleString()}
+                        <StyledView className="flex-row items-center bg-gray-300 dark:bg-neutral-800/80 p-1 rounded-full">
+                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-800/50 rounded-full items-center justify-center mr-1">
+                                <DollarSign size={20} color="#FF4B45" />
+                            </StyledView>
+                            <StyledText className="font-custom text-gray-700 dark:text-gray-300 text-base">
+                                {schedule.price} บาท
                             </StyledText>
                         </StyledView>
                     </StyledView>
@@ -388,7 +352,7 @@ export default function SchedulePage() {
                         (schedule.status === 'wait_approve' && userData.role === 'member')) && (
                             <StyledView className="flex-row justify-end space-x-3 mt-2">
                                 <StyledTouchableOpacity
-                                    className="bg-gray-900/10 dark:bg-white/5 backdrop-blur-md px-6 py-3.5 
+                                    className="bg-gray-900/10 dark:bg-white/5 backdrop-blur-md px-6 py-2 
                                          rounded-2xl border border-gray-200/20 dark:border-neutral-700/30"
                                     onPress={() => updateStatus(schedule.id, 'schedule_cancel', 'ยืนยันการยกเลิกการนัดหมาย?')}
                                 >
@@ -410,7 +374,7 @@ export default function SchedulePage() {
                                         colors={['#FF4B45', '#FF1500']}
                                         start={{ x: 0, y: 0 }}
                                         end={{ x: 1, y: 1 }}
-                                        className="rounded-2xl px-8 py-3.5 shadow-lg"
+                                        className="rounded-2xl px-8 py-2 shadow-lg"
                                     >
                                         <StyledText className="font-custom text-white font-semibold">
                                             {schedule.status === 'wait_payment' ? 'ชำระเงิน' : 'ยืนยัน'}
@@ -430,7 +394,7 @@ export default function SchedulePage() {
                                 className="rounded-2xl shadow-lg"
                             >
                                 <StyledTouchableOpacity
-                                    className="px-6 py-3.5"
+                                    className="px-6 py-2"
                                     onPress={() => updateStatus(
                                         schedule.id,
                                         'schedule_cancel_after_payment',

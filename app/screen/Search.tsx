@@ -273,7 +273,7 @@ export default function Search() {
     async function handlerSearch(filterSearch: boolean, options: SearchOption) {
         try {
             setSearchLoading(true);
-            let url = `http://49.231.43.37:3000/api/search/members?jobsCategory=${searchType == undefined ? saveSearchType : searchType}&latitude=${currentLatitude}&longitude=${currentLongitude}`;
+            let url = `https://friendszone.app/api/search/members?jobsCategory=${searchType == undefined ? saveSearchType : searchType}&latitude=${currentLatitude}&longitude=${currentLongitude}`;
             let deafult_age = '18-99'
 
 

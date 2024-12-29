@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { View, Text, TouchableOpacity, Modal, Image, ActivityIndicator, FlatList, Alert, StyleSheet, SafeAreaView, Appearance } from "react-native";
+import { View, Text, TouchableOpacity, Modal, Image, ActivityIndicator, FlatList, Alert, StyleSheet, SafeAreaView, Appearance, Dimensions } from "react-native";
 import { styled } from "nativewind";
 import { HeaderApp } from "@/components/Header";
 import { useNavigation } from "expo-router";
@@ -21,7 +21,7 @@ const GuestIcon = require("../../assets/images/guesticon.jpg")
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledImage = styled(Image);
-const StyleImageViewer = styled(ImageViewer);
+const StyledImageViewer = styled(ImageViewer);
 const StyledIonicons = styled(Ionicons);
 const storage = getStorage(FireBaseApp);
 
@@ -454,16 +454,21 @@ export default function FeedsTab() {
             />
 
             <Navigation current="FeedsTab" />
+
             <Modal animationType="fade" visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
                 <StyledView className="flex-1 justify-center h-screen bg-black">
-                    <StyleImageViewer
-                        imageUrls={selectedImage.map(image => ({ url: image }))} // Pass an array of images
+                    <StyledImageViewer
+                        imageUrls={selectedImage.map(image => ({ 
+                            url: image,
+                            sizeKb: 0,
+                        }))} // Pass an array of images
                         enableImageZoom={true}
-                        className="w-full h-screen"
+                        style={{ width: Dimensions.get("screen").width, height: Dimensions.get("screen").height }}
                         index={selectedImageIndex}
                         loadingRender={() => <ActivityIndicator size="large" color="#ffffff" />}
                     />
-                    <TouchableOpacity onPress={() => setModalVisible(false)} className="absolute top-12 p-2 rounded-full">
+                    
+                    <TouchableOpacity onPress={() => setModalVisible(false)} style={{ position: 'absolute', top: 50, right: 20, padding: 10 }}>
                         <StyledIonicons name="close" size={30} color="white" />
                     </TouchableOpacity>
                 </StyledView>
@@ -527,7 +532,7 @@ export default function FeedsTab() {
                                 </TouchableOpacity>
                             </StyledView>
 
-                            {
+                            {/* {
                                 posts.some((p) => p.id === postAction && p.member.id === userData?.id) ? null :
                                     (
                                         <>
@@ -543,7 +548,7 @@ export default function FeedsTab() {
                                                 </TouchableOpacity>
                                             </StyledView></>
                                     )
-                            }
+                            } */}
                         </StyledView>
 
                         {

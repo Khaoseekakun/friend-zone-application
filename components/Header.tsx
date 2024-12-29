@@ -5,11 +5,11 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from "expo-router";
 import { NavigationProp } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import { LinearGradient } from "expo-linear-gradient";
 import { RootStackParamList } from "@/types";
 import { getDatabase, ref, onValue } from "firebase/database";
 import FireBaseApp from "@/utils/firebaseConfig";
+
 const WhiteLogo = require("../assets/images/guesticon.jpg")
 const StyledView = styled(View);
 const StyledText = styled(Text);

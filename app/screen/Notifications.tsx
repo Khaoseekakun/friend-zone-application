@@ -97,45 +97,51 @@ export default function NotificationsScreen() {
     const getIconColor = (type: NotificationType) => {
         switch (type) {
             case 'like':
-            return '#FFB6C1'; // LightPink
+                return '#FFB6C1'; // LightPink
             case 'comment':
-            return '#ADD8E6'; // LightBlue
+                return '#ADD8E6'; // LightBlue
             case 'appointment':
-            return '#90EE90'; // LightGreen
+                return '#90EE90'; // LightGreen
             case 'message':
-            return '#D8BFD8'; // Thistle
+                return '#D8BFD8'; // Thistle
             case 'system':
-            return '#FFDAB9'; // PeachPuff
+                return '#FFDAB9'; // PeachPuff
             case 'review':
-            return '#FFFFE0'; // LightYellow
+                return '#FFFFE0'; // LightYellow
             case 'fastRequest':
-            return '#FFA07A'; // LightSalmon
+                return '#FFA07A'; // LightSalmon
             case 'alert':
-            return '#FF7F7F'; // LightCoral
+                return '#FF7F7F'; // LightCoral
             default:
-            return '#D3D3D3'; // LightGray
+                return '#D3D3D3'; // LightGray
         }
     };
 
-    const formatTime = (timestamp: string) => {
+    const formatTime = (timestamp: string): string => {
         const date = new Date(timestamp);
         const now = new Date();
         const diff = now.getTime() - date.getTime();
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor(diff / (1000 * 60 * 60));
+
+        // Ensure timestamp is in the past
+        if (diff < 0) return 'เวลาที่ระบุยังไม่ถึง';
+
         const minutes = Math.floor(diff / (1000 * 60));
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
         if (minutes < 1) return 'เมื่อสักครู่';
         if (minutes < 60) return `${minutes} นาทีที่แล้ว`;
         if (hours < 24) return `${hours} ชั่วโมงที่แล้ว`;
         if (days < 7) return `${days} วันที่แล้ว`;
 
+        // Use localized date formatting for older dates
         return date.toLocaleDateString('th-TH', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
         });
     };
+
 
     const handlePress = (notification: Notification) => {
         switch (notification.type) {
