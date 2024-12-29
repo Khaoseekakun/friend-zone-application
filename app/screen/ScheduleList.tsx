@@ -13,6 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { getDatabase, ref, onValue, update } from "firebase/database";
 import { StyleSheet } from "react-native";
 import { makeid } from "@/utils/Date";
+import { MapPin, Briefcase, Calendar, AlertCircle } from 'lucide-react-native';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -187,104 +188,163 @@ export default function ScheduleList() {
     return (
         <StyledView className="flex-1">
             <HeaderApp />
-            <StyledView className="flex-1 bg-gray-200 dark:bg-black px-2 pt-2">
+            <StyledView className="flex-1 bg-gray-100 dark:bg-neutral-900 px-4 pt-4">
                 {loading ? (
-                    <>
-                        <ActivityIndicator size="large" color="#EB3834" />
-                        <StyledText className="font-custom text-center">กำลังโหลดข้อมูล...</StyledText>
-                    </>
-                ) :
-                    schedule?.length > 0 ? (
-                        <ScrollView>
-                            {
-                                schedule.map((item, index) => (
-                                    <StyledView key={`${item.id}-${index}-${makeid(10)}`}>
-                                        <StyledView key={`${item.id}-${index}-${userData.id}-${randomInt}`} className="bg-white rounded-b-2xl rounded-tr-2xl w-full h-auto p-3">
-                                            <StyledText className="font-custom">รายละเอียดการนัดหมาย</StyledText>
-                                            <StyledText className="font-custom text-gray-500">{DateFromat(item.date)}</StyledText>
-                                            <StyledText className="font-custom text-gray-500">สถานที่ {item.location}</StyledText>
-                                            <StyledView className="w-full h-[1px] bg-gray-600 my-2"></StyledView>
-
-                                            <StyledText className="font-custom text-gray-600 dark:text-gray-300 mt-2">
-                                                รูปแบบงาน: {item.jobs}
-                                            </StyledText>
-
-                                            <StyledView className="flex-row py-2 justify-between mt-5">
-                                                <StyledText className="font-custom text-gray-500 text-xl">ทำเนียมการนัดหมาย</StyledText>
-                                                <StyledText className="font-custom text-gray-500 text-xl">{item.price?.toLocaleString()}</StyledText>
-                                            </StyledView>
-
-                                            {
-                                                item.status === "wait_approve" && userData.role === "member" ? (
-                                                    <StyledView className="flex-row py-2 justify-end gap-2 items-center">
-                                                        <StyledTouchableOpacity onPress={() => updateScheduleStatus(item.id, 'schedule_cancel', "ยืนยันการยกเลิกการนัดหมาย")}>
-                                                            <StyledText className="font-custom text-gray-500 text-xl">ยกเลิก</StyledText>
-                                                        </StyledTouchableOpacity>
-                                                        <StyledTouchableOpacity
-                                                            onPress={() => updateScheduleStatus(item.id, 'wait_payment', 'ยืนยันการนัดหมาย')}
-                                                        >
-                                                            <LinearGradient
-                                                                colors={['#EB3834', '#69140F']}
-                                                                start={{ x: 0, y: 0 }}
-                                                                end={{ x: 1, y: 0 }}
-                                                                className="rounded-full py-1 shadow-sm"
-                                                            >
-                                                                <StyledText className="font-custom text-white text-xl px-4">ยืนยันการนัดหมาย</StyledText>
-                                                            </LinearGradient>
-                                                        </StyledTouchableOpacity>
-                                                    </StyledView>
-                                                ) : null
-                                            }
-                                        </StyledView>
-                                        <StyledText
-                                            className={`font-custom text-right pr-2 mb-2 ${getStatusColor(item.status)}`}
-                                        >
-                                            {
-                                                item.status === "wait_approve" ?
-                                                    userData.role === "customer" ? "รอการยืนยันจากสมาชิก" : "คำขอรอการตอบกลับ" :
-                                                    item.status === "wait_payment" ?
-                                                        userData.role === "customer" ? "รอการชำระเงิน" : "รอการตรวจสอบการชำระเงิน" :
-                                                        item.status === "payment_success" ?
-                                                            userData.role === "customer" ? "ชำระเงินสำเร็จ (โปรดรอถึงเวลานัดหมาย)" : "การชำระเงินได้รับการยืนยัน (โปรดเตรียมตัวสำหรับการนัดหมาย)" :
-                                                            item.status === "wait_working" ?
-                                                                userData.role === "customer" ? "รอการทำงาน" : "กำลังเตรียมงาน" :
-                                                                item.status === "schedule_cancel" ?
-                                                                    userData.role === "customer" ? "การนัดหมายถูกยกเลิก" : "การนัดหมายถูกยกเลิก" :
-                                                                    item.status === "schedule_working" ?
-                                                                        userData.role === "customer" ? "กำลังทำงาน" : "กำลังทำงาน" :
-                                                                        item.status === "schedule_end_success" ?
-                                                                            userData.role === "customer" ? "การนัดหมายสิ้นสุด (สำเร็จ)" : "การนัดหมายสิ้นสุด (สำเร็จ)" :
-                                                                            item.status === "schedule_cancel_after_payment" ?
-                                                                                userData.role === "customer" ? "การนัดหมายถูกยกเลิก" : "การนัดหมายถูกยกเลิกจากลูกค้า" : null
-                                            }
-                                        </StyledText>
-                                    </StyledView>
-                                ))
-                            }
-
-                        </ScrollView>
-                    ) : (
-                        <StyledView className="flex-1 justify-center items-center">
-                            <StyledText className="text-lg font-custom">ไม่พบข้อมูล</StyledText>
+                    <StyledView className="flex-1 justify-center items-center">
+                        <StyledView className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md 
+                                           rounded-2xl p-6 shadow-lg items-center">
+                            <ActivityIndicator size="large" color="#FF4B45" />
+                            <StyledText className="font-custom mt-4 text-gray-600 dark:text-gray-300">
+                                กำลังโหลดข้อมูล...
+                            </StyledText>
                         </StyledView>
-                    )
-                }
+                    </StyledView>
+                ) : schedule?.length > 0 ? (
+                    <ScrollView 
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{ paddingBottom: 80 }}
+                    >
+                        {schedule.map((item, index) => (
+                            <StyledView key={`${item.id}-${index}-${makeid(10)}`} className="mb-4">
+                                {/* Card Container */}
+                                <StyledView className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md 
+                                                     rounded-3xl shadow-lg border border-gray-100/20 dark:border-neutral-700/30">
+                                    {/* Header with Gradient */}
+                                    <LinearGradient
+                                        colors={['#1a1a1a', '#333333']}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 0 }}
+                                        className="rounded-t-3xl px-5 py-4"
+                                    >
+                                        <StyledText className="font-custom text-white text-lg mb-1">
+                                            รายละเอียดการนัดหมาย
+                                        </StyledText>
+                                        <StyledText className="font-custom text-gray-300">
+                                            {DateFromat(item.date)}
+                                        </StyledText>
+                                    </LinearGradient>
 
+                                    {/* Content Section */}
+                                    <StyledView className="p-5 space-y-4">
+                                        {/* Location */}
+                                        <StyledView className="flex-row items-center">
+                                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-700/50 
+                                                               rounded-full items-center justify-center mr-3">
+                                                <MapPin size={20} color="#FF4B45" />
+                                            </StyledView>
+                                            <StyledText className="font-custom text-gray-600 dark:text-gray-300 flex-1">
+                                                {item.location}
+                                            </StyledText>
+                                        </StyledView>
 
+                                        {/* Job Type */}
+                                        <StyledView className="flex-row items-center">
+                                            <StyledView className="w-10 h-10 bg-gray-100/50 dark:bg-neutral-700/50 
+                                                               rounded-full items-center justify-center mr-3">
+                                                <Briefcase size={20} color="#FF4B45" />
+                                            </StyledView>
+                                            <StyledText className="font-custom text-gray-600 dark:text-gray-300">
+                                                {item.jobs}
+                                            </StyledText>
+                                        </StyledView>
+
+                                        {/* Price Section */}
+                                        <StyledView className="bg-gray-900/10 dark:bg-white/5 backdrop-blur-md rounded-2xl p-2 mt-1 flex-row justify-between items-end">
+                                            <StyledText className="font-custom text-gray-500 dark:text-gray-400 text-sm mb-1">
+                                                ค่าธรรมเนียม
+                                            </StyledText>
+                                            <StyledText className="font-custom text-lg text-gray-800 dark:text-gray-100 font-semibold">
+                                                ฿{item.price?.toLocaleString()}
+                                            </StyledText>
+                                        </StyledView>
+
+                                        {/* Action Buttons */}
+                                        {item.status === "wait_approve" && userData.role === "member" && (
+                                            <StyledView className="flex-row justify-end items-center space-x-3 mt-2">
+                                                <StyledTouchableOpacity
+                                                    className="bg-gray-100 dark:bg-neutral-700 px-5 py-2.5 rounded-xl"
+                                                    onPress={() => updateScheduleStatus(item.id, 'schedule_cancel', "ยืนยันการยกเลิกการนัดหมาย")}
+                                                >
+                                                    <StyledText className="font-custom text-gray-600 dark:text-gray-300">
+                                                        ยกเลิก
+                                                    </StyledText>
+                                                </StyledTouchableOpacity>
+
+                                                <StyledTouchableOpacity
+                                                    onPress={() => updateScheduleStatus(item.id, 'wait_payment', 'ยืนยันการนัดหมาย')}
+                                                >
+                                                    <LinearGradient
+                                                        colors={['#FF4B45', '#FF1500']}
+                                                        start={{ x: 0, y: 0 }}
+                                                        end={{ x: 1, y: 1 }}
+                                                        className="rounded-xl px-6 py-2.5 shadow-lg"
+                                                    >
+                                                        <StyledText className="font-custom text-white">
+                                                            ยืนยันการนัดหมาย
+                                                        </StyledText>
+                                                    </LinearGradient>
+                                                </StyledTouchableOpacity>
+                                            </StyledView>
+                                        )}
+                                    </StyledView>
+                                </StyledView>
+
+                                {/* Status Text */}
+                                <StyledText className={`font-custom text-right mt-2 mb-2 ${getStatusColor(item.status)}`}>
+                                    {item.status === "wait_approve" ?
+                                        userData.role === "customer" ? "รอการยืนยันจากสมาชิก" : "คำขอรอการตอบกลับ" :
+                                        item.status === "wait_payment" ?
+                                            userData.role === "customer" ? "รอการชำระเงิน" : "รอการตรวจสอบการชำระเงิน" :
+                                            item.status === "payment_success" ?
+                                                userData.role === "customer" ? "ชำระเงินสำเร็จ (โปรดรอถึงเวลานัดหมาย)" : "การชำระเงินได้รับการยืนยัน (โปรดเตรียมตัวสำหรับการนัดหมาย)" :
+                                                item.status === "wait_working" ?
+                                                    userData.role === "customer" ? "รอการทำงาน" : "กำลังเตรียมงาน" :
+                                                    item.status === "schedule_cancel" ?
+                                                        userData.role === "customer" ? "การนัดหมายถูกยกเลิก" : "การนัดหมายถูกยกเลิก" :
+                                                        item.status === "schedule_working" ?
+                                                            userData.role === "customer" ? "กำลังทำงาน" : "กำลังทำงาน" :
+                                                            item.status === "schedule_end_success" ?
+                                                                userData.role === "customer" ? "การนัดหมายสิ้นสุด (สำเร็จ)" : "การนัดหมายสิ้นสุด (สำเร็จ)" :
+                                                                item.status === "schedule_cancel_after_payment" ?
+                                                                    userData.role === "customer" ? "การนัดหมายถูกยกเลิก" : "การนัดหมายถูกยกเลิกจากลูกค้า" : null
+                                    }
+                                </StyledText>
+                            </StyledView>
+                        ))}
+                    </ScrollView>
+                ) : (
+                    <StyledView className="flex-1 justify-center items-center px-6">
+                        <StyledView className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md 
+                                           rounded-2xl p-8 shadow-xl items-center w-full max-w-sm">
+                            <StyledView className="w-16 h-16 bg-gray-100 dark:bg-neutral-700 rounded-full 
+                                               items-center justify-center mb-4">
+                                <Calendar size={32} color="#6B7280" />
+                            </StyledView>
+                            <StyledText className="font-custom text-base text-gray-600 dark:text-gray-300">
+                                ไม่พบข้อมูล
+                            </StyledText>
+                        </StyledView>
+                    </StyledView>
+                )}
             </StyledView>
+
             <Navigation current="SchedulePage" />
-            <Modal visible={paymentLoading} transparent={true} animationType="fade">
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <ActivityIndicator size="large" color="#EB3834" />
-                        <StyledText className="font-custom" style={styles.modalText}>โปรดรอสักครู่กำลังสร้างรายการชำระเงิน...</StyledText>
-                    </View>
-                </View>
+
+            {/* Payment Loading Modal */}
+            <Modal visible={paymentLoading} transparent animationType="fade">
+                <StyledView className="flex-1 bg-black/60 backdrop-blur-sm justify-center items-center px-6">
+                    <StyledView className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-md 
+                                       rounded-3xl p-8 w-full max-w-sm shadow-2xl">
+                        <StyledView className="items-center">
+                            <ActivityIndicator size="large" color="#FF4B45" />
+                            <StyledText className="font-custom text-center mt-4 text-gray-700 dark:text-gray-300">
+                                โปรดรอสักครู่กำลังสร้างรายการชำระเงิน...
+                            </StyledText>
+                        </StyledView>
+                    </StyledView>
+                </StyledView>
             </Modal>
         </StyledView>
-
-
-
     );
 }
 
