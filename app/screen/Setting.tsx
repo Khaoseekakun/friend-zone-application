@@ -85,7 +85,7 @@ export default function Setting() {
                             <Ionicons
                                 name="chevron-back"
                                 size={24}
-                                color={theme === 'dark' ? '#FFFFFF' : '#000000'}
+                                color={'#FFFFFF'}
                             />
                         </TouchableOpacity>
                         <StyledText className="font-custom text-xl text-white">
