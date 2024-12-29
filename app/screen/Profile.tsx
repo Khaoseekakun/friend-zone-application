@@ -60,7 +60,7 @@ export default function ProfileTab() {
     const [distance, setDistance] = useState<number>(0);
     const [scheduleNote, setScheduleNote] = useState('');
 
-    const [serviceRate, setServiceRate] = useState()
+    const [serviceRate, setServiceRate] = useState(0)
     const [price, setPrice] = useState<number>(0)
 
     const [showSelectJobs, setShowSelectJob] = useState(false);

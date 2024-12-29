@@ -87,6 +87,8 @@ export default function NotificationsScreen() {
                 return 'rocket';
             case 'review':
                 return 'star';
+            case 'alert':
+                return 'alert';
             default:
                 return 'notifications';
         }
@@ -95,21 +97,23 @@ export default function NotificationsScreen() {
     const getIconColor = (type: NotificationType) => {
         switch (type) {
             case 'like':
-                return '#FF4B4B';
+            return '#FFB6C1'; // LightPink
             case 'comment':
-                return '#4B7BFF';
+            return '#ADD8E6'; // LightBlue
             case 'appointment':
-                return '#47C479';
+            return '#90EE90'; // LightGreen
             case 'message':
-                return '#9B51E0';
+            return '#D8BFD8'; // Thistle
             case 'system':
-                return '#FFA726';
+            return '#FFDAB9'; // PeachPuff
             case 'review':
-                return '#FFD700';
+            return '#FFFFE0'; // LightYellow
             case 'fastRequest':
-                return '#FFA726';
+            return '#FFA07A'; // LightSalmon
+            case 'alert':
+            return '#FF7F7F'; // LightCoral
             default:
-                return '#FFA726';
+            return '#D3D3D3'; // LightGray
         }
     };
 
@@ -137,12 +141,6 @@ export default function NotificationsScreen() {
         switch (notification.type) {
             case 'appointment':
                 navigation.navigate('SchedulePage', {});
-                break;
-            case 'message':
-                break;
-            case 'like':
-                break;
-            case 'review':
                 break;
             case 'fastRequest':
                 navigation.navigate('FastRequest', {

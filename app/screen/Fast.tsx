@@ -204,14 +204,12 @@ export default function Fast() {
           }
         } catch (error) {
           // delete fast request
-          console.log(error)
           const refDelete = ref(database, `/fast-request/${newPostKey}`);
           set(refDelete, null)
           Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
 
         }
       } catch (error) {
-        console.log(error)
         Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");
       } finally {
         setLoading(false);
@@ -259,7 +257,6 @@ export default function Fast() {
                 onPress={() => {
                   setCategoryId('673080a432edea568b2a6554')
                   loadJobsList('673080a432edea568b2a6554')
-                  jobService('673080a432edea568b2a6554')
                 }}
               >
                 <LinearGradient
@@ -581,22 +578,6 @@ export default function Fast() {
   }
 
 
-  const jobService = async (category: string) => {
-    try {
-      const res = await axios.get(`http://49.231.43.37:3000/api/jobs/?categoryId=${category}`, {
-        headers: {
-          'Authorization': `All ${userData.token}`
-        }
-      });
-
-      if (res.data.status == 200) {
-        setServiceRate(res.data.data.serviceRate[0].start);
-      }
-    } catch (error) {
-
-    }
-  }
-
   const createScheduleReal = async (member: MembersDB, total: number) => {
     if (!fastRequest || !fastRequest.time || !fastRequest.date) {
       return Alert.alert('ข้อมูลไม่ครบ', 'โปรดกรอกข้อมูลให้ครบถ้วน', [{ text: 'OK' }]);
@@ -623,8 +604,8 @@ export default function Fast() {
 
     try {
       const response = await axios.post('http://49.231.43.37:3000/api/schedule', {
-        customerId: userData.id,
-        memberId: member.id,
+        customerId: userData?.id,
+        memberId: member?.id,
         date: scheduleDateTime,
         location: scheduleLocation,
         jobs: scheduleJobs,
@@ -634,40 +615,48 @@ export default function Fast() {
       }, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Customer ${userData.token}`
+          'Authorization': `Customer ${userData?.token}`
         }
       })
 
       if (response.data.status != 200) {
-        console.log(response.data)
         Alert.alert(`เกิดข้อผิดพลาด`, `ไม่สามารถสร้างนัดหมายได้`, [{ text: 'OK' }]);
       } else {
         Alert.alert(`สำเร็จ`, `สร้างนัดหมายสำเร็จ`, [{ text: 'OK' }]);
 
-        await sendPushNotification(userData?.token, member.id, {
-          title: `นัดหมายใหม่`,
-          body: `${userData.username} ต้องนัดหมายกับคุณ โปรดตรวจสอบนัดหมาย`,
-          imageUrl: `${userData.profileUrl}`,
-          screen: {
-            name: "SchedulePage",
-            data: {}
-          }
-        })
+        try {
+          await sendPushNotification(userData?.token, member.id, {
+            title: `นัดหมายใหม่`,
+            body: `${userData.username} ต้องนัดหมายกับคุณ โปรดตรวจสอบนัดหมาย`,
+            imageUrl: `${userData.profileUrl}`,
+            screen: {
+              name: "SchedulePage",
+              data: {}
+            }
+          })
+          
+        } catch (error) {
+          console.log(error)
+        }
 
-        await addNotification(member.id, {
-          content: `${userData.username} ต้องการนัดหมายกับคุณ ที่ ${scheduleLocation}`,
-          data: {
-            appointmentId: response.data.data.id
-          },
-          timestamp: `${new Date().toISOString()}`,
-          type: "appointment",
-          user: {
-            id: userData.id,
-            name: userData.username,
-            avatar: userData.profileUrl
-          },
-          isRead: false
-        })
+        try {
+          await addNotification(member.id, {
+            content: `${userData.username} ต้องการนัดหมายกับคุณ ที่ ${scheduleLocation}`,
+            data: {
+              appointmentId: ''
+            },
+            timestamp: `${new Date().toISOString()}`,
+            type: "appointment",
+            user: {
+              id: userData?.id,
+              name: userData?.username,
+              avatar: userData?.profileUrl
+            },
+            isRead: false
+          })
+        } catch (error) {
+          console.log(error)
+        }
 
         navigation.navigate("SchedulePage", {});
       }
@@ -686,25 +675,17 @@ export default function Fast() {
   * @returns {number}
   */
   const getDistance = (point1: LatLng, point2: LatLng): number => {
-    const toRadians = (degree: number) => (degree * Math.PI) / 180;
-
-    const R = 6371;
-    const lat1 = toRadians(point1.latitude);
-    const lon1 = toRadians(point1.longitude);
-    const lat2 = toRadians(point2.latitude);
-    const lon2 = toRadians(point2.longitude);
-
-    const deltaLat = lat2 - lat1;
-    const deltaLon = lon2 - lon1;
+    const R = 6371000;
+    const dLat = (point2.latitude - point1.latitude) * (Math.PI / 180);
+    const dLon = (point2.longitude - point1.longitude) * (Math.PI / 180);
+    const lat1 = point1.latitude * (Math.PI / 180);
+    const lat2 = point2.latitude * (Math.PI / 180);
 
     const a =
-      Math.sin(deltaLat / 2) ** 2 +
-      Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) ** 2;
-
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    const distance = R * c;
-    return distance;
+    return R * c;
   };
 
   const getDistanceMemberToPinLocation = (locationPin: LatLng, memberPin: LatLng): number => {
@@ -866,8 +847,6 @@ export default function Fast() {
                             }}
                           />
                         </StyledView>
-
-
                       </StyledView>
                     </StyledView>
 
@@ -1035,19 +1014,21 @@ export default function Fast() {
         latitude: member.latitude,
         longitude: member.longitude
       }) / 1000).toFixed(0))
-      const jobsPrice = serviceRate
+
+
+      const jobsPrice = member.jobCategory.serviceRate[0].start
       if (jobsPrice) {
         if (distance < 30) {
-          total += priceService + 0
+          total += jobsPrice + 0
         } else if (distance >= 30 && distance < 60) {
-          total += priceService + 500
+          total += jobsPrice + 500
         } else if (distance >= 60 && distance < 120) {
-          total += priceService + 1000
+          total += jobsPrice + 1000
         } else if (distance >= 120) {
-          total += priceService + Number(((distance * 2) * 7).toFixed(0))
+          total += jobsPrice + Number(((distance * 2) * 7).toFixed(0))
         }
       } else {
-        Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถคำนวณราคาได้', [{ text: 'OK' }])
+        total == 0
       }
 
       return (
@@ -1058,7 +1039,9 @@ export default function Fast() {
         >
           <StyledTouchableOpacity
             className="p-4"
-            onPress={() => navigation.navigate('Profile', { userId: member.id })}
+            onPress={() => navigation.navigate('ProfileTab', { profileId: member.id, 
+              backPage : 'FastTab'
+             })}
           >
             <StyledView className="flex-row items-center justify-between">
               <StyledView className="flex-row items-center space-x-4">
@@ -1108,10 +1091,6 @@ export default function Fast() {
                   ฿{
 
                     Number(total.toFixed(0)).toLocaleString()
-
-
-
-                    // member?.amount?.toLocaleString() || '00.00'
                   }
                 </StyledText>
                 <StyledView className="flex-row items-center mt-1">
@@ -1126,69 +1105,73 @@ export default function Fast() {
               </StyledView>
             </StyledView>
 
-            <StyledView className="flex-row justify-end space-x-3 mt-4">
-              <StyledTouchableOpacity
-                onPress={() => {
-                  Alert.alert(
-                    "ยืนยันการลบสมาชิก",
-                    `คุณต้องการลบ ${member?.username} ออกจากรายการหรือไม่`,
-                    [
-                      {
-                        text: "ลบ",
-                        onPress: () => {
-                          const newFastList = fastList.filter((item) => item !== member.id);
-                          setFastList(newFastList);
-                          setMemberAccept(memberAccept.filter((item) => item.id !== member.id));
-                          set(ref(database, `fast-request/${fastId}/acceptList`), newFastList.join(','));
-                        },
-                        style: "cancel"
-                      },
-                      { text: "ยกเลิก" }
-                    ]
-                  )
-                }}
-                className=" px-5 py-2.5 rounded-2xl flex-row items-center"
-              >
-                <StyledIonIcon name="close-outline" size={18} className="text-red-600" />
-                <StyledText className="font-custom text-red-600 dark:text-red-300 ml-1">
-                  ลบ
-                </StyledText>
-              </StyledTouchableOpacity>
-              <StyledTouchableOpacity
-                className="bg-neutral-100 dark:bg-neutral-700/50 px-5 py-2.5 rounded-2xl flex-row items-center"
+            {
+              (total != 0) && (
+                <StyledView className="flex-row justify-end space-x-3 mt-4">
+                  <StyledTouchableOpacity
+                    onPress={() => {
+                      Alert.alert(
+                        "ยืนยันการลบสมาชิก",
+                        `คุณต้องการลบ ${member?.username} ออกจากรายการหรือไม่`,
+                        [
+                          {
+                            text: "ลบ",
+                            onPress: () => {
+                              const newFastList = fastList.filter((item) => item !== member.id);
+                              setFastList(newFastList);
+                              setMemberAccept(memberAccept.filter((item) => item.id !== member.id));
+                              set(ref(database, `fast-request/${fastId}/acceptList`), newFastList.join(','));
+                            },
+                            style: "cancel"
+                          },
+                          { text: "ยกเลิก" }
+                        ]
+                      )
+                    }}
+                    className=" px-5 py-2.5 rounded-2xl flex-row items-center"
+                  >
+                    <StyledIonIcon name="close-outline" size={18} className="text-red-600" />
+                    <StyledText className="font-custom text-red-600 dark:text-red-300 ml-1">
+                      ลบ
+                    </StyledText>
+                  </StyledTouchableOpacity>
+                  <StyledTouchableOpacity
+                    className="bg-neutral-100 dark:bg-neutral-700/50 px-5 py-2.5 rounded-2xl flex-row items-center"
 
-                onPress={() => {
-                  Alert.alert(
-                    "ยืนยันการเลือก",
-                    `คุณต้องการเลือก ${member?.username} เป็นคู่หรือไม่`,
-                    [
-                      {
-                        text: "เลือก",
-                        onPress: () => {
-                          //delete all acceptList and add confirmUser
-                          set(ref(database, `fast-request/${fastId}/acceptList`), '');
-                          set(ref(database, `fast-request/${fastId}/confirmMember`), member.id);
-                          set(ref(database, `fast-request/${fastId}/status`), 'confirm');
+                    onPress={() => {
+                      Alert.alert(
+                        "ยืนยันการเลือก",
+                        `คุณต้องการเลือก ${member?.username} เป็นคู่หรือไม่`,
+                        [
+                          {
+                            text: "เลือก",
+                            onPress: () => {
+                              //delete all acceptList and add confirmUser
+                              set(ref(database, `fast-request/${fastId}/acceptList`), '');
+                              set(ref(database, `fast-request/${fastId}/confirmMember`), member.id);
+                              set(ref(database, `fast-request/${fastId}/status`), 'confirm');
 
-                          //create schedule
-                          createScheduleReal(member, total);
+                              //create schedule
+                              createScheduleReal(member, total);
 
-                        },
-                        style: "cancel"
-                      },
-                      { text: "ยกเลิก" }
-                    ]
-                  )
-                }}
+                            },
+                            style: "cancel"
+                          },
+                          { text: "ยกเลิก" }
+                        ]
+                      )
+                    }}
 
 
-              >
-                <StyledIonIcon name="checkmark-outline" size={18} className="text-black dark:text-white" />
-                <StyledText className="font-custom text-black dark:text-white ml-1">
-                  เลือกและชำค่าบริการ
-                </StyledText>
-              </StyledTouchableOpacity>
-            </StyledView>
+                  >
+                    <StyledIonIcon name="checkmark-outline" size={18} className="text-black dark:text-white" />
+                    <StyledText className="font-custom text-black dark:text-white ml-1">
+                      เลือกและชำค่าบริการ
+                    </StyledText>
+                  </StyledTouchableOpacity>
+                </StyledView>
+              )
+            }
           </StyledTouchableOpacity>
         </Animated.View>
       )
@@ -1277,7 +1260,6 @@ export default function Fast() {
           console.log(res.data.data)
           setFastRequest(res.data.data);
           setFastId(res.data.data.requestId);
-          jobService(res.data.data.categoryId);
           setCategoryId(res.data.data.categoryId);
           setPin({
             latitude: res.data.data.latitude,

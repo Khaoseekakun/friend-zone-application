@@ -355,10 +355,10 @@ export default function Search() {
     }
 
     /**
-    * @param {LatLng} point1 
-    * @param {LatLng} point2 
-    * @returns {number}
-    */
+        * @param {LatLng} point1 
+        * @param {LatLng} point2 
+        * @returns {number}
+        */
     const getDistance = (point1: LatLng, point2: LatLng): number => {
         const R = 6371000;
         const dLat = (point2.latitude - point1.latitude) * (Math.PI / 180);
@@ -379,54 +379,60 @@ export default function Search() {
     }
 
     const renderGridItem = ({ item }: { item: IMembersDB[] }) => {
-
+        console.log(currentLatitude, currentLongitude)
         return !searchloading ? (
             <StyledView style={styles.row}>
-                {item.map((data, index) => (
-                    <TouchableOpacity
-                        key={`${data.id}-${index}`}
-                        style={styles.gridCard}
-                        activeOpacity={0.8}
-                        onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "Search", backOptions: { searchType } })}
-                    >
-                        <Image
-                            source={{ uri: data.previewFirstImageUrl }}
-                            style={styles.gridImage}
-                        />
-                        <LinearGradient
-                            colors={['rgba(0,0,0,0.8)', 'transparent']}
-                            start={{ x: 0, y: 1 }}
-                            end={{ x: 0, y: 0 }}
-                            style={styles.gridInfoContainer}
-                        >
-                            <StyledView className="absolute bottom-3 px-2">
-                                <StyledView className="flex-row items-center">
-                                    <StyledText className="font-custom text-white text-xl">{data.username}</StyledText>
-                                    <StyledText className="font-custom text-white text-xl mx-1">{getAge(data.birthday as unknown as string)}</StyledText>
-                                    <StyledIonIcon
-                                        name={data.gender === "ชาย" ? "male" : "female"}
-                                        color={data.gender === "ชาย" ? '#69ddff' : '#ff8df6'}
-                                        size={24}
-                                    />
-                                </StyledView>
-                                <StyledView className="flex-row items-center mt-1">
-                                    <StyledView className="flex-row items-center">
-                                        <HeartIcon />
-                                        <StyledText className="font-custom text-white text-lg ml-1">
-                                            {data.rating.toFixed(1)}
-                                        </StyledText>
-                                    </StyledView>
-                                    <StyledView>
-                                        <StyledText className="font-custom text-gray-300 text-sm ml-1">
-                                            {data.distance <= 10000 ? '10 Km' : `${(data.distance / 1000).toFixed(1)} Km`}
-                                        </StyledText>
-                                    </StyledView>
-                                </StyledView>
-                            </StyledView>
 
-                        </LinearGradient>
-                    </TouchableOpacity>
-                ))}
+                {item.map((data, index) => {
+                    const distance = Number((getDistanceMemberToCustomer({ latitude: currentLatitude, longitude: currentLongitude }, { latitude: data.latitude, longitude: data.longitude }) / 1000).toFixed(1))
+                    return (
+                        <TouchableOpacity
+                            key={`${data.id}-${index}`}
+                            style={styles.gridCard}
+                            activeOpacity={0.8}
+                            onPress={() => navigation.navigate('ProfileTab', { profileId: data.id, jobCategory: searchType, backPage: "Search", backOptions: { searchType } })}
+                        >
+                            <Image
+                                source={{ uri: data.previewFirstImageUrl }}
+                                style={styles.gridImage}
+                            />
+                            <LinearGradient
+                                colors={['rgba(0,0,0,0.8)', 'transparent']}
+                                start={{ x: 0, y: 1 }}
+                                end={{ x: 0, y: 0 }}
+                                style={styles.gridInfoContainer}
+                            >
+                                <StyledView className="absolute bottom-3 px-2">
+                                    <StyledView className="flex-row items-center">
+                                        <StyledText className="font-custom text-white text-xl">{data.username}</StyledText>
+                                        <StyledText className="font-custom text-white text-xl mx-1">{getAge(data.birthday as unknown as string)}</StyledText>
+                                        <StyledIonIcon
+                                            name={data.gender === "ชาย" ? "male" : "female"}
+                                            color={data.gender === "ชาย" ? '#69ddff' : '#ff8df6'}
+                                            size={24}
+                                        />
+                                    </StyledView>
+                                    <StyledView className="flex-row items-center mt-1">
+                                        <StyledView className="flex-row items-center">
+                                            <HeartIcon />
+                                            <StyledText className="font-custom text-white text-lg ml-1">
+                                                {data.rating.toFixed(1)}
+                                            </StyledText>
+                                        </StyledView>
+                                        <StyledView>
+                                            <StyledText className="font-custom text-gray-300 text-sm ml-1">
+                                                {distance <= 10 ? '10 Km' : `${(distance).toFixed(1)} Km`}
+                                            </StyledText>
+                                        </StyledView>
+                                    </StyledView>
+                                </StyledView>
+
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    )
+
+                })
+                }
             </StyledView>
         ) : null
     }

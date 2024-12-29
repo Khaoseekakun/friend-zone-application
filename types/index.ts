@@ -144,7 +144,7 @@ interface Post {
 }
 
 
-export type NotificationType = 'like' | 'comment' | 'appointment' | 'message' | 'system' | "review" | "fastRequest";
+export type NotificationType = 'like' | 'comment' | 'appointment' | 'message' | 'system' | "review" | "fastRequest" | 'alert'
 
 export interface Notification {
     id?: string;

@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { styled } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { openMap } from '@/utils/Gps';
 
 type FastRequest = {
     id: string;
@@ -26,6 +27,8 @@ type FastRequest = {
         username: string;
         gender: 'male' | 'female' | 'lgbtq';
     };
+    pinLatitude: number;
+    pinLongitude: number;
     acceptList?: string;
 };
 
@@ -90,7 +93,7 @@ export default function FastRequest() {
 
     useEffect(() => {
         if (isFocus == true) {
-            
+
             fetchUserData();
             (async () => {
                 try {
@@ -132,7 +135,7 @@ export default function FastRequest() {
         );
     }
 
-    if (!request) {
+    if (!request || request.status != 'pending') {
         return (
             <StyledView className="flex-1 justify-center items-center bg-white dark:bg-gray-900 px-6">
                 <StyledView className="items-center">
@@ -159,8 +162,6 @@ export default function FastRequest() {
                         </StyledText>
                     </LinearGradient>
                 </TouchableOpacity>
-
-
             </StyledView>
         );
     }
@@ -223,12 +224,22 @@ export default function FastRequest() {
                             value={request.jobsType}
                             theme={theme ?? 'light'}
                         />
-                        <InfoItem
-                            icon="location-outline"
-                            label="สถานที่"
-                            value={request.location}
-                            theme={theme ?? 'light'}
-                        />
+                        <TouchableOpacity
+                        onPress={() => {
+                            openMap({
+                                label: `สถานที่นัดหมาย ${request.location}`,
+                                lat : request.pinLatitude,
+                                lng : request.pinLongitude
+                            })
+                        }}
+                        >
+                            <InfoItem
+                                icon="location-outline"
+                                label="สถานที่ (คลิก ดูใน Maps)"
+                                value={request.location}
+                                theme={theme ?? 'light'}
+                            />
+                        </TouchableOpacity>
 
                         {request.description && (
                             <InfoItem

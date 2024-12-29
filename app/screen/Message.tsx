@@ -180,17 +180,16 @@ export default function Message() {
                                             </StyledView>
 
                                             <TouchableOpacity
-                                                onPress={() => navigation.navigate('Chat', { helper: true, chatId: "helper", chatName: "Friend Zone Helper" })}
+                                                onPress={() => navigation.navigate('Chat', { helper: true, chatId: `helper_${userData?.id}`, chatName: "Friend Zone Helper" })}
                                                 className="flex-row items-center justify-between p-3 rounded-lg"
                                             >
                                                 <StyledView className="flex-row items-center">
                                                     <Image source={AppLogo} className="bg-gray-400 rounded-full w-[40px] h-[40px]" />
                                                     <StyledView className="ml-2">
                                                         <StyledText className="font-bold text-gray-500 dark:text-gray-200 font-custom">Friend Zone Helper</StyledText>
-                                                        <StyledText className="text-gray-500 dark:text-gray-200 font-custom">คุณ : สวัสดีครับ</StyledText>
+                                                        <StyledText className="text-gray-500 dark:text-gray-200 font-custom">ศุนย์ช่วยเหลือของ Friend Zone</StyledText>
                                                     </StyledView>
                                                 </StyledView>
-                                                <StyledText className="text-gray-500 dark:text-gray-200 font-custom">12:00</StyledText>
                                             </TouchableOpacity>
                                         </>
                                     )}
