@@ -175,7 +175,6 @@ export default function Fast() {
           })
 
           if (createFastData.data.status != 200) {
-            console.log(createFastData.data)
             const refDelete = ref(database, `/fast-request/${newPostKey}`);
             set(refDelete, null)
             Alert.alert("เกิดข้อผิดพลาด", "กรุณาลองใหม่อีกครั้ง");

@@ -20,6 +20,7 @@ import Carousel from 'react-native-reanimated-carousel';
 import { addNotification, sendPushNotification } from "@/utils/Notification";
 import { JobMembers, JobsList, Review } from "@/types/prismaInterface";
 import { ResizeMode, Video } from "expo-av";
+import { getDistance } from "@/utils/Gps";
 
 configureReanimatedLogger({
     level: ReanimatedLogLevel.warn,
@@ -243,27 +244,6 @@ export default function ProfileTab() {
             Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถคำนวณราคาได้', [{ text: 'OK' }])
         }
     }, [pin])
-
-
-    /**
-    * @param {LatLng} point1 
-    * @param {LatLng} point2 
-    * @returns {number}
-    */
-    const getDistance = (point1: LatLng, point2: LatLng): number => {
-        const R = 6371000;
-        const dLat = (point2.latitude - point1.latitude) * (Math.PI / 180);
-        const dLon = (point2.longitude - point1.longitude) * (Math.PI / 180);
-        const lat1 = point1.latitude * (Math.PI / 180);
-        const lat2 = point2.latitude * (Math.PI / 180);
-
-        const a =
-            Math.sin(dLat / 2) ** 2 +
-            Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    };
-
 
     const getDistanceMemberToCustomer = (selfPin: LatLng, memberPin: LatLng): number => {
         return getDistance(selfPin, memberPin);
