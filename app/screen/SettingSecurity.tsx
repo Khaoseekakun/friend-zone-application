@@ -1,7 +1,7 @@
 // ไม่แน่ใจว่ามึงแฮสรหัสอะมั้ย เพราะมันเปลี่ยนไม่ได้
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Platform, ActivityIndicator, KeyboardAvoidingView, Alert, Modal, FlatList } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Platform, ActivityIndicator, KeyboardAvoidingView, Alert, Modal, FlatList, useColorScheme, Appearance } from "react-native";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
@@ -60,6 +60,14 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
 }) => {
     const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
+    const colorScheme = useColorScheme();
+    const [theme, setTheme] = useState(Appearance.getColorScheme());
+    useEffect(() => {
+        const listener = Appearance.addChangeListener(({ colorScheme }) => {
+            setTheme(colorScheme);
+        });
+        return () => listener.remove();
+    }, []);
 
     const handleSendOTP = async (
         step: number,
@@ -546,10 +554,19 @@ const BankSection = ({
     );
 };
 
-const GradientButton = ({ onPress, title }: { onPress: () => void, title: string }) => (
-    <TouchableOpacity onPress={onPress}>
-        <LinearGradient
-            colors={[GRADIENT_START, GRADIENT_END]}
+const GradientButton = ({ onPress, title }: { onPress: () => void, title: string }) => {
+    const colorScheme = useColorScheme();
+    const [theme, setTheme] = useState(Appearance.getColorScheme());
+    useEffect(() => {
+        const listener = Appearance.addChangeListener(({ colorScheme }) => {
+            setTheme(colorScheme);
+        });
+        return () => listener.remove();
+    }, []);
+    return (
+        <TouchableOpacity onPress={onPress}>
+            <LinearGradient
+                colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             className="rounded-xl p-3 mt-2"
@@ -559,7 +576,7 @@ const GradientButton = ({ onPress, title }: { onPress: () => void, title: string
             </StyledText>
         </LinearGradient>
     </TouchableOpacity>
-);
+);}
 
 export default function SettingSecurity() {
     const navigation = useNavigation<any>();

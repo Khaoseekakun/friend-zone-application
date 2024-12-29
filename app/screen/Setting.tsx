@@ -79,13 +79,13 @@ export default function Setting() {
                 >
                     <StyledView className={`${Platform.OS == "ios" ? "mt-14" : "mt-8"} flex-row items-center px-4`}>
                         <TouchableOpacity
-                            onPress={() => navigation.goBack()}
+                            onPress={() => navigation.navigate('FeedsTab', {})}
                             className="pr-4"
                         >
                             <Ionicons
                                 name="chevron-back"
                                 size={24}
-                                color={theme === 'dark' ? '#FFFFFF' : '#000000'}
+                                color={'#FFFFFF'}
                             />
                         </TouchableOpacity>
                         <StyledText className="font-custom text-xl text-white">

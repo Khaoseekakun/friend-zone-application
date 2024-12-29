@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, Image, ActivityIndicator, Alert, SafeAreaView, Appearance, TouchableWithoutFeedback, Keyboard, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, Platform, KeyboardAvoidingView, Dimensions, useColorScheme, Image, ActivityIndicator, Alert, SafeAreaView, Appearance, TouchableWithoutFeedback, Keyboard, ScrollView } from "react-native";
 import { NavigationProp, RouteProp, useIsFocused, useNavigation, useRoute } from "@react-navigation/native";
 import { styled } from "nativewind";
 import { LinearGradient } from "expo-linear-gradient";
@@ -64,7 +64,6 @@ export default function Fast() {
   const [loading, setLoading] = useState(false);
   const router = useRoute<CategorySearch>();
   const { backPage } = router.params;
-  const [theme, setTheme] = useState(Appearance.getColorScheme());
   const isFocus = useIsFocused();
 
   const [serviceRate, setServiceRate] = useState<serviceRateData>();
@@ -91,6 +90,17 @@ export default function Fast() {
   const [firstLoading, setFirstLoading] = useState(true);
 
   const [fastId, setFastId] = useState<string>('');
+
+  const colorScheme = useColorScheme();
+  const [theme, setTheme] = useState(Appearance.getColorScheme());
+  useEffect(() => {
+      const listener = Appearance.addChangeListener(({ colorScheme }) => {
+          setTheme(colorScheme);
+      });
+
+
+      return () => listener.remove();
+  }, []);
 
 
 

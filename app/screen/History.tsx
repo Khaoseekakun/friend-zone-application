@@ -329,10 +329,10 @@ export default function History() {
                         <StyledIonIcon
                             name="chevron-back"
                             size={24}
-                            color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'}
+                            color={'#FFFFFF'}
                         />
                     </TouchableOpacity>
-                    <StyledText className="font-custom text-xl dark:text-white">
+                    <StyledText className="font-custom text-xl text-white">
                         ประวัติ
                     </StyledText>
                 </StyledView>
