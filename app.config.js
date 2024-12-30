@@ -1,7 +1,7 @@
 module.exports = {
     expo: {
         name: "Friend Zone",
-        slug: "friend-zone-thailand",
+        slug: "friends-zone-thailand",  // Keep this slug
         version: "1.0.0",
         sdkVersion: "52.0.0",
         orientation: "portrait",
@@ -52,7 +52,7 @@ module.exports = {
         },
         extra: {
             eas: {
-                projectId: "297fa62d-35bc-4c58-b833-34c550603cf8"
+                projectId: "96010b44-a225-4977-9f58-a86fc4abd9b5",
             }
         },
         build: {
