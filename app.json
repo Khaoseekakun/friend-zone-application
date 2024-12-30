@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Firend Zone",
-    "slug": "simpleproject",
+    "name": "Friend Zone",
+    "slug": "friens-zone-thailand",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
@@ -13,15 +13,20 @@
       "bundleIdentifier": "com.firendszone.app",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "We need access to your photo library to select images",
-        "UIBackgroundModes": ["fetch", "remote-notification"]
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ]
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo-white.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/logo-white.png"
       },
-      "package": "com.firendszone.app"
+      "package": "com.firendszone.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -55,8 +60,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "e09ad89e-a2bc-4289-a918-5a5652f57c4f"
+        "projectId": "297fa62d-35bc-4c58-b833-34c550603cf8"
       }
-    }
+    },
+    "owner": "sinsamuth"
   }
 }
