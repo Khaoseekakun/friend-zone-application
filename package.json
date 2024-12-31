@@ -143,7 +143,8 @@
     "readable-stream": "^4.5.2",
     "socket.io-client": "^4.4.1",
     "stream": "^0.0.3",
-    "uuid": "^11.0.2"
+    "uuid": "^11.0.2",
+    "react-native-unimodules": "0.6.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
