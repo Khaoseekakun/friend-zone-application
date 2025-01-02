@@ -49,14 +49,15 @@
           "socket.io-client",
           "stream",
           "uuid",
-          "@expo/config-plugins"
+          "@expo/config-plugins",
+          "ajv"
         ]
       }
     }
   },
   "dependencies": {
     "@babel/runtime": "^7.26.0",
-    "@expo/config-plugins": "^9.0.12",
+    "@expo/config-plugins": "~9.0.0",
     "@expo/metro-runtime": "~4.0.0",
     "@expo/prebuild-config": "~8.0.0",
     "@expo/vector-icons": "^14.0.2",
@@ -82,7 +83,7 @@
     "expo-blur": "^14.0.1",
     "expo-camera": "~16.0.10",
     "expo-constants": "~17.0.3",
-    "expo-dev-client": "~5.0.7",
+    "expo-dev-client": "~5.0.8",
     "expo-doctor": "^1.1.2",
     "expo-image-manipulator": "~13.0.5",
     "expo-image-picker": "^16.0.2",
@@ -143,8 +144,7 @@
     "readable-stream": "^4.5.2",
     "socket.io-client": "^4.4.1",
     "stream": "^0.0.3",
-    "uuid": "^11.0.2",
-    "react-native-unimodules": "0.6.0"
+    "uuid": "^11.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
