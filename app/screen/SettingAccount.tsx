@@ -337,7 +337,7 @@ export default function AccountSetting() {
                 : ImagePicker.launchImageLibraryAsync)({
                     mediaTypes: "images",
                     allowsEditing: true,
-                    aspect: [6, 4],
+                    aspect: [9, 9],
                     quality: 1
                 });
 
@@ -373,9 +373,9 @@ export default function AccountSetting() {
             const result = await (useCamera
                 ? ImagePicker.launchCameraAsync
                 : ImagePicker.launchImageLibraryAsync)({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    mediaTypes: "images",
                     allowsEditing: true,
-                    aspect: [6, 4],
+                    aspect: [6, 3],
                     quality: 1
                 });
 
@@ -510,7 +510,7 @@ export default function AccountSetting() {
                 <StyledView className="px-4 py-4 space-y-6 mb-16">
                     <StyledView className="self-center ">
                         <TouchableOpacity
-                            onPress={() => handleImagePickProfile(true)}
+                            onPress={() => handleImagePickProfile(false)}
                             className=""
                         >
                             {profileImage ? (
