@@ -11,6 +11,7 @@ import Animated, {
   withSpring
 } from "react-native-reanimated";
 import { ScrollView } from "react-native-gesture-handler";
+import { Platform } from "react-native";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -46,68 +47,7 @@ interface CategoryCardProps {
   index: number;
 }
 
-const CategoryCard = ({ title, icon1, icon2, isDisabled = false, onPress, index }: CategoryCardProps) => {
-  return (
-    <AnimatedTouchable
-      entering={FadeInUp.delay(index * 100).springify()}
-      onPress={onPress}
-      disabled={isDisabled}
-      className="mb-3"
-      style={{
-        width: CARD_WIDTH - 16,
-        height: CARD_HEIGHT,
-      }}
-    >
-      <LinearGradient
-        colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
-      >
-        <StyledView className="flex-1 justify-center items-center p-4">
-          <StyledView className="flex-1">
-            {icon2 ? (
-              <StyledView className="w-full h-[120px] relative">
-                <StyledView className="absolute -left-9 top-14">
-                  <StyledImage
-                    source={icon2}
-                    className="w-[143px] h-[143px]"
-                    resizeMode="contain"
-                  />
-                </StyledView>
-                <StyledView className="absolute -right-9 top-14">
-                  <StyledImage
-                    source={icon1}
-                    className="w-[143px] h-[143px]"
-                    resizeMode="contain"
-                  />
-                </StyledView>
-              </StyledView>
-            ) : (
-              <StyledView className="w-full h-[120px] items-center justify-center top-13">
-                <StyledImage
-                  source={icon1}
-                  className="w-[100px] h-[100px]"
-                  resizeMode="contain"
-                />
-              </StyledView>
-            )}
-          </StyledView>
-
-          <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
-            {title}
-          </StyledText>
-
-          {isDisabled && (
-            <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
-              <StyledText className="font-custom text-white text-xl">SOON</StyledText>
-            </StyledView>
-          )}
-        </StyledView>
-      </LinearGradient>
-    </AnimatedTouchable>
-  );
-};
+const isTablet = width >= 768;
 
 export default function SearchCategory() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -185,26 +125,27 @@ export default function SearchCategory() {
                 className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
               >
                 <StyledView className="flex-1 justify-center items-center p-4">
+
                   <StyledView className="flex-1">
                     <StyledView className="w-full h-[120px] relative">
-                      <StyledView className="absolute -left-9 top-10">
+                      <StyledView className={`absolute ${isTablet ? '-left-14 top-20' : '-left-9 top-10'}`}>
                         <StyledImage
                           source={iconFriend2}
-                          className="w-[143px] h-[143px]"
+                          className={isTablet ? "w-[286px] h-[286px]" : "w-[143px] h-[143px]"}
                           resizeMode="contain"
                         />
                       </StyledView>
-                      <StyledView className="absolute -right-9 top-10">
+                      <StyledView className={`absolute ${isTablet ? '-right-14 top-20' : '-right-9 top-10'}`}>
                         <StyledImage
                           source={iconFriend1}
-                          className="w-[143px] h-[143px]"
+                          className={isTablet ? "w-[286px] h-[286px]" : "w-[143px] h-[143px]"}
                           resizeMode="contain"
                         />
                       </StyledView>
                     </StyledView>
                   </StyledView>
 
-                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                  <StyledText className={`font-custom text-white ${isTablet ? 'text-2xl' : 'text-lg'} text-center -mt-5 px-2`}>
                     เพื่อนเที่ยว
                   </StyledText>
                   {/* <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
@@ -230,28 +171,29 @@ export default function SearchCategory() {
                 <StyledView className="flex-1 justify-center items-center p-4">
                   <StyledView className="flex-1">
                     <StyledView className="w-full h-[120px] relative">
-                      <StyledView className="absolute -left-6 top-10">
+                      <StyledView className={`absolute ${isTablet ? '-left-8 top-20' : '-left-6 top-10'}`}>
                         <StyledImage
                           source={iconDJ2}
-                          className="w-[143px] h-[143px]"
+                          className={isTablet ? "w-[286px] h-[286px]" : "w-[143px] h-[143px]"}
                           resizeMode="contain"
                         />
                       </StyledView>
-                      <StyledView className="absolute -right-12 top-10">
+                      <StyledView className={`absolute ${isTablet ? '-right-16 top-20' : '-right-12 top-10'}`}>
                         <StyledImage
                           source={iconDJ1}
-                          className="w-[143px] h-[143px]"
+                          className={isTablet ? "w-[286px] h-[286px]" : "w-[143px] h-[143px]"}
                           resizeMode="contain"
                         />
                       </StyledView>
                     </StyledView>
                   </StyledView>
 
-                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                  <StyledText className={`font-custom text-white ${isTablet ? 'text-2xl' : 'text-lg'} text-center -mt-5 px-2`}>
                     MC/DJ/พิธีกร
                   </StyledText>
+
                   <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
-                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                    <StyledText className={`font-custom text-white ${isTablet ? 'text-3xl' : 'text-xl'}`}>SOON</StyledText>
                   </StyledView>
                 </StyledView>
               </LinearGradient>
@@ -265,7 +207,6 @@ export default function SearchCategory() {
             >
               <LinearGradient
                 colors={['#8B0000', '#4A0404']}
-                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
@@ -273,28 +214,28 @@ export default function SearchCategory() {
                 <StyledView className="flex-1 justify-center items-center p-4">
                   <StyledView className="flex-1">
                     <StyledView className="w-full h-[120px] relative">
-                      <StyledView className="absolute -left-7 top-7">
+                      <StyledView className={`absolute ${isTablet ? '-left-16 top-20' : '-left-7 top-7'}`}>
                         <StyledImage
                           source={iconMusic1}
-                          className="w-[150px] h-[150px]"
+                          className={isTablet ? "w-[286px] h-[286px]" : "w-[150px] h-[150px]"}
                           resizeMode="contain"
                         />
                       </StyledView>
-                      <StyledView className="absolute -right-[100px] top-4">
+                      <StyledView className={`absolute ${isTablet ? '-right-28 top-20' : '-right-[100px] top-4'}`}>
                         <StyledImage
                           source={iconMusic2}
-                          className="w-[180px] h-[180px]"
+                          className={isTablet ? "w-[300px] h-[300px]" : "w-[180px] h-[180px]"}
                           resizeMode="contain"
                         />
                       </StyledView>
                     </StyledView>
                   </StyledView>
 
-                  <StyledText className="font-custom text-white text-base text-center -mt-5 px-2">
+                  <StyledText className={`font-custom text-white ${isTablet ? 'text-2xl' : 'text-base'} text-center -mt-5 px-2`}>
                     วงดนตรี/นักร้อง
                   </StyledText>
                   <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
-                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                    <StyledText className={`font-custom text-white ${isTablet ? 'text-3xl' : 'text-xl'}`}>SOON</StyledText>
                   </StyledView>
                 </StyledView>
               </LinearGradient>
@@ -308,27 +249,26 @@ export default function SearchCategory() {
             >
               <LinearGradient
                 colors={['#8B0000', '#4A0404']}
-                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
               >
                 <StyledView className="flex-1 justify-center items-center p-4">
                   <StyledView className="flex-1">
-                    <StyledView className="w-full h-[120px] items-center justify-center top-7">
-                        <StyledImage
-                          source={iconTable1}
-                          className="w-[250px] h-[250px]"
-                          resizeMode="contain"
-                        />
-                      </StyledView>
+                    <StyledView className={`w-full h-[120px] items-center justify-center ${isTablet ? 'top-40' : 'top-7'}`}>
+                      <StyledImage
+                        source={iconTable1}
+                        className={isTablet ? "w-[500px] h-[500px]" : "w-[250px] h-[250px]"}
+                        resizeMode="contain"
+                      />
+                    </StyledView>
                   </StyledView>
 
-                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                  <StyledText className={`font-custom text-white ${isTablet ? 'text-2xl' : 'text-lg'} text-center -mt-5 px-2`}>
                     จองโต๊ะ
                   </StyledText>
                   <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
-                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                    <StyledText className={`font-custom text-white ${isTablet ? 'text-3xl' : 'text-xl'}`}>SOON</StyledText>
                   </StyledView>
                 </StyledView>
               </LinearGradient>
@@ -342,31 +282,31 @@ export default function SearchCategory() {
             >
               <LinearGradient
                 colors={['#8B0000', '#4A0404']}
-                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
               >
                 <StyledView className="flex-1 justify-center items-center p-4">
                   <StyledView className="flex-1">
-                    <StyledView className="w-full h-[120px] items-center justify-center right-1 top-[55px]">
-                        <StyledImage
-                          source={iconTicket1}
-                          className="w-[130px] h-[130px]"
-                          resizeMode="contain"
-                        />
-                      </StyledView>
+                    <StyledView className={`w-full h-[120px] items-center justify-center ${isTablet ? 'top-48 -left-1' : 'right-1 top-[55px]'}`}>
+                      <StyledImage
+                        source={iconTicket1}
+                        className={isTablet ? "w-[260px] h-[260px]" : "w-[130px] h-[130px]"}
+                        resizeMode="contain"
+                      />
+                    </StyledView>
                   </StyledView>
 
-                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                  <StyledText className={`font-custom text-white ${isTablet ? 'text-2xl' : 'text-lg'} text-center -mt-5 px-2`}>
                     Concert
                   </StyledText>
                   <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
-                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                    <StyledText className={`font-custom text-white ${isTablet ? 'text-3xl' : 'text-xl'}`}>SOON</StyledText>
                   </StyledView>
                 </StyledView>
               </LinearGradient>
             </AnimatedTouchable>
+
             <AnimatedTouchable
               className="mb-3"
               style={{
@@ -376,7 +316,6 @@ export default function SearchCategory() {
             >
               <LinearGradient
                 colors={['#8B0000', '#4A0404']}
-                // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 className="w-full h-full rounded-3xl overflow-hidden shadow-lg border-white/10 border"
@@ -384,36 +323,35 @@ export default function SearchCategory() {
                 <StyledView className="flex-1 justify-center items-center p-4">
                   <StyledView className="flex-1">
                     <StyledView className="w-full h-[120px] relative">
-                      <StyledView className="absolute -right-[90px] top-2">
+                      <StyledView className={`absolute ${isTablet ? '-right-44 top-20' : '-right-[90px] top-2'}`}>
                         <StyledImage
                           source={iconCar1}
-                          className="w-[215px] h-[215px]"
+                          className={isTablet ? "w-[430px] h-[430px]" : "w-[215px] h-[215px]"}
                           resizeMode="contain"
                         />
                       </StyledView>
-                      <StyledView className="absolute -right-7 top-[10px]">
+                      <StyledView className={`absolute ${isTablet ? '-right-16 top-20' : '-right-7 top-[10px]'}`}>
                         <StyledImage
                           source={iconCar2}
-                          className="w-[90px] h-[90px]"
+                          className={isTablet ? "w-[180px] h-[180px]" : "w-[90px] h-[90px]"}
                           resizeMode="contain"
                         />
                       </StyledView>
                     </StyledView>
                   </StyledView>
 
-                  <StyledText className="font-custom text-white text-lg text-center -mt-5 px-2">
+                  <StyledText className={`font-custom text-white ${isTablet ? 'text-2xl' : 'text-lg'} text-center -mt-5 px-2`}>
                     FDrive
                   </StyledText>
                   <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
-                    <StyledText className="font-custom text-white text-xl">SOON</StyledText>
+                    <StyledText className={`font-custom text-white ${isTablet ? 'text-3xl' : 'text-xl'}`}>SOON</StyledText>
                   </StyledView>
                 </StyledView>
               </LinearGradient>
             </AnimatedTouchable>
-
           </StyledView>
         </Animated.View>
-      </StyledScrollView>
+      </StyledScrollView >
 
       <AnimatedTouchable
         onPress={() => backPage ? navigation.navigate(backPage == "FastTab" ? "FeedsTab" : backPage as any, {}) : navigation.goBack()}
@@ -421,6 +359,6 @@ export default function SearchCategory() {
       >
         <Ionicons name="chevron-back" size={24} color="#fff" />
       </AnimatedTouchable>
-    </LinearGradient>
+    </LinearGradient >
   );
 }

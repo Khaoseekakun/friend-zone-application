@@ -107,49 +107,80 @@ export const Navigation: React.FC<NavigationProps> = ({ current }) => {
       }}>
         {Object.keys(pageNumber).map((page, index) => (
           <StyledView key={index} style={{ width: tabWidth, alignItems: "center" }}>
-            {pageNumber[current] === index && (
-              <StyledView
-                className="absolute w-[65px] h-[65px] bg-white dark:bg-[#262626] bottom-[95px] rounded-full"
-              />
-            )}
-          </StyledView>
-        ))}
-      </StyledView>
-
-      <StyledView style={{
-        width: "100%",
-        flexDirection: "row",
-        justifyContent: "space-between",
-      }}>
-        {icons.map((iconName, index) => (
-
+        {pageNumber[current] === index && (
           <StyledView
-            key={`styled-${iconName}-${index}`}
-            style={{
-              width: windowWidth / 5,
-              justifyContent: "center",
-              alignItems: "center",
-              bottom: 80,
-            }}>
-            <StyledIonicons
-              key={`${iconName}-${index}`}
-              name={index === pageNumber[current] ? icons[index] : `${icons[index]}-outline` as any}
-              size={30}
-              onPress={() => handlePress(index, Object.keys(pageNumber)[index])}
-              style={{
-                position: "relative",
-                bottom: index === pageNumber[current] ? 100 : 60,
-              }}
-
-              className="text-[#ad2722] dark:text-white"
-
-            />
-            <StyledText className="relative font-bold font-custom bottom-[55] text-[#ad2722] dark:text-white">
-              {`${iconNames[index]}`}
-            </StyledText>
+            className={`absolute ${windowWidth > 768 ? 'w-[150px] h-[150px] bottom-[185px]' : 'w-[65px] h-[65px] bottom-[95px]'} bg-white dark:bg-[#262626] rounded-full`}
+          />
+        )}
           </StyledView>
         ))}
       </StyledView>
+
+      {windowWidth > 768 ? (
+        <StyledView style={{
+          width: "100%",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}>
+          {icons.map((iconName, index) => (
+        <StyledView
+          key={`styled-${iconName}-${index}`}
+          style={{
+            width: windowWidth / 5,
+            justifyContent: "center",
+            alignItems: "center",
+            bottom: 180,
+          }}>
+          <StyledIonicons
+            key={`${iconName}-${index}`}
+            name={index === pageNumber[current] ? icons[index] : `${icons[index]}-outline` as any}
+            size={60}
+            onPress={() => handlePress(index, Object.keys(pageNumber)[index])}
+            style={{
+          position: "relative",
+          bottom: index === pageNumber[current] ? 185 : 100,
+            }}
+            className="text-[#ad2722] dark:text-white"
+          />
+          <StyledText className="relative font-custom text-[20px] bottom-[80] text-[#ad2722] dark:text-white">
+            {`${iconNames[index]}`}
+          </StyledText>
+        </StyledView>
+          ))}
+        </StyledView>
+      ) : (
+        <StyledView style={{
+          width: "100%",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}>
+          {icons.map((iconName, index) => (
+        <StyledView
+          key={`styled-${iconName}-${index}`}
+          style={{
+            width: windowWidth / 5,
+            justifyContent: "center",
+            alignItems: "center",
+            bottom: 80,
+          }}>
+          <StyledIonicons
+            key={`${iconName}-${index}`}
+            name={index === pageNumber[current] ? icons[index] : `${icons[index]}-outline` as any}
+            size={30}
+            onPress={() => handlePress(index, Object.keys(pageNumber)[index])}
+            style={{
+          position: "relative",
+          bottom: index === pageNumber[current] ? 100 : 60,
+            }}
+            className="text-[#ad2722] dark:text-white"
+          />
+          <StyledText className="relative font-bold font-custom bottom-[55] text-[#ad2722] dark:text-white">
+            {`${iconNames[index]}`}
+          </StyledText>
+        </StyledView>
+          ))}
+        </StyledView>
+      )}
 
     </StyledView >
   );

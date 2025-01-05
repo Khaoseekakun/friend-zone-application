@@ -102,16 +102,16 @@ export default function PostView() {
                     'Authorization': `All ${userData?.token}`
                 }
             });
-            
 
-            if(response.data.status === 404){
+
+            if (response.data.status === 404) {
                 return Alert.alert('ไม่พบโพสต์', 'โพสต์นี้ไม่มีอยู่ในระบบ', [{ text: 'ตกลง', onPress: () => navigation.navigate('FeedsTab', {}) }])
-            }else  if(response.data.status == 400){
+            } else if (response.data.status == 400) {
                 return Alert.alert('ข้อผิดพลาด', 'ไม่สามารถเข้าถึงโพสต์ได้', [{ text: 'ตกลง', onPress: () => navigation.navigate('FeedsTab', {}) }])
-            }else if(response.data.status == 200) {
+            } else if (response.data.status == 200) {
                 const newPosts = response.data.data.posts;
                 setPosts(newPosts)
-            }else{
+            } else {
                 Alert.alert('ข้อผิดพลาด', 'ไม่สามารถเข้าถึงโพสต์ได้', [{ text: 'ตกลง', onPress: () => navigation.navigate('FeedsTab', {}) }])
             }
 
@@ -119,7 +119,7 @@ export default function PostView() {
             console.error("Error fetching posts", error);
         } finally {
             setLoading(false);
-            
+
         }
     };
 
@@ -167,7 +167,7 @@ export default function PostView() {
     }, [isFocus]);
 
     useEffect(() => {
-        if(userData.id) {
+        if (userData.id) {
             fetchComent()
             fetchPosts()
         }
@@ -263,6 +263,26 @@ export default function PostView() {
             console.error("Error posting comment:", error);
         }
     };
+
+    const deleteComment = async (commentId: string) => {
+        try {
+            const response = await axios.delete(
+                `https://friendszone.app/api/post/${postId}/comment/${commentId}`,
+                {
+                    headers: {
+                        Authorization: `All ${userData?.token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (response.data.status === 200) {
+                fetchComent()
+            }
+        } catch (error) {
+            console.error("Error posting comment:", error);
+        }
+    }
 
     return (
         <>
@@ -437,15 +457,19 @@ export default function PostView() {
                                                 {comment.content}
                                             </StyledText>
                                         </StyledView>
-                                        <StyledTouchableOpacity className='absolute right-2'>
-                                            <StyledIonicons
-                                                name="ellipsis-horizontal"
-                                                size={18}
-                                                color="gray"
-                                                accessibilityLabel="Settings"
-                                                onPress={() => { BottomSheetShowComment(), setCommantId("0") }}
-                                            />
-                                        </StyledTouchableOpacity>
+                                        {
+                                            comment.customersDBId === userData?.id || comment.membersDBId === userData?.id ? (
+                                                <StyledTouchableOpacity className='absolute right-2'>
+                                                    <StyledIonicons
+                                                        name="ellipsis-horizontal"
+                                                        size={18}
+                                                        color="gray"
+                                                        accessibilityLabel="Settings"
+                                                        onPress={() => { BottomSheetShowComment(), setCommantId(comment.id) }}
+                                                    />
+                                                </StyledTouchableOpacity>
+                                            ) : null
+                                        }
                                     </StyledView>
                                 ))
                             }
@@ -625,7 +649,7 @@ export default function PostView() {
                     <StyledView className="flex-1">
                         <StyledView className="mt-5 bg-gray-100 dark:bg-neutral-800 rounded-lg mx-5">
                             <StyledView className="my-2 px-3 py-1">
-                                <TouchableOpacity onPress={() => deleteTwoStep(postAction)} className="flex-row items-center">
+                                <TouchableOpacity onPress={() => deleteComment(commentId)} className="flex-row items-center">
                                     <StyledIonicons
                                         name="trash-outline"
                                         size={24}
