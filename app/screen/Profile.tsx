@@ -756,6 +756,26 @@ export default function ProfileTab() {
                                                         </StyledView>
                                                     </StyledTouchableOpacity>
                                                 ))}
+
+                                                <StyledTouchableOpacity
+                                                    key={'other'}
+                                                    className=""
+                                                    onPress={() => {
+                                                        setScheduleJobs('อื่นๆ');
+                                                        hideSelectJob();
+                                                    }}
+                                                >
+                                                    <StyledView className="bg-white dark:bg-neutral-600 p-4 rounded-2xl shadow-sm active:scale-95 transform transition-all flex-row items-center justify-between">
+                                                        <StyledText className="text-base font-custom font-semibold text-neutral-950 dark:text-white">
+                                                            ประเภทงานอื่นๆ
+                                                        </StyledText>
+                                                        <StyledIonIcon
+                                                            name="chevron-forward"
+                                                            size={20}
+                                                            className="text-[#8B0000]/50 dark:text-orange-500/50"
+                                                        />
+                                                    </StyledView>
+                                                </StyledTouchableOpacity>
                                             </StyledView>
                                         </StyledView>
                                     </StyledView>

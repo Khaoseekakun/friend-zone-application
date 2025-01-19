@@ -363,7 +363,7 @@ export default function Search() {
             <StyledView style={styles.row}>
 
                 {item.map((data, index) => {
-                    const distance = Number((getDistanceMemberToCustomer({ latitude: currentLatitude, longitude: currentLongitude }, { latitude: data.latitude, longitude: data.longitude }) / 1000).toFixed(1))
+                    const distance = Number((getDistanceMemberToCustomer({ latitude: currentLatitude, longitude: currentLongitude }, { latitude: data.latitude, longitude: data.longitude }) / 1000))
                     return (
                         <TouchableOpacity
                             key={`${data.id}-${index}`}
@@ -395,12 +395,16 @@ export default function Search() {
                                         <StyledView className="flex-row items-center">
                                             <HeartIcon />
                                             <StyledText className="font-custom text-white text-lg ml-1">
-                                                {data.rating.toFixed(1)}
+                                                {
+                                                    isNaN(data.rating) ? '0' : data.rating.toFixed(1)
+                                                }
                                             </StyledText>
                                         </StyledView>
                                         <StyledView>
                                             <StyledText className="font-custom text-gray-300 text-sm ml-1">
-                                                {distance <= 10 ? '10 Km' : `${(distance).toFixed(1)} Km`}
+                                                {
+                                                    isNaN(distance) ? '0' : distance <= 10 ? '10 Km' : `${(distance).toFixed(1)} Km`
+                                                }
                                             </StyledText>
                                         </StyledView>
                                     </StyledView>
@@ -449,7 +453,7 @@ export default function Search() {
                                 <StyledView className="flex-row items-center">
                                     <HeartIcon />
                                     <StyledText className="font-custom text-white text-xl ml-2">
-                                        {data.rating.toFixed(1)}
+                                        {isNaN(data.rating) ? '0' : data.rating.toFixed(1)}
                                     </StyledText>
                                     <StyledText className="font-custom text-gray-300 text-sm ml-1">
                                         ({data.reviews.toLocaleString()})
@@ -730,6 +734,19 @@ export default function Search() {
                                                 </StyledText>
                                             </TouchableOpacity>
                                         ))}
+
+                                        <TouchableOpacity
+                                            key={'other'}
+                                            className="py-4 border-b border-gray-200 dark:border-neutral-800"
+                                            onPress={() => {
+                                                setSelectedJobType({ id: 'other', name: 'อื่นๆ' });
+                                                setShowJobTypeDropdown(false);
+                                            }}
+                                        >
+                                            <StyledText className="font-custom text-lg text-gray-700 dark:text-gray-300">
+                                                อื่นๆ
+                                            </StyledText>
+                                        </TouchableOpacity>
                                     </ScrollView>
                                 </StyledView>
                             </StyledView>

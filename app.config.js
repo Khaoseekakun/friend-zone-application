@@ -2,7 +2,7 @@ module.exports = {
     expo: {
         name: "Friend Zone",
         slug: "friends-zone-thailand",  // Keep this slug
-        version: "1.0.0",
+        version: "1.0.2",
         sdkVersion: "52.0.0",
         orientation: "portrait",
         icon: "./assets/images/logo.png",

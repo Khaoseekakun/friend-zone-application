@@ -100,6 +100,8 @@ export default function AccountSetting() {
 
     const [userToken, setuUerToken] = useState<any>(null);
 
+    const [otherService, setOtherService] = useState<string | null>(null);
+
     useEffect(() => {
         (() => {
             AsyncStorage.getItem('userToken').then((value) => {
@@ -238,7 +240,7 @@ export default function AccountSetting() {
                 weight !== profileData?.weight?.toString() ||
                 username !== profileData?.username ||
                 profileImage !== profileData?.profileUrl
-            
+
             setIsUpdated(hasChanges);
         } else {
             const hasChanges =
@@ -396,11 +398,22 @@ export default function AccountSetting() {
     };
 
     const toggleService = (serviceId: string) => {
-        setSelectedServices(prev =>
-            prev.includes(serviceId)
-                ? prev.filter(id => id !== serviceId)
-                : [...prev, serviceId]
-        );
+
+        if (serviceId === 'other_service') {
+            if (selectedServices.includes('other_service')) {
+                setSelectedServices(prev => prev.filter(id => id !== 'other_service'));
+                setOtherService(null);
+                return;
+            }
+            setSelectedServices(prev => [...prev, 'other_service']);
+            return;
+        } else {
+            setSelectedServices(prev =>
+                prev.includes(serviceId)
+                    ? prev.filter(id => id !== serviceId)
+                    : [...prev, serviceId]
+            );
+        }
     };
 
     const saveProfile = async () => {
@@ -812,7 +825,42 @@ export default function AccountSetting() {
                                             </StyledText>
                                         </TouchableOpacity>
                                     ))}
+
+
+                                    <TouchableOpacity
+                                        key={'other_service'}
+                                        onPress={() => toggleService('other_service')}
+                                        className={`flex-row items-center rounded-full px-4 py-2 border ${selectedServices.includes('other_service')
+                                            ? 'border-transparent'
+                                            : 'bg-white dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700'
+                                            }`}
+                                        style={selectedServices.includes('other_service') ? {
+                                            backgroundColor: GRADIENT_START,
+                                            borderWidth: 0,
+                                        } : {}}
+                                    >
+                                        <StyledText className={` ${selectedServices.includes('other_service')
+                                            ? 'text-white'
+                                            : 'text-neutral-600 dark:text-white'
+                                            } font-custom`}>
+                                            {"บริการอื่นๆ"}
+                                        </StyledText>
+                                    </TouchableOpacity>
+
                                 </StyledView>
+
+                                {
+                                    selectedServices.includes('other_service') && (
+                                        <StyledInput
+                                            className="bg-white dark:bg-neutral-800 rounded-xl p-4 dark:text-white font-custom mt-2"
+                                            placeholder="โปรดระบุ"
+                                            placeholderTextColor="#666"
+                                            value={otherService ?? ''}
+                                            onChangeText={setOtherService}
+                                            maxLength={50}
+                                        />
+                                    )
+                                }
                             </StyledView>
                         )
                     }

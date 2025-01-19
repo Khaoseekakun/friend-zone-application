@@ -325,7 +325,7 @@ export default function Fast() {
                   }}
                 >
                   <LinearGradient
-                    colors={['#FF4B48', '#AB1815']}
+                    colors={['#8B0000', '#4A0404']}
                     // colors={isDisabled ? ['#8B0000', '#4A0404'] : ['#FF4B48', '#AB1815']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
@@ -367,6 +367,11 @@ export default function Fast() {
                     width: CARD_WIDTH - 16,
                     height: CARD_HEIGHT,
                   }}
+
+                  onPress={() => {
+                    setCategoryId('678bf994b02ec9e77b2b0c1d')
+                    loadJobsList('678bf994b02ec9e77b2b0c1d')
+                  }}
                 >
                   <LinearGradient
                     colors={['#8B0000', '#4A0404']}
@@ -399,9 +404,9 @@ export default function Fast() {
                         MC/DJ/พิธีกร
                       </StyledText>
 
-                      <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                      {/* <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
                         <StyledText className={`font-custom text-white ${isTablet ? 'text-3xl' : 'text-xl'}`}>SOON</StyledText>
-                      </StyledView>
+                      </StyledView> */}
                     </StyledView>
                   </LinearGradient>
                 </AnimatedTouchable>
@@ -410,6 +415,11 @@ export default function Fast() {
                   style={{
                     width: CARD_WIDTH - 16,
                     height: CARD_HEIGHT,
+                  }}
+
+                  onPress={() => {
+                    setCategoryId('67702f37deb815763b5c8284')
+                    loadJobsList('67702f37deb815763b5c8284')
                   }}
                 >
                   <LinearGradient
@@ -441,9 +451,9 @@ export default function Fast() {
                       <StyledText className={`font-custom text-white ${isTablet ? 'text-2xl' : 'text-base'} text-center -mt-5 px-2`}>
                         วงดนตรี/นักร้อง
                       </StyledText>
-                      <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
+                      {/* <StyledView className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 items-center justify-center backdrop-blur-[1px]">
                         <StyledText className={`font-custom text-white ${isTablet ? 'text-3xl' : 'text-xl'}`}>SOON</StyledText>
-                      </StyledView>
+                      </StyledView> */}
                     </StyledView>
                   </LinearGradient>
                 </AnimatedTouchable>
