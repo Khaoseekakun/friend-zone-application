@@ -369,8 +369,8 @@ export default function Fast() {
                   }}
 
                   onPress={() => {
-                    setCategoryId('678bf994b02ec9e77b2b0c1d')
-                    loadJobsList('678bf994b02ec9e77b2b0c1d')
+                    setCategoryId('67702f37deb815763b5c8284')
+                    loadJobsList('67702f37deb815763b5c8284')
                   }}
                 >
                   <LinearGradient
@@ -418,8 +418,8 @@ export default function Fast() {
                   }}
 
                   onPress={() => {
-                    setCategoryId('67702f37deb815763b5c8284')
-                    loadJobsList('67702f37deb815763b5c8284')
+                    setCategoryId('678bf994b02ec9e77b2b0c1d')
+                    loadJobsList('678bf994b02ec9e77b2b0c1d')
                   }}
                 >
                   <LinearGradient

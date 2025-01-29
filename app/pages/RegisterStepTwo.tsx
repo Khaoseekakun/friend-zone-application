@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, SafeAreaView, Platform, KeyboardAvoidingView, InputModeOptions, Alert, Animated, ActivityIndicator, Appearance, TouchableWithoutFeedback, Keyboard, useColorScheme } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, Platform, KeyboardAvoidingView, InputModeOptions, Alert, Animated, ActivityIndicator, Appearance, useColorScheme } from 'react-native';
 import { styled } from 'nativewind';
 import { useNavigation, NavigationProp, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types';
@@ -8,20 +8,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import RNPickerSelect from 'react-native-picker-select';
-import DateTimePicker from 'react-native-ui-datepicker';
-import dayjs from 'dayjs';
-import { set } from 'firebase/database';
 import { API_SYSTEM_KEY } from '@/components/config';
 
 
 const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledDatePicker = styled(DateTimePicker);
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
-const StyledSafeAreaView = styled(SafeAreaView);
 const StyledIcon = styled(Ionicons);
-const StyledTouchableWithoutFeedback = styled(TouchableWithoutFeedback);
 interface InputFieldProps {
     label: string;
     placeholder: string;
@@ -190,7 +184,7 @@ export default function RegisterStepTwo() {
 
     const route = useRoute<RegisterStepTwoRouteProp>();
 
-    const { username, password } = route.params
+    const { username, password, email } = route.params
 
     const showDatePicker = () => setDatePickerVisibility(true);
     const hideDatePicker = () => setDatePickerVisibility(false);
@@ -368,6 +362,7 @@ export default function RegisterStepTwo() {
         const response = await axios.post('https://friendszone.app/api/customer', {
             username,
             password,
+            email,
             phone,
             gender,
             province,

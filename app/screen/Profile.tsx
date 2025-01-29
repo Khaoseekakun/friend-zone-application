@@ -453,36 +453,43 @@ export default function ProfileTab() {
                                         </StyledText>
 
                                         <StyledView className="flex-row items-center justify-between mb-3">
-                                            <StyledView className="flex-row items-center">
-                                                <StyledIonIcon
-                                                    name={
-                                                        userProfile?.profile?.gender === "ชาย" ? "male" :
-                                                            userProfile?.profile?.gender === "หญิง" ? "female" :
-                                                                "transgender"
-                                                    }
-                                                    size={20}
-                                                    className={
-                                                        userProfile?.profile?.gender === "ชาย" ? "text-blue-500" :
-                                                            userProfile?.profile?.gender === "หญิง" ? "text-pink-500" :
-                                                                "text-purple-500"
-                                                    }
-                                                    style={{ marginRight: 8 }}
-                                                />
-                                                <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-base">
-                                                    {userProfile?.profile?.gender}
-                                                </StyledText>
-                                            </StyledView>
 
-                                            <StyledView className="flex-row items-center">
-                                                <StyledIonIcon
-                                                    name="calendar-outline"
-                                                    size={20}
-                                                    className="text-gray-500 dark:text-gray-400 mr-2"
-                                                />
-                                                <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-base">
-                                                    {getAge(userProfile?.profile?.birthday)} ปี
-                                                </StyledText>
-                                            </StyledView>
+                                            {
+                                                userProfile.profile.jobCategoryId != "678bf994b02ec9e77b2b0c1d" && (
+                                                    <>
+                                                        <StyledView className="flex-row items-center">
+                                                            <StyledIonIcon
+                                                                name={
+                                                                    userProfile?.profile?.gender === "ชาย" ? "male" :
+                                                                        userProfile?.profile?.gender === "หญิง" ? "female" :
+                                                                            "transgender"
+                                                                }
+                                                                size={20}
+                                                                className={
+                                                                    userProfile?.profile?.gender === "ชาย" ? "text-blue-500" :
+                                                                        userProfile?.profile?.gender === "หญิง" ? "text-pink-500" :
+                                                                            "text-purple-500"
+                                                                }
+                                                                style={{ marginRight: 8 }}
+                                                            />
+                                                            <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-base">
+                                                                {userProfile?.profile?.gender}
+                                                            </StyledText>
+                                                        </StyledView>
+
+                                                        <StyledView className="flex-row items-center">
+                                                            <StyledIonIcon
+                                                                name="calendar-outline"
+                                                                size={20}
+                                                                className="text-gray-500 dark:text-gray-400 mr-2"
+                                                            />
+                                                            <StyledText className="text-gray-700 dark:text-gray-300 font-custom text-base">
+                                                                {getAge(userProfile?.profile?.birthday)} ปี
+                                                            </StyledText>
+                                                        </StyledView>
+                                                    </>
+                                                )
+                                            }
 
                                             <StyledView className="flex-row items-center">
                                                 <StyledIonIcon
@@ -496,35 +503,41 @@ export default function ProfileTab() {
                                             </StyledView>
                                         </StyledView>
 
-                                        <StyledView className="flex-row justify-around bg-gray-100 dark:bg-neutral-700 rounded-xl p-3">
-                                            <StyledView className="items-center">
-                                                <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm mb-1">
-                                                    ส่วนสูง
-                                                </StyledText>
-                                                <StyledView className="flex-row items-center">
-                                                    <StyledText className="text-gray-700 dark:text-gray-200 font-custom text-base font-semibold">
-                                                        {userProfile?.profile?.height || 170}
-                                                    </StyledText>
-                                                    <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm ml-1">
-                                                        ซม.
-                                                    </StyledText>
-                                                </StyledView>
-                                            </StyledView>
 
-                                            <StyledView className="items-center">
-                                                <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm mb-1">
-                                                    น้ำหนัก
-                                                </StyledText>
-                                                <StyledView className="flex-row items-center">
-                                                    <StyledText className="text-gray-700 dark:text-gray-200 font-custom text-base font-semibold">
-                                                        {userProfile?.profile?.weight || 60}
-                                                    </StyledText>
-                                                    <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm ml-1">
-                                                        กก.
-                                                    </StyledText>
+
+                                        {
+                                            userProfile.profile.jobCategoryId != "678bf994b02ec9e77b2b0c1d" && (
+                                                <StyledView className="flex-row justify-around bg-gray-100 dark:bg-neutral-700 rounded-xl p-3">
+                                                    <StyledView className="items-center">
+                                                        <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm mb-1">
+                                                            ส่วนสูง
+                                                        </StyledText>
+                                                        <StyledView className="flex-row items-center">
+                                                            <StyledText className="text-gray-700 dark:text-gray-200 font-custom text-base font-semibold">
+                                                                {userProfile?.profile?.height || 170}
+                                                            </StyledText>
+                                                            <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm ml-1">
+                                                                ซม.
+                                                            </StyledText>
+                                                        </StyledView>
+                                                    </StyledView>
+
+                                                    <StyledView className="items-center">
+                                                        <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm mb-1">
+                                                            น้ำหนัก
+                                                        </StyledText>
+                                                        <StyledView className="flex-row items-center">
+                                                            <StyledText className="text-gray-700 dark:text-gray-200 font-custom text-base font-semibold">
+                                                                {userProfile?.profile?.weight || 60}
+                                                            </StyledText>
+                                                            <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm ml-1">
+                                                                กก.
+                                                            </StyledText>
+                                                        </StyledView>
+                                                    </StyledView>
                                                 </StyledView>
-                                            </StyledView>
-                                        </StyledView>
+                                            )
+                                        }
                                     </StyledView>
 
                                     {userProfile?.profile?.type === "member" && (
@@ -554,7 +567,12 @@ export default function ProfileTab() {
                                             <>
                                                 <StyledView className="mt-2">
                                                     <StyledText className="text-base font-semibold text-gray-500 dark:text-gray-400 font-custom mb-3">
-                                                        บริการ
+                                                        {
+                                                            userProfile.profile.jobCategoryId == "678bf994b02ec9e77b2b0c1d" ? "แนวเพลง" : "บริการ"
+
+
+
+                                                        }
                                                     </StyledText>
                                                     <StyledView className="flex-row flex-wrap">
                                                         {userProfile.profile.JobMembers.map((job: JobMembers, index: number) => (

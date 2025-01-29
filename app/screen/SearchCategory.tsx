@@ -160,7 +160,7 @@ export default function SearchCategory() {
                 height: CARD_HEIGHT,
               }}
               onPress={() => navigation.navigate('Search', {
-                searchType: '678bf994b02ec9e77b2b0c1d'
+                searchType: '67702f37deb815763b5c8284'
               })}
             >
               <LinearGradient
@@ -206,7 +206,7 @@ export default function SearchCategory() {
                 height: CARD_HEIGHT,
               }}
               onPress={() => navigation.navigate('Search', {
-                searchType: '67702f37deb815763b5c8284'
+                searchType: '678bf994b02ec9e77b2b0c1d'
               })}
             >
               <LinearGradient

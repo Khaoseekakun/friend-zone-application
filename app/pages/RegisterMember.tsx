@@ -29,8 +29,6 @@ const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 
-
-
 interface InputFieldProps {
     label: string;
     placeholder: string;
@@ -77,7 +75,7 @@ const InputField: React.FC<InputFieldProps> = ({
         >
             {label}
         </StyledText>
-        
+
         <StyledView className="font-custom w-full relative">
             {isPicker && pickerItems ? (
                 <StyledView className="relative">
@@ -187,6 +185,7 @@ export default function RegisterMember() {
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
     const [selectedServices, setSelectedServices] = useState<string[]>(['']);
+    const [serviceRate, setServiceRate] = useState<number>(0);
 
     // Step 2: Personal Info
     const [fullName, setFullName] = useState('');
@@ -227,7 +226,10 @@ export default function RegisterMember() {
     ];
 
     const services = [
-        { label: 'เพื่อนเที่ยว', value: '673080a432edea568b2a6554' }
+        { label: 'เพื่อนเที่ยว', value: '673080a432edea568b2a6554' },
+        { label: 'MC/DJ', value: '67702f37deb815763b5c8284' },
+        { label: 'นักร้อง/นักดนตรี', value: '678bf994b02ec9e77b2b0c1d' },
+
     ];
 
     const genders = [
@@ -250,7 +252,7 @@ export default function RegisterMember() {
                     'Content-Type': 'application/json'
                 },
             });
-    
+
             const provincesData = response.data.body.map(
                 (province: any) => ({
                     value: province.id || 'test',
@@ -410,7 +412,7 @@ export default function RegisterMember() {
 
             <InputField
                 theme={theme ?? 'light'}
-                label="ชื่อผู้ใช้"
+                label="ชื่อผู้ใช้ *"
                 placeholder="น้องเพื่อนกัน"
                 value={username}
                 onChangeText={setUsername}
@@ -419,7 +421,7 @@ export default function RegisterMember() {
 
             <InputField
                 theme={theme ?? 'light'}
-                label="รหัสผ่าน"
+                label="รหัสผ่าน *"
                 placeholder="รหัสผ่าน"
                 value={password}
                 onChangeText={setPassword}
@@ -429,7 +431,7 @@ export default function RegisterMember() {
 
             <InputField
                 theme={theme ?? 'light'}
-                label="ยืนยันรหัสผ่าน"
+                label="ยืนยันรหัสผ่าน *"
                 placeholder="ยืนยันรหัสผ่าน"
                 value={confirmpassword}
                 onChangeText={setConfirmPassword}
@@ -439,7 +441,7 @@ export default function RegisterMember() {
 
             <InputField
                 theme={theme ?? 'light'}
-                label="อีเมล"
+                label="อีเมล *"
                 placeholder="example@email.com"
                 value={email}
                 onChangeText={setEmail}
@@ -449,7 +451,7 @@ export default function RegisterMember() {
 
             <InputField
                 theme={theme ?? 'light'}
-                label={isPhoneValid == null && phone.length == 10 ? 'กำลังตรวจสอบ' : isPhoneValid == true && phone.length == 10 ? 'เบอร์โทรนี้ถูกใช้งานแล้ว' : 'เบอร์โทรศัพท์'}
+                label={isPhoneValid == null && phone.length == 10 ? 'กำลังตรวจสอบ' : isPhoneValid == true && phone.length == 10 ? 'เบอร์โทรนี้ถูกใช้งานแล้ว' : 'เบอร์โทรศัพท์ *'}
                 placeholder="0xxxxxxxxx"
                 value={phone}
                 onChangeText={((text) => {
@@ -481,13 +483,23 @@ export default function RegisterMember() {
 
             <InputField
                 theme={theme ?? 'light'}
-                label="บริการที่สนใจ"
+                label="บริการที่สนใจ *"
                 placeholder="เลือกบริการ"
                 value={selectedServices[0]}
                 onChangeText={(value) => setSelectedServices([value])}
                 isPicker={true}
                 pickerItems={services}
                 icon="apps-outline"
+            />
+
+            <InputField
+                theme={theme ?? 'light'}
+                label="อัตราค่าบริการของคุณ"
+                placeholder="500"
+                value={serviceRate === 0 ? '' : serviceRate.toString()}
+                onChangeText={(vaule) => setServiceRate(parseInt(vaule))}
+                icon="card-outline"
+                inputMode='numeric'
             />
             <StyledView className="h-32" />
         </ScrollView>
@@ -921,7 +933,7 @@ export default function RegisterMember() {
                             idCardImage: idCardImage,
                             bankAccount: bankAccount,
                             bankName: bankName,
-                            provinceId : province
+                            provinceId: province
                         }, {
                             headers: {
                                 Authorization: `System ${API_SYSTEM_KEY}`,

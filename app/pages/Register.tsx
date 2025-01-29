@@ -97,6 +97,8 @@ export default function Register() {
   const [isPasswordMatch, setIsPasswordMatch] = useState(true);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [error, setError] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState(''); 
 
   const [pageLoading, setPageLoading] = useState(true);
 
@@ -137,6 +139,16 @@ export default function Register() {
     } else {
       setUsername(value);
     }
+  }
+
+
+  const onCheckEmail = (value: string) => {
+    if(!value.includes('@') || !value.includes('.')){
+      setEmailError('อีเมลไม่ถูกต้อง');
+    }else{
+      setEmailError('');
+    }
+    setEmail(value);
   }
 
   const handleCheckUsername = async () => {
@@ -193,7 +205,7 @@ export default function Register() {
     }
 
     // Navigate to the next step
-    navigation.navigate('RegisterStepTwo', { username, password });
+    navigation.navigate('RegisterStepTwo', { username, password, email });
   };
 
   return (
@@ -225,6 +237,15 @@ export default function Register() {
               />
 
               <InputField
+                label={(emailError !== '' && emailError !== null) ? emailError : 'อีเมล'}
+                placeholder="sample@gmail.com"
+                value={email}
+                onChangeText={onCheckEmail}
+                // onBlur={handleCheckUsername}
+                wrong={isUsernameValid !== null && isUsernameValid}
+              />
+
+              <InputField
                 label={(password.length <= 5 && password.length !== 0) ? 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' : 'รหัสผ่าน'}
                 placeholder="รหัสผ่าน"
                 value={password}
@@ -246,7 +267,7 @@ export default function Register() {
 
             <TouchableOpacity className="w-full " onPress={handleRegister} disabled={!isPasswordMatch || isUsernameValid || isUsernameValid == null}>
               <LinearGradient
-                colors={!isPasswordMatch || isUsernameValid || isUsernameValid == null ? ['#ccc', '#ccc'] : colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316']}
+                colors={!isPasswordMatch || isUsernameValid || isUsernameValid == null ? ['#ccc', '#ccc'] : colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 className="rounded-full py-3 shadow-sm"

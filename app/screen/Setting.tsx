@@ -145,7 +145,7 @@ export default function Setting() {
                                 <StyledIonicons name="chevron-forward" size={24} className="text-gray-500 dark:text-gray-200" />
                             </StyledView>
                         </TouchableOpacity> */}
-                    <StyledView className="w-full h-1.5 bg-gray-100 dark:bg-neutral-800"></StyledView>
+                    <StyledView className="w-full h-1 bg-gray-100 dark:bg-neutral-800"></StyledView>
 
                     <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
                         <StyledText className=" text-gray-500 dark:text-gray-200 font-custom">ทั่วไป</StyledText>
@@ -234,7 +234,7 @@ export default function Setting() {
                         </StyledView>
                     </TouchableOpacity>
 
-                    <StyledView className="w-full h-1.5 bg-gray-100 dark:bg-neutral-800"></StyledView>
+                    <StyledView className="w-full h-1 bg-gray-100 dark:bg-neutral-800"></StyledView>
 
                     <StyledView className="flex-row items-center justify-between w-full px-3 py-2">
                         <StyledText className=" text-gray-500 dark:text-gray-200 font-custom">การเข้าสู่ระบบ</StyledText>
@@ -255,8 +255,8 @@ export default function Setting() {
                         </StyledView>
                     </TouchableOpacity>
                 </ScrollView>
-                <StyledText className="font-custom absolute bottom-7 left-3 text-gray-300">V1.0.0</StyledText>
-                <StyledText className="font-custom absolute bottom-4 left-3 text-gray-300">K2N Tech Studio</StyledText>
+                <StyledText className="font-custom absolute bottom-7 left-3 text-gray-300">V1.0.2</StyledText>
+                <StyledText className="font-custom absolute bottom-2 left-3 text-gray-300">K2N Tech Studio</StyledText>
 
                 <Modal
                     visible={isLogout}

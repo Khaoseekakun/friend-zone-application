@@ -27,7 +27,7 @@ export type RootStackParamList = {
     backPage?: string;
   },
   Agreement: { nextScreen?: string, backPage?: string },
-  RegisterStepTwo: { username: string, password: string, backPage?: string },
+  RegisterStepTwo: { username: string, password: string, email:string, backPage?: string },
   PostUpdate: {
     post: {
       id: string;

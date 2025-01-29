@@ -55,6 +55,8 @@ interface UserProfile {
     type: string;
     longitude: number;
     latitude: number;
+    otherService: boolean;
+    otherServiceDetail: string;
 }
 
 interface ServiceOption {
@@ -239,7 +241,8 @@ export default function AccountSetting() {
                 height !== profileData?.height?.toString() ||
                 weight !== profileData?.weight?.toString() ||
                 username !== profileData?.username ||
-                profileImage !== profileData?.profileUrl
+                profileImage !== profileData?.profileUrl ||
+                otherService !== profileData?.otherServiceDetail
 
             setIsUpdated(hasChanges);
         } else {
@@ -255,7 +258,7 @@ export default function AccountSetting() {
 
             setIsUpdated(hasChanges);
         }
-    }, [images, selectedServices, bio, education, longitude, latitude, height, weight, profileData, profileImage, username]);
+    }, [images, selectedServices, bio, education, longitude, latitude, height, weight, profileData, profileImage, username, otherService]);
 
     const fetchUserData = async () => {
         try {
@@ -289,7 +292,13 @@ export default function AccountSetting() {
 
                 if (profile.type === "member") {
                     setVideo(profile?.previewVideoUrl || null);
-                    setSelectedServices(profile?.services || []);
+                    if (profile.otherService) {
+                        setSelectedServices(profileData?.JobMembers.map((service) => service.jobId) || []);
+                        setOtherService(profile.otherServiceDetail);
+                        
+                    }else{
+                        setSelectedServices(profileData?.JobMembers.map((service) => service.jobId) || []);
+                    }
                     setJobsList(profile?.jobCategory?.JobsList || [])
                     if (profile.JobMembers.length > 0) {
                         for (let i = 0; i < profile.JobMembers.length; i++) {
@@ -435,6 +444,7 @@ export default function AccountSetting() {
                     images,
                     services: selectedServices,
                     imageProfile: profileImage,
+                    otherService
                 },
                 {
                     headers: {
