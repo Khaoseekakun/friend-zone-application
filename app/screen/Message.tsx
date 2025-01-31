@@ -136,7 +136,7 @@ export default function Message() {
                         <StyledText className="text-gray-500 dark:text-gray-200 font-custom">{receiver.last_message ? `${receiver.last_message.senderId == userData.id ? "คุณ : " : ""} ${receiver?.last_message?.text}` : 'เริ่มต้นข้อความ'}</StyledText>
                     </StyledView>
                 </StyledView>
-                <StyledText className="text-gray-500 dark:text-gray-200">{receiver.last_message ? formatTimeDifference(receiver?.last_message?.timestamp) : ''}</StyledText>
+                <StyledText className="text-gray-500 dark:text-gray-200 font-custom">{receiver.last_message ? formatTimeDifference(receiver?.last_message?.timestamp) : ''}</StyledText>
             </TouchableOpacity>
         );
     };

@@ -24,13 +24,13 @@ interface UserProfile {
     gmail?: string;
     firstname?: string;
     lastname?: string;
+    
 }
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledInput = styled(TextInput);
 const StyledIonicons = styled(Ionicons);
-const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledKeyboardAvoidingView = styled(KeyboardAvoidingView);
 
 const GRADIENT_START = '#ec4899';
@@ -60,14 +60,7 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
 }) => {
     const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
-    const colorScheme = useColorScheme();
-    const [theme, setTheme] = useState(Appearance.getColorScheme());
-    useEffect(() => {
-        const listener = Appearance.addChangeListener(({ colorScheme }) => {
-            setTheme(colorScheme);
-        });
-        return () => listener.remove();
-    }, []);
+
 
     const handleSendOTP = async (
         step: number,
@@ -122,6 +115,7 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
                 if (submit == true) {
                     handleUpdateEmail();
                 } else {
+                    setOtp('');
                     setStep(3);
                 }
             } else {
@@ -183,7 +177,6 @@ const EmailSection = ({ email, setEmail, onSave, step, setStep, newEmail, setNew
                             placeholder="อีเมล"
                             placeholderTextColor="#666"
                             value={email}
-                            onChangeText={setEmail}
                             editable={false}
                         />
                     </StyledView>
@@ -565,16 +558,17 @@ const GradientButton = ({ onPress, title }: { onPress: () => void, title: string
         <TouchableOpacity onPress={onPress}>
             <LinearGradient
                 colors={colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            className="rounded-xl p-3 mt-2"
-        >
-            <StyledText className="text-white text-center font-custom">
-                {title}
-            </StyledText>
-        </LinearGradient>
-    </TouchableOpacity>
-);}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                className="rounded-xl p-3 mt-2"
+            >
+                <StyledText className="text-white text-center font-custom">
+                    {title}
+                </StyledText>
+            </LinearGradient>
+        </TouchableOpacity>
+    );
+}
 
 export default function SettingSecurity() {
     const navigation = useNavigation<any>();
@@ -610,7 +604,8 @@ export default function SettingSecurity() {
             if (response.data.status === 200) {
                 const profileData = response.data.data.profile;
                 setProfile(profileData);
-                // console.log(profileData);
+                setEmail(profileData?.gmail ?? '');
+                
             }
         } catch (error) {
             console.error('Error fetching user data:', error);

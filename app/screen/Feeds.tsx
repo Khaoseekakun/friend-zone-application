@@ -420,9 +420,9 @@ export default function FeedsTab() {
     }
 
     useEffect(() => {
-        if(userData?.id == undefined) return;
+        if (userData?.id == undefined) return;
         fetchPosts();
-    }, [])
+    }, [userData])
 
     return (
 
@@ -455,24 +455,20 @@ export default function FeedsTab() {
 
             <Navigation current="FeedsTab" />
 
-            <Modal animationType="fade" visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-                <StyledView className="flex-1 justify-center h-screen bg-black">
-                    <StyledImageViewer
-                        imageUrls={selectedImage.map(image => ({ 
-                            url: image,
-                            sizeKb: 0,
-                        }))} // Pass an array of images
-                        enableImageZoom={true}
-                        style={{ width: Dimensions.get("screen").width, height: Dimensions.get("screen").height }}
-                        index={selectedImageIndex}
-                        loadingRender={() => <ActivityIndicator size="large" color="#ffffff" />}
-                    />
-                    
-                    <TouchableOpacity onPress={() => setModalVisible(false)} style={{ position: 'absolute', top: 50, right: 20, padding: 10 }}>
-                        <StyledIonicons name="close" size={30} color="white" />
-                    </TouchableOpacity>
-                </StyledView>
-            </Modal>
+            <StyledView className={`absolute flex-1 justify-center h-screen bg-black ${modalVisible ? 'block' : 'hidden'}`}>
+                <StyledImageViewer
+                    imageUrls={selectedImage.map(image => ({
+                        url: image,
+                    }))}
+                    enableImageZoom={true}
+                    style={{ width: Dimensions.get("screen").width, height: Dimensions.get("screen").height }}
+                    index={selectedImageIndex}
+                />
+
+                <TouchableOpacity onPress={() => setModalVisible(false)} style={{ position: 'absolute', top: 50, right: 20, padding: 10 }}>
+                    <StyledIonicons name="close" size={30} color="white" />
+                </TouchableOpacity>
+            </StyledView>
 
             <Modal
                 visible={isDeleting}

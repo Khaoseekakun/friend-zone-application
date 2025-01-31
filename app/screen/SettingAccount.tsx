@@ -17,12 +17,6 @@ import FireBaseApp from "@/utils/firebaseConfig";
 import { getStorage, uploadBytes, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import * as Location from 'expo-location';
 
-// import {
-//     putFile,
-//     ref,
-//     getStorage
-// } from '@react-native-firebase/storage'
-
 
 const database = getStorage(FireBaseApp);
 
@@ -356,6 +350,8 @@ export default function AccountSetting() {
                 const optimizedBase64 = await optimizeImage(result.assets[0].uri);
                 if (optimizedBase64) {
                     setProfileImage(optimizedBase64);
+                }else{
+                    alert('เกิดข้อผิดพลาดในการเลือกรูปภาพ');
                 }
             }
         } catch (error) {
@@ -386,7 +382,7 @@ export default function AccountSetting() {
                 : ImagePicker.launchImageLibraryAsync)({
                     mediaTypes: "images",
                     allowsEditing: true,
-                    aspect: [6, 3],
+                    aspect: [3,6],
                     quality: 1
                 });
 
@@ -433,7 +429,7 @@ export default function AccountSetting() {
 
             const userList = JSON.parse(userData);
             const res = await axios.put(
-                `https://friendszone.app/api/profile/${userList.id}`,
+                `http://49.231.43.37:3000//api/profile/${userList.id}`,
                 {
                     bio,
                     education,
@@ -454,6 +450,22 @@ export default function AccountSetting() {
             );
 
             if (res.status === 200) {
+
+                try {
+                    const newData = res.data.data.newData as UserProfile;
+                    if(newData.profileUrl){
+                        const userData = await AsyncStorage.getItem('userData');
+                        if (userData) {
+                            const user = JSON.parse(userData);
+                            user.profileUrl = newData.profileUrl;
+                            await AsyncStorage.setItem('userData', JSON.stringify(user));
+                        }
+                    }
+                } catch (error) {
+                    console.log('Error updating profile image:', error);
+                }
+
+
 
                 if (images != oldImages) {
                     await axios.put(`https://friendszone.app/api/preview/${userList.id}`, {

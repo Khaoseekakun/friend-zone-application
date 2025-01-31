@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { AuthProvider } from '../utils/context/AuthContext';
 import { AppNavigator } from '@/components/Navigator/App';
 import 'react-native-gesture-handler';
 import * as Font from 'expo-font';
 import { Entypo } from '@expo/vector-icons';
-import { Alert, AppRegistry, BackHandler, Linking } from 'react-native';
-import * as Location from 'expo-location';
+import { AppRegistry } from 'react-native';
 import 'react-native-get-random-values';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { v4 as uuidv4 } from 'uuid';

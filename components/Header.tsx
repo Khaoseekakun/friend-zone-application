@@ -34,10 +34,8 @@ export const HeaderApp: React.FC<HeaderAppProps> = ({ back, searchType }) => {
     const [notReadNotificationCount, setNotReadNotificationCount] = useState(0);
 
     useEffect(() => {
-        //firebase realtime database notification
         if (userData?.id) {
             const refNoti = ref(database, `notifications/${userData?.id}`);
-            //check notification is isRead is have false 
             onValue(refNoti, (snapshot: any) => {
                 const data = snapshot.val();
                 if (data) {

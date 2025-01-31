@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { styled } from 'nativewind';
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, ScrollView, Text, TextInput, View, SafeAreaView, Platform, Appearance, TouchableOpacity, Linking, Alert, ActivityIndicator } from 'react-native';
+import { Text, TextInput, View, Platform, Appearance, TouchableOpacity, Linking, Alert, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StackActions, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -14,9 +14,6 @@ const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledIonIcon = styled(Ionicons);
-const StyledImage = styled(Image);
-const StyledScrollView = styled(ScrollView);
-const StyledSafeAreaView = styled(SafeAreaView);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 
 export default function SettingDeleteAccount() {

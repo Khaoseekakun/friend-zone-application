@@ -7,11 +7,9 @@ export default function LocationMonitor() {
     const [gpsEnabled, setGpsEnabled] = useState(true);
     const checkLocationStatus = async () => {
         try {
-            // Check permission status
             const { status } = await Location.getForegroundPermissionsAsync();
             if (status !== 'granted') {
                 if (permissionGranted) {
-                    // Trigger event when permission changes to denied
                     Alert.alert(
                         'คำเตือน',
                         'แอพพลิเคชั่นไม่สามารถเข้าถึงตำแหน่งของคุณได้ กรุณาเปิดการอนุญาต',
@@ -25,10 +23,8 @@ export default function LocationMonitor() {
             }
             setPermissionGranted(true);
 
-            // Check GPS status
             const isLocationEnabled = await Location.hasServicesEnabledAsync();
             if (!isLocationEnabled && gpsEnabled) {
-                // Trigger event when GPS is disabled
                 Alert.alert(
                     'คำเตือน',
                     'GPS ถูกปิด กรุณาเปิด GPS เพื่อใช้งานแอพ',
