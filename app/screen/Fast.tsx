@@ -157,7 +157,7 @@ export default function Fast() {
         const newPostKey = push(refCreate, {
           date: scheduleDate,
           time: scheduleTime,
-          description: scheduleNote,
+          description: scheduleNote ?? "",
           jobsType: scheduleJobs,
           location: scheduleLocation,
           pinLongitude: pin?.longitude,
@@ -303,7 +303,7 @@ export default function Fast() {
               onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()}
               className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center absolute left-6 mt-3 z-10 "
             >
-              <Ionicons name="chevron-back" size={24} color="#EB3834" />
+              <Ionicons name="chevron-back" size={32} color="#EB3834" />
             </AnimatedTouchable>
             <Animated.View
               className="px-3 pb-20"
@@ -774,7 +774,7 @@ export default function Fast() {
                     <StyledView className="bg-white dark:bg-gray-800 p-2 rounded-full">
                       <StyledIonIcon
                         name="chevron-back"
-                        size={24}
+                        size={32}
                         className="text-[#8B0000] font-custom dark:text-orange-500"
                       />
                     </StyledView>
@@ -822,7 +822,7 @@ export default function Fast() {
                       onPress={() => setStep(1)}
                       className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-lg items-center justify-center left-3 mt-10 "
                     >
-                      <Ionicons name="chevron-back" size={24} color="#EB3834" />
+                      <Ionicons name="chevron-back" size={32} color="#EB3834" />
                     </AnimatedTouchable>
                     <StyledView className="flex-row items-center px-6 py-1">
                       <StyledView className="w-6/12 px-1">
@@ -1162,7 +1162,7 @@ export default function Fast() {
                 </StyledText>
                 <StyledView className="flex-row items-center mt-1">
 
-                  <StyledIonIcon name="star" size={24} color="#FCD34D" />
+                  <StyledIonIcon name="star" size={32} color="#FCD34D" />
                   <StyledText className="font-custom text-lg text-neutral-400 ml-1">
                     {
                       member?.rating

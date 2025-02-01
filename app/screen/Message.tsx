@@ -143,9 +143,9 @@ export default function Message() {
 
     return (
         <>
-            <StyledView className="flex-1 bg-white dark:bg-neutral-900">
+            <StyledView className="flex-1 dark:bg-neutral-900">
                 <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-                    <StyledView className="flex-1 bg-white dark:bg-neutral-900">
+                    <StyledView className="flex-1 bg-gray-100 dark:bg-neutral-900">
                         <StyledView className={`text-center top-0 ${Platform.OS == "ios" ? "h-[92px]" : "h-[92px]"} justify-center mt-5`}>
                             <StyledText className="text-black dark:text-gray-200 text-center self-center text-lg font-custom ">Messages</StyledText>
                         </StyledView>
@@ -161,7 +161,7 @@ export default function Message() {
                                     renderItem={renderItem}
                                     ListHeaderComponent={() => (
                                         <>
-                                            <StyledView className="w-full px-2 mt-2 mb-2">
+                                            {/* <StyledView className="w-full px-2 mt-2 mb-2">
                                                 <StyledTextInput
                                                     placeholder="ค้นหา"
                                                     placeholderTextColor="#9ca3af" // Add this line to set placeholder text color
@@ -174,10 +174,10 @@ export default function Message() {
                                                 <StyledIonIcon name="search" size={20} color="#9ca3af" className="pl-5 absolute mt-[10px]" />
                                                 {search?.length > 0 && (
                                                     <StyledView className="right-5 absolute mt-[8px] bg-gray-50 rounded-full">
-                                                        <StyledIonIcon name="close" size={24} color={""} onPress={() => setSearch('')} />
+                                                        <StyledIonIcon name="close" size={32} color={""} onPress={() => setSearch('')} />
                                                     </StyledView>
                                                 )}
-                                            </StyledView>
+                                            </StyledView> */}
 
                                             <TouchableOpacity
                                                 onPress={() => navigation.navigate('Chat', { helper: true, chatId: `helper_${userData?.id}`, chatName: "Friend Zone Helper" })}

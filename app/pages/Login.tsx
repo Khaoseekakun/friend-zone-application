@@ -164,29 +164,29 @@ export default function Login() {
                         />
                         <TouchableOpacity
                             onPress={togglePasswordVisibility}
-                            className="absolute right-4 flex-1 mt-4"
+                            className="absolute right-4 flex-1 items-center justify-center h-full"
                         >
                             <Ionicons
                                 name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
-                                size={24}
+                                size={32}
                                 color="gray"
                             />
                         </TouchableOpacity>
                     </StyledView>
 
                     {/* Create Account */}
-                    <StyledView className="flex-row justify-between w-full mb-1">
+                    <StyledView className="flex-row justify-between w-full mb-1 ">
                         <StyledTouchableOpacity
                             onPress={() => navigation.navigate('ForgotPassword', {
                                 backPage: 'Login'
                             })}
                         >
-                            <StyledText className="font-custom text-blue-600">ลืมรหัสผ่าน?</StyledText>
+                            <StyledText className="font-custom text-blue-600 text-[17px]">ลืมรหัสผ่าน?</StyledText>
                         </StyledTouchableOpacity>
                         <StyledView className="flex-row items-center">
-                            <StyledText className='font-custom text-gray-500'>ยังไม่มีบัญชี</StyledText>
+                            <StyledText className='font-custom text-gray-500 text-[17px]'>ยังไม่มีบัญชี</StyledText>
                             <StyledTouchableOpacity onPress={() => navigation.navigate('Agreement', { nextScreen: 'Register' })}>
-                                <StyledText className='font-custom text-blue-600'>สร้างบัญชี</StyledText>
+                                <StyledText className='font-custom text-blue-600 text-[17px]'>สร้างบัญชี</StyledText>
                             </StyledTouchableOpacity>
                         </StyledView>
                     </StyledView>
@@ -194,13 +194,13 @@ export default function Login() {
                     <StyledView className="flex-row justify-between w-full mb-10">
                         <StyledView className="flex-row items-center">
                             <StyledTouchableOpacity onPress={() => navigation.navigate('Policy', { backPage: 'Login' })}>
-                                <StyledText className='font-custom text-blue-500'>ข้อกำหนด</StyledText>
+                                <StyledText className='font-custom text-blue-500 text-[17px]'>ข้อกำหนด</StyledText>
                             </StyledTouchableOpacity>
-                            <StyledText className='font-custom text-gray-500'>และ</StyledText>
+                            <StyledText className='font-custom text-gray-500 text-[17px]'>และ</StyledText>
                             <StyledTouchableOpacity onPress={() => navigation.navigate('Privacy', { backPage: 'Login' })}>
-                                <StyledText className='font-custom text-blue-500'>ข้อตกลง</StyledText>
+                                <StyledText className='font-custom text-blue-500 text-[17px]'>ข้อตกลง</StyledText>
                             </StyledTouchableOpacity>
-                            <StyledText className='font-custom text-gray-500'>ของเรา</StyledText>
+                            <StyledText className='font-custom text-gray-500 text-[17px]'>ของเรา</StyledText>
                         </StyledView>
                     </StyledView>
 

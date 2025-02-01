@@ -19,7 +19,7 @@ export default function AgreementScreen() {
     const [error, setError] = useState<string | null>(null);
     const [agree, setAgree] = useState(false);
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    
+
     const fetchPolicyContent = async () => {
         try {
             const response = await axios.get('https://friendszone.app/api/policy');
@@ -33,7 +33,7 @@ export default function AgreementScreen() {
     };
 
     useEffect(() => {
-        
+
         fetchPolicyContent();
     }, []);
 
@@ -61,21 +61,21 @@ export default function AgreementScreen() {
         <StyledView className="bg-white dark:bg-neutral-900 flex-1">
 
 
-            <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center mt-16">ยินดีต้อนรับสู่</StyledText>
-            <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center">Friend Zone</StyledText>
+            <StyledText className="font-custom text-xl text-gray-900 dark:text-white text-center mt-16">ยินดีต้อนรับสู่</StyledText>
+            <StyledText className="font-custom text-xl text-gray-900 dark:text-white text-center">Friend Zone</StyledText>
             <StyledText className="font-custom text-base text-gray-400 text-center mt-1">โปรดอ่านเงื่อนไขและข้อตกลง</StyledText>
-            
+
             <TouchableOpacity onPress={() => navigation.navigate('Login', {})} className="absolute mt-16 px-3">
-                <Ionicons name="chevron-back" size={24} color="#1e3a8a" />
+                <Ionicons name="chevron-back" size={32} color="#1e3a8a" />
             </TouchableOpacity>
 
             <ScrollView className="flex-1 w-10/12 mt-6 p-2 rounded-xl self-center bg-gray-100 dark:bg-neutral-800">
                 {policyContent.map((item, index) => (
-                    <StyledView key={`${index}`}>
+                    <StyledView key={`${index}`} className=''>
                         {item.split('\n').map((line, lineIndex) => (
-                            <StyledView key={lineIndex} className='mb-2'>
-                                <StyledText className="font-custom text-base text-gray-800 dark:text-white">
-                                    {`${line.replace(/\\n/g, '\n')}`}
+                            <StyledView key={lineIndex} className='mb-4'>
+                                <StyledText className="font-custom text-xs text-gray-800 dark:text-white ">
+                                    {`${line.replace(/\\n/g, '\n\n')}`}
                                 </StyledText>
                             </StyledView>
                         ))}
@@ -84,19 +84,19 @@ export default function AgreementScreen() {
             </ScrollView>
 
 
-            <StyledView className='flex-row w-4/5 self-center mt-4'>
+            <StyledView className='flex-row w-4/5 self-center mt-2 items-center'>
                 <TouchableOpacity
                     onPress={() => { setAgree(!agree) }}
                 >
                     <StyledIcon
                         name={agree ? "checkbox-outline" : "stop-outline"}
-                        size={20}
+                        size={30}
                         className={`${agree ? "text-black dark:text-white" : "text-red-500"}`}
                     >
 
                     </StyledIcon>
                 </TouchableOpacity>
-                <StyledText className={`font-custom text-center ${agree ? "text-black dark:text-white" : "text-red-500"} font-semibold ml-1`}>ฉันได้อ่านและยอมรับข้อตกลงนี้</StyledText>
+                <StyledText className={`font-custom text-center ${agree ? "text-black dark:text-white" : "text-red-500"} font-semibold ml-1 text-[17px]`}>ฉันได้อ่านและยอมรับข้อตกลงนี้</StyledText>
             </StyledView>
             <TouchableOpacity className="w-4/5 mb-16 self-center mt-11"
                 disabled={!agree}
@@ -104,7 +104,7 @@ export default function AgreementScreen() {
             >
                 <LinearGradient
 
-                    colors={agree ? colorScheme === 'dark' ? ['#EB3834', '#69140F']:['#ec4899', '#f97316'] : ['#7f7f7f', '#505050']}
+                    colors={agree ? colorScheme === 'dark' ? ['#EB3834', '#69140F'] : ['#ec4899', '#f97316'] : ['#7f7f7f', '#505050']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     className="rounded-full py-3 shadow-sm"

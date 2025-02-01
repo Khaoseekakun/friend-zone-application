@@ -54,20 +54,20 @@ export default function Policy() {
     return (
         <StyledView className="bg-white dark:bg-neutral-900 flex-1">
 
-            <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center mt-16">เงื่อนไขและข้อตกลง</StyledText>
-            <StyledText className="font-custom text-xl font-bold text-gray-900 dark:text-white text-center">Friend Zone</StyledText>
+            <StyledText className="font-custom text-xl text-gray-900 dark:text-white text-center mt-16">เงื่อนไขและข้อตกลง</StyledText>
+            <StyledText className="font-custom text-xl text-gray-900 dark:text-white text-center">Friend Zone</StyledText>
             <StyledView className="absolute mt-[70px] left-5">
                 <TouchableOpacity onPress={() => backPage ? navigation.navigate(backPage as any, {}) : navigation.goBack()} className="absolute ml-4">
-                    <StyledIonicons name="chevron-back" size={24} className='text-black dark:text-neutral-200' />
+                    <StyledIonicons name="chevron-back" size={32} className='text-black dark:text-neutral-200' />
                 </TouchableOpacity>
             </StyledView>
             <ScrollView className="flex-1 w-10/12 mt-6 p-2 mb-6 rounded-xl self-center bg-gray-100 dark:bg-neutral-800">
                 {policyContent.map((item, index) => (
-                    <StyledView key={`${index}`}>
+                    <StyledView key={`${index}`} className=''>
                         {item.split('\n').map((line, lineIndex) => (
-                            <StyledView key={lineIndex} className='mb-2'>
-                                <StyledText className="font-custom text-base text-gray-800 dark:text-white">
-                                    {`${line.replace(/\\n/g, '\n')}`}
+                            <StyledView key={lineIndex} className='mb-4'>
+                                <StyledText className="font-custom text-xs text-gray-800 dark:text-white ">
+                                    {`${line.replace(/\\n/g, '\n\n')}`}
                                 </StyledText>
                             </StyledView>
                         ))}

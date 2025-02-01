@@ -429,7 +429,7 @@ export default function AccountSetting() {
 
             const userList = JSON.parse(userData);
             const res = await axios.put(
-                `http://49.231.43.37:3000//api/profile/${userList.id}`,
+                `https://friendszone.app/api/profile/${userList.id}`,
                 {
                     bio,
                     education,
@@ -734,7 +734,7 @@ export default function AccountSetting() {
                                     <StyledView className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-full items-center justify-center">
                                         <StyledIonicons
                                             name="location-outline"
-                                            size={24}
+                                            size={32}
                                             className="text-pink-500"
                                         />
                                     </StyledView>

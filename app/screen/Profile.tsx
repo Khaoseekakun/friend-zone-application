@@ -379,7 +379,7 @@ export default function ProfileTab() {
                                 <StyledView className="absolute pl-2 py-2">
                                     <StyledTouchableOpacity onPress={() => setShowVideo(false)}
                                         className="bg-white dark:bg-neutral-900 rounded-full p-1 px-2 flex-row items-center">
-                                        <StyledIonIcon name="chevron-back" size={24} className="text-black dark:text-white" />
+                                        <StyledIonIcon name="chevron-back" size={32} className="text-black dark:text-white" />
                                         <StyledText className="font-custom text-black dark:text-white text-lg">กลับ</StyledText>
                                     </StyledTouchableOpacity>
                                 </StyledView>
@@ -455,7 +455,7 @@ export default function ProfileTab() {
                                         <StyledView className="flex-row items-center justify-between mb-3">
 
                                             {
-                                                userProfile.profile.jobCategoryId != "678bf994b02ec9e77b2b0c1d" && (
+                                                userProfile.profile?.jobCategoryId != "678bf994b02ec9e77b2b0c1d" && (
                                                     <>
                                                         <StyledView className="flex-row items-center">
                                                             <StyledIonIcon
@@ -506,7 +506,7 @@ export default function ProfileTab() {
 
 
                                         {
-                                            userProfile.profile.jobCategoryId != "678bf994b02ec9e77b2b0c1d" && (
+                                            userProfile.profile?.jobCategoryId != "678bf994b02ec9e77b2b0c1d" && (
                                                 <StyledView className="flex-row justify-around bg-gray-100 dark:bg-neutral-700 rounded-xl p-3">
                                                     <StyledView className="items-center">
                                                         <StyledText className="text-gray-500 dark:text-gray-400 font-custom text-sm mb-1">
@@ -568,10 +568,7 @@ export default function ProfileTab() {
                                                 <StyledView className="mt-2">
                                                     <StyledText className="text-base font-semibold text-gray-500 dark:text-gray-400 font-custom mb-3">
                                                         {
-                                                            userProfile.profile.jobCategoryId == "678bf994b02ec9e77b2b0c1d" ? "แนวเพลง" : "บริการ"
-
-
-
+                                                            userProfile.profile?.jobCategoryId == "678bf994b02ec9e77b2b0c1d" ? "แนวเพลง" : "บริการ"
                                                         }
                                                     </StyledText>
                                                     <StyledView className="flex-row flex-wrap">
@@ -746,7 +743,7 @@ export default function ProfileTab() {
                                             <StyledView className="flex-row gap-1 items-center mb-2">
                                                 <StyledIonIcon
                                                     name="chevron-back"
-                                                    size={24}
+                                                    size={32}
                                                     onPress={hideSelectJob}
                                                     className="text-black dark:text-neutral-200"
                                                 />

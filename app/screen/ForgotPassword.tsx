@@ -248,7 +248,7 @@ export default function ForgotPassword() {
                 onPress={() => setStep(1)}
                 className="absolute top-10 left-6"
             >
-                <Ionicons name="arrow-back" size={24} color={theme === 'dark' ? '#fff' : '#000'} />
+                <Ionicons name="arrow-back" size={32} color={theme === 'dark' ? '#fff' : '#000'} />
             </TouchableOpacity>
 
             <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] mb-2">ยืนยันรหัส OTP</StyledText>
@@ -306,7 +306,7 @@ export default function ForgotPassword() {
                 onPress={() => setStep(2)}
                 className="absolute top-10 left-6"
             >
-                <Ionicons name="arrow-back" size={24} color={theme === 'dark' ? '#fff' : '#000'} />
+                <Ionicons name="arrow-back" size={32} color={theme === 'dark' ? '#fff' : '#000'} />
             </TouchableOpacity>
 
             <StyledText className="text-3xl font-custom text-[#1e3a8a] dark:text-[#f0f5ff] pt-2">ตั้งรหัสผ่านใหม่</StyledText>
@@ -328,7 +328,7 @@ export default function ForgotPassword() {
                 >
                     <Ionicons
                         name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
-                        size={24}
+                        size={32}
                         color="gray"
                     />
                 </TouchableOpacity>

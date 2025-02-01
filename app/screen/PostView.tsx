@@ -429,7 +429,7 @@ export default function PostView() {
                                     <StyledView className="flex-row justify-center mr-5 items-center">
                                         <StyledIonicons
                                             name="heart-outline"
-                                            size={24}
+                                            size={32}
                                             onPress={() => { }}
                                             className="text-red-500"
                                         />
@@ -440,7 +440,7 @@ export default function PostView() {
                                     <StyledView className="flex-row justify-center mr-5 items-center">
                                         <StyledIonicons
                                             name="chatbubble-outline"
-                                            size={24}
+                                            size={32}
                                             onPress={() => { }}
                                             className="text-black dark:text-white"
                                         />
@@ -579,7 +579,7 @@ export default function PostView() {
                                 <TouchableOpacity onPress={() => navigation.navigate("ProfileTab", { profileId: posts?.member?.id ?? "" })} className="flex-row items-center">
                                     <StyledIonicons
                                         name="information-circle-outline"
-                                        size={24}
+                                        size={32}
                                         className="text-black dark:text-neutral-200"
                                     />
                                     <StyledText className="pl-2 text-lg font-custom dark:text-neutral-200">เกี่ยวกับบัญชีนี้</StyledText>
@@ -592,7 +592,7 @@ export default function PostView() {
                                 })} className="flex-row items-center">
                                     <StyledIonicons
                                         name="lock-closed-outline"
-                                        size={24}
+                                        size={32}
                                         className="text-black dark:text-neutral-200"
                                     />
                                     <StyledText className="pl-2 text-lg font-custom dark:text-neutral-200">ความเป็นส่วนตัว</StyledText>
@@ -608,7 +608,7 @@ export default function PostView() {
                                                 <TouchableOpacity onPress={() => { }} className="flex-row items-center">
                                                     <StyledIonicons
                                                         name="warning-outline"
-                                                        size={24}
+                                                        size={32}
                                                         color="#ff2525"
                                                     />
                                                     <StyledText className="text-[#ff2525] pl-2 text-lg font-custom">รายงานปัญหา</StyledText>
@@ -626,7 +626,7 @@ export default function PostView() {
                                             <TouchableOpacity onPress={() => { handleGotoEditPost() }} className="flex-row items-center">
                                                 <StyledIonicons
                                                     name="pencil-outline"
-                                                    size={24}
+                                                    size={32}
                                                     className="text-black dark:text-neutral-200"
                                                 />
                                                 <StyledText className="pl-2 text-lg font-custom">แก้ไข</StyledText>
@@ -637,7 +637,7 @@ export default function PostView() {
                                             <TouchableOpacity onPress={() => deleteTwoStep(postAction)} className="flex-row items-center">
                                                 <StyledIonicons
                                                     name="trash-outline"
-                                                    size={24}
+                                                    size={32}
                                                     color="#ff2525"
                                                 />
                                                 <StyledText className="text-[#ff2525] pl-2 text-lg font-custom">ลบโพสต์</StyledText>
@@ -671,7 +671,7 @@ export default function PostView() {
                                 <TouchableOpacity onPress={() => deleteComment(commentId)} className="flex-row items-center">
                                     <StyledIonicons
                                         name="trash-outline"
-                                        size={24}
+                                        size={32}
                                         color="#ff2525"
                                     />
                                     <StyledText className="text-[#ff2525] pl-2 text-lg font-custom">ลบความคิดเห็น</StyledText>

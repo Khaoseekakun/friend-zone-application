@@ -387,7 +387,7 @@ export default function FeedsTab() {
                                     name={
                                         posts[index].likes?.length > 0 ? "heart" : "heart-outline"
                                     }
-                                    size={24}
+                                    size={32}
                                     className="text-red-500"
                                 />
                                 <StyledText className="font-custom text-black dark:text-white ml-1 text-lg">
@@ -404,7 +404,7 @@ export default function FeedsTab() {
                             <StyledView className="flex-row justify-center mr-5 items-center">
                                 <StyledIonicons
                                     name="chatbubble-outline"
-                                    size={24}
+                                    size={32}
                                     onPress={() => { }}
                                     className="text-black dark:text-white"
                                 />
@@ -438,7 +438,7 @@ export default function FeedsTab() {
                 onRefresh={handleRefresh}
                 ListFooterComponent={renderFooter}
                 ListHeaderComponent={
-                    userData?.role !== 'customer'
+                    userData?.role == 'member'
                         ? () => (
                             <StyledView className="w-full flex-row items-center justify-between mt-3 mb-3 px-3">
                                 <TouchableOpacity
@@ -508,7 +508,7 @@ export default function FeedsTab() {
                                 <TouchableOpacity onPress={() => navigation.navigate("ProfileTab", { profileId: posts.find((p) => p.id == postAction)?.member.id ?? "" })} className="flex-row items-center">
                                     <StyledIonicons
                                         name="information-circle-outline"
-                                        size={24}
+                                        size={32}
                                         className="text-black dark:text-neutral-200"
                                     />
                                     <StyledText className="pl-2 text-lg font-custom dark:text-neutral-200">เกี่ยวกับบัญชีนี้</StyledText>
@@ -521,7 +521,7 @@ export default function FeedsTab() {
                                 })} className="flex-row items-center">
                                     <StyledIonicons
                                         name="lock-closed-outline"
-                                        size={24}
+                                        size={32}
                                         className="text-black dark:text-neutral-200"
                                     />
                                     <StyledText className="pl-2 text-lg font-custom dark:text-neutral-200">ความเป็นส่วนตัว</StyledText>
@@ -537,7 +537,7 @@ export default function FeedsTab() {
                                                 <TouchableOpacity onPress={() => { }} className="flex-row items-center">
                                                     <StyledIonicons
                                                         name="warning-outline"
-                                                        size={24}
+                                                        size={32}
                                                         color="#ff2525"
                                                     />
                                                     <StyledText className="text-[#ff2525] pl-2 text-lg font-custom">รายงานปัญหา</StyledText>
@@ -555,7 +555,7 @@ export default function FeedsTab() {
                                             <TouchableOpacity onPress={() => { handleGotoEditPost() }} className="flex-row items-center">
                                                 <StyledIonicons
                                                     name="pencil-outline"
-                                                    size={24}
+                                                    size={32}
                                                     className="text-black dark:text-neutral-200"
                                                 />
                                                 <StyledText className="pl-2 text-lg font-custom">แก้ไข</StyledText>
@@ -566,7 +566,7 @@ export default function FeedsTab() {
                                             <TouchableOpacity onPress={() => deleteTwoStep(postAction)} className="flex-row items-center">
                                                 <StyledIonicons
                                                     name="trash-outline"
-                                                    size={24}
+                                                    size={32}
                                                     color="#ff2525"
                                                 />
                                                 <StyledText className="text-[#ff2525] pl-2 text-lg font-custom">ลบโพสต์</StyledText>
